@@ -49,5 +49,14 @@ service cloud.firestore {
         allow update, delete: if admin();
       }
     }
+
+    // Покупки за реальные деньги: зачисляет только сервер (Netlify + Xsolla)
+    match /pay/{id}/orders/{oid} {
+      allow read: if me(id) || admin();
+      allow update: if me(id) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed']);
+    }
+    match /payments/{oid} {
+      allow read: if admin();
+    }
   }
 }

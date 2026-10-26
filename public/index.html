@@ -460,7 +460,7 @@ function plView(){const p=PV===UID&&S?{id:UID,title:S.title,name:S.name,cls:S.cl
  <div class="panel"><h3>Снаряжение</h3>${p.eq?`<div class="pvg">${GK.map(([k,t])=>slot(k,t)).join('')}</div><p style="color:var(--mute);font-size:13px;margin:8px 0 0">Нажми на вещь, чтобы увидеть подробности.</p>`:'<p style="margin:0;color:var(--mute)">Игрок ещё не заходил в новую версию игры, снаряжение пока не видно.</p>'}</div>
  <button class="b alt" data-a="pvback">Назад</button>`}
 function tabView(){
- if(tab==='pl')return plView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
+ if(tab==='pl')return plView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='gold')return goldView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
  if(tab==='admin')return admView();
  if(tab==='top')return topView();if(tab==='clan')return clanView();
  if(tab==='camp')return`<div class="panel"><h3>Лагерь племени</h3><p>Снег скрипит под ногами, у костра точат клинки. Отсюда уходят на охоту и на арену.</p>
@@ -784,6 +784,26 @@ function forumView(){if(!DB)return'<div class="panel"><p>Форум работа
   return`<div class="fcrumb"><button class="lnk" data-fb="root">Форум</button> › ${sec[1]}</div>`+msg+`<div class="panel"><h3>${sec[1]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">${sec[2]}</p>${L.length?L.map(t=>`<button class="ftop" data-ft="${t.id}"><b>${t.pinned?'📌 ':''}${t.closed?'🔒 ':''}${esc(t.title)}</b><small>${esc(t.name)} · ответов ${Math.max(0,(t.cnt|0)-1)} · последнее: ${esc(t.lastn||'')}, ${fdate(t.last)}</small></button>`).join(''):'<p style="margin:0">Тем пока нет. Начни первую.</p>'}</div>`+
   (sec[3]&&!ADM?'':`<div class="panel"><h3>Новая тема</h3><input id="ftt" maxlength="80" placeholder="Заголовок" aria-label="Заголовок темы"><textarea id="ftb" maxlength="2000" rows="4" placeholder="Текст" aria-label="Текст темы"></textarea><button class="b" data-a="fnew">Создать тему</button></div>`)}
  return`<div class="panel"><h3>Форум Севера</h3><p style="margin:0;color:var(--mute);font-size:15px">Общий форум всех игроков: вопросы, кланы, торговля, идеи. Будь вежлив, администрация может удалять сообщения.</p></div><div class="panel">`+FSEC.map(([k,n,d])=>{const L=FT.filter(t=>t.sec===k),last=L.sort((a,b)=>b.last-a.last)[0];return`<button class="ftop" data-fs="${k}"><b>${n}</b><small>${d} · тем: ${L.length}${last?` · последнее: ${esc(last.lastn||'')}, ${fdate(last.last)}`:''}</small></button>`}).join('')+`</div>`}
+
+// ===== Золото за реальные деньги (Xsolla) =====
+const GPACK=[['gold_1000',1000,'0,99 $',''],['gold_5500',5500,'4,99 $','+10%'],['gold_12000',12000,'9,99 $','+20%'],['gold_30000',30000,'19,99 $','+50%']];
+let PAYUN=null,PAYFOR=null,PAYB=false,PAYMSG='',PAYLOG=null;
+function paySub(){if(!DB||!UID||!S||PAYFOR===UID)return;if(PAYUN)PAYUN();PAYFOR=UID;
+ PAYUN=DB.collection('pay').doc(UID).collection('orders').limit(300).onSnapshot(sn=>{if(!S)return;S.payd=S.payd||[];let got=0;
+  sn.docs.forEach(d=>{const o=d.data();if(o.claimed||S.payd.includes(d.id)||!(o.gold>0))return;S.payd.push(d.id);S.gold+=o.gold;got+=o.gold;d.ref.update({claimed:true}).catch(()=>{})});
+  if(got){log(`Покупка зачислена: +${got} зол.`,'hit');save();popup('💰 Золото зачислено',`<p>+${kf(got)} золота уже в твоём кошельке.</p><p>Спасибо за поддержку Northfall!</p>`);ui()}},()=>{})}
+async function payBuy(sku){if(PAYB||!FBA||!FBA.currentUser||!S)return;PAYB=true;PAYMSG='';save();render();
+ try{const t=await FBA.currentUser.getIdToken();const r=await fetch('/.netlify/functions/xsolla-token',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({sku,name:S.name})});
+  const j=await r.json().catch(()=>({}));if(!r.ok||!j.url)throw new Error(j.error||('ошибка '+r.status));location.href=j.url}
+ catch(e){PAYB=false;PAYMSG='Не удалось открыть оплату: '+e.message;render()}}
+function payLogLoad(){if(!ADM||!DB)return;PAYLOG='…';DB.collection('payments').orderBy('ts','desc').limit(50).get().then(sn=>{PAYLOG=sn.docs.map(d=>({id:d.id,...d.data()}));render()}).catch(e=>{PAYLOG='Нет доступа к журналу покупок (обнови правила Firestore).';render()})}
+function goldView(){
+ const st={paid:['оплачен','--moss'],created:['не оплачен','--mute'],canceled:['отменён','--blood']};
+ return`<div class="panel"><h3>Золото Севера</h3><p style="margin:0;color:var(--mute);font-size:15px">Поддержи игру и получи золото. Оплата проходит в защищённом окне Xsolla: банковские карты, Apple Pay, Google Pay, PayPal и другие способы. Золото зачисляется автоматически, обычно в течение минуты после оплаты.</p></div>`+
+ (PAYMSG?`<div class="panel" style="border-left:4px solid var(--blood)"><p style="margin:0">${esc(PAYMSG)}</p></div>`:'')+
+ `<div class="panel">`+GPACK.map(([k,g,pr,b])=>`<div class="row" style="align-items:center"><div><b style="font-size:18px;color:var(--gold)">💰 ${kf(g)} золота</b>${b?` <small style="color:var(--moss);font-weight:700">${b}</small>`:''}</div><button class="b" data-gb="${k}" ${PAYB?'disabled':''} style="margin:0;min-width:96px">${PAYB?'…':pr}</button></div>`).join('')+`</div>`+
+ `<div class="panel"><p style="margin:0;font-size:14px;color:var(--mute)">У тебя сейчас ${kf(S.gold)} золота. Покупка привязана к аккаунту «${esc(UID)}». Если золото не пришло за 10 минут, напиши в разделе форума «Помощь новичкам».</p></div>`+
+ (ADM?`<div class="panel"><h3>Журнал покупок (админ)</h3>${PAYLOG===null?'<button class="b alt" data-a="paylog">Показать последние 50</button>':typeof PAYLOG==='string'?`<p style="margin:0">${esc(PAYLOG)}</p>`:PAYLOG.length?PAYLOG.map(p=>{const z=st[p.status]||[p.status,'--mute'];return`<div class="row"><div><b>${esc(p.uid||'?')}</b> · ${kf(p.gold)} зол.${p.amount?` · ${esc(String(p.amount))} ${esc(p.currency||'')}`:''}${p.sandbox||p.mode==='sandbox'?' · тест':''}<small style="display:block;color:var(--mute)">${fdate(p.paidTs||p.ts)} · заказ ${esc(p.id)}</small></div><span style="color:var(${z[1]});font-weight:700">${z[0]}</span></div>`}).join(''):'<p style="margin:0">Покупок пока нет.</p>'}</div>`:'')}
 function topView(){
  if(!online)return offline('Рейтинг');
  const cur=curS(),btn=(k,t)=>`<button class="b ${rtab===k?'':'alt'}" data-rt="${k}">${t}</button>`;
@@ -974,7 +994,7 @@ async function hashPw(pw,saltB64){
  return{salt:btoa(String.fromCharCode(...salt)),h:btoa(String.fromCharCode(...new Uint8Array(bits)))}}
 const LOGIN_RE=/^[a-z0-9_]{3,16}$/;
 async function enterAccount(id){
- UID=id;ADM=ADMINS.includes(id);
+ UID=id;PAYFOR=null;if(PAYUN){PAYUN();PAYUN=null}try{if(/[?&]paid=1/.test(location.search))history.replaceState(null,'',location.pathname)}catch(e){}ADM=ADMINS.includes(id);
  let cloud=null;try{const sn=await DB.collection('saves').doc(id).get();if(sn.exists)cloud=sn.data()}catch(e){}
  const loc=LOC&&LOC.acc===id?LOC:null;let hero=cloud;if(loc&&(!hero||(loc.ts||0)>(hero.ts||0)))hero=loc;
  if(hero){hero.acc=id;enter(hero)}else{scr='newhero';render()}seedNews()}
@@ -1012,7 +1032,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.7</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1064,13 +1084,13 @@ function gearView(){
  return`${cards}${Object.keys(S.eq).length===10?'<p class="g">Полный комплект: +3 к защите</p>':''}`+(det||'<p style="color:var(--mute);font-size:15px">Выбери слот, чтобы снять, усилить или надеть предмет.</p>');
 }
 const MENUS=()=>ADM?[...MENU,['admin','Админка','Игроки, подарки, блокировки, объявления','--blood']]:MENU;
-IC.exped='<path d="M12 3l2 4 4 .5-3 3 .8 4.500L12 13l-3.800 2 .8-4.500-3-3 4-.5z"/><path d="M5 21l4-6M19 21l-4-6"/>';IC.pets='<path d="M8 10c-1.500 0-2.500-1.500-2.500-3S6.500 4 8 4s2.500 1.500 2.500 3S9.500 10 8 10zM16 10c-1.500 0-2.500-1.500-2.500-3S14.500 4 16 4s2.500 1.500 2.500 3S17.500 10 16 10z"/><path d="M12 13c3 0 6 3 6 5.500 0 1.500-1.500 2.500-3 2-1-.3-2-.5-3-.5s-2 .2-3 .5c-1.500.5-3-.5-3-2C6 16 9 13 12 13z"/>';IC.forum='<path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/>';IC.boss='<path d="M4 10l3-6 3 4 2-5 2 5 3-4 3 6"/><path d="M5 10h14v4a7 7 0 0 1-14 0z"/><path d="M9 14h.01M15 14h.01"/>';IC.market='<path d="M3 9l2-5h14l2 5"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/>';IC.quest='<path d="M9 4h6l1 3H8z"/><path d="M6 7h12v13H6z"/><path d="M9 12l2 2 4-4"/>';IC.ach='<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/>';
+IC.exped='<path d="M12 3l2 4 4 .5-3 3 .8 4.500L12 13l-3.800 2 .8-4.500-3-3 4-.5z"/><path d="M5 21l4-6M19 21l-4-6"/>';IC.gold='<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.500 10c0-1 1-1.500 2.500-1.500s2.500.5 2.500 1.500-1 1.500-2.500 1.500-2.500.5-2.500 1.500 1 1.500 2.500 1.500 2.500-.5 2.500-1.500"/>';IC.pets='<path d="M8 10c-1.500 0-2.500-1.500-2.500-3S6.500 4 8 4s2.500 1.500 2.500 3S9.500 10 8 10zM16 10c-1.500 0-2.500-1.500-2.500-3S14.500 4 16 4s2.500 1.500 2.500 3S17.500 10 16 10z"/><path d="M12 13c3 0 6 3 6 5.500 0 1.500-1.500 2.500-3 2-1-.3-2-.5-3-.5s-2 .2-3 .5c-1.500.5-3-.5-3-2C6 16 9 13 12 13z"/>';IC.forum='<path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/>';IC.boss='<path d="M4 10l3-6 3 4 2-5 2 5 3-4 3 6"/><path d="M5 10h14v4a7 7 0 0 1-14 0z"/><path d="M9 14h.01M15 14h.01"/>';IC.market='<path d="M3 9l2-5h14l2 5"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/>';IC.quest='<path d="M9 4h6l1 3H8z"/><path d="M6 7h12v13H6z"/><path d="M9 12l2 2 4-4"/>';IC.ach='<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/>';
 const MI=(k,t,sub)=>`<button class="mi" data-t="${k}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg><b>${t}</b>${sub?`<small>${sub}</small>`:''}<span class="ch">›</span></button>`;
-function menuView(){return`<div class="menu"><div class="mh">Лагерь</div>${MI('camp','Лагерь','отдых у костра')}${MI('quest','Задания',(()=>{dqEnsure();loginCheck();const n=S.dq.list.filter(q=>!q.c&&q.p>=q.n).length+(S.login.got?0:1);return n?`<b style="color:var(--blood)">можно забрать: ${n}</b>`:'ежедневные и награда за вход'})())}${MI('ach','Достижения','титулы и награды')}<div class="mh">Сражения</div>${MI('hunt','Охота','бесконечная битва')}${MI('exped','Поход',S.ex?`<b style="color:var(--moss)">наёмник в походе: ${hm(S.ex.end-Date.now())}</b>`:'наёмник охотится за тебя')}${MI('arena','Арена','боты и другие игроки')}${MI('boss','Мировой босс','один на весь Север')}${MI('top','Рейтинг','')}<div class="mh">Общение</div>${MI('forum','Форум','общий форум всех игроков')}<div class="mh">Магазин</div>${MI('shop','Магазин','снаряжение и бутылки')}${MI('forge','Мастера','кузнец и рунный мастер')}${MI('pets','Питомцы',petA()?`${petA().n}, ур. ${petA().lvl}`:'верные спутники в бою')}${MI('market','Рынок',(()=>{const n=MK.filter(m=>m.seller===UID&&m.sold).length;return n?`<b style="color:var(--moss)">продано: ${n}, забери золото</b>`:'торговля между игроками'})())}</div>`}
+function menuView(){return`<div class="menu"><div class="mh">Лагерь</div>${MI('camp','Лагерь','отдых у костра')}${MI('quest','Задания',(()=>{dqEnsure();loginCheck();const n=S.dq.list.filter(q=>!q.c&&q.p>=q.n).length+(S.login.got?0:1);return n?`<b style="color:var(--blood)">можно забрать: ${n}</b>`:'ежедневные и награда за вход'})())}${MI('ach','Достижения','титулы и награды')}<div class="mh">Сражения</div>${MI('hunt','Охота','бесконечная битва')}${MI('exped','Поход',S.ex?`<b style="color:var(--moss)">наёмник в походе: ${hm(S.ex.end-Date.now())}</b>`:'наёмник охотится за тебя')}${MI('arena','Арена','боты и другие игроки')}${MI('boss','Мировой босс','один на весь Север')}${MI('top','Рейтинг','')}<div class="mh">Общение</div>${MI('forum','Форум','общий форум всех игроков')}<div class="mh">Магазин</div>${MI('gold','Золото Севера','купить золото')}${MI('shop','Магазин','снаряжение и бутылки')}${MI('forge','Мастера','кузнец и рунный мастер')}${MI('pets','Питомцы',petA()?`${petA().n}, ур. ${petA().lvl}`:'верные спутники в бою')}${MI('market','Рынок',(()=>{const n=MK.filter(m=>m.seller===UID&&m.sold).length;return n?`<b style="color:var(--moss)">продано: ${n}, забери золото</b>`:'торговля между игроками'})())}</div>`}
 function bnav(){const it=tab==='home'?[['hero','Герой'],['clan','Клан']]:[['home','Главная'],['hero','Герой'],['clan','Клан']];if(ADM)it.push(['admin','Админка']);
  return`<nav class="bnav" aria-label="Основное меню">${it.map(([k,t])=>`<button class="${tab===k?'on':''}" data-t="${k}"><span style="position:relative;line-height:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k==='home'?'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>':IC[k]}</svg>${k==='hero'&&S.pts?`<i class="bdg">${S.pts}</i>`:''}</span>${t}</button>`).join('')}</nav>`}
 function render(){
- IREG=[];chatSub();clogSub();if(tab==='forum')ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
+ IREG=[];paySub();chatSub();clogSub();if(tab==='forum')ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
  const keep={};['lg','pw','pw2','nm','ftt','ftb','fpb'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
@@ -1080,7 +1100,7 @@ function render(){
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
 document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
- const el=ev.target.closest('[data-a],[data-t],[data-b],[data-e],[data-s],[data-c],[data-j],[data-rt],[data-k],[data-w],[data-u],[data-g],[data-x],[data-q],[data-h],[data-sc],[data-av],[data-ap],[data-dc],[data-pb],[data-pu],[data-st],[data-ct],[data-dn],[data-bd],[data-dk],[data-tg],[data-iv],[data-pv],[data-tc],[data-tb],[data-qc],[data-ti],[data-ri],[data-rx],[data-mt],[data-rs],[data-rp],[data-ro],[data-wk],[data-pp],[data-mb],[data-mx],[data-mc],[data-ex],[data-tip],[data-pt],[data-pbuy],[data-fs],[data-ft],[data-fb],[data-fm],[data-fd],[data-of],[data-rq],[data-rn]');if(!el)return;
+ const el=ev.target.closest('[data-a],[data-t],[data-b],[data-e],[data-s],[data-c],[data-j],[data-rt],[data-k],[data-w],[data-u],[data-g],[data-x],[data-q],[data-h],[data-sc],[data-av],[data-ap],[data-dc],[data-pb],[data-pu],[data-st],[data-ct],[data-dn],[data-bd],[data-dk],[data-tg],[data-iv],[data-pv],[data-tc],[data-tb],[data-qc],[data-ti],[data-ri],[data-rx],[data-mt],[data-rs],[data-rp],[data-ro],[data-wk],[data-pp],[data-mb],[data-mx],[data-mc],[data-ex],[data-tip],[data-pt],[data-pbuy],[data-gb],[data-fs],[data-ft],[data-fb],[data-fm],[data-fd],[data-of],[data-rq],[data-rn]');if(!el)return;
  const d=el.dataset;
  if(d.c){pick=d.c;return render()}
  if(d.rt){rtab=d.rt;return render()}
@@ -1095,7 +1115,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.pv){PVB=tab;PV=d.pv;tab='pl';return render()}
  if(d.of)return setOff(d.of);if(d.rq)return reqDo(d.rq,true);if(d.rn)return reqDo(d.rn,false);
  if(d.fs){FS=d.fs;FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(d.ft){FTOP=d.ft;FMSG='';render();window.scrollTo(0,0);return}if(d.fb){if(d.fb==='root'){FS=null;FTOP=null}else FTOP=null;FMSG='';return render()}if(d.fm)return fMod(d.fm);if(d.fd)return fMod('delpost',d.fd);
- if(d.pbuy)return petBuy(d.pbuy);if(d.pt){S.pet=d.pt==='-'?'':d.pt;save();return render()}
+ if(d.gb)return payBuy(d.gb);if(d.pbuy)return petBuy(d.pbuy);if(d.pt){S.pet=d.pt==='-'?'':d.pt;save();return render()}
  if(d.tip){S.tipsSeen=[...(S.tipsSeen||[]),d.tip];save();return render()}
  if(d.ex){const [z,hh]=d.ex.split(':');return exBuy(z,+hh)}
  if(d.mb)return mkBuy(d.mb);if(d.mx)return mkCancel(d.mx);if(d.mc)return mkCollect(d.mc);
@@ -1133,7 +1153,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(a==='arena')return startFight('arena');
  if(a==='repclose'){REP=null;return render()}
  if(a==='hrclose'){HREP=null;return render()}
- if(a==='lclaim')return loginClaim();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='sreset')return statReset();
+ if(a==='lclaim')return loginClaim();if(a==='paylog')return payLogLoad();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='sreset')return statReset();
  if(a==='pvback'){tab=PVB||'top';return render()}
  if(a==='dun')return startDun();if(a==='dunclose'){DREP=null;return render()}if(a==='dclclose'){DCL=null;return render()}
  if(a==='sellask'){sellArm=true;return render()}if(a==='sellno'){sellArm=false;return render()}if(a==='sellall')return sellAll();
