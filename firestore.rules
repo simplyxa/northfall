@@ -58,5 +58,26 @@ service cloud.firestore {
     match /payments/{oid} {
       allow read: if admin();
     }
+
+    // Друзья: документ friends/{a~b}, видят и меняют только двое участников
+    function lg() { return request.auth.token.email.split('@')[0]; }
+    match /friends/{pid} {
+      allow read: if signed() && (resource == null || lg() == resource.data.a || lg() == resource.data.b);
+      allow create: if signed() && request.resource.data.by == lg()
+        && (lg() == request.resource.data.a || lg() == request.resource.data.b)
+        && pid == request.resource.data.a + '~' + request.resource.data.b
+        && request.resource.data.st == 'p';
+      allow update: if signed() && (lg() == resource.data.a || lg() == resource.data.b)
+        && request.resource.data.a == resource.data.a && request.resource.data.b == resource.data.b
+        && request.resource.data.by == resource.data.by
+        && (request.resource.data.st == resource.data.st || (resource.data.by != lg() && request.resource.data.st == 'ok'));
+      allow delete: if signed() && (lg() == resource.data.a || lg() == resource.data.b);
+    }
+    // Личные сообщения: только между друзьями
+    match /dm/{pid}/m/{mid} {
+      allow read: if signed() && lg() in pid.split('~');
+      allow create: if signed() && lg() in pid.split('~') && request.resource.data.from == lg()
+        && get(/databases/$(database)/documents/friends/$(pid)).data.st == 'ok';
+    }
   }
 }
