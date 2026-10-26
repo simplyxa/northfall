@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- помощники ----
+    function signed() { return request.auth != null; }
+    // логин игрока = часть почты до @northfall.game
+    function me(id) { return signed() && request.auth.token.email == id + '@northfall.game'; }
+    // ВПИШИ СЮДА логины администраторов (как в ADMINS в index.html)
+    function admin() { return signed() && request.auth.token.email in ['shtorm1@northfall.game']; }
+
+    // Сохранение героя: только сам игрок (и админ)
+    match /saves/{id} {
+      allow read, write: if me(id) || admin();
+    }
+
+    // Публичная карточка игрока: читают все, пишет только владелец
+    match /players/{id} {
+      allow read: if signed();
+      allow write: if me(id) || admin();
+    }
+
+    // Подарки, баны, объявления: читают все, пишет только админ
+    match /admin/{id} {
+      allow read: if signed();
+      allow write: if admin();
+    }
+
+    // Кланы и всё внутри них (чат, казна, летопись, подземелье)
+    match /clans/{clan} {
+      allow read, write: if signed();
+      match /{sub}/{doc} {
+        allow read, write: if signed();
+      }
+    }
+
+    // Войны, мировой босс, территории, рынок
+    match /wars/{id}   { allow read, write: if signed(); }
+    match /world/{id}  { allow read, write: if signed(); }
+    match /terr/{id}   { allow read, write: if signed(); }
+    match /market/{id} { allow read, write: if signed(); }
+
+    // Форум: писать могут все вошедшие, удалять только админ
+    match /forum/{topic} {
+      allow read, create, update: if signed();
+      allow delete: if admin();
+      match /posts/{post} {
+        allow read, create: if signed();
+        allow update, delete: if admin();
+      }
+    }
+  }
+}
