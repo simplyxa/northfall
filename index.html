@@ -968,7 +968,12 @@ async function enterAccount(id){
  UID=id;ADM=ADMINS.includes(id);
  let cloud=null;try{const sn=await DB.collection('saves').doc(id).get();if(sn.exists)cloud=sn.data()}catch(e){}
  const loc=LOC&&LOC.acc===id?LOC:null;let hero=cloud;if(loc&&(!hero||(loc.ts||0)>(hero.ts||0)))hero=loc;
- if(hero){hero.acc=id;enter(hero)}else{scr='newhero';render()}}
+ if(hero){hero.acc=id;enter(hero)}else{scr='newhero';render()}seedNews()}
+
+const NEWS1={title:'Northfall начинает свою жизнь!',text:'Воины Севера, приветствуем вас!\n\nNorthfall: Barbarians официально начинает свою жизнь. Впереди охота в снежных лесах, бои на арене, подземелья кланов, мировые боссы, походы наёмников и многое другое, что мы будем добавлять вместе с вами.\n\nИгра только родилась, и нам очень важно ваше мнение. Мы будем рады получить:\n• новые идеи и предложения по дополнениям;\n• сообщения о неисправностях и ошибках;\n• и даже критику: честный отзыв помогает сделать игру лучше.\n\nПишите прямо здесь, в ответах к этой теме, или создавайте свои темы в разделах «Предложения» и «Помощь новичкам». Каждое сообщение будет прочитано.\n\nДо встречи в бою! Да хранит вас Один.'};
+async function seedNews(){if(!DB||!ADM)return;try{const ref=DB.collection('forum').doc('tnews001');const sn=await ref.get();if(sn.exists)return;const ts=Date.now();
+ await ref.set({sec:'news',title:NEWS1.title,uid:'admin',name:'Администрация',ts,last:ts,lastn:'Администрация',cnt:1,pinned:true});
+ await ref.collection('posts').doc('p0001').set({uid:'admin',name:'Администрация',text:NEWS1.text,ts});log('Новость «'+NEWS1.title+'» опубликована на форуме.','sys')}catch(e){console.error('seedNews',e)}}
 async function autoLogin(){}
 const fbErr=e=>{const c=(e&&e.code)||'';return c.includes('wrong-password')||c.includes('invalid-credential')||c.includes('user-not-found')||c.includes('invalid-login')?'Неверный логин или пароль.':c.includes('too-many-requests')?'Слишком много попыток. Подожди немного.':c.includes('email-already-in-use')?'Этот логин уже занят.':c.includes('weak-password')?'Пароль слишком простой: минимум 6 символов.':c.includes('network')?'Нет связи с сервером.':'Ошибка: '+(c||'попробуй ещё раз')};
 async function doLogin(){
@@ -991,14 +996,14 @@ async function doReg(){
  const leg=useLeg&&LEG;
  AB=true;AM='';render();
  try{await FBA.createUserWithEmailAndPassword(id+MAILDOM,pw);UID=id;ADM=ADMINS.includes(id);AB=false;
-  if(leg){const L=JSON.parse(JSON.stringify(LEG));L.acc=id;await migrateLegacy();enter(L)}else create(raw);return}
+  if(leg){const L=JSON.parse(JSON.stringify(LEG));L.acc=id;await migrateLegacy();enter(L)}else create(raw);seedNews();return}
  catch(e){AM=fbErr(e)}
  AB=false;render()}
 function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.3</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
