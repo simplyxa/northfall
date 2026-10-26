@@ -7,7 +7,7 @@ service cloud.firestore {
     // логин игрока = часть почты до @northfall.game
     function me(id) { return signed() && request.auth.token.email == id + '@northfall.game'; }
     // ВПИШИ СЮДА логины администраторов (как в ADMINS в index.html)
-    function admin() { return signed() && request.auth.token.email in ['shtorm1@northfall.game']; }
+    function admin() { return signed() && request.auth.token.email in ['shtorm1@northfall.game', 'admin@northfall.game']; }
 
     // Сохранение героя: только сам игрок (и админ)
     match /saves/{id} {
