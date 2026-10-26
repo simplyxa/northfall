@@ -26,7 +26,7 @@
 ## 3. Вебхуки
 Проект → **Project settings → Webhooks**:
 - включите вебхуки;
-- URL: `https://amazing-pie-3b396b.netlify.app/.netlify/functions/xsolla-webhook`;
+- URL: `https://playnorthfall.online/.netlify/functions/xsolla-webhook`;
 - скопируйте **Secret key**.
 
 ## 4. Ключ Firebase для сервера

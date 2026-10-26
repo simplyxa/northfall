@@ -22,7 +22,7 @@ exports.handler = async (event) => {
   if (!pack) return j(400, { error: 'Неизвестный пакет' });
 
   const sandbox = process.env.XSOLLA_SANDBOX !== '0';
-  const site = process.env.URL || 'https://amazing-pie-3b396b.netlify.app';
+  const site = process.env.URL || 'https://playnorthfall.online';
   const body = {
     user: { id: { value: uid }, name: { value: String(req.name || uid).slice(0, 40) } },
     purchase: { items: [{ sku: req.sku, quantity: 1 }] },
