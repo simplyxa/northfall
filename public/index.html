@@ -499,7 +499,7 @@ function tabView(){
  if(tab==='pl')return plView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='invite')return inviteView();if(tab==='install')return installView();if(tab==='gold')return goldView();if(tab==='bank')return bankView();if(tab==='friends')return friendsView();if(tab==='dm')return dmView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
  if(tab==='admin')return admView();
  if(tab==='top')return topView();if(tab==='clan')return clanView();
- if(tab==='camp')return`<div class="hban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480;object-fit:cover"></div><div class="panel"><h3>Лагерь племени</h3><p>Снег скрипит под ногами, у костра точат клинки. Отсюда уходят на охоту и на арену.</p>
+ if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
  <button class="b" data-a="rest" ${S.hp>=maxHp()||S.gold<S.lvl*2?'disabled':''}>Отдохнуть у костра (${S.lvl*2} сер.)</button>
  <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p>
  <button class="b alt" data-a="reset">Начать заново</button></div>`;
