@@ -1,8 +1,9 @@
-// Пакеты золота. SKU должны совпадать с товарами в Xsolla Publisher Account.
+// Пакеты золота (редкая валюта: 1 золото = 100 серебра).
+// SKU должны совпадать с товарами в Xsolla Publisher Account.
 // Сколько золота даёт пакет, решает только сервер.
 module.exports = {
-  gold_1000:  { gold: 1000 },
-  gold_5500:  { gold: 5500 },
-  gold_12000: { gold: 12000 },
-  gold_30000: { gold: 30000 }
+  gold_20:  { gold: 20 },
+  gold_110: { gold: 110 },
+  gold_240: { gold: 240 },
+  gold_600: { gold: 600 }
 };
