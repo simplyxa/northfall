@@ -91,5 +91,13 @@ service cloud.firestore {
         || (lg() == rid && resource.data.done == true
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed'])));
     }
+
+    // Общий чат: читают и пишут все вошедшие, удаляет только админ
+    match /chat/{mid} {
+      allow read: if signed();
+      allow create: if signed() && request.resource.data.uid == lg()
+        && request.resource.data.text is string && request.resource.data.text.size() <= 200;
+      allow delete: if admin();
+    }
   }
 }
