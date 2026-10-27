@@ -1,6 +1,13 @@
 [build]
   publish = "public"
 
+[build.environment]
+  # Эти значения не секретные (номера проекта Xsolla и режим теста),
+  # поэтому проверка утечек секретов их не ищет
+  SECRETS_SCAN_OMIT_KEYS = "XSOLLA_PROJECT_ID,XSOLLA_MERCHANT_ID,XSOLLA_SANDBOX"
+  # Ключ Firebase в игре публичный по замыслу Google (данные защищают правила Firestore)
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAhjKlz6frAkRtGPkbG9sTMp54EyVSgDzk"
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
