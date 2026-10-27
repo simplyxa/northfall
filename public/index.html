@@ -501,8 +501,7 @@ function tabView(){
  if(tab==='top')return topView();if(tab==='clan')return clanView();
  if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
  <button class="b" data-a="rest" ${S.hp>=maxHp()||S.gold<S.lvl*2?'disabled':''}>Отдохнуть у костра (${S.lvl*2} сер.)</button>
- <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p>
- <button class="b alt" data-a="reset">Начать заново</button></div>`;
+ <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p></div>`;
  if(tab==='hunt')return`<div class="panel"><h3>Охота</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Бесконечная битва: сразу выходят 5 зверей. Убил одного, и в течение 10 секунд из чащи приходит другой. Каждый зверь стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.</p>
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
@@ -1290,7 +1289,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(a==='sellask'){sellArm=true;return render()}if(a==='sellno'){sellArm=false;return render()}if(a==='sellall')return sellAll();
  if(a&&a.startsWith('bot-'))return startFight('arena',a.slice(4));
  if(a&&a.startsWith('h-'))return startHunt(a.slice(2));
- if(a==='reset'&&confirm('Удалить героя и начать заново?'))return delHero();
+ 
 });
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.target.id;if(i==='cm')say();else if(!S&&['lg','pw','pw2','nm'].includes(i)){if(scr==='login')doLogin();else if(scr==='reg')doReg();else doNewHero()}});
 load();render();initOnline();
