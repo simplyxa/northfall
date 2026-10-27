@@ -37,7 +37,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Alegreya,Georgia,serif}
 #app{max-width:640px;margin:0 auto;padding:62px 12px 12px}
-.tb{display:flex;align-items:center;gap:6px;margin:0 0 4px;min-height:30px}.tbi{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--line);border-radius:15px;padding:3px 10px 3px 5px;font-family:inherit;font-weight:700;font-size:15px;line-height:1.2;color:inherit;cursor:pointer;position:relative}span.tbi{cursor:default}.tbi.sv{color:var(--silver)}.tbi.g{color:var(--gold)}.tbi.tfull{color:#fff;background:var(--blood);border-color:var(--blood);padding:1px 6px;animation:tbp 1.6s ease-in-out infinite}.tbi.tupg{color:#fff;background:var(--moss);border-color:var(--moss);padding:1px 6px;animation:tbpg 1.6s ease-in-out infinite}@keyframes tbpg{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--moss) 40%,transparent)}}.tbi.tmsg{color:var(--moss);padding:3px 8px}.tbi.tmsg i{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--blood);color:#fff;font:700 11px/17px sans-serif;font-style:normal;text-align:center}@keyframes tbp{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--blood) 35%,transparent)}}@media (prefers-reduced-motion:reduce){.tbi.tfull,.tbi.tupg{animation:none}}
+.tb{display:flex;align-items:center;gap:6px;margin:0 0 4px;min-height:30px}.tbi{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--line);border-radius:15px;padding:3px 10px 3px 5px;font-family:inherit;font-weight:700;font-size:15px;line-height:1.2;color:inherit;cursor:pointer;position:relative}span.tbi{cursor:default}.tbi.sv{color:var(--silver)}.tbi.g{color:var(--gold)}.tbi.tfull{color:#fff;background:var(--blood);border-color:var(--blood);padding:1px 6px;animation:tbp 1.6s ease-in-out infinite}.tbi.tupg{color:#fff;background:var(--moss);border-color:var(--moss);padding:1px 6px;animation:tbpg 1.6s ease-in-out infinite}@keyframes tbpg{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--moss) 40%,transparent)}}.sgb.sgok{border-color:var(--moss)!important;color:var(--moss)!important;opacity:1!important}.sgb.sgno{border-color:var(--blood)!important;color:var(--blood)!important;opacity:1!important}.tbi.tmsg{color:var(--moss);padding:3px 8px}.tbi.tmsg i{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--blood);color:#fff;font:700 11px/17px sans-serif;font-style:normal;text-align:center}@keyframes tbp{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--blood) 35%,transparent)}}@media (prefers-reduced-motion:reduce){.tbi.tfull,.tbi.tupg{animation:none}}
 #xp{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 4px) 12px 4px}
 #xp>div{max-width:640px;margin:0 auto}
 #xp .bar{height:9px;margin:0}
@@ -230,15 +230,15 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const maxHp=()=>40+S.st.hp*8+S.lvl*10+EQ().hp;
-const maxEn=()=>15+S.st.en+EQ().en;
+const maxEn=()=>15+S.st.en+EQ().en+(typeof cbl==='function'?cbl('tent'):0);
 const need=()=>Math.round(20*Math.pow(S.lvl,1.5));
 const cb=k=>{const c=S&&S.clan&&CLN.find(x=>x.id===S.clan);return c&&c.b?c.b[k]|0:0};
-const atk=()=>Math.round((S.st.str*2+EQ().atk+(typeof petAtk==='function'?petAtk():0))*(1+.03*cb('bar')));
+const atk=()=>Math.round((S.st.str*2+EQ().atk+(typeof petAtk==='function'?petAtk():0))*(1+.03*cb('bar')+(typeof cbl==='function'?.02*cbl('rack'):0)));
 const def=()=>S.st.arm+EQ().def+cb('wall');
-const regv=()=>S.st.reg+EQ().reg+cb('inf');
+const regv=()=>S.st.reg+EQ().reg+cb('inf')+(typeof cbl==='function'?cbl('bed'):0);
 const clampV=()=>{S.hp=Math.min(S.hp,maxHp());S.en=Math.min(S.en,maxEn())};
 const crit=()=>Math.min(60,10+EQ().crit+(typeof petCrit==='function'?petCrit():0));
-const bonus=()=>1+(S.clan?0.05:0)+.04*cb('mkt')+(typeof petLoot==='function'?petLoot():0);
+const bonus=()=>1+(S.clan?0.05:0)+.04*cb('mkt')+(typeof petLoot==='function'?petLoot():0)+(typeof cbl==='function'?.03*cbl('smoke'):0);
 
 let syncT,HREP=null,CLOUD={ok:0,err:''};
 function pushDb(){if(!DB||!UID||!S)return;
@@ -501,7 +501,7 @@ function tabView(){
  if(tab==='top')return topView();if(tab==='clan')return clanView();
  if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
  <button class="b" data-a="rest" ${S.hp>=maxHp()||S.gold<S.lvl*2?'disabled':''}>Отдохнуть у костра (${S.lvl*2} сер.)</button>
- <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p></div>`;
+ <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p></div>`+sagaView()+campBuildView();
  if(tab==='hunt')return`<div class="panel"><h3>Охота</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Бесконечная битва: сразу выходят 5 зверей. Убил одного, и в течение 10 секунд из чащи приходит другой. Каждый зверь стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.</p>
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
@@ -567,7 +567,7 @@ function loginCheck(){const d=DAY();S.login=S.login||{last:0,st:0,got:true};cons
 function loginClaim(){const L=S.login;if(!L||L.got)return;L.got=true;const w=LRW[(L.st-1)%7];S.gold+=w[0]+S.lvl*5*L.st;S.iron=(S.iron|0)+w[1];S.pt.b=(S.pt.b|0)+w[2];let t=`Награда за вход, день ${L.st}: +${w[0]+S.lvl*5*L.st} серебра${w[1]?`, +${w[1]} железа`:''}${w[2]?`, бутылок: ${w[2]}`:''}`;
  if(L.st===7){const ks=Object.keys(SL),x=gen(ks[Math.floor(Math.random()*ks.length)],Math.max(1,S.lvl),Math.min(3,1+Math.floor(S.lvl/12)));if(S.inv.length<INV_MAX)S.inv.push(x);else{S.chest=S.chest||[];S.chest.push(x)}t+=`, сундук: «${x.name}»`;const rk=rndRune(2);addRune(rk);t+=`, ${rName(rk)}`}
  log(t+'.','sys');QMSG=t+'.';save();render()}
-const ACH=[['k1','Первая кровь','Убей 10 зверей',c=>(c.k|0)>=10,'Охотник',50],['k2','Истребитель','Убей 500 зверей',c=>(c.k|0)>=500,'Истребитель зверей',500],['k3','Гроза лесов','Убей 5000 зверей',c=>(c.k|0)>=5000,'Гроза лесов',3000],
+const ACH=[['sg7','Знаток саг','Отгадай загадки сказителя 7 дней подряд',(c,S)=>(S.sgbest|0)>=7,'Знаток саг',300],['k1','Первая кровь','Убей 10 зверей',c=>(c.k|0)>=10,'Охотник',50],['k2','Истребитель','Убей 500 зверей',c=>(c.k|0)>=500,'Истребитель зверей',500],['k3','Гроза лесов','Убей 5000 зверей',c=>(c.k|0)>=5000,'Гроза лесов',3000],
  ['a1','Боец арены','Победи на арене 10 раз',c=>(c.aw|0)>=10,'Боец арены',200],['a2','Чемпион','Победи на арене 100 раз',c=>(c.aw|0)>=100,'Чемпион арены',1500],
  ['d1','Покоритель глубин','Дойди до 5-го этажа подземелья',c=>(c.df|0)>=5,'Покоритель глубин',600],['d2','Убийца драугров','Дойди до 10-го этажа подземелья',c=>(c.df|0)>=10,'Убийца драугров',2000],
  ['l1','Воин','Достигни 10 уровня',(c,S)=>S.lvl>=10,'Воин',300],['l2','Ветеран','Достигни 30 уровня',(c,S)=>S.lvl>=30,'Ветеран',1500],['l3','Легенда Севера','Достигни 50 уровня',(c,S)=>S.lvl>=50,'Легенда Севера',5000],
@@ -789,7 +789,7 @@ const PETS={wolf:{n:'Волчонок Фенрира',ic:'🐺',lv:3,p:4,dm:.35,
 const petA=()=>S&&S.pet&&S.pets&&S.pets[S.pet]?{k:S.pet,...PETS[S.pet],...S.pets[S.pet]}:null;
 const petAtk=()=>{const p=petA();return p&&p.k==='wolf'?2+p.lvl:0},petCrit=()=>{const p=petA();return p&&p.k==='raven'?3+Math.floor(p.lvl/2):0},petDef=()=>{const p=petA();return p&&p.k==='bear'?Math.min(25,8+p.lvl)/100:0},petLoot=()=>{const p=petA();return p&&p.k==='lynx'?(5+p.lvl)/100:0};
 function petBuy(k){const P=PETS[k];S.pets=S.pets||{};if(!P||S.pets[k]||S.lvl<P.lv||S.au<P.p)return;S.au-=P.p;S.pets[k]={lvl:1,xp:0};if(!S.pet)S.pet=k;log(`Новый питомец: ${P.n}!`,'hit');save();render()}
-function petXp(n){const p=S.pet&&S.pets&&S.pets[S.pet];if(!p||p.lvl>=PMAX)return;p.xp+=n;while(p.lvl<PMAX&&p.xp>=pNeed(p.lvl)){p.xp-=pNeed(p.lvl);p.lvl++;log(`${PETS[S.pet].n} вырос до ${p.lvl} уровня!`,'hit')}}
+function petXp(n){const p=S.pet&&S.pets&&S.pets[S.pet];if(!p||p.lvl>=PMAX)return;if(Math.random()<.15*cbl('pen'))n*=2;p.xp+=n;while(p.lvl<PMAX&&p.xp>=pNeed(p.lvl)){p.xp-=pNeed(p.lvl);p.lvl++;log(`${PETS[S.pet].n} вырос до ${p.lvl} уровня!`,'hit')}}
 function petTick(dt){const p=petA(),e=fight.e;if(!p||!e||e.hp<=0)return false;fight.pt=(fight.pt||0)+dt/6;if(fight.pt<1)return false;fight.pt=0;
  let d=Math.max(1,Math.round(atk()*p.dm*(1+p.lvl*.05)*rnd(.85,1.15)-e.def*.3));if(e.tr==='armor')d=Math.round(d*.5);e.hp=Math.max(0,e.hp-d);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${p.n}: ${d} урона.`,'hit');return true}
 function petView(){const P=petA();S.pets=S.pets||{};
@@ -876,6 +876,50 @@ function bankView(){const bt=(d,n)=>{const ok=d==='buy'?S.gold>=n*XR:(S.au|0)>=n
  (XMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(XMSG)}</p></div>`:'')+
  `<div class="panel"><h3>Купить золото</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,10,50,100].map(n=>bt('buy',n)).join('')}</div></div>`+
  `<div class="panel"><h3>Продать золото</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,10,50,100].map(n=>bt('sell',n)).join('')}</div></div>`}
+
+// ===== Лагерь: сказитель и обустройство =====
+const SAGA=[
+ ['Глаз за мудрость','У корней Иггдрасиля бьёт источник Мимира, и кто изопьёт из него, узнает всё, что было и будет. Один пришёл к источнику, но Мимир потребовал платы. Всеотец не торговался.','Что отдал Один за глоток из источника Мимира?',['свой глаз','копьё Гунгнир','коня Слейпнира']],
+ ['Молот грома','Локи поспорил на свою голову, что гномы-кузнецы не скуют ничего лучше уже сделанных даров. Братья Брокк и Эйтри раздули горн, и из огня вышел молот с короткой рукоятью, которым Тор с тех пор крушит великанов.','Кто выковал Мьёльнир?',['гномы-кузнецы','валькирии','великан Имир']],
+ ['Конь Всеотца','Быстрее ветра мчится конь Одина, по земле, по морю и по воздуху. Он один из немногих, кто может пройти даже в царство Хель и вернуться.','Сколько ног у Слейпнира?',['восемь','шесть','четыре']],
+ ['Рука в пасти волка','Боги трижды пытались сковать Фенрира. Лишь цепь Глейпнир, сплетённая гномами из шума кошачьих шагов и корней гор, удержала волка. Но Фенрир согласился надеть её, только если один из асов вложит руку ему в пасть.','Кто из богов лишился руки, сковывая Фенрира?',['Тюр','Тор','Бальдр']],
+ ['Мировое древо','Ясень Иггдрасиль держит на ветвях и корнях все миры: от сияющего Асгарда до мглистого Нифльхейма. Белка Рататоск бегает по стволу и разносит бранные слова между орлом на вершине и змеем у корней.','Сколько миров держит Иггдрасиль?',['девять','семь','двенадцать']],
+ ['Два ворона','Каждое утро два ворона облетают весь мир, а к вечеру садятся Одину на плечи и шепчут ему обо всём, что видели. Всеотец боится лишь одного: что однажды они не вернутся.','Что означают имена воронов Хугин и Мунин?',['Мысль и Память','День и Ночь','Война и Мир']],
+ ['Выбирающие павших','Над полем битвы летят девы в шлемах. Они выбирают храбрейших из павших и уносят их туда, где воины пируют вечером и сражаются утром, готовясь к последней битве.','Куда валькирии уносят павших героев?',['в Вальхаллу','в Хельхейм','в Муспельхейм']],
+ ['Светлый бог','Мать Бальдра взяла клятву со всего на свете не вредить её сыну, и боги шутя метали в него оружие. Только одно растение показалось ей слишком юным для клятвы, и Локи вложил его в руку слепого Хёда.','Чем был сражён Бальдр?',['веткой омелы','ледяным копьём','стрелой из ясеня']],
+ ['Сумерки богов','Придёт время, когда разорвутся все цепи. Волк вырвется на свободу, разинет пасть от земли до неба, и сам Всеотец падёт в последней битве.','Кто поглотит Одина в Рагнарёк?',['волк Фенрир','змей Ёрмунганд','великан Сурт']],
+ ['Змей в океане','В глубинах моря лежит змей такой длины, что опоясывает весь Мидгард и держит во рту свой хвост. Однажды Тор почти вытащил его на крючок с бычьей головой.','С кем сойдётся Тор в последней битве?',['со змеем Ёрмунгандом','с волком Фенриром','с огненным Суртом']],
+ ['Страж радуги','Радужный мост Биврёст ведёт из мира людей в Асгард. Его страж спит меньше птицы, видит на сто вёрст ночью и слышит, как растёт трава. В Рагнарёк он затрубит в рог Гьяллархорн.','Кто стережёт мост Биврёст?',['Хеймдалль','Тюр','Видар']],
+ ['Кольцо Одина','Гномы сковали для Одина золотое кольцо, что множит богатство. Его положили на погребальный костёр Бальдра, и Хермод вернул его из царства Хель.','Сколько колец роняет Драупнир каждую девятую ночь?',['восемь','три','девять']],
+ ['Колесница богини','Фрейя, владычица любви и сейда, носит ожерелье Брисингамен и собирает половину павших в свой чертог Фолькванг. А ездит она в колеснице, запряжённой необычными зверями.','Кто тянет колесницу Фрейи?',['кошки','волки','олени']],
+ ['Гром в небесах','Когда по небу катится гром, это Тор едет в своей колеснице. Его звери не простые: вечером их можно зажарить и съесть, а утром Тор оживляет их молотом, если кости остались целы.','Кто тянет колесницу Тора?',['два козла','два ворона','два медведя']],
+ ['Тайна рун','Один пронзил себя копьём и висел на ветру, на древе, корни которого никому не ведомы, без еды и питья. В конце он посмотрел вниз, поднял руны и с криком упал.','Сколько ночей висел Один на древе ради рун?',['девять','три','семь']],
+ ['Срединная земля','Боги сделали из ресниц первого великана ограду для мира людей, чтобы защитить его от великанов. Этот мир лежит посредине, между Асгардом наверху и Хельхеймом внизу.','Как зовётся мир людей?',['Мидгард','Асгард','Ванахейм']],
+ ['Грызущий корни','Глубоко внизу, у корня, что тянется в Нифльхейм, живёт тёмный дракон. Он грызёт корень Мирового древа и терзает тела клятвопреступников.','Кто грызёт корни Иггдрасиля?',['дракон Нидхёгг','белка Рататоск','ворон Хугин']],
+ ['Огненный великан','На юге лежит пылающий Муспельхейм, и стоит на его границе великан с огненным мечом. В Рагнарёк он пройдёт по Биврёсту, и мост рухнет под ним.','Кто придёт с огненным мечом из Муспельхейма?',['Сурт','Имир','Тьяцци']],
+ ['Начало всего','В начале времён между льдом и огнём была лишь бездна Гинунгагап. Из тающего инея родился первый великан, а сыновья Бора убили его и сотворили из него мир: из крови — моря, из костей — горы.','Из чьего тела боги сотворили мир?',['из тела Имира','из тела Одина','из тела Бури']],
+ ['Хитрец в реке','После смерти Бальдра Локи бежал и спрятался в горах. Днём он принимал облик рыбы и прятался в водопаде, но боги сплели сеть по его же примеру и поймали его.','В кого превратился Локи, прячась от богов?',['в лосося','в ворона','в волка']],
+ ['Яблоки юности','Боги не стареют лишь потому, что богиня Идунн хранит в ларце особые плоды. Когда великан Тьяцци похитил её, асы стали седеть и дряхлеть, пока Локи не вернул её назад в облике сокола.','Что хранила Идунн?',['молодильные яблоки','мёд поэзии','волшебные руны']]];
+let SGMSG='';
+const sgToday=()=>{const d=DAY(),i=d%SAGA.length,sh=d%3;const o=SAGA[i][3].map((t,k)=>[t,k===0]);for(let k=0;k<sh;k++)o.push(o.shift());return{d,i,o}};
+const sgRew=()=>40+S.lvl*8;
+function sgAnswer(k){const T=sgToday();S.saga=S.saga||{};if(S.saga.day===T.d)return;const ok=T.o[k]&&T.o[k][1];S.saga={day:T.d,ok,pick:k};
+ if(ok){const g=sgRew();S.gold+=g;S.sgst=(S.sglast===T.d-1?(S.sgst|0):0)+1;S.sglast=T.d;S.sgbest=Math.max(S.sgbest|0,S.sgst);SGMSG=`Верно! Сказитель кивает: «Ты знаешь саги». +${g} серебра. Дней подряд: ${S.sgst}.`;log(`Сказитель: верный ответ, +${g} серебра.`,'hit')}
+ else{S.sgst=0;SGMSG=`Сказитель качает головой: «Нет, воин. Верный ответ: ${T.o.find(x=>x[1])[0]}». Приходи завтра.`}
+ achCheck();save();render()}
+function sagaView(){const T=sgToday(),[t,txt,q]=SAGA[T.i],sd=S.saga&&S.saga.day===T.d?S.saga:null,st=S.sglast>=T.d-1?(S.sgst|0):0;
+ return`<div class="panel"><h3>📜 Сказитель у костра</h3><p style="margin:0 0 4px;color:var(--mute);font-size:14px">Каждый день новая сага и загадка. Верный ответ: +${sgRew()} серебра. Отгадай 7 дней подряд и получи титул «Знаток саг».${st?` Сейчас подряд: <b>${st}</b>.`:''}</p>
+ <p style="margin:8px 0 4px;font-size:18px"><b>«${esc(t)}»</b></p><p style="margin:0 0 8px;font-style:italic">${esc(txt)}</p><p style="margin:0 0 6px"><b>${esc(q)}</b></p>
+ <div style="display:flex;flex-direction:column;gap:6px">${T.o.map(([o,ok],k)=>{const pk=sd&&sd.pick===k,cls=sd?(ok?'sgok':pk?'sgno':''):'';return`<button class="b alt sgb ${cls}" data-sg="${k}" ${sd?'disabled':''} style="margin:0;text-align:left">${esc(o)}${sd&&ok?' ✓':''}${pk&&!ok?' ✗':''}</button>`}).join('')}</div>
+ ${SGMSG&&sd?`<p style="margin:8px 0 0;color:var(${sd.ok?'--moss':'--blood'})">${esc(SGMSG)}</p>`:sd?`<p style="margin:8px 0 0;color:var(--mute)">${sd.ok?'Сегодня ты уже отгадал загадку.':'Сегодня загадка не далась.'} Новая сага завтра.</p>`:''}</div>`}
+const CAMPB={tent:['Шатёр из шкур','+1 к макс. энергии',L=>`+${L} энергии`],bed:['Ложе у очага','+1 к регенерации',L=>`+${L} регенерации`],rack:['Оружейная стойка','+2% к атаке',L=>`+${2*L}% атаки`],pen:['Загон для зверя','питомец растёт быстрее: +15% шанс двойного опыта',L=>`+${15*L}% шанс`],smoke:['Коптильня','+3% опыта и серебра с боёв',L=>`+${3*L}% добычи`]};
+const CMAX=5,CREQ=[1,5,10,15,20],cbl=k=>(S&&S.camp?S.camp[k]|0:0),ccost=n=>({g:150*(n+1)*(n+1),i:10*(n+1)});
+function campUp(k){if(!CAMPB[k])return;S.camp=S.camp||{};const l=S.camp[k]|0;if(l>=CMAX)return;const c=ccost(l);if(S.lvl<CREQ[l]||S.gold<c.g||(S.iron|0)<c.i)return;
+ S.gold-=c.g;S.iron-=c.i;S.camp[k]=l+1;clampV();log(`Лагерь: ${CAMPB[k][0]}, уровень ${l+1}.`,'sys');save();render()}
+function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
+ return`<div class="panel"><h3>🏕 Обустройство лагеря</h3><p style="margin:0 0 4px;color:var(--mute);font-size:14px">Улучшай стоянку за серебро и железо, и бонусы будут действовать всегда. Каждое улучшение до ${CMAX} уровня, следующие уровни открываются по мере роста героя. Построено: ${tot}/${CMAX*Object.keys(CAMPB).length}.</p>`+
+ Object.keys(CAMPB).map(k=>{const [n,d,f]=CAMPB[k],l=cbl(k),c=ccost(l),lk=l<CMAX&&S.lvl<CREQ[l],ok=l<CMAX&&!lk&&S.gold>=c.g&&(S.iron|0)>=c.i;
+  return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Золото за реальные деньги (Xsolla) =====
 const GPACK=[['gold_20',20,'0,99 $',''],['gold_110',110,'4,99 $','+10%'],['gold_240',240,'9,99 $','+20%'],['gold_600',600,'19,99 $','+50%']];
@@ -1229,7 +1273,7 @@ function render(){
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
 document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
- const el=ev.target.closest('[data-a],[data-t],[data-b],[data-e],[data-s],[data-c],[data-j],[data-rt],[data-k],[data-w],[data-u],[data-g],[data-x],[data-q],[data-h],[data-sc],[data-av],[data-ap],[data-dc],[data-pb],[data-pu],[data-st],[data-ct],[data-dn],[data-bd],[data-dk],[data-tg],[data-iv],[data-pv],[data-tc],[data-tb],[data-qc],[data-ti],[data-ri],[data-rx],[data-mt],[data-rs],[data-rp],[data-ro],[data-wk],[data-pp],[data-mb],[data-mx],[data-mc],[data-ex],[data-tip],[data-pt],[data-pbuy],[data-gb],[data-tb],[data-xc],[data-fr],[data-fa],[data-fx],[data-dm],[data-fs],[data-ft],[data-fb],[data-fm],[data-fd],[data-of],[data-rq],[data-rn]');if(!el)return;
+ const el=ev.target.closest('[data-a],[data-t],[data-b],[data-e],[data-s],[data-c],[data-j],[data-rt],[data-k],[data-w],[data-u],[data-g],[data-x],[data-q],[data-h],[data-sc],[data-av],[data-ap],[data-dc],[data-pb],[data-pu],[data-st],[data-ct],[data-dn],[data-bd],[data-dk],[data-tg],[data-iv],[data-pv],[data-tc],[data-tb],[data-qc],[data-ti],[data-ri],[data-rx],[data-mt],[data-rs],[data-rp],[data-ro],[data-wk],[data-pp],[data-mb],[data-mx],[data-mc],[data-ex],[data-tip],[data-pt],[data-pbuy],[data-gb],[data-sg],[data-cb],[data-tb],[data-xc],[data-fr],[data-fa],[data-fx],[data-dm],[data-fs],[data-ft],[data-fb],[data-fm],[data-fd],[data-of],[data-rq],[data-rn]');if(!el)return;
  const d=el.dataset;
  if(d.c){pick=d.c;return render()}
  if(d.rt){rtab=d.rt;return render()}
@@ -1245,7 +1289,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.of)return setOff(d.of);if(d.rq)return reqDo(d.rq,true);if(d.rn)return reqDo(d.rn,false);
  if(d.fs){FS=d.fs;FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(d.ft){FTOP=d.ft;FMSG='';render();window.scrollTo(0,0);return}if(d.fb){if(d.fb==='root'){FS=null;FTOP=null}else FTOP=null;FMSG='';return render()}if(d.fm)return fMod(d.fm);if(d.fd)return fMod('delpost',d.fd);
  if(d.fr)return frAdd(d.fr);if(d.fa)return frAcc(d.fa);if(d.fx)return frDel(d.fx);if(d.dm){DMW=d.dm;tab='dm';render();const b=$('#dmbox');if(b)b.scrollTop=b.scrollHeight;return}
- if(d.tb){tab='hero';htab=d.tb;render();window.scrollTo(0,0);return}if(d.xc){const [dd,nn]=d.xc.split(':');return xchg(dd,+nn)}if(d.gb)return payBuy(d.gb);if(d.pbuy)return petBuy(d.pbuy);if(d.pt){S.pet=d.pt==='-'?'':d.pt;save();return render()}
+ if(d.sg!=null)return sgAnswer(+d.sg);if(d.cb)return campUp(d.cb);if(d.tb){tab='hero';htab=d.tb;render();window.scrollTo(0,0);return}if(d.xc){const [dd,nn]=d.xc.split(':');return xchg(dd,+nn)}if(d.gb)return payBuy(d.gb);if(d.pbuy)return petBuy(d.pbuy);if(d.pt){S.pet=d.pt==='-'?'':d.pt;save();return render()}
  if(d.tip){S.tipsSeen=[...(S.tipsSeen||[]),d.tip];save();return render()}
  if(d.ex){const [z,hh]=d.ex.split(':');return exBuy(z,+hh)}
  if(d.mb)return mkBuy(d.mb);if(d.mx)return mkCancel(d.mx);if(d.mc)return mkCollect(d.mc);
