@@ -79,5 +79,17 @@ service cloud.firestore {
       allow create: if signed() && lg() in pid.split('~') && request.resource.data.from == lg()
         && get(/databases/$(database)/documents/friends/$(pid)).data.st == 'ok';
     }
+
+    // Приглашения друзей: refs/{кто пригласил}/got/{кого пригласили}
+    match /refs/{rid}/got/{nid} {
+      allow read: if signed() && (lg() == rid || lg() == nid);
+      allow create: if signed() && lg() == nid && nid != rid && request.resource.data.done == false;
+      allow update: if signed() && (
+        (lg() == nid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done', 'doneTs'])
+          && request.resource.data.done == true
+          && get(/databases/$(database)/documents/saves/$(nid)).data.lvl >= 10)
+        || (lg() == rid && resource.data.done == true
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed'])));
+    }
   }
 }
