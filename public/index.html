@@ -288,9 +288,14 @@ function create(name){
 function gain(xp,gold){
  const l0=S.lvl;xp=Math.round(xp*bonus());gold=Math.round(gold*bonus());
  S.xp+=xp;S.gold+=gold;log(`Добыча: +${xp} опыта, +${gold} серебра.`,'sys');
- while(S.xp>=need()){S.xp-=need();S.lvl++;S.pts+=3;S.hp=maxHp();fx('lvl');log(`Новый уровень: ${S.lvl}! Получено 3 очка умений.`,'sys')}
+ lvUp();
  return{xp,gold,lv:S.lvl-l0}
 }
+function lvUp(){while(S.xp>=need()){S.xp-=need();S.lvl++;S.pts+=3;S.hp=maxHp();fx('lvl');log(`Новый уровень: ${S.lvl}! Получено 3 очка умений.`,'sys')}}
+// Охота: опыт за каждый удар по урону, 2% шанс серебра 1–9 за удар
+function hitRew(dd,e){if(!fight||!fight.hunt||!e||!(dd>0))return;const H=fight.hunt,own=S.clan&&(terOwner(H.kind)||{}).id===S.clan;
+ H.xf=(H.xf||0)+dd*(e.xp/e.max)*bonus()*(own?1+TERB:1);const x=Math.floor(H.xf);if(x>0){H.xf-=x;S.xp+=x;H.xp+=x;lvUp()}
+ if(Math.random()<.02){const g=1+Math.floor(Math.random()*9);S.gold+=g;H.gold+=g;log(`💰 В снегу блеснуло серебро: +${g}.`,'hit')}}
 
 function mkEnemy(name,lv,m){
  return{name,lv,hp:Math.round(28+lv*13*m),max:Math.round(28+lv*13*m),atk:4+lv*2.6*m,def:1+lv*1.1*m,xp:10+lv*6*m,gold:5+lv*4*m,guard:false};
@@ -327,7 +332,7 @@ function startHunt(kind){
 function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const s=fight.hunt.sl.find(x=>x.e&&x.e.hp>0);fight.e=s?s.e:null}
 function huntCheck(){const H=fight.hunt;
  if(S.hp<=0)return huntEnd('dead');
- for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const own=S.clan&&(terOwner(H.kind)||{}).id===S.clan,g=gain(e.xp*(own?1+TERB:1),huntSil()*(own?1+TERB:1));H.xp+=g.xp;H.gold+=g.gold;const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
+ for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
  retarget();if(H.sl.every(s=>!s.e&&s.at==null))huntEnd('out')}
 function huntEnd(why){const H=fight.hunt;if(why==='dead'){S.hp=1;S.lose++;log('Ты теряешь сознание, соплеменники уносят тебя в лагерь.','dmg')}
  HREP={hunt:true,why,kills:H.kills,xp:H.xp,gold:H.gold,loot:H.loot,kind:H.kind};fight=null;tab='hunt'}
@@ -401,7 +406,7 @@ function act(a){
   const k=fight.ch;fight.ch=0;fight.s.r++;
   let d=(rnd(.8,1.2)*atk()-e.def*.5)*k;
   const c=Math.random()*100<crit();if(c)d*=1.8;if(fight.rage){d*=2;fight.rage=false}if(e.tr==='armor')d*=.5;d=Math.max(1,Math.round(d));fx(c?'crit':'hit');
-  e.hp=Math.max(0,e.hp-d);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);if(c)fight.s.crit++;log(`${c?'Меткий удар! ':''}Удар на ${Math.round(k*100)}%: ${d} урона.`,'hit');
+  const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);if(c)fight.s.crit++;log(`${c?'Меткий удар! ':''}Удар на ${Math.round(k*100)}%: ${d} урона.`,'hit');
  }
  settle();save();render();
 }
@@ -601,7 +606,7 @@ function useSkill(id){if(!fight)return;const sk=skOf().find(x=>x[0]===id);if(!sk
  else if(id==='totem'){const h=Math.round(maxHp()*.25);S.hp=Math.min(maxHp(),S.hp+h);log(`Тотем исцеления: +${h} здоровья.`,'hit')}
  else if(id==='trap'){e.stun=now+4000;log(`${e.name} попал в капкан.`,'hit')}
  else if(id==='shot'){let d=Math.round(atk()*1.2*rnd(.9,1.1));const c=Math.random()*100<crit();if(c){d=Math.round(d*1.8);fx('crit')}else fx('hit');if(e.tr==='armor')d=Math.round(d*.5);
-  e.hp=Math.max(0,e.hp-d);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Меткий ':''}Выстрел: ${d} урона.`,'hit');settle()}
+  const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Меткий ':''}Выстрел: ${d} урона.`,'hit');settle()}
  save();render()}
 const skBtns=()=>`<div class="skr">${skOf().map((k,i)=>{const L=skLeft(k[0]);return`<button class="b alt sk" id="sk${i}" data-a="sk-${k[0]}" title="${k[2]}" ${L>0?'disabled':''} style="display:inline-flex;align-items:center;justify-content:center;gap:6px">${skImg(k[0],26)}<span id="skl${i}">${k[1]}${L>0?' '+Math.ceil(L/1000)+' с':''}</span></button>`}).join('')}</div>`;
 const TRAITS={poison:['Ядовитый','яд: урон со временем'],armor:['Бронированный','получает вдвое меньше урона'],leader:['Вожак','пока жив, остальные бьют на 30% сильнее'],fast:['Быстрый','атакует каждые 3 секунды']};
