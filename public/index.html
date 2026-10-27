@@ -327,7 +327,7 @@ function startHunt(kind){
 function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const s=fight.hunt.sl.find(x=>x.e&&x.e.hp>0);fight.e=s?s.e:null}
 function huntCheck(){const H=fight.hunt;
  if(S.hp<=0)return huntEnd('dead');
- for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const own=S.clan&&(terOwner(H.kind)||{}).id===S.clan,g=gain(e.xp*(own?1+TERB:1),e.gold*(own?1+TERB:1));H.xp+=g.xp;H.gold+=g.gold;const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
+ for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const own=S.clan&&(terOwner(H.kind)||{}).id===S.clan,g=gain(e.xp*(own?1+TERB:1),huntSil()*(own?1+TERB:1));H.xp+=g.xp;H.gold+=g.gold;const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
  retarget();if(H.sl.every(s=>!s.e&&s.at==null))huntEnd('out')}
 function huntEnd(why){const H=fight.hunt;if(why==='dead'){S.hp=1;S.lose++;log('Ты теряешь сознание, соплеменники уносят тебя в лагерь.','dmg')}
  HREP={hunt:true,why,kills:H.kills,xp:H.xp,gold:H.gold,loot:H.loot,kind:H.kind};fight=null;tab='hunt'}
@@ -720,6 +720,7 @@ function runeMasterView(){const L=rmItems(),R=Object.entries(S.runes||{}).filter
  return h}
 
 // ===== Поход (охота наёмника, работает и офлайн) =====
+const huntSil=()=>1+Math.floor(Math.random()*10);
 const EXZ={easy:['Опушка',30],mid:['Глухой лес',20],hard:['Чаща',12]},EXD=[[2,'2 часа',1],[8,'8 часов',3.5],[24,'24 часа',9]],EXEFF=.5;
 const exPrice=(h)=>Math.max(1,Math.ceil((80+S.lvl*25)*EXD.find(x=>x[0]===h)[2]/100));
 let EXREP=null;
@@ -727,7 +728,7 @@ function exBuy(z,h){if(S.ex&&S.ex.end>Date.now())return;const c=exPrice(h);if((S
 function exSettle(manual){const X=S&&S.ex;if(!X||fight)return;const now=Math.min(Date.now(),X.end),dt=Math.max(0,now-X.last);if(dt<60000&&now<X.end&&!manual)return;
  X.last=now;X.acc=(X.acc||0)+dt/3600000*EXZ[X.z][1];const k=Math.floor(X.acc);X.acc-=k;
  if(k>0){const m={easy:HM.easy,mid:HM.mid,hard:HM.hard}[X.z],L=Math.max(1,S.lvl+(X.z==='hard'?1:0));const e=mkEnemy('',L,m);
-  const own=S.clan&&(terOwner(X.z)||{}).id===S.clan,f=EXEFF*(own?1+TERB:1);const g=gain(e.xp*k*f,e.gold*k*f);X.xp+=g.xp;X.gold+=g.gold;X.k+=k;
+  const own=S.clan&&(terOwner(X.z)||{}).id===S.clan,f=EXEFF*(own?1+TERB:1);let sv=0;for(let i=0;i<k;i++)sv+=huntSil();const g=gain(e.xp*k*f,sv*f);X.xp+=g.xp;X.gold+=g.gold;X.k+=k;
   for(let i=0;i<k;i++){if(Math.random()<.5){const lt=drop(L,false);if(lt&&LASTDROP){if(LASTDROP.dis)X.iron+=LASTDROP.g|0;else X.loot.push(LASTDROP.it.name)}}if(Math.random()<.02){const rk=rndRune(1);addRune(rk);X.loot.push(rName(rk))}}
   X.loot=X.loot.slice(-40);ev('kill',k);if(S.clan){const cx=Math.max(k,Math.round(k*e.max/CXK*EXEFF));S.cxq=(S.cxq|0)+cx;X.cx=(X.cx|0)+cx}if(S.clan){S.tq=S.tq||{};S.tq[X.z]=(S.tq[X.z]|0)+k}}
  if(Date.now()>=X.end){EXREP={...X,done:true};S.exlast=EXREP;S.ex=null;log(`Поход окончен: убито ${X.k} зверей, +${X.xp} опыта, +${X.gold} серебра.`,'hit')}
