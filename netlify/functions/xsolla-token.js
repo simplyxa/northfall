@@ -32,10 +32,17 @@ async function main(event) {
     settings: { language: 'ru', return_url: site + '/?paid=1' },
     custom_parameters: { login: uid }
   };
+  // Xsolla требует страну игрока или его IP: берём их из заголовков Netlify
+  const h = event.headers || {};
+  const ip = (h['x-nf-client-connection-ip'] || h['client-ip'] || (h['x-forwarded-for'] || '').split(',')[0] || '').trim();
+  let cc = (h['x-country'] || '').trim().toUpperCase();
+  if (!cc && h['x-nf-geo']) { try { cc = (JSON.parse(Buffer.from(h['x-nf-geo'], 'base64').toString()).country || {}).code || ''; } catch (e) {} }
+  if (/^[A-Z]{2}$/.test(cc)) body.user.country = { value: cc, allow_modify: true };
+  else if (!ip) body.user.country = { value: 'US', allow_modify: true };
   const url = `https://store.xsolla.com/api/v3/project/${PID}/admin/payment/token`;
   const call = (id) => fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Basic ' + Buffer.from(`${id}:${KEY}`).toString('base64') },
+    headers: { 'Content-Type': 'application/json', ...(ip ? { 'X-User-Ip': ip } : {}), Authorization: 'Basic ' + Buffer.from(`${id}:${KEY}`).toString('base64') },
     body: JSON.stringify(body)
   });
   let r = await call(PID);
