@@ -4,10 +4,12 @@ const PACKS = require('../lib/packs');
 const DOM = '@northfall.game';
 const j = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 
-exports.handler = async (event) => {
+exports.handler = async (event) => { try { return await main(event); } catch (e) { console.error('token crash', e); return j(500, { error: 'Сервер: ' + (e.message || 'сбой') }); } };
+async function main(event) {
   if (event.httpMethod !== 'POST') return j(405, { error: 'POST only' });
   const PID = process.env.XSOLLA_PROJECT_ID, KEY = process.env.XSOLLA_API_KEY, MID = process.env.XSOLLA_MERCHANT_ID;
   if (!PID || !KEY) return j(500, { error: 'Магазин ещё не настроен' });
+  if (admin.initErr && admin.initErr()) return j(500, { error: 'Сервер: ' + admin.initErr() });
   let uid;
   try {
     const tok = (event.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -49,4 +51,4 @@ exports.handler = async (event) => {
   } catch (e) { console.error('payments log', e); }
   const host = sandbox ? 'https://sandbox-secure.xsolla.com' : 'https://secure.xsolla.com';
   return j(200, { url: `${host}/paystation4/?token=${out.token}`, order: out.order_id || null });
-};
+}

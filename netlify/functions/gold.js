@@ -11,6 +11,7 @@ const fail = (code, msg) => { const e = new Error(msg); e.code = code; throw e; 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return j(405, { error: 'POST only' });
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) return j(503, { error: 'not_configured' });
+  if (admin.initErr && admin.initErr()) return j(500, { error: 'Сервер: ' + admin.initErr() });
   let uid;
   try {
     const tok = (event.headers.authorization || '').replace(/^Bearer\s+/i, '');
