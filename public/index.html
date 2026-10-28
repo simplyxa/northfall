@@ -445,7 +445,7 @@ function sellAll(){const J=junk();sellArm=false;if(!J.length)return render();ev(
 function sell(id){const it=S.inv.find(x=>x.uid===id);if(!it)return;ev('dis');const g=dis(it);S.iron=(S.iron|0)+g;S.inv=S.inv.filter(x=>x!==it);log(`Разобрано: ${it.name} (+${g} железа).`,'sys');save();render()}
 const statF=(slot,k,L)=>k===PRIM[slot][0]?PRIM[slot][1](L):EXTRA[k](L);
 function scaleTo(it,L){const L0=it.lv;for(const k in it.b){if(k==='crit'||k==='reg'||k==='en'){it.b[k]=Math.max(1,Math.round(it.b[k]*statF(it.slot,k,L)/statF(it.slot,k,L0)));continue}it.b[k]=Math.max(1,Math.round(it.b[k]*statF(it.slot,k,L)/statF(it.slot,k,L0)))}it.lv=L}
-const UPG=[1,2,3,5,8,8],upGold=it=>((it.up|0)+1)*UPG[it.tr!=null?it.tr:0],upMax=it=>it.lv+5>LVMAX;
+const UPG=[1,2,3,4,4,4],upGold=it=>((it.up|0)+1)*UPG[it.tr!=null?it.tr:0],upMax=it=>it.lv+5>LVMAX;
 const upMat=it=>S.inv.filter(x=>x!==it&&x.slot===it.slot&&x.tr===it.tr).sort((a,b)=>(a.up|0)-(b.up|0)||(a.rn||[]).length-(b.rn||[]).length)[0];
 function mastCan(){if(!S)return'';const all=[...Object.values(S.eq||{}).filter(Boolean),...(S.inv||[])];
  const smith=all.some(it=>!upMax(it)&&upMat(it)&&(S.au|0)>=upGold(it));
@@ -456,8 +456,10 @@ const GOLD={
  pay(n,why,x,ok){if((S.au|0)<n){log('Не хватает золота.','sys');return render()}S.au-=n;ok()},
  xbuy(n,ok){S.au=(S.au|0)+n;ok()},
  gift(x){S.au=Math.max(0,(S.au|0)+(x.au||0))},
- adminGift(to,n){}
+ adminGift(to,n){},
+ boss(k,id,n){S.au=(S.au|0)+n;tbPaint()}
 };
+const BAU={r3:1,r4:3,wb:1};
 function doUp(key){const it=key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.find(x=>x.uid===key);if(!it||upMax(it))return;const g=upGold(it),mat=upMat(it);if(!mat||(S.au|0)<g)return;
  GOLD.pay(g,'up',{n:it.name},()=>{if(!S.inv.includes(mat))return render();S.inv=S.inv.filter(x=>x!==mat);for(const k of mat.rn||[])addRune(k);ev('upa');scaleTo(it,it.lv+5);it.up=(it.up|0)+1;it.fx=3;
  if(it.up>=5){S.cnt=S.cnt||{};S.cnt.u5=1;achCheck()}log(`Усиление: ${it.name} +${it.up}, теперь ${it.lv} ур.${it.up<=5?' Новое гнездо для камня!':''} (−${g} зол., −«${mat.name}»)`,'hit');save();render()})}
@@ -708,12 +710,12 @@ function wbEnd(why){const d=fight.s.dealt,D=fight.wb;fight=null;if(S.hp<=0)S.hp=
 function wbClaim(k){const B=WB[k];S.wbcl=S.wbcl||[];if(!B||!B.killed||S.wbcl.includes(k))return;const my=(B.dmg||{})[UID]|0;if(my<=0)return;const tot=Object.values(B.dmg).reduce((a,b)=>a+(b|0),0)||1,sh=my/tot;
  const g=Math.round(300+3000*sh+S.lvl*10),ir=Math.round(30+200*sh),rk=rndRune(sh>=.1?3:2);S.gold+=g;S.iron=(S.iron|0)+ir;addRune(rk);let it=null;
  if(Math.random()<.3+.5*sh){const ks=Object.keys(SL),myth=S.lvl>=30&&Math.random()<.15+.5*sh;it=myth?gen(ks[Math.floor(Math.random()*ks.length)],Math.max(30,S.lvl),4,null,4):gen(ks[Math.floor(Math.random()*ks.length)],Math.max(1,S.lvl),Math.min(3,2+(sh>=.2?1:0)));if(!autoDis(it)){if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}}}
- S.wbcl.push(k);S.wbcl=S.wbcl.slice(-10);WCL={g,ir,rk,it,sh:Math.round(sh*100)};log(`Награда за мирового босса: +${g} серебра, +${ir} железа, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save();render()}
+ S.wbcl.push(k);S.wbcl=S.wbcl.slice(-10);GOLD.boss('wb',k,BAU.wb);WCL={g,ir,rk,it,au:BAU.wb,sh:Math.round(sh*100)};log(`Награда за мирового босса: +${g} серебра, +${ir} железа, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save();render()}
 function bossView(){if(!DB)return'<div class="panel"><p>Мировой босс доступен только с подключённой базой данных.</p></div>';const k='b'+DAY(),B=WB[k];if(!B)return'<div class="panel"><p>Босс пробуждается…</p></div>';
  const top=Object.entries(B.dmg||{}).sort((a,b)=>b[1]-a[1]).slice(0,10),L=wbLeft(),mine=(B.dmg||{})[UID]|0;
  const rew=Object.keys(WB).filter(x=>WB[x].killed&&((WB[x].dmg||{})[UID]|0)>0&&!(S.wbcl||[]).includes(x));
- let h=(WCL?`<div class="panel" style="border-left:4px solid var(--moss)"><h3>Награда за босса</h3><p style="margin:0 0 4px">Твоя доля урона: ${WCL.sh}%. Серебро <b class="g">+${WCL.g}</b>, железо <b>+${WCL.ir}</b>, ${rName(WCL.rk)}.</p>${WCL.it?irow(WCL.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<button class="b alt" data-a="wclclose">Закрыть</button></div>`:'')+
- `<div class="panel" style="border-left:4px solid var(--blood)"><h3>Мировой босс: ${wbName(B.day)}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Один босс на весь Север, новый каждый день. Бой 45 секунд, 3 энергии, раз в час. Когда босс пал, все, кто его бил, забирают награду: серебро, железо, камень и шанс на вещь. Чем больше твоя доля урона, тем богаче награда.</p>
+ let h=(WCL?`<div class="panel" style="border-left:4px solid var(--moss)"><h3>Награда за босса</h3><p style="margin:0 0 4px">Твоя доля урона: ${WCL.sh}%. Серебро <b class="g">+${WCL.g}</b>, золото <b class="g">+${WCL.au|0}</b>, железо <b>+${WCL.ir}</b>, ${rName(WCL.rk)}.</p>${WCL.it?irow(WCL.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<button class="b alt" data-a="wclclose">Закрыть</button></div>`:'')+
+ `<div class="panel" style="border-left:4px solid var(--blood)"><h3>Мировой босс: ${wbName(B.day)}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Один босс на весь Север, новый каждый день. Бой 45 секунд, 3 энергии, раз в час. Когда босс пал, все, кто его бил, забирают награду: серебро, 1 золото, железо, камень и шанс на вещь. Чем больше твоя доля урона, тем богаче награда.</p>
  <div class="lbl"><span><b>${wbName(B.day)}</b></span><span>${B.killed?'повержен':B.hp.toLocaleString('ru-RU')+'/'+B.max.toLocaleString('ru-RU')}</span></div>${bar(B.hp,B.max,'--blood')}<p style="margin:8px 0">Твой урон сегодня: <b>${mine.toLocaleString('ru-RU')}</b></p>
  ${B.killed?'<p style="color:var(--moss);font-weight:700;margin:0">Босс повержен. Новый появится завтра.</p>':L>0?`<button class="b" disabled style="width:100%">Следующая атака через ${hm(L)}</button>`:`<button class="b red" data-a="wb" style="width:100%" ${S.en<3||S.hp<=0?'disabled':''}>Атаковать (3 энергии)</button>`}</div>`;
  if(WREP)h+=`<div class="panel"><p style="margin:0">Последняя атака: <b>${WREP.dealt}</b> урона${WREP.kill?', босс повержен':''}.</p><button class="b alt" data-a="wrepclose" style="margin-top:6px">Закрыть</button></div>`;
@@ -797,19 +799,19 @@ function raidFinish(){const R=RAID;if(!R||R.st==='on'||!RAIDID||!S)return;S.rdon
  S.gold+=g;S.iron=(S.iron|0)+ir;addRune(rk);S.xp+=xp;lvUp();let it=null;const ks=Object.keys(SL),sl=ks[Math.floor(Math.random()*ks.length)];
  if(t===4&&Math.random()<.1)it=gen(sl,30,4,null,5);else if(Math.random()<[.5,.55,.6,.6,.6][t])it=gen(sl,SETLV[t],t,null,t);
  if(it&&!autoDis(it)){if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}}
- RRES={win:1,g,ir,xp,rk,it};SILFX={v:g,t:Date.now()};log(`Рейд «${RAIDS[t].n}» пройден: +${g} серебра, +${ir} железа, +${xp} опыта, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save()}
+ const au=BAU['r'+t]|0;if(au)GOLD.boss('raid',RAIDID,au);RRES={win:1,g,ir,xp,rk,it,au};SILFX={v:g,t:Date.now()};log(`Рейд «${RAIDS[t].n}» пройден: +${g} серебра, +${ir} железа, +${xp} опыта, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save()}
 function raidClose(){if(RAUN)RAUN();if(RAUN2)RAUN2();RAUN=RAUN2=null;RAID=null;RAIDID=null;RACT={};RRES=null;render()}
 // экран
 function raidView(){if(!DB)return'<div class="panel"><p>Рейды доступны только с подключённой базой данных.</p></div>';raidSub();
  if(RAID&&RAIDID)return raidFightView();const mq=myQ();
- return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Рейды</h3><p style="margin:0;color:var(--mute);font-size:15px">Пять боссов для группы из 5 воинов. Встань в очередь — когда соберутся пятеро, бой начнётся у всех сразу. Ход длится 10 секунд: не успел — герой бьёт сам. После победы подземелье закрывается для тебя на время отката.</p></div>`+
+ return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Рейды</h3><p style="margin:0;color:var(--mute);font-size:15px">Пять боссов для группы из 5 воинов. За Ледяного змея — 1 золото, за Сурта — 3 золота. Встань в очередь — когда соберутся пятеро, бой начнётся у всех сразу. Ход длится 10 секунд: не успел — герой бьёт сам. После победы подземелье закрывается для тебя на время отката.</p></div>`+
  RAIDS.map((R,b)=>{const q=rqLive(RQ['b'+b]),inq=q.some(x=>x.id===UID),cd=rcdLeft(b),lock=S.lvl<R.lv;
   const btn=lock?`<button class="b" disabled style="width:100%">С ${R.lv} уровня</button>`:cd>0?`<button class="b" disabled style="width:100%">Откроется через ${rFmt(cd)}</button>`:inq?`<button class="b alt" data-rd="leave:${b}" style="width:100%" ${RBUSY?'disabled':''}>Выйти из очереди</button>`:`<button class="b red" data-rd="join:${b}" style="width:100%" ${RBUSY||(mq>=0)?'disabled':''}>Встать в очередь</button>`;
   return`<div class="panel" style="${lock?'opacity:.6':''}"><div style="display:flex;gap:12px;align-items:center"><div class="pic">${R.ic}</div><div style="flex:1;min-width:0"><b style="font-size:18px">${R.n}</b><small style="display:block;color:var(--mute)">${R.d} · с ${R.lv} ур. · откат ${R.cd} ч</small></div><b style="font-size:20px;color:${q.length?'var(--moss)':'var(--mute)'}">${q.length}/${RSIZE}</b></div>
   ${q.length?`<p style="margin:8px 0 0;font-size:14px;color:var(--mute)">В очереди: ${q.map(x=>esc(x.n)+(x.id===UID?' (ты)':'')).join(', ')}</p>`:''}<div style="margin-top:8px">${btn}</div>${inq&&ADM?`<button class="b alt" data-rd="bots:${b}" style="width:100%">Добавить ботов (тест, админ)</button>`:''}</div>`}).join('')}
 function raidFightView(){const R=RAID;if(!R)return'<div class="panel"><p>Загружаю рейд…</p></div>';const B=RAIDS[R.b],me=R.mem[UID],ac=RACT[UID],acted=ac&&ac.r===R.r,on=R.st==='on';
  let h='';
- if(!on){const X=RRES;h+=`<div class="panel" style="border-left:4px solid var(${R.st==='win'?'--moss':'--blood'})"><h3>${R.st==='win'?'Победа!':'Поражение'}</h3>${X&&X.win?`<p style="margin:0 0 6px">Серебро <b class="g">+${X.g}</b>, железо <b>+${X.ir}</b>, опыт <b>+${X.xp}</b>, ${rName(X.rk)}.</p>${X.it?irow(X.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<p style="margin:6px 0 0;font-size:14px;color:var(--mute)">«${B.n}» откроется снова через ${B.cd} ч.</p>`:(R.st==='win'?'<p style="margin:0">Награда получена.</p>':'<p style="margin:0">Подземелье не закрылось — можно собрать группу и попробовать снова.</p>')}<button class="b" data-rd="close" style="width:100%;margin-top:8px">К списку рейдов</button></div>`}
+ if(!on){const X=RRES;h+=`<div class="panel" style="border-left:4px solid var(${R.st==='win'?'--moss':'--blood'})"><h3>${R.st==='win'?'Победа!':'Поражение'}</h3>${X&&X.win?`<p style="margin:0 0 6px">Серебро <b class="g">+${X.g}</b>${X.au?`, золото <b class="g">+${X.au}</b>`:''}, железо <b>+${X.ir}</b>, опыт <b>+${X.xp}</b>, ${rName(X.rk)}.</p>${X.it?irow(X.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<p style="margin:6px 0 0;font-size:14px;color:var(--mute)">«${B.n}» откроется снова через ${B.cd} ч.</p>`:(R.st==='win'?'<p style="margin:0">Награда получена.</p>':'<p style="margin:0">Подземелье не закрылось — можно собрать группу и попробовать снова.</p>')}<button class="b" data-rd="close" style="width:100%;margin-top:8px">К списку рейдов</button></div>`}
  h+=`<div class="panel" style="border-left:4px solid var(--blood)"><div style="display:flex;gap:12px;align-items:center"><div class="pic">${B.ic}</div><div style="flex:1"><b style="font-size:18px">${B.n}</b><small style="display:block;color:var(--mute)">${on?`Ход ${R.r} · осталось <b id="rdt">${Math.max(0,Math.ceil((R.dl-Date.now())/1000))} с</b>`:'Бой окончен'}</small></div></div>
  <div class="lbl" style="margin-top:8px"><span>Здоровье босса</span><span>${R.hp.toLocaleString('ru-RU')}/${R.max.toLocaleString('ru-RU')}</span></div>${bar(R.hp,R.max,'--blood')}</div>`;
  if(on&&me){const dead=me.hp<=0,dis=c=>dead||acted||c?'disabled':'';
@@ -1093,7 +1095,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='3.8';
+const GVER='3.9';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1400,7 +1402,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 3.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 3.9</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1559,7 +1561,8 @@ async function goldApi(q){if(!FBA||!FBA.currentUser)throw new Error('Войди 
 function walletSub(){if(!DB||!UID||!S||WFOR===UID||SG===false)return;if(Date.now()-WTRY<30000)return;WTRY=Date.now();const me=UID;
  goldApi({a:'get'}).then(j=>{if(UID!==me)return;SG=true;WFOR=me;S.au=j.au|0;save();tbPaint();ui();if(WUN)WUN();
   WUN=DB.collection('wallet').doc(me).onSnapshot(sn=>{if(UID!==me||!sn.exists)return;S.au=sn.data().au|0;tbPaint();ui()},()=>{})}).catch(e=>{})}
-const GL0={pay:GOLD.pay,xbuy:GOLD.xbuy,gift:GOLD.gift};
+const GL0={pay:GOLD.pay,xbuy:GOLD.xbuy,gift:GOLD.gift,boss:GOLD.boss};
+GOLD.boss=(k,id,n)=>{if(SG!==true)return GL0.boss(k,id,n);goldApi({a:'boss',k,id}).then(j=>{if(j.au!=null){S.au=j.au|0;tbPaint();ui()}}).catch(e=>log('Золото за босса не начислено: '+(e.message||'ошибка'),'sys'))};
 GOLD.pay=(n,why,x,ok)=>{if(SG!==true)return GL0.pay(n,why,x,ok);if((S.au|0)<n){log('Не хватает золота.','sys');return render()}if(GBUSY)return;GBUSY=true;
  goldApi({a:'pay',n,why}).then(j=>{S.au=j.au|0;ok()}).catch(e=>{popup('Не получилось',esc(e.message||'Ошибка сервера'),true)}).finally(()=>{GBUSY=false;tbPaint()})};
 GOLD.xbuy=(n,ok)=>{if(SG!==true)return GL0.xbuy(n,ok);if(GBUSY)return;GBUSY=true;

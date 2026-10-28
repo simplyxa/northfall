@@ -4,6 +4,8 @@ const admin = require('../lib/fb');
 const DOM = '@northfall.game';
 const ADMINS = ['shtorm1', 'admin'];
 const XLIM = 5, REFG = 10, MKFEE = 0.05, START_CAP = 1000;
+// золото за боссов: сколько даётся и сколько раз в день (r3 — Ледяной змей, r4 — Сурт, wb — мировой босс)
+const BOSSG = { r3: 1, r4: 3, wb: 1 }, BOSSCAP = { r3: 2, r4: 1, wb: 1 };
 const j = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 const day = () => Math.floor((Date.now() + 2 * 3600000) / 864e5);
 const fail = (code, msg) => { const e = new Error(msg); e.code = code; throw e; };
@@ -96,6 +98,33 @@ exports.handler = async (event) => {
         tx.update(mref, { sold: true, buyer: uid, bname: String(q.name || uid).slice(0, 40), paid: true });
         logOp(tx, uid, { op: 'mbuy', n: -price, lot: mref.id }); logOp(tx, m.seller, { op: 'msell', n: g, lot: mref.id });
         return { au: me.w.au - price, item: m.item };
+      }
+      if (a === 'boss') { // золото за рейд (Ледяной змей, Сурт) и мирового босса — с дневным лимитом
+        const k = String(q.k || ''), id = String(q.id || '');
+        if (!/^[A-Za-z0-9_]{1,40}$/.test(id)) fail(400, 'Неверные данные');
+        const cref = W(uid).collection('claims').doc(k + '_' + id), cs = await tx.get(cref);
+        if (cs.exists) fail(409, 'Награда уже получена');
+        let g = 0, cap = 0, key = '';
+        if (k === 'raid') {
+          const rs = await tx.get(db.collection('raids').doc(id));
+          if (!rs.exists) fail(404, 'Рейд не найден');
+          const R = rs.data(), m = (R.mem || {})[uid];
+          if (R.st !== 'win' || !m || m.bot) fail(409, 'Нет награды');
+          key = 'r' + R.b; g = BOSSG[key] || 0; cap = BOSSCAP[key] || 0;
+        } else if (k === 'wb') {
+          const bs = await tx.get(db.collection('world').doc(id));
+          if (!bs.exists) fail(404, 'Босс не найден');
+          const B = bs.data();
+          if (!B.killed || !((B.dmg || {})[uid] > 0)) fail(409, 'Нет награды');
+          key = 'wb'; g = BOSSG.wb; cap = BOSSCAP.wb;
+        } else fail(400, 'Неверные данные');
+        if (!g) fail(409, 'За этого босса золото не даётся');
+        const { ref, w } = await ensure(tx, uid), d = day(), bc = (w.bd === d && w.bc) ? { ...w.bc } : {};
+        if ((bc[key] | 0) >= cap) fail(409, 'Дневной лимит золота за этого босса');
+        bc[key] = (bc[key] | 0) + 1;
+        tx.update(ref, { au: (w.au | 0) + g, bd: d, bc }); tx.set(cref, { ts: Date.now(), g });
+        logOp(tx, uid, { op: 'boss', n: g, k, id });
+        return { au: (w.au | 0) + g };
       }
       fail(400, 'Неизвестное действие');
     });
