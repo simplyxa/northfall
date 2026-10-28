@@ -112,6 +112,18 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed'])));
     }
 
+    // Рейды: очередь и бои на 5 воинов
+    match /raidq/{b} {
+      allow read, write: if signed();
+    }
+    match /raids/{rid} {
+      allow read, create, update: if signed();
+      match /a/{uid} {
+        allow read: if signed();
+        allow write: if signed() && lg() == uid;
+      }
+    }
+
     // Общий чат: читают и пишут все вошедшие, удаляет только админ
     match /chat/{mid} {
       allow read: if signed();
