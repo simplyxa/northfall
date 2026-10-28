@@ -37,8 +37,7 @@ async function main(event) {
   const ip = (h['x-nf-client-connection-ip'] || h['client-ip'] || (h['x-forwarded-for'] || '').split(',')[0] || '').trim();
   let cc = (h['x-country'] || '').trim().toUpperCase();
   if (!cc && h['x-nf-geo']) { try { cc = (JSON.parse(Buffer.from(h['x-nf-geo'], 'base64').toString()).country || {}).code || ''; } catch (e) {} }
-  if (/^[A-Z]{2}$/.test(cc)) body.user.country = { value: cc, allow_modify: true };
-  else if (!ip) body.user.country = { value: 'US', allow_modify: true };
+  body.user.country = { value: /^[A-Z]{2}$/.test(cc) ? cc : 'US', allow_modify: true };
   const url = `https://store.xsolla.com/api/v3/project/${PID}/admin/payment/token`;
   const call = (id) => fetch(url, {
     method: 'POST',
