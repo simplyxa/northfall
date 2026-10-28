@@ -198,11 +198,17 @@ const PRIM={w:['atk',L=>3+2.2*L],h:['def',L=>1+.8*L],a:['def',L=>2+1.4*L],g:['at
 const EXTRA={atk:L=>.6*L+1,def:L=>.5*L+1,hp:L=>2.5*L+3,reg:L=>1+Math.floor(L/6),en:L=>1+Math.floor(L/8),crit:L=>2+Math.floor(L/4)};
 let uidN=0;const uid=()=>'i'+Date.now().toString(36)+(uidN++);
 function gen(slot,L,rar,rng,trf){
+ if(trf==null){rar=Math.max(0,Math.min(rar,tierOf(L)));trf=rar;L=SETLV[trf]}else L=SETLV[trf];
  const pk=PRIM[slot][0],b={};b[pk]=Math.max(1,Math.round(PRIM[slot][1](L)*RAR[rar][2]));
  const pool=Object.keys(EXTRA).filter(k=>k!==pk);
  for(let i=0;i<rar;i++){const k=pool.splice(Math.floor((rng?rng():Math.random())*pool.length),1)[0];b[k]=Math.max(1,Math.round(EXTRA[k](L)*(k==='crit'||k==='reg'||k==='en'?1:RAR[rar][2]*.6)))}
  const tr=trf!=null?trf:tierOf(L);if(tr===5)for(const k in b)b[k]=Math.round(b[k]*1.2);return{uid:uid(),slot,name:NAMES[slot][tr],rar,lv:L,b,up:0,tr};
 }
+function fixItem(it){if(!it||!it.slot||!PRIM[it.slot]||it.fx===2)return it;const tr=it.tr===5?5:Math.max(0,Math.min(4,it.rar|0));
+ if(it.tr!==tr||it.lv!==SETLV[tr]||it.name!==NAMES[it.slot][tr]){let x=0;for(const ch of String(it.uid||it.name))x=(Math.imul(x,31)+ch.charCodeAt(0))>>>0;const rng=()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296};
+  const n=gen(it.slot,SETLV[tr],tr===5?4:tr,rng,tr);it.tr=tr;it.rar=n.rar;it.lv=n.lv;it.name=n.name;it.b=n.b}
+ it.fx=2;return it}
+function fixAll(){if(!S)return;for(const k in S.eq||{})fixItem(S.eq[k]);(S.inv||[]).forEach(fixItem);(S.chest||[]).forEach(fixItem)}
 function EQ(){const t={atk:0,def:0,hp:0,reg:0,en:0,crit:0},e=Object.values(S.eq||{}).filter(Boolean);
  for(const it of e){const m=1+.1*it.up;for(const k in it.b)t[k]+=it.b[k]*m;for(const rk of it.rn||[])t[rStat(rk)]+=rVal(rk)}
  if(e.length===10)t.def+=3;const sb=setBonus();if(sb)for(const k in t)t[k]*=1+sb.pct;for(const k in t)t[k]=Math.round(t[k]);return t}
@@ -260,6 +266,7 @@ function fixNum(){
  S.pt=S.pt||{};if(S.pt.b==null)S.pt.b=['s','m','l','e'].reduce((t,k)=>t+Math.max(0,f(S.pt[k],0)),0);['s','m','l','e'].forEach(k=>delete S.pt[k]);S.pt.b=Math.max(0,f(S.pt.b,0));S.bcd=Math.max(0,f(S.bcd,0));S.dnext=Math.max(0,f(S.dnext,0));
  S.hp=f(S.hp,NaN);S.en=f(S.en,NaN);if(isNaN(S.hp))S.hp=maxHp();if(isNaN(S.en))S.en=maxEn()}
 function norm(){
+ try{fixAll()}catch(e){}
  if(S.rating==null){S.rating=1000;S.clan=''}if(!S.eq)migEq();
  if(S.st.hp==null){const o=S.st;S.st={str:o.str,hp:o.end,arm:Math.max(1,o.agi),reg:Math.max(1,o.int),en:5}}
  S.wclaim=S.wclaim||[];S.wp=S.wp||0;S.war=S.war||'';S.applied=S.applied||[];if(!S.pt)S.pt={b:S.pot|0};S.av=S.av||{s:0,c:0};fixNum();rollSeason()}
@@ -685,9 +692,9 @@ function mkList(){const it=MODIT;if(!it||!DB||!S.inv.includes(it))return;const e
  DB.collection('market').doc(id).set({seller:UID,sname:S.name,item:JSON.parse(JSON.stringify(it)),price:pr,au:true,ts:Date.now(),sold:false}).then(()=>{MKMSG=`«${it.name}» выставлен на рынок за ${pr} зол.`;log(MKMSG,'sys');render()}).catch(()=>{S.inv.push(it);save();log('Не удалось выставить вещь на рынок.','sys');render()});render()}
 function mkBuy(id){const m=MK.find(x=>x.id===id);if(!m||m.seller===UID||m.sold||(S[mkC(m)]|0)<m.price)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}
  const ref=DB.collection('market').doc(id);ref.get().then(sn=>{if(!sn.exists||sn.data().sold){MKMSG='Эту вещь уже купили.';return render()}
-  return ref.update({sold:true,buyer:UID,bname:S.name}).then(()=>{if((S[mkC(m)]|0)<m.price){ref.update({sold:false,buyer:null}).catch(()=>{});return}S[mkC(m)]-=m.price;const it=JSON.parse(JSON.stringify(m.item));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} ${mkU(m)}`;log(MKMSG,'sys');save();render()})}).catch(()=>{MKMSG='Покупка не удалась.';render()})}
+  return ref.update({sold:true,buyer:UID,bname:S.name}).then(()=>{if((S[mkC(m)]|0)<m.price){ref.update({sold:false,buyer:null}).catch(()=>{});return}S[mkC(m)]-=m.price;const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} ${mkU(m)}`;log(MKMSG,'sys');save();render()})}).catch(()=>{MKMSG='Покупка не удалась.';render()})}
 function mkCancel(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||m.sold)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон, освободи место.','sys');return render()}
- const ref=DB.collection('market').doc(id);ref.get().then(sn=>{if(!sn.exists)return;if(sn.data().sold){MKMSG='Вещь уже купили, забери выручку.';return render()}return ref.delete().then(()=>{const it=JSON.parse(JSON.stringify(m.item));it.uid=uid();S.inv.push(it);MKMSG=`«${it.name}» снят с продажи и вернулся в рюкзак.`;save();render()})}).catch(()=>{})}
+ const ref=DB.collection('market').doc(id);ref.get().then(sn=>{if(!sn.exists)return;if(sn.data().sold){MKMSG='Вещь уже купили, забери выручку.';return render()}return ref.delete().then(()=>{const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();S.inv.push(it);MKMSG=`«${it.name}» снят с продажи и вернулся в рюкзак.`;save();render()})}).catch(()=>{})}
 function mkCollect(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||!m.sold)return;const g=Math.floor(m.price*(1-MKFEE));DB.collection('market').doc(id).delete().then(()=>{S[mkC(m)]=(S[mkC(m)]|0)+g;MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: +${g} ${mkU(m)} (сбор рынка ${Math.round(MKFEE*100)}%).`;log(MKMSG,'sys');save();render()}).catch(()=>{})}
 function marketView(){if(!DB)return'<div class="panel"><p>Рынок работает только с подключённой базой данных.</p></div>';
  const mine=MK.filter(m=>m.seller===UID),act=MK.filter(m=>!m.sold&&m.seller!==UID).sort((a,b)=>b.ts-a.ts);
