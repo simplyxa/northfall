@@ -905,12 +905,12 @@ function dmView(){const f=DMW&&frOf(DMW);if(!f||f.st!=='ok')return'<div class="p
  <button class="b alt" data-fx="${DMW}">Удалить из друзей</button>`}
 
 // ===== Обменник: 100 серебра = 1 золото =====
-const XR=100;let XMSG='';
-function xchg(dir,n){n=Math.max(1,n|0);if(dir==='buy'){if(S.gold<n*XR)return;S.gold-=n*XR;S.au=(S.au|0)+n;XMSG=`Обмен: −${n*XR} серебра, +${n} золота.`}else{if((S.au|0)<n)return;S.au-=n;S.gold+=n*XR;XMSG=`Обмен: −${n} золота, +${n*XR} серебра.`}log(XMSG,'sys');save();render()}
-function bankView(){const bt=(d,n)=>{const ok=d==='buy'?S.gold>=n*XR:(S.au|0)>=n;return`<button class="b ${d==='buy'?'':'alt'}" data-xc="${d}:${n}" ${ok?'':'disabled'} style="margin:0">${d==='buy'?`${n} зол. за ${(n*XR).toLocaleString('ru-RU')} сер.`:`${n} зол. → ${(n*XR).toLocaleString('ru-RU')} сер.`}</button>`};
+const XR=100,XLIM=5;let XMSG='';const xLeft=()=>{const d=DAY();return S.xd===d?Math.max(0,XLIM-(S.xn|0)):XLIM};
+function xchg(dir,n){n=Math.max(1,n|0);if(dir==='buy'){if(S.gold<n*XR||n>xLeft())return;const d=DAY();if(S.xd!==d){S.xd=d;S.xn=0}S.xn=(S.xn|0)+n;S.gold-=n*XR;S.au=(S.au|0)+n;XMSG=`Обмен: −${n*XR} серебра, +${n} золота.`}else{if((S.au|0)<n)return;S.au-=n;S.gold+=n*XR;XMSG=`Обмен: −${n} золота, +${n*XR} серебра.`}log(XMSG,'sys');save();render()}
+function bankView(){const bt=(d,n)=>{const ok=d==='buy'?S.gold>=n*XR&&n<=xLeft():(S.au|0)>=n;return`<button class="b ${d==='buy'?'':'alt'}" data-xc="${d}:${n}" ${ok?'':'disabled'} style="margin:0">${d==='buy'?`${n} зол. за ${(n*XR).toLocaleString('ru-RU')} сер.`:`${n} зол. → ${(n*XR).toLocaleString('ru-RU')} сер.`}</button>`};
  return`<div class="panel"><h3>Обменник</h3><p style="margin:0;color:var(--mute);font-size:15px">Курс постоянный: <b>1 золото = ${XR} серебра</b>. Серебро добывается в боях, заданиях и подземельях. Золото нужно для питомцев, похода наёмника и рынка.</p><p style="margin:8px 0 0;font-size:18px"><span class="sv">${S.gold.toLocaleString('ru-RU')} сер.</span> · <span class="g">${(S.au|0).toLocaleString('ru-RU')} зол.</span></p></div>`+
  (XMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(XMSG)}</p></div>`:'')+
- `<div class="panel"><h3>Купить золото</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,10,50,100].map(n=>bt('buy',n)).join('')}</div></div>`+
+ `<div class="panel"><h3>Купить золото</h3><p style="margin:0 0 8px;color:var(--mute);font-size:14px">Не больше ${XLIM} золота в день. Сегодня осталось: <b class="g">${xLeft()}</b>.${xLeft()?'':' Новый лимит завтра.'}</p><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,2,3,5].map(n=>bt('buy',n)).join('')}</div></div>`+
  `<div class="panel"><h3>Продать золото</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,10,50,100].map(n=>bt('sell',n)).join('')}</div></div>`}
 
 // ===== Лагерь: сказитель и обустройство =====
