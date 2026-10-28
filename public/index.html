@@ -281,7 +281,7 @@ function delHero(){clearTimeout(syncT);try{localStorage.removeItem(KEY)}catch(e)
 function lvlCheck(){if(S.lvl>=LVMAX){S.lvl=LVMAX;S.xp=0;return}while(S.lvl<LVMAX&&S.xp>=need()){S.xp-=need();S.lvl++;S.pts+=3;S.hp=maxHp();log(`Новый уровень: ${S.lvl}!`,'sys')}}
 function applyAdmin(){
  if(!S||!UID)return;const m=ADMD[UID]||{},g=ADMD.global||{};BAN=!!m.banned;let ch=false;
- for(const x of m.gifts||[]){if(S.applied.includes(x.id))continue;S.applied.push(x.id);S.gold=Math.max(0,S.gold+(x.gold||0));S.au=Math.max(0,(S.au|0)+(x.au||0));if(x.runes&&typeof x.runes==='object')for(const k in x.runes)if(/^(str|hp|arm|reg|en)[0-4]$/.test(k)&&x.runes[k]>0)addRune(k,Math.min(50,x.runes[k]|0));S.xp+=Math.max(0,x.xp||0);lvlCheck();
+ for(const x of m.gifts||[]){if(S.applied.includes(x.id))continue;S.applied.push(x.id);S.gold=Math.max(0,S.gold+(x.gold||0));GOLD.gift(x);if(x.runes&&typeof x.runes==='object')for(const k in x.runes)if(/^(str|hp|arm|reg|en)[0-4]$/.test(k)&&x.runes[k]>0)addRune(k,Math.min(50,x.runes[k]|0));S.xp+=Math.max(0,x.xp||0);lvlCheck();
   const dl=Math.trunc(+x.lv)||0;if(dl){const l0=S.lvl;S.lvl=Math.max(1,Math.min(LVMAX,S.lvl+dl));const d=S.lvl-l0;if(d>0)S.pts+=3*d;else S.pts=Math.max(0,S.pts+3*d);S.xp=0;S.hp=maxHp();clampV()}
   log(`Подарок от администрации: ${x.gold?x.gold+' сер. ':''}${x.au?x.au+' зол. ':''}${x.xp?x.xp+' опыта. ':''}${dl?'уровень '+(dl>0?'+':'')+dl+' (теперь '+S.lvl+'). ':''}${x.text||''}`,'sys');ch=true}
  if(g.seasonReset&&S.sres!==g.seasonReset){S.sres=g.seasonReset;S.srat=0;ch=true}
@@ -451,9 +451,16 @@ function mastCan(){if(!S)return'';const all=[...Object.values(S.eq||{}).filter(B
  const smith=all.some(it=>!upMax(it)&&upMat(it)&&(S.au|0)>=upGold(it));
  const stones=Object.values(S.runes||{}).some(n=>n>0)&&all.some(it=>(it.rn||[]).length<sockOf(it)&&Object.entries(S.runes||{}).some(([k,n])=>n>0&&stFits(it,k)));
  return smith&&stones?'можно усилить вещь и вставить камень':smith?'можно усилить вещь':stones?'можно вставить камень':''}
+// ===== Золото: операции через GOLD (онлайн-версия переносит их на сервер) =====
+const GOLD={
+ pay(n,why,x,ok){if((S.au|0)<n){log('Не хватает золота.','sys');return render()}S.au-=n;ok()},
+ xbuy(n,ok){S.au=(S.au|0)+n;ok()},
+ gift(x){S.au=Math.max(0,(S.au|0)+(x.au||0))},
+ adminGift(to,n){}
+};
 function doUp(key){const it=key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.find(x=>x.uid===key);if(!it||upMax(it))return;const g=upGold(it),mat=upMat(it);if(!mat||(S.au|0)<g)return;
- S.au-=g;S.inv=S.inv.filter(x=>x!==mat);for(const k of mat.rn||[])addRune(k);ev('upa');scaleTo(it,it.lv+5);it.up=(it.up|0)+1;it.fx=3;
- if(it.up>=5){S.cnt=S.cnt||{};S.cnt.u5=1;achCheck()}log(`Усиление: ${it.name} +${it.up}, теперь ${it.lv} ур.${it.up<=5?' Новое гнездо для камня!':''} (−${g} зол., −«${mat.name}»)`,'hit');save();render()}
+ GOLD.pay(g,'up',{n:it.name},()=>{if(!S.inv.includes(mat))return render();S.inv=S.inv.filter(x=>x!==mat);for(const k of mat.rn||[])addRune(k);ev('upa');scaleTo(it,it.lv+5);it.up=(it.up|0)+1;it.fx=3;
+ if(it.up>=5){S.cnt=S.cnt||{};S.cnt.u5=1;achCheck()}log(`Усиление: ${it.name} +${it.up}, теперь ${it.lv} ур.${it.up<=5?' Новое гнездо для камня!':''} (−${g} зол., −«${mat.name}»)`,'hit');save();render()})}
 function doUpOld(key){const it=key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.find(x=>x.uid===key);if(!it||it.up>=5)return;const c=upCost(it);if((S.iron|0)<c)return;S.iron-=c;
  ev('upa');if(Math.random()*100<UPC[it.up]){it.up++;if(it.up>=5){S.cnt=S.cnt||{};S.cnt.u5=1;achCheck()}log(`Усиление удалось: ${it.name} +${it.up}.`,'hit')}else log(`Усиление не удалось: ${it.name}. Железо потеряно.`,'dmg');save();render()}
 let LASTDROP=null;
@@ -776,7 +783,7 @@ const huntSil=()=>1+Math.floor(Math.random()*10);
 const EXZ={easy:['Опушка',30],mid:['Глухой лес',20],hard:['Чаща',12]},EXD=[[2,'2 часа',1],[8,'8 часов',3.5],[24,'24 часа',9]],EXEFF=.5;
 const exPrice=(h)=>Math.max(1,Math.ceil((80+S.lvl*25)*EXD.find(x=>x[0]===h)[2]/100));
 let EXREP=null;
-function exBuy(z,h){if(S.ex&&S.ex.end>Date.now())return;const c=exPrice(h);if((S.au|0)<c||!EXZ[z])return;S.au-=c;const t=Date.now();S.ex={z,start:t,end:t+h*3600000,last:t,acc:0,k:0,xp:0,gold:0,loot:[],iron:0};log(`Наёмник ушёл в поход: ${EXZ[z][0]} на ${EXD.find(x=>x[0]===h)[1]} (−${c} золота).`,'sys');save();render()}
+function exBuy(z,h){if(S.ex&&S.ex.end>Date.now())return;const c=exPrice(h);if((S.au|0)<c||!EXZ[z])return;GOLD.pay(c,'exped',{z,h},()=>{const t=Date.now();S.ex={z,start:t,end:t+h*3600000,last:t,acc:0,k:0,xp:0,gold:0,loot:[],iron:0};log(`Наёмник ушёл в поход: ${EXZ[z][0]} на ${EXD.find(x=>x[0]===h)[1]} (−${c} золота).`,'sys');save();render()})}
 function exSettle(manual){const X=S&&S.ex;if(!X||fight)return;const now=Math.min(Date.now(),X.end),dt=Math.max(0,now-X.last);if(dt<60000&&now<X.end&&!manual)return;
  X.last=now;X.acc=(X.acc||0)+dt/3600000*EXZ[X.z][1];const k=Math.floor(X.acc);X.acc-=k;
  if(k>0){const m={easy:HM.easy,mid:HM.mid,hard:HM.hard}[X.z],L=Math.max(1,S.lvl+(X.z==='hard'?1:0));const e=mkEnemy('',L,m);
@@ -842,7 +849,7 @@ const PETS={wolf:{n:'Волчонок Фенрира',ic:'🐺',lv:3,p:4,dm:.35,
  lynx:{n:'Дракончик Нидхёгг',ic:'🐉',lv:25,p:35,dm:.28,d:'Детёныш змея, грызущего корни Иггдрасиля. Чует серебро: добыча богаче.',pas:L=>`+${5+L}% опыта и серебра с боёв`}},PMAX=20,pNeed=L=>Math.round(25*Math.pow(L,1.5));
 const petA=()=>S&&S.pet&&S.pets&&S.pets[S.pet]?{k:S.pet,...PETS[S.pet],...S.pets[S.pet]}:null;
 const petAtk=()=>{const p=petA();return p&&p.k==='wolf'?2+p.lvl:0},petCrit=()=>{const p=petA();return p&&p.k==='raven'?3+Math.floor(p.lvl/2):0},petDef=()=>{const p=petA();return p&&p.k==='bear'?Math.min(25,8+p.lvl)/100:0},petLoot=()=>{const p=petA();return p&&p.k==='lynx'?(5+p.lvl)/100:0};
-function petBuy(k){const P=PETS[k];S.pets=S.pets||{};if(!P||S.pets[k]||S.lvl<P.lv||S.au<P.p)return;S.au-=P.p;S.pets[k]={lvl:1,xp:0};if(!S.pet)S.pet=k;log(`Новый питомец: ${P.n}!`,'hit');save();render()}
+function petBuy(k){const P=PETS[k];S.pets=S.pets||{};if(!P||S.pets[k]||S.lvl<P.lv||S.au<P.p)return;GOLD.pay(P.p,'pet',{k},()=>{if(S.pets[k])return;S.pets[k]={lvl:1,xp:0};if(!S.pet)S.pet=k;log(`Новый питомец: ${P.n}!`,'hit');save();render()})}
 function petXp(n){const p=S.pet&&S.pets&&S.pets[S.pet];if(!p||p.lvl>=PMAX)return;if(Math.random()<.15*cbl('pen'))n*=2;p.xp+=n;while(p.lvl<PMAX&&p.xp>=pNeed(p.lvl)){p.xp-=pNeed(p.lvl);p.lvl++;log(`${PETS[S.pet].n} вырос до ${p.lvl} уровня!`,'hit')}}
 function petTick(dt){const p=petA(),e=fight.e;if(!p||!e||e.hp<=0)return false;fight.pt=(fight.pt||0)+dt/6;if(fight.pt<1)return false;fight.pt=0;
  let d=Math.max(1,Math.round(atk()*p.dm*(1+p.lvl*.05)*rnd(.85,1.15)-e.def*.3));if(e.tr==='armor')d=Math.round(d*.5);e.hp=Math.max(0,e.hp-d);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${p.n}: ${d} урона.`,'hit');return true}
@@ -925,7 +932,7 @@ function dmView(){const f=DMW&&frOf(DMW);if(!f||f.st!=='ok')return'<div class="p
 // ===== Обменник: 100 серебра = 1 золото =====
 const IRP=[[10,100],[50,450],[200,1600]],STP=[1,3,6,12,25];
 const XR=100,XLIM=5;let XMSG='';const xLeft=()=>{const d=DAY();return S.xd===d?Math.max(0,XLIM-(S.xn|0)):XLIM};
-function xchg(dir,n){n=Math.max(1,n|0);if(dir==='buy'){if(S.gold<n*XR||n>xLeft())return;const d=DAY();if(S.xd!==d){S.xd=d;S.xn=0}S.xn=(S.xn|0)+n;S.gold-=n*XR;S.au=(S.au|0)+n;XMSG=`Обмен: −${n*XR} серебра, +${n} золота.`}else{if((S.au|0)<n)return;S.au-=n;S.gold+=n*XR;XMSG=`Обмен: −${n} золота, +${n*XR} серебра.`}log(XMSG,'sys');save();render()}
+function xchg(dir,n){n=Math.max(1,n|0);if(dir==='buy'){if(S.gold<n*XR||n>xLeft())return;GOLD.xbuy(n,()=>{const d=DAY();if(S.xd!==d){S.xd=d;S.xn=0}S.xn=(S.xn|0)+n;S.gold-=n*XR;XMSG=`Обмен: −${n*XR} серебра, +${n} золота.`;log(XMSG,'sys');save();render()})}else{if((S.au|0)<n)return;GOLD.pay(n,'xsell',{},()=>{S.gold+=n*XR;XMSG=`Обмен: −${n} золота, +${n*XR} серебра.`;log(XMSG,'sys');save();render()})}}
 function bankView(){const bt=(d,n)=>{const ok=d==='buy'?S.gold>=n*XR&&n<=xLeft():(S.au|0)>=n;return`<button class="b ${d==='buy'?'':'alt'}" data-xc="${d}:${n}" ${ok?'':'disabled'} style="margin:0">${d==='buy'?`${n} зол. за ${(n*XR).toLocaleString('ru-RU')} сер.`:`${n} зол. → ${(n*XR).toLocaleString('ru-RU')} сер.`}</button>`};
  return`<div class="panel"><h3>Обменник</h3><p style="margin:0;color:var(--mute);font-size:15px">Курс постоянный: <b>1 золото = ${XR} серебра</b>. Серебро добывается в боях, заданиях и подземельях. Золото нужно для питомцев, похода наёмника и рынка.</p><p style="margin:8px 0 0;font-size:18px"><span class="sv">${S.gold.toLocaleString('ru-RU')} сер.</span> · <span class="g">${(S.au|0).toLocaleString('ru-RU')} зол.</span></p></div>`+
  (XMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(XMSG)}</p></div>`:'')+
@@ -1003,7 +1010,7 @@ const GPACK=[['gold_20',20,'0,99 $',''],['gold_110',110,'4,99 $','+10%'],['gold_
 let PAYUN=null,PAYFOR=null,PAYB=false,PAYMSG='',PAYLOG=null;
 function paySub(){if(!DB||!UID||!S||PAYFOR===UID)return;if(PAYUN)PAYUN();PAYFOR=UID;
  PAYUN=DB.collection('pay').doc(UID).collection('orders').limit(300).onSnapshot(sn=>{if(!S)return;S.payd=S.payd||[];let got=0;
-  sn.docs.forEach(d=>{const o=d.data();if(o.claimed||S.payd.includes(d.id)||!(o.gold>0))return;S.payd.push(d.id);S.au=(S.au|0)+o.gold;got+=o.gold;d.ref.update({claimed:true}).catch(()=>{})});
+  sn.docs.forEach(d=>{const o=d.data();if(o.claimed||S.payd.includes(d.id)||!(o.gold>0))return;S.payd.push(d.id);if(SG!==true)S.au=(S.au|0)+o.gold;got+=o.gold;d.ref.update({claimed:true}).catch(()=>{})});
   if(got){log(`Покупка зачислена: +${got} зол.`,'hit');save();popup('💰 Золото зачислено',`<p>+${kf(got)} золота уже в твоём кошельке.</p><p>Спасибо за поддержку Northfall!</p>`);ui();tbPaint()}},()=>{})}
 async function payBuy(sku){if(PAYB||!FBA||!FBA.currentUser||!S)return;PAYB=true;PAYMSG='';save();render();
  try{const t=await FBA.currentUser.getIdToken();const r=await fetch('/.netlify/functions/xsolla-token',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({sku,name:S.name})});
@@ -1042,10 +1049,12 @@ const refLink=()=>'https://playnorthfall.online/?ref='+encodeURIComponent(UID||'
 function refReg(id){let r='';try{r=localStorage.getItem('nf_ref')||''}catch(e){}if(!r||r===id||!DB||!S)return;S.ref=r;save();
  DB.collection('refs').doc(r).collection('got').doc(id).set({name:S.name,ts:Date.now(),done:false}).then(()=>{try{localStorage.removeItem('nf_ref')}catch(e){}}).catch(()=>{})}
 function refCheck(){if(!DB||!S||!S.ref||S.refDone||S.lvl<10||refCheck.busy)return;refCheck.busy=true;
+ if(SG===true){goldApi({a:'ref'}).then(j=>{S.refDone=true;S.au=j.au|0;log(`Награда за приглашение: +${REFG} золота!`,'hit');save();popup('🎁 Награда за 10 уровень',`Тебя пригласил друг, и ты дошёл до 10 уровня: <b>+${REFG} золота</b>. Твой друг тоже получил награду.`);tbPaint()}).catch(e=>{if(/Нет награды/.test(e.message||''))S.refDone=true}).finally(()=>{refCheck.busy=false});return}
+ if(SG===null){refCheck.busy=false;return}
  DB.collection('refs').doc(S.ref).collection('got').doc(UID).update({done:true,doneTs:Date.now()}).then(()=>{S.refDone=true;S.au=(S.au|0)+REFG;log(`Награда за приглашение: +${REFG} золота!`,'hit');save();popup('🎁 Награда за 10 уровень',`Тебя пригласил друг, и ты дошёл до 10 уровня: <b>+${REFG} золота</b>. Твой друг тоже получит награду.`);tbPaint()}).catch(()=>{}).finally(()=>{refCheck.busy=false})}
 function refSub(){if(!DB||!UID||!S||RFFOR===UID)return;if(RFUN)RFUN();RFFOR=UID;const me=UID;
  RFUN=DB.collection('refs').doc(UID).collection('got').limit(200).onSnapshot(sn=>{if(!S||UID!==me)return;RF=sn.docs.map(d=>({id:d.id,...d.data()}));S.refc=S.refc||[];let got=0;
-  RF.forEach(f=>{if(!f.done||f.claimed||S.refc.includes(f.id)||S.refc.length>=REFMAX)return;S.refc.push(f.id);S.au=(S.au|0)+REFG;got+=REFG;DB.collection('refs').doc(UID).collection('got').doc(f.id).update({claimed:true}).catch(()=>{})});
+  RF.forEach(f=>{if(!f.done||f.claimed||S.refc.includes(f.id)||S.refc.length>=REFMAX)return;S.refc.push(f.id);if(SG!==true&&!f.paid)S.au=(S.au|0)+REFG;got+=REFG;DB.collection('refs').doc(UID).collection('got').doc(f.id).update({claimed:true}).catch(()=>{})});
   if(got){log(`Друзья дошли до 10 уровня: +${got} золота.`,'hit');save();popup('🎁 Награда за друга',`Приглашённый тобой воин дошёл до 10 уровня: <b>+${got} золота</b>.`);tbPaint()}if(tab==='invite'&&!fight)render()},()=>{})}
 async function refShare(){const url=refLink(),t='Присоединяйся ко мне в Northfall: Barbarians — браузерной RPG о варварах Севера!';
  try{if(navigator.share){await navigator.share({title:'Northfall: Barbarians',text:t,url});return}}catch(e){if(e&&e.name==='AbortError')return}
@@ -1244,7 +1253,7 @@ async function hashPw(pw,saltB64){
  return{salt:btoa(String.fromCharCode(...salt)),h:btoa(String.fromCharCode(...new Uint8Array(bits)))}}
 const LOGIN_RE=/^[a-z0-9_]{3,16}$/;
 async function enterAccount(id){
- UID=id;PAYFOR=null;if(PAYUN){PAYUN();PAYUN=null}RFFOR=null;RF=[];if(RFUN){RFUN();RFUN=null}try{if(/[?&]paid=1/.test(location.search))history.replaceState(null,'',location.pathname)}catch(e){}ADM=ADMINS.includes(id);
+ UID=id;PAYFOR=null;if(PAYUN){PAYUN();PAYUN=null}RFFOR=null;RF=[];if(RFUN){RFUN();RFUN=null}WFOR=null;WTRY=0;if(WUN){WUN();WUN=null}try{if(/[?&]paid=1/.test(location.search))history.replaceState(null,'',location.pathname)}catch(e){}ADM=ADMINS.includes(id);
  let cloud=null;try{const sn=await DB.collection('saves').doc(id).get();if(sn.exists)cloud=sn.data()}catch(e){}
  const loc=LOC&&LOC.acc===id?LOC:null;let hero=cloud;if(loc&&(!hero||(loc.ts||0)>(hero.ts||0)))hero=loc;
  if(hero){hero.acc=id;enter(hero)}else{scr='newhero';render()}seedNews()}
@@ -1306,7 +1315,7 @@ function admDo(a){
  else if(a==='annclr')w('global',{...g,msg:''});
  else if(a==='sres')w('global',{...g,seasonReset:Date.now()});
  else if(adm.sel){const d=ADMD[adm.sel]||{};
-  if(a==='gift'){const x={id:'g'+Date.now().toString(36),gold:+($('#ag').value)||0,au:Math.trunc(+($('#agu').value))||0,lv:Math.trunc(+($('#ax').value))||0,text:($('#an').value||'').slice(0,120)};if(!x.gold&&!x.au&&!x.lv&&!x.text){popup('Пустой подарок','Укажи серебро, изменение уровня или сообщение.',true);return}const pn=(PL.find(p=>p.id===adm.sel)||{}).name||adm.sel;w(adm.sel,{...d,gifts:[...(d.gifts||[]).slice(-9),x]}).then(ok=>{if(!ok)return;['ag','ax','an'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});popup('🎁 Подарок отправлен',`Игрок <b>${esc(pn)}</b> получит его при следующем входе в игру.<br>${[x.gold?`Серебро: <b>${x.gold>0?'+':''}${x.gold}</b>`:'',x.au?`Золото: <b>${x.au>0?'+':''}${x.au}</b>`:'',x.lv?`Уровень: <b>${x.lv>0?'+':''}${x.lv}</b>`:'',x.text?`Сообщение: «${esc(x.text)}»`:''].filter(Boolean).join('<br>')}`)})}
+  if(a==='gift'){const x={id:'g'+Date.now().toString(36),gold:+($('#ag').value)||0,au:Math.trunc(+($('#agu').value))||0,lv:Math.trunc(+($('#ax').value))||0,text:($('#an').value||'').slice(0,120)};if(!x.gold&&!x.au&&!x.lv&&!x.text){popup('Пустой подарок','Укажи серебро, изменение уровня или сообщение.',true);return}const pn=(PL.find(p=>p.id===adm.sel)||{}).name||adm.sel;w(adm.sel,{...d,gifts:[...(d.gifts||[]).slice(-9),x]}).then(ok=>{if(!ok)return;if(x.au)GOLD.adminGift(adm.sel,x.au,x.id);['ag','ax','an'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});popup('🎁 Подарок отправлен',`Игрок <b>${esc(pn)}</b> получит его при следующем входе в игру.<br>${[x.gold?`Серебро: <b>${x.gold>0?'+':''}${x.gold}</b>`:'',x.au?`Золото: <b>${x.au>0?'+':''}${x.au}</b>`:'',x.lv?`Уровень: <b>${x.lv>0?'+':''}${x.lv}</b>`:'',x.text?`Сообщение: «${esc(x.text)}»`:''].filter(Boolean).join('<br>')}`)})}
   else if(a==='ban')w(adm.sel,{...d,banned:!d.banned})}}
 const IC={camp:'<path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 2 1 2 0-3 0-5 1-7z"/>',hunt:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',arena:'<path d="M5 5l14 14M19 5L5 19M5 5h4M5 5v4M19 5h-4M19 5v4"/>',clan:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 14.5c3-.5 6 1.5 6 5.5"/>',top:'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 20h8"/>',forge:'<path d="M14 4l6 6-3 3-6-6zM12 9l-8 8 3 3 8-8"/>',shop:'<circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.500 9.500q2.500-2 5 0M9.500 14.500q2.500 2 5 0"/>',bag:'<path d="M8 8a4 4 0 0 1 8 0M6 8h12v12H6zM9 14h6"/>',hero:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',admin:'<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/>'};
 const MENU=[['camp','Лагерь','Отдых у костра и восстановление сил','--gold'],['hunt','Охота','Звери и разбойники, 3 энергии','--moss'],['arena','Арена','Бои с воинами кланов за рейтинг','--blood'],['clan','Клан','Чат, участники и войны','--gold'],['top','Рейтинг','Лучшие воины и кланы сезона','--moss'],['shop','Магазин','Снаряжение и бутылки','--gold'],['forge','Кузница','Усиление снаряжения за железо','--blood'],['hero','Герой','Статы и очки умений','--moss']];
@@ -1354,7 +1363,7 @@ function menuView(){return`<div class="menu"><div class="mh">Лагерь</div>$
 function bnav(){const it=tab==='home'?[['hero','Герой'],['clan','Клан']]:[['home','Главная'],['hero','Герой'],['clan','Клан']];if(ADM)it.push(['admin','Админка']);
  return`<nav class="bnav" aria-label="Основное меню">${it.map(([k,t])=>`<button class="${tab===k?'on':''}" data-t="${k}"><span style="position:relative;line-height:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k==='home'?'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>':IC[k]}</svg>${k==='hero'&&S.pts?`<i class="bdg">${S.pts}</i>`:''}</span>${t}</button>`).join('')}</nav>`}
 function render(){
- IREG=[];paySub();refSub();refCheck();frSub();gcSub();dmSub();chatSub();clogSub();if(tab==='forum')ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
+ IREG=[];paySub();walletSub();refSub();refCheck();frSub();gcSub();dmSub();chatSub();clogSub();if(tab==='forum')ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
  const keep={};['lg','pw','pw2','nm','ftt','ftb','fpb','dmt','gct'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
@@ -1380,7 +1389,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.of)return setOff(d.of);if(d.rq)return reqDo(d.rq,true);if(d.rn)return reqDo(d.rn,false);
  if(d.fs){FS=d.fs;FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(d.ft){FTOP=d.ft;FMSG='';render();window.scrollTo(0,0);return}if(d.fb){if(d.fb==='root'){FS=null;FTOP=null}else FTOP=null;FMSG='';return render()}if(d.fm)return fMod(d.fm);if(d.fd)return fMod('delpost',d.fd);
  if(d.fr)return frAdd(d.fr);if(d.fa)return frAcc(d.fa);if(d.fx)return frDel(d.fx);if(d.dm){DMW=d.dm;tab='dm';render();const b=$('#dmbox');if(b)b.scrollTop=b.scrollHeight;return}
- if(d.sp){shp=d.sp;return render()}if(d.ss!=null){sstab=+d.ss;return render()}if(d.ir){const n=+d.ir,c=(IRP.find(x=>x[0]===n)||[])[1];if(c&&S.gold>=c){S.gold-=c;S.iron=(S.iron|0)+n;log(`Куплено: ${n} железа (−${c} серебра).`,'sys');save()}return render()}if(d.rb){const k=d.rb,c=STP[rR(k)];if(RUNE[rT(k)]&&(S.au|0)>=c){S.au-=c;addRune(k);log(`Куплен ${rName(k)} (−${c} зол.).`,'sys');save()}return render()}if(d.gd)return gcDel(d.gd);if(d.sg!=null)return sgAnswer(+d.sg);if(d.cb)return campUp(d.cb);if(d.tb){tab='hero';htab=d.tb;render();window.scrollTo(0,0);return}if(d.xc){const [dd,nn]=d.xc.split(':');return xchg(dd,+nn)}if(d.gb)return payBuy(d.gb);if(d.pbuy)return petBuy(d.pbuy);if(d.pt){S.pet=d.pt==='-'?'':d.pt;save();return render()}
+ if(d.sp){shp=d.sp;return render()}if(d.ss!=null){sstab=+d.ss;return render()}if(d.ir){const n=+d.ir,c=(IRP.find(x=>x[0]===n)||[])[1];if(c&&S.gold>=c){S.gold-=c;S.iron=(S.iron|0)+n;log(`Куплено: ${n} железа (−${c} серебра).`,'sys');save()}return render()}if(d.rb){const k=d.rb,c=STP[rR(k)];if(RUNE[rT(k)]&&(S.au|0)>=c){GOLD.pay(c,'stone',{k},()=>{addRune(k);log(`Куплен ${rName(k)} (−${c} зол.).`,'sys');save();render()});return}return render()}if(d.gd)return gcDel(d.gd);if(d.sg!=null)return sgAnswer(+d.sg);if(d.cb)return campUp(d.cb);if(d.tb){tab='hero';htab=d.tb;render();window.scrollTo(0,0);return}if(d.xc){const [dd,nn]=d.xc.split(':');return xchg(dd,+nn)}if(d.gb)return payBuy(d.gb);if(d.pbuy)return petBuy(d.pbuy);if(d.pt){S.pet=d.pt==='-'?'':d.pt;save();return render()}
  if(d.tip){S.tipsSeen=[...(S.tipsSeen||[]),d.tip];save();return render()}
  if(d.ex){const [z,hh]=d.ex.split(':');return exBuy(z,+hh)}
  if(d.mb)return mkBuy(d.mb);if(d.mx)return mkCancel(d.mx);if(d.mc)return mkCollect(d.mc);
@@ -1430,6 +1439,30 @@ document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.targ
 load();render();initOnline();
 setInterval(fightTick,100);
 setInterval(()=>{if(S){const b=S.en,h=S.hp;if(S.ex){const k0=S.ex.k;exSettle();exBoss();if(!S.ex||S.ex.k!==k0){if(!fight)render()}}regen();if(S.en!==b||S.hp!==h){save();if(!fight)render()}}},5000);
+
+// ===== Серверное золото (онлайн-версия) =====
+let SG=null,GBUSY=false,WUN=null,WFOR=null,WTRY=0;
+async function goldApi(q){if(!FBA||!FBA.currentUser)throw new Error('Войди в игру заново');const t=await FBA.currentUser.getIdToken();
+ const r=await fetch('/.netlify/functions/gold',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify(q)});
+ const j=await r.json().catch(()=>({}));if(r.status===503&&j.error==='not_configured'){SG=false;const e=new Error('nc');e.nc=1;throw e}
+ if(r.status===404&&!j.error){SG=false;const e=new Error('nc');e.nc=1;throw e}
+ if(!r.ok)throw new Error(j.error||('ошибка '+r.status));return j}
+function walletSub(){if(!DB||!UID||!S||WFOR===UID||SG===false)return;if(Date.now()-WTRY<30000)return;WTRY=Date.now();const me=UID;
+ goldApi({a:'get'}).then(j=>{if(UID!==me)return;SG=true;WFOR=me;S.au=j.au|0;save();tbPaint();ui();if(WUN)WUN();
+  WUN=DB.collection('wallet').doc(me).onSnapshot(sn=>{if(UID!==me||!sn.exists)return;S.au=sn.data().au|0;tbPaint();ui()},()=>{})}).catch(e=>{})}
+const GL0={pay:GOLD.pay,xbuy:GOLD.xbuy,gift:GOLD.gift};
+GOLD.pay=(n,why,x,ok)=>{if(SG!==true)return GL0.pay(n,why,x,ok);if((S.au|0)<n){log('Не хватает золота.','sys');return render()}if(GBUSY)return;GBUSY=true;
+ goldApi({a:'pay',n,why}).then(j=>{S.au=j.au|0;ok()}).catch(e=>{popup('Не получилось',esc(e.message||'Ошибка сервера'),true)}).finally(()=>{GBUSY=false;tbPaint()})};
+GOLD.xbuy=(n,ok)=>{if(SG!==true)return GL0.xbuy(n,ok);if(GBUSY)return;GBUSY=true;
+ goldApi({a:'xbuy',n}).then(j=>{S.au=j.au|0;ok()}).catch(e=>{popup('Обмен не выполнен',esc(e.message||'Ошибка сервера'),true)}).finally(()=>{GBUSY=false;tbPaint()})};
+GOLD.gift=x=>{if(SG!==true)GL0.gift(x)};
+GOLD.adminGift=(to,n)=>{if(SG===true)goldApi({a:'gift',to,n}).catch(e=>popup('Золото не отправлено',esc(e.message||'Ошибка сервера'),true))};
+const _mkBuy=mkBuy,_mkCollect=mkCollect;
+mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||SG!==true)return _mkBuy(id);if(m.seller===UID||m.sold||(S.au|0)<m.price)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}if(GBUSY)return;GBUSY=true;
+ goldApi({a:'market',id,name:S.name}).then(j=>{S.au=j.au|0;const it=fixItem(JSON.parse(JSON.stringify(j.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} зол.`;log(MKMSG,'sys');save();render()}).catch(e=>{MKMSG=e.message||'Покупка не удалась.';render()}).finally(()=>{GBUSY=false})};
+mkCollect=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||!m.paid)return _mkCollect(id);if(m.seller!==UID)return;
+ DB.collection('market').doc(id).delete().then(()=>{MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render()}).catch(()=>{})};
+
 </script>
 </body>
 </html>

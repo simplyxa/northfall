@@ -41,7 +41,13 @@ exports.handler = async (event) => {
       await db.runTransaction(async tx => {
         const s = await tx.get(ref);
         if (s.exists) return; // уже зачислено: Xsolla может прислать повторно
+        const wref = db.collection('wallet').doc(uid), ws = await tx.get(wref);
+        let base = 0;
+        if (ws.exists) base = ws.data().au | 0;
+        else { const sv = await tx.get(db.collection('saves').doc(uid)); base = Math.max(0, Math.min(1000, Math.floor((sv.exists && sv.data().au) || 0))); }
         tx.set(ref, { gold, items, ts: Date.now(), claimed: false });
+        if (ws.exists) tx.update(wref, { au: base + gold }); else tx.set(wref, { au: base + gold, created: Date.now() });
+        tx.set(wref.collection('log').doc('x' + oid), { op: 'xsolla', n: gold, order: oid, ts: Date.now() });
         tx.set(log, { uid, gold, items, status: 'paid', mode: (d.order && d.order.mode) || null,
           amount: (d.order && d.order.amount) || null, currency: (d.order && d.order.currency) || null, paidTs: Date.now() }, { merge: true });
       });

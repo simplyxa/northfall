@@ -10,8 +10,28 @@ service cloud.firestore {
     function admin() { return signed() && request.auth.token.email in ['shtorm1@northfall.game', 'admin@northfall.game']; }
 
     // Сохранение героя: только сам игрок (и админ)
+    // Защита от накруток: уровень не выше 60 и не прыгает, серебро не растёт скачками
+    function saneSave() {
+      let n = request.resource.data;
+      return n.get('lvl', 1) is int && n.get('lvl', 1) <= 60
+        && (resource == null
+          || (n.get('lvl', 1) <= resource.data.get('lvl', 1) + 10
+              && n.get('gold', 0) <= resource.data.get('gold', 0) + 100000));
+    }
     match /saves/{id} {
-      allow read, write: if me(id) || admin();
+      allow read: if me(id) || admin();
+      allow delete: if me(id) || admin();
+      allow create, update: if admin() || (me(id) && saneSave());
+    }
+
+    // Кошелёк золота: читает только владелец, меняет только сервер (Netlify)
+    match /wallet/{id} {
+      allow read: if me(id) || admin();
+      allow write: if false;
+      match /log/{op} {
+        allow read: if me(id) || admin();
+        allow write: if false;
+      }
     }
 
     // Публичная карточка игрока: читают все, пишет только владелец
