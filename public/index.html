@@ -437,7 +437,7 @@ const SHOP=(()=>{const o=[],sl=Object.keys(SL);for(let t=0;t<6;t++)for(const k o
 function buy(i){const it=SHOP[i];if(!it||S.lvl<it.lv||S.gold<price(it)||S.inv.length>=INV_MAX)return;S.gold-=price(it);S.inv.push({...it,b:{...it.b},uid:uid(),up:0});log(`Куплено: ${it.name}.`,'sys');save();render()}
 function slotOf(it){return it.slot==='n'?'n1':it.slot}
 function equip(id){const it=S.inv.find(x=>x.uid===id);if(!it||S.lvl<it.lv)return;const k=slotOf(it),old=S.eq[k];S.eq[k]=it;S.inv=S.inv.filter(x=>x!==it);if(old)S.inv.push(old);clampV();save();render()}
-function unequip(sl){const it=S.eq[sl];if(!it)return;if(it.lv>S.lvl&&!confirm(`«${it.name}» — вещь ${it.lv} уровня. Если снять её сейчас, надеть снова можно будет только с ${it.lv} уровня героя. Снять?`))return;if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}S.inv.push(it);delete S.eq[sl];clampV();save();render()}
+function unequip(sl,force){const it=S.eq[sl];if(!it)return;if(it.lv>S.lvl&&!force){ask(`<b>«${esc(it.name)}»</b> — вещь ${it.lv} уровня.<br>Если снять её сейчас, надеть снова можно будет только с ${it.lv} уровня героя.`,()=>unequip(sl,true),'Снять');return}if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}S.inv.push(it);delete S.eq[sl];clampV();save();render()}
 let sellArm=false;
 const isBetter=it=>{const cur=curOf(it);return !cur||score(it)>score(cur)};
 const junk=()=>S.inv.filter(it=>!isBetter(it));
@@ -508,6 +508,8 @@ function itemModal(it){closeModal();MODIT=it;const m=1,sl=it.slot==='n'?'Кол�
  ${sockOf(it)?`<h3 style="margin:10px 0 2px">Гнёзда для камней (${(it.rn||[]).length}/${sockOf(it)})</h3>${(it.rn||[]).map((k,i)=>`<div class="row"><div>◆ ${rName(k)}<small>${rTxt(k)}</small></div>${own?`<button class="b alt" data-rx="${i}">Извлечь (${20*(+k.slice(-1))} жел.)</button>`:''}</div>`).join('')}${own&&sockOf(it)>(it.rn||[]).length?(()=>{const R=Object.entries(S.runes||{}).filter(([k,n])=>n>0);return R.length?`<p style="margin:6px 0 2px;color:var(--mute);font-size:13px">Вставить камень в свободное гнездо:</p><div class="rnl">${R.map(([k,n])=>`<button class="b alt" data-ri="${k}">${rName(k)} ×${n}<br><small>${rTxt(k)}</small></button>`).join('')}</div>`:`<p style="margin:6px 0;color:var(--mute);font-size:13px">Свободных камней нет. Камни выпадают в подземелье клана, у мирового босса и изредка на охоте.</p>`})():''}`:`<p style="margin:8px 0 0;color:var(--mute);font-size:13px">У этой вещи нет гнёзд для камней. Гнёзда открываются первыми пятью усилениями у кузнеца.</p>`}<div class="row"><div>Сила предмета</div><b>${Math.round(score(it))}</b></div><div class="row"><div>Усиление</div><b>${it.up|0}/5</b></div><div class="row"><div>Разбор</div><b>${dis(it)} жел.</b></div>
  ${S&&S.inv.includes(it)&&DB?`<h3 style="margin:10px 0 4px">Продать на рынке</h3><div style="display:flex;gap:6px"><input id="mprice" type="number" min="1" value="${Math.max(1,Math.round(price(it)/100))}" aria-label="Цена в золоте" placeholder="Цена в золоте" style="flex:1;margin:0"><button class="b" data-a="mlist" style="margin:0">Выставить</button></div>`:''}<button class="b" data-a="mclose" style="width:100%;margin-top:10px">Закрыть</button></div>`;
  d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-a="mclose"]'))closeModal()});document.body.appendChild(d)}
+function ask(msg,yes,ok){closeModal();const d=document.createElement('div');d.className='modal';d.setAttribute('role','alertdialog');d.innerHTML=`<div class="mbox" style="text-align:center;max-width:340px;border-top:4px solid var(--blood)"><p style="margin:0 0 14px;font-size:15px">${msg}</p><div style="display:flex;gap:8px"><button class="b alt" data-x1="no" style="flex:1;margin:0">Отмена</button><button class="b red" data-x1="yes" style="flex:1;margin:0">${ok||'Да'}</button></div></div>`;
+ d.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('[data-x1]');if(e.target===d||b){closeModal();if(b&&b.dataset.x1==='yes')yes()}});document.body.appendChild(d)}
 function popup(t,html,bad){closeModal();const d=document.createElement('div');d.className='modal';d.setAttribute('role','alertdialog');d.innerHTML=`<div class="mbox" style="text-align:center;max-width:340px;border-top:4px solid var(${bad?'--blood':'--moss'})"><h3 style="margin:0 0 8px">${t}</h3><p style="margin:0 0 14px;font-size:15px">${html}</p><button class="b" data-a="mclose" style="width:100%">OK</button></div>`;d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-a="mclose"]'))closeModal()});document.body.appendChild(d)}
 function closeModal(){document.querySelectorAll('.modal').forEach(x=>x.remove())}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
@@ -842,7 +844,7 @@ function fReply(){const tp=FT.find(x=>x.id===FTOP);if(!tp||!DB)return;if(tp.clos
  DB.collection('forum').doc(FTOP).collection('posts').doc('p'+ts.toString(36)+Math.random().toString(36).slice(2,4)).set({uid:UID,name:S.name,text:b.slice(0,2000),ts}).then(()=>DB.collection('forum').doc(FTOP).update({last:ts,lastn:S.name,cnt:(tp.cnt|0)+1})).then(()=>{FMSG='';const el=$('#fpb');if(el)el.value=''}).catch(()=>{FMSG='Сообщение не отправлено.';render()})}
 function fMod(a,id){if(!ADM||!DB)return;const tp=FT.find(x=>x.id===FTOP);
  if(a==='pin'&&tp)DB.collection('forum').doc(tp.id).update({pinned:!tp.pinned});else if(a==='close'&&tp)DB.collection('forum').doc(tp.id).update({closed:!tp.closed});
- else if(a==='deltop'&&tp){if(!confirm('Удалить тему целиком?'))return;DB.collection('forum').doc(tp.id).delete().then(()=>{FTOP=null;render()})}
+ else if(a==='deltop'&&tp){ask('Удалить тему целиком?',()=>DB.collection('forum').doc(tp.id).delete().then(()=>{FTOP=null;render()}),'Удалить')}
  else if(a==='delpost'&&id&&tp)DB.collection('forum').doc(tp.id).collection('posts').doc(id).delete().then(()=>DB.collection('forum').doc(tp.id).update({cnt:Math.max(0,(tp.cnt|0)-1)}))}
 function forumView(){if(!DB)return'<div class="panel"><p>Форум работает только с подключённой базой данных.</p></div>';
  const msg=FMSG?`<div class="panel" style="border-left:4px solid var(--blood)"><p style="margin:0">${esc(FMSG)}</p></div>`:'';
@@ -872,7 +874,7 @@ function frAdd(id){if(!DB||!id||id===UID)return;const f=frOf(id);if(f){if(f.st==
  const pl=PL.find(x=>x.id===id),[a,b]=[UID,id].sort(),me=S.name,him=pl?pl.name:id;
  DB.collection('friends').doc(pid(UID,id)).set({a,b,by:UID,st:'p',ts:Date.now(),na:a===UID?me:him,nb:b===UID?me:him}).then(()=>{FRMSG='';log(`Заявка в друзья отправлена: ${him}.`,'sys');render()}).catch(()=>{FRMSG='Не удалось отправить заявку.';render()})}
 function frAcc(id){const f=frOf(id);if(!f||!DB)return;const k=f.a===UID?'na':'nb';DB.collection('friends').doc(f.id).update({st:'ok',ts:Date.now(),[k]:S.name}).then(()=>{log(`${frName(f)} теперь твой друг.`,'hit');clog&&0}).catch(()=>{})}
-function frDel(id){const f=frOf(id);if(!f||!DB)return;if(f.st==='ok'&&!confirm(`Удалить ${frName(f)} из друзей?`))return;DB.collection('friends').doc(f.id).delete().then(()=>{if(DMW===id){DMW=null;tab='friends'}render()}).catch(()=>{})}
+function frDel(id){const f=frOf(id);if(!f||!DB)return;if(f.st==='ok'&&!frDel.ok){ask(`Удалить ${esc(frName(f))} из друзей?`,()=>{frDel.ok=1;frDel(id);frDel.ok=0},'Удалить');return}DB.collection('friends').doc(f.id).delete().then(()=>{if(DMW===id){DMW=null;tab='friends'}render()}).catch(()=>{})}
 function dmSub(){if(!DB||tab!=='dm'||!DMW){if(dmUn)dmUn();dmUn=null;dmFor=null;DM=[];return}const id=pid(UID,DMW);if(dmFor===id)return;if(dmUn)dmUn();dmFor=id;DM=[];
  dmUn=DB.collection('dm').doc(id).collection('m').orderBy('ts','desc').limit(60).onSnapshot(sn=>{DM=sn.docs.map(d=>d.data()).reverse();dmRead();const el=$('#dmbox');if(el){el.innerHTML=dmHtml();el.scrollTop=el.scrollHeight}else ui()},()=>{})}
 function dmRead(){const f=DMW&&frOf(DMW);if(!f||!DB||!frUnread(f))return;const k=f.a===UID?'ra':'rb';f[k]=Date.now();tbPaint();DB.collection('friends').doc(f.id).update({[k]:Date.now()}).catch(()=>{})}
@@ -1349,7 +1351,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.sc){scr=d.sc;AM='';return render()}
  if(d.av)return pickAv(d.av);
  if(d.ap){adm.sel=adm.sel===d.ap?null:d.ap;return render()}
- if(d.dc){if(ADM&&DB&&confirm('Удалить клан?'))DB.collection('clans').doc(d.dc).delete().catch(()=>{});return}
+ if(d.dc){const id=d.dc;if(ADM&&DB)ask('Удалить клан?',()=>DB.collection('clans').doc(id).delete().catch(()=>{}),'Удалить');return}
  if(d.iv!=null){const it=IREG[+d.iv];if(it)itemModal(it);return}
  if(d.pv){PVB=tab;PV=d.pv;tab='pl';return render()}
  if(d.of)return setOff(d.of);if(d.rq)return reqDo(d.rq,true);if(d.rn)return reqDo(d.rn,false);
@@ -1382,7 +1384,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(a==='legtoggle'){useLeg=!useLeg;return render()}
  if(a==='guest'){if(LOC)return enter(LOC);scr='newhero';return render()}
  if(a==='logout')return logout();
- if(a==='delhero'&&confirm('Удалить героя без возможности восстановления?'))return delHero();
+ if(a==='delhero'){ask('Удалить героя без возможности восстановления?',delHero,'Удалить');return}
  if(a==='avtoggle'){avOpen=!avOpen;return render()}
  if(['annset','annclr','sres','gift','ban'].includes(a))return admDo(a);
  if(fight&&(['strike','guard','flee'].includes(a)||a.startsWith('pot-')||a.startsWith('sk-')))return act(a);
