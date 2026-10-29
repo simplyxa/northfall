@@ -114,6 +114,7 @@ exports.handler = async (event) => {
           if (!rs.exists) fail(404, 'Рейд не найден');
           const R = rs.data(), m = (R.mem || {})[uid];
           if (R.st !== 'win' || !m || m.bot) fail(409, 'Нет награды');
+          if (Object.values(R.mem || {}).filter(x => !x.bot).length < 3) fail(409, 'Золото за рейд — только если в группе от 3 живых воинов');
           key = 'r' + R.b; g = BOSSG[key] || 0; cap = BOSSCAP[key] || 0;
         } else if (k === 'wb') {
           const bs = await tx.get(db.collection('world').doc(id));

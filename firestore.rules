@@ -4,6 +4,8 @@ service cloud.firestore {
 
     // ---- помощники ----
     function signed() { return request.auth != null; }
+    // логин вошедшего игрока
+    function lg() { return request.auth.token.email.split('@')[0]; }
     // логин игрока = часть почты до @northfall.game
     function me(id) { return signed() && request.auth.token.email == id + '@northfall.game'; }
     // ВПИШИ СЮДА логины администраторов (как в ADMINS в index.html)
@@ -37,6 +39,18 @@ service cloud.firestore {
     // Почта для восстановления пароля: только сервер (Netlify)
     match /priv/{id} {
       allow read, write: if false;
+    }
+
+    // Подписки на уведомления: только сервер (Netlify)
+    match /push/{id} {
+      allow read, write: if false;
+    }
+
+    // Сообщения об ошибках: пишет игрок, читает и удаляет админ
+    match /bugs/{bid} {
+      allow create: if signed() && request.resource.data.uid == lg()
+        && request.resource.data.text is string && request.resource.data.text.size() <= 1000;
+      allow read, delete: if admin();
     }
 
     // Публичная карточка игрока: читают все, пишет только владелец
@@ -85,7 +99,6 @@ service cloud.firestore {
     }
 
     // Друзья: документ friends/{a~b}, видят и меняют только двое участников
-    function lg() { return request.auth.token.email.split('@')[0]; }
     match /friends/{pid} {
       allow read: if signed() && (resource == null || lg() == resource.data.a || lg() == resource.data.b);
       allow create: if signed() && request.resource.data.by == lg()

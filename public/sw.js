@@ -1,5 +1,5 @@
 // Northfall service worker: быстрая загрузка и работа при плохой связи
-const V = 'nf-v2';
+const V = 'nf-v3';
 const CORE = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -37,4 +37,22 @@ self.addEventListener('fetch', e => {
       return hit || net;
     }));
   }
+});
+
+// Уведомления на телефон
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { d = { b: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.t || 'Northfall', {
+    body: d.b || '', tag: d.tag || 'nf', renotify: true,
+    icon: '/icons/icon-192.png', badge: '/icons/favicon-96.png', data: { u: d.u || '/' }
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.u) || '/';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    for (const c of cs) { if (c.url.startsWith(self.location.origin)) { c.navigate(url).catch(() => {}); return c.focus(); } }
+    return self.clients.openWindow(url);
+  }));
 });

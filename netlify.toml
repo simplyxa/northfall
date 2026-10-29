@@ -11,9 +11,32 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = ["firebase-admin"]
+  external_node_modules = ["firebase-admin", "web-push"]
+
+[functions."push-cron"]
+  schedule = "*/15 * * * *"
 
 [[headers]]
-  for = "/*"
+  for = "/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
   [headers.values]
     Cache-Control = "no-cache"
