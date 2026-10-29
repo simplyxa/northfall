@@ -512,9 +512,12 @@ const statF=(slot,k,L)=>k===PRIM[slot][0]?PRIM[slot][1](L):EXTRA[k](L);
 function scaleTo(it,L){const L0=it.lv;for(const k in it.b){if(k==='crit'||k==='reg'||k==='en'){it.b[k]=Math.max(1,Math.round(it.b[k]*statF(it.slot,k,L)/statF(it.slot,k,L0)));continue}it.b[k]=Math.max(1,Math.round(it.b[k]*statF(it.slot,k,L)/statF(it.slot,k,L0)))}it.lv=L}
 const UPG=[1,2,3,4,4,4],upGold=it=>((it.up|0)+1)*UPG[it.tr!=null?it.tr:0],upMax=it=>it.lv+5>LVMAX;
 const upMat=it=>S.inv.filter(x=>x!==it&&x.slot===it.slot&&x.tr===it.tr).sort((a,b)=>(a.up|0)-(b.up|0)||(a.rn||[]).length-(b.rn||[]).length)[0];
-function mastCan(){if(!S)return'';const all=[...Object.values(S.eq||{}).filter(Boolean),...(S.inv||[])];
+function mastWho(){if(!S)return{};const eq=Object.values(S.eq||{}).filter(Boolean),all=[...eq,...(S.inv||[])];
  const smith=all.some(it=>!upMax(it)&&upMat(it)&&(S.au|0)>=upGold(it));
  const stones=Object.values(S.runes||{}).some(n=>n>0)&&all.some(it=>(it.rn||[]).length<sockOf(it)&&Object.entries(S.runes||{}).some(([k,n])=>n>0&&stFits(it,k)));
+ const ench=typeof enCost==='function'&&eq.some(it=>!it.en&&(S.dust|0)>=enCost(it,0).d&&S.gold>=enCost(it,0).s);
+ return{smith,rune:stones,ench}}
+function mastCan(){if(!S)return'';const W=mastWho(),smith=W.smith,stones=W.rune;if(!smith&&!stones&&W.ench)return'можно зачаровать надетую вещь';
  return smith&&stones?'можно усилить вещь и вставить камень':smith?'можно усилить вещь':stones?'можно вставить камень':''}
 // ===== Золото: операции через GOLD (онлайн-версия переносит их на сервер) =====
 const GOLD={
@@ -1057,7 +1060,7 @@ function terView(){return`<div class="panel"><h3>Территории Север
  Object.keys(TERN).map(k=>{const t=TER[k],o=terOwner(k),pts=t&&t.wk===curS()?Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1]).slice(0,3):[];return`<div class="row"><div><b>${TERN[k]}</b><small>Владеет: ${o?`<b style="color:var(--gold)">«${esc(o.name)}»</b>`:'никто'}${pts.length?' · эта неделя: '+pts.map(([id,v])=>`${esc((t.names||{})[id]||cname(id))} ${v}`).join(', '):''}</small></div></div>`}).join('')+`</div>`}
 
 let mtab='smith',RSEL=null;
-const mtabs=()=>`<div class="htab" style="grid-template-columns:1fr 1fr 1fr">${[['smith','Кузнец','<path d="M4 20h10M7 20v-4h6v4M3 9h11l3-3h4v4l-3 1H3z"/>'],['rune','Мастер камней','<path d="M12 3l7 9-7 9-7-9z"/><path d="M12 8v8M9 12h6"/>'],['ench','Чародей','<path d="M5 19L17 7"/><path d="M15 5l4 4"/><path d="M8 3v3M6.5 4.5h3M19 14v3M17.5 15.5h3M4 11v2M3 12h2"/>']].map(([k,t,ic])=>`<button class="${mtab===k?'on':''}" data-mt="${k}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg><small>${t}</small></button>`).join('')}</div>`;
+const mtabs=()=>`<div class="htab" style="grid-template-columns:1fr 1fr 1fr">${[['smith','Кузнец','<path d="M4 20h10M7 20v-4h6v4M3 9h11l3-3h4v4l-3 1H3z"/>'],['rune','Мастер камней','<path d="M12 3l7 9-7 9-7-9z"/><path d="M12 8v8M9 12h6"/>'],['ench','Чародей','<path d="M5 19L17 7"/><path d="M15 5l4 4"/><path d="M8 3v3M6.5 4.5h3M19 14v3M17.5 15.5h3M4 11v2M3 12h2"/>']].map(([k,t,ic])=>`<button class="${mtab===k?'on':''}" data-mt="${k}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg><small>${t}${mastWho()[k]?'<i class="mdot" title="Есть что улучшить"></i>':''}</small></button>`).join('')}</div>`;
 function rmItems(){const o=[];for(const k of Object.keys(S.eq))if(S.eq[k])o.push(['eq:'+k,S.eq[k],'надето']);for(const it of S.inv)o.push([it.uid,it,'рюкзак']);return o.filter(x=>sockOf(x[1])>0)}
 function rmGet(key){return key&&key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.find(x=>x.uid===key)}
 function rmIn(k){const it=rmGet(RSEL);if(!it||!(S.runes&&S.runes[k]>0)||!stFits(it,k))return;it.rn=it.rn||[];if(it.rn.length>=sockOf(it))return;it.rn.push(k);S.runes[k]--;clampV();log(`Камень вставлен: ${rName(k)} в «${it.name}».`,'sys');save();render()}
@@ -1293,7 +1296,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.30';
+const GVER='1.4.31';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1612,7 +1615,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.30</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.31</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
