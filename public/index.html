@@ -319,7 +319,7 @@ async function pushOffAll(){try{const reg=await navigator.serviceWorker.ready,su
 function pushKind(k){S.pushOff=S.pushOff||[];S.pushOff=S.pushOff.includes(k)?S.pushOff.filter(x=>x!==k):[...S.pushOff,k];save();
  if(S.push&&pushOk())navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>sub&&pushApi({a:'sub',sub:sub.toJSON(),off:S.pushOff},1)).catch(()=>{});render()}
 function pushState(force){if(!S||!S.push||!UID||(typeof GUEST!=='undefined'&&GUEST))return;if(!force&&Date.now()-PUSHT<60000)return;PUSHT=Date.now();
- const m=maxEn(),enAt=S.en>=m?0:(+S.t||Date.now())+(m-S.en)*20000;pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
+ const m=maxEn(),enAt=S.en>=m?0:(+S.te||Date.now())+(m-S.en)*ENT_MS;pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(1)});
 window.addEventListener('pagehide',()=>pushState(1));
 const pushView=()=>`<div class="panel"><h3>Уведомления на телефон</h3><p style="margin:0 0 8px;color:var(--mute);font-size:15px">Игра напомнит, когда энергия восстановится, придёт сообщение или соберётся рейд.${isIOS()&&!isApp()?' На iPhone сначала установи игру на экран «Домой» (Поделиться → «На экран Домой») и открой её оттуда.':''}</p>
@@ -350,9 +350,11 @@ function applyAdmin(){
  if(g.seasonReset&&S.sres!==g.seasonReset){S.sres=g.seasonReset;S.srat=0;ch=true}
  if(S.applied.length>50)S.applied=S.applied.slice(-50);if(ch)save()}
 function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
+const ENT_MS=60000;// энергия: 1 единица в минуту
 function regen(){
  if(!S)return;const now=Date.now(),n=Math.floor((now-S.t)/20000);
- if(n>0){S.t+=n*20000;S.en=Math.min(maxEn(),S.en+n);if(!fight&&S.hp>0)S.hp=Math.min(maxHp(),S.hp+n*regv())}
+ if(n>0){S.t+=n*20000;if(!fight&&S.hp>0)S.hp=Math.min(maxHp(),S.hp+n*regv())}
+ if(!S.te)S.te=now;if(S.en>=maxEn()){S.te=now}else{const k=Math.floor((now-S.te)/ENT_MS);if(k>0){S.te+=k*ENT_MS;S.en=Math.min(maxEn(),S.en+k);if(S.en>=maxEn())S.te=now}}
 }
 
 function create(name){
@@ -1328,7 +1330,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.38';
+const GVER='1.4.39';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1647,7 +1649,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.38</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.39</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
