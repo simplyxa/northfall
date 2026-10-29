@@ -350,13 +350,14 @@ function applyAdmin(){
  if(g.seasonReset&&S.sres!==g.seasonReset){S.sres=g.seasonReset;S.srat=0;ch=true}
  if(S.applied.length>50)S.applied=S.applied.slice(-50);if(ch)save()}
 function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
-// энергия: базово 1 в 20 с, регенерация ускоряет (каждая единица −2%, не быстрее 1 в 8 с)
-const regTot=()=>(S.st.reg|0)+(EQ().reg|0),enMs=()=>Math.max(8000,Math.round(20000/(1+regTot()*.02)));
+// Регенерация (R) — скорость восстановления: энергия R/60 в секунду, здоровье R/180 в секунду
+const regTot=()=>Math.max(1,regv()),enPS=()=>regTot()/60,hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
 function regen(){
- if(!S)return;const now=Date.now(),n=Math.floor((now-S.t)/20000);
- if(n>0){S.t+=n*20000;if(!fight&&S.hp>0)S.hp=Math.min(maxHp(),S.hp+n*regv())}
- if(!S.te)S.te=now;if(S.en>=maxEn()){S.te=now}else{const T=enMs(),k=Math.floor((now-S.te)/T);if(k>0){S.te+=k*T;S.en=Math.min(maxEn(),S.en+k);if(S.en>=maxEn())S.te=now}}
+ if(!S)return;const now=Date.now();if(!S.rt)S.rt=now;const dt=Math.min(7*864e5,Math.max(0,now-S.rt))/1000;S.rt=now;if(dt<=0)return;
+ if(S.en<maxEn()){S.enf=(+S.enf||0)+enPS()*dt;const k=Math.floor(S.enf);if(k>0){S.enf-=k;S.en=Math.min(maxEn(),S.en+k)}}else S.enf=0;
+ if(!fight&&S.hp>0&&S.hp<maxHp()){S.hpf=(+S.hpf||0)+hpPS()*dt;const h=Math.floor(S.hpf);if(h>0){S.hpf-=h;S.hp=Math.min(maxHp(),S.hp+h)}}else if(S.hp>=maxHp())S.hpf=0;
 }
+
 
 function create(name){
  CRE++;const c=CL[pick];
@@ -654,7 +655,7 @@ function tabView(){
  if(tab==='hero'&&htab==='bag')return htabs()+potPanel()+`<div class="panel"><h3>Рюкзак (${S.inv.length}/${INV_MAX})</h3><p style="margin:0 0 4px">Железо: <b class="g">${S.iron|0}</b> · руническая пыль: <b style="color:var(--myth)">${S.dust|0}</b>. Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>${S.lvl>=30?`<label class="tgl"><input type="checkbox" data-a="autodis" ${S.autodis?'checked':''}><span><b>Авторазбор ненужных вещей</b><small>Новые вещи, которые не лучше надетых, сразу разбираются на железо. Мифические вещи и вещи с камнями не трогаются.${S.adc?` Разобрано: ${S.adc} шт., +${S.adi} жел.`:''}</small></span></label>`:`<p style="color:var(--mute);font-size:14px;margin:4px 0">С 30 уровня откроется авторазбор ненужных вещей.</p>`}`+(()=>{const J=junk(),g=J.reduce((t,it)=>t+dis(it),0);if(!S.inv.length)return'';if(!J.length)return`<p style="color:var(--mute);font-size:15px;margin:6px 0">Все вещи в рюкзаке лучше надетых, разбирать нечего.</p>`;return sellArm?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px"><button class="b red" data-a="sellall">Да, разобрать ${J.length} шт. (+${g} жел.)</button><button class="b alt" data-a="sellno">Отмена</button></div>`:`<button class="b" data-a="sellask" style="width:100%;margin:6px 0 8px">Разобрать всё, кроме лучших (${J.length} шт., +${g} жел.)</button>`})()+(S.inv.length?[...S.inv].sort((x,y)=>y.rar-x.rar||y.lv-x.lv).map(it=>{const cur=curOf(it),lock=S.lvl<it.lv,better=!cur||score(it)>score(cur);
    return irow(it,`<button class="b" data-e="${it.uid}" ${lock?'disabled':''}>${lock?'С '+it.lv+' ур.':'Надеть'}</button><button class="b alt" data-x="${it.uid}">Разобрать +${dis(it)}</button><button class="b alt" data-tc="${it.uid}" ${(S.chest||[]).length>=CHEST_MAX?'disabled':''}>В сундук</button>`+'',better&&!lock?' · <span style="color:var(--moss)">лучше надетого</span>':'')}).join(''):'<p>Пусто. Трофеи падают после боёв, снаряжение продаётся в магазине.</p>')+`</div>`;
  if(htab==='gear')return htabs()+gearView();
- const EF={str:()=>`Атака ${atk()}`,hp:()=>`Макс. здоровье ${maxHp()}`,arm:()=>`Защита ${def()} (с учётом снаряжения)`,reg:()=>`+${regv()} здоровья за 20 с · энергия +1 каждые ${String(Math.round(enMs()/100)/10).replace('.',',')} с`,en:()=>`Макс. энергия ${maxEn()}`};
+ const EF={str:()=>`Атака ${atk()}`,hp:()=>`Макс. здоровье ${maxHp()}`,arm:()=>`Защита ${def()} (с учётом снаряжения)`,reg:()=>{const f=v=>String(Math.round(v*100)/100).replace('.',',');return`В секунду: энергия +${f(enPS())} (${f(regTot())}/60), здоровье +${f(hpPS())} (${f(regTot())}/180)`},en:()=>`Макс. энергия ${maxEn()}`};
  const E=EQ(),GB={str:E.atk/2,hp:E.hp/8,arm:E.def,reg:E.reg,en:E.en},fx=v=>Math.round(v*10)/10;
  const EV={};Object.keys(ST).forEach(k=>EV[k]=Math.round(S.st[k]+GB[k]));const sum=Object.values(EV).reduce((t,v)=>t+v,0);
  return htabs()+avCard()+`<div class="menu" style="margin-bottom:10px">${MI('friends','Друзья',frIn().length?`<b style="color:var(--moss)">заявки: ${frIn().length}</b>`:'список друзей и заявки')}${MI('mail','Почта',dmUnN()?`<b style="color:var(--moss)">новые сообщения: ${dmUnN()}</b>`:'переписки, письма и передача вещей')}${MI('settings','Настройки',UID&&!GUEST&&(mailLoad(),MYMAIL==='')?'<span style="color:var(--blood)">привяжи почту, чтобы не потерять героя</span>':'ник, класс, почта, пароль, уведомления')}${MI('skills','Умения',skOpen()?skAll().map(k=>`<span style="color:var(${RAR[skQ(k[0])][1]})">${k[1]}</span>`).join(', '):'откроются после пути новичка')}</div>`+`<div class="panel"><h3>Герой${S.pts?` · очков: ${S.pts}`:''}</h3><p style="margin:0 0 6px;font-size:19px">Сумма всех статов: <b class="g">${sum}</b> <small style="color:var(--mute);font-size:14px">с учётом снаряжения</small></p>`+Object.keys(ST).map(k=>`<div class="row"><div>${ST[k]}: <b>${EV[k]}</b>${stFx(k)}${EV[k]!==S.st[k]?` <span style="color:var(--mute);font-size:14px">(${S.st[k]} + <span style="color:var(--moss)">${EV[k]-S.st[k]}</span>)</span>`:''}<small>${EF[k]()}</small></div>${S.pts?`<button class="b" data-s="${k}">+1</button>`:''}</div>`).join('')+
@@ -1332,7 +1333,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.40';
+const GVER='1.4.41';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1651,7 +1652,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.40</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.41</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
