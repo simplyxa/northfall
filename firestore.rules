@@ -34,6 +34,11 @@ service cloud.firestore {
       }
     }
 
+    // Почта для восстановления пароля: только сервер (Netlify)
+    match /priv/{id} {
+      allow read, write: if false;
+    }
+
     // Публичная карточка игрока: читают все, пишет только владелец
     match /players/{id} {
       allow read: if signed();
