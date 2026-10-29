@@ -611,7 +611,8 @@ function statSum(){const E=EQ(),GB={str:E.atk/2,hp:E.hp/8,arm:E.def,reg:E.reg,en
 // ===== Прогресс: задания, вход, достижения =====
 const DAY=()=>Math.floor((Date.now()+2*3600000)/864e5);
 const QP=[['kill','Убей зверей на охоте',L=>20],['arena','Победи на арене',L=>3],['dmg','Нанеси урона в боях',L=>300+L*250],['dun','Спустись в подземелье клана',L=>1],['upa','Попробуй усилить снаряжение',L=>2],['dis','Разбери вещи на железо',L=>5],['boss','Атакуй мирового босса',L=>1]];
-function dqEnsure(){const d=DAY();if(S.dq&&S.dq.day===d)return;const pool=QP.filter(q=>q[0]!=='dun'||S.clan);const pk=[];while(pk.length<3&&pool.length)pk.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+const QOFF=['arena'];// задания, временно выключенные (арена — пока мало игроков)
+function dqEnsure(){const d=DAY();if(S.dq&&S.dq.day===d){const L=S.dq.list,i=L.findIndex(q=>QOFF.includes(q.t)&&!q.c);if(i>=0){const fr=QP.filter(q=>!QOFF.includes(q[0])&&(q[0]!=='dun'||S.clan)&&!L.some(x=>x.t===q[0]));if(fr.length){const q=fr[Math.floor(Math.random()*fr.length)];L[i]={t:q[0],n:q[2](S.lvl),p:0,c:false}}else L.splice(i,1)}return}const pool=QP.filter(q=>!QOFF.includes(q[0])&&(q[0]!=='dun'||S.clan));const pk=[];while(pk.length<3&&pool.length)pk.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
  S.dq={day:d,bonus:false,list:pk.map(q=>({t:q[0],n:q[2](S.lvl),p:0,c:false}))}}
 const qName=t=>(QP.find(q=>q[0]===t)||[0,t])[1];
 const qRew=()=>({g:40+S.lvl*15,i:4+S.lvl});
@@ -1100,7 +1101,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='4.1';
+const GVER='4.2';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1407,7 +1408,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 4.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 4.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
