@@ -134,6 +134,12 @@ exports.handler = async (event) => {
         logOp(tx, uid, { op: 'boss', n: g, k, id });
         return { au: (w.au | 0) + g };
       }
+      if (a === 'pwa') { // задание «игра на экране Домой»: 5 золота, один раз
+        const { ref, w } = await ensure(tx, uid);
+        if (w.pwa) fail(409, 'Награда уже получена');
+        tx.update(ref, { au: (w.au | 0) + 5, pwa: Date.now() }); logOp(tx, uid, { op: 'pwa', n: 5 });
+        return { au: (w.au | 0) + 5 };
+      }
       if (a === 'week') { // подарок первой недели: 10 золота, один раз, аккаунту не моложе 6 дней
         const { ref, w } = await ensure(tx, uid);
         if (w.fw) fail(409, 'Подарок первой недели уже получен');

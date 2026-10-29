@@ -1333,7 +1333,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.42';
+const GVER='1.4.43';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1387,11 +1387,20 @@ const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platfo
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DIP=e;try{ui()}catch(_){}});
 window.addEventListener('appinstalled',()=>{DIP=null;try{log('Northfall установлен на устройство!','hit');ui()}catch(_){}});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+
+// ===== Задание: игра на экране «Домой» =====
+const PWAQ={g:1000,au:5,b:3};
+function pwaClaim(){if(!S||S.pwaq||!isApp())return;if(UID&&!GUEST&&SG!==true)return popup('Минутку','Связь с казной ещё не установлена. Попробуй через несколько секунд.');S.pwaq=1;S.gold+=PWAQ.g;S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+PWAQ.b;SILFX={v:PWAQ.g,t:Date.now()};
+ if(UID&&!GUEST&&typeof goldApi==='function'&&SG===true)goldApi({a:'pwa'}).then(j=>{if(j.au!=null){S.au=j.au|0;tbPaint();ui()}}).catch(()=>{});else S.au=(S.au|0)+PWAQ.au;
+ log(`Задание «Northfall на телефоне»: +${PWAQ.g} серебра, +${PWAQ.au} золота, бутылок: ${PWAQ.b}.`,'hit');popup('Награда получена!',`+${PWAQ.g} серебра, +${PWAQ.au} золота и ${PWAQ.b} бутылки. Теперь игра всегда под рукой!`);save();render()}
+const pwaQuest=()=>{if(!S||S.pwaq||(typeof GUEST!=='undefined'&&GUEST))return'';const ok=isApp();
+ return`<div class="panel" style="border-left:4px solid var(--gold)"><div style="display:flex;gap:12px;align-items:center"><img src="/icons/icon-192.png?v=2" alt="" width="52" height="52" style="border-radius:12px;flex:0 0 auto"><div style="flex:1"><b>Задание: Northfall на телефоне</b><br><small style="color:var(--mute)">${ok?'Игра открыта с экрана «Домой» — забирай награду!':'Добавь игру на экран «Домой» и открой её оттуда.'}</small></div></div>
+ <p style="margin:8px 0;font-size:15px">Награда: <b class="g">${PWAQ.au} золота</b>, <b>${PWAQ.g} серебра</b> и ${PWAQ.b} бутылки.</p>${ok?'<button class="b" data-a="pwaclaim" style="width:100%">Забрать награду</button>':'<button class="b alt" data-t="install" style="width:100%">Как установить</button>'}</div>`};
 function instDo(){if(!DIP)return;DIP.prompt();DIP.userChoice.finally(()=>{DIP=null;render()})}
 function installView(){
- if(isApp())return'<div class="panel"><h3>Приложение установлено</h3><p style="margin:0">Ты уже играешь в приложении Northfall. Значок с волком на экране телефона открывает игру сразу, во весь экран.</p></div>';
+ if(isApp())return pwaQuest()+'<div class="panel"><h3>Приложение установлено</h3><p style="margin:0">Ты уже играешь в приложении Northfall. Значок с волком на экране телефона открывает игру сразу, во весь экран.</p></div>';
  const st=(n,t)=>`<div style="display:flex;gap:10px;margin:8px 0"><b style="flex:0 0 26px;height:26px;border-radius:50%;background:var(--btn);color:var(--btnt);display:flex;align-items:center;justify-content:center;font-size:14px">${n}</b><span>${t}</span></div>`;
- return`<div class="panel" style="text-align:center"><img src="/icons/icon-192.png?v=2" alt="" width="96" height="96" style="border-radius:22px;box-shadow:0 4px 16px rgba(0,0,0,.35)"><h3 style="margin:10px 0 4px">Northfall на экране телефона</h3><p style="margin:0;color:var(--mute);font-size:15px">Значок с волком, игра во весь экран без адресной строки и быстрая загрузка даже при слабой связи. Ничего не нужно скачивать из магазина приложений.</p></div>`+
+ return(typeof pwaQuest==='function'?pwaQuest():'')+`<div class="panel" style="text-align:center"><img src="/icons/icon-192.png?v=2" alt="" width="96" height="96" style="border-radius:22px;box-shadow:0 4px 16px rgba(0,0,0,.35)"><h3 style="margin:10px 0 4px">Northfall на экране телефона</h3><p style="margin:0;color:var(--mute);font-size:15px">Значок с волком, игра во весь экран без адресной строки и быстрая загрузка даже при слабой связи. Ничего не нужно скачивать из магазина приложений.</p></div>`+
  (DIP?`<div class="panel"><button class="b" data-a="instdo">📲 Установить приложение</button></div>`:'')+
  (isIOS()?`<div class="panel"><h3>iPhone и iPad</h3>${st(1,'Открой игру в <b>Safari</b>.')}${st(2,'Нажми кнопку <b>«Поделиться»</b>: квадрат со стрелкой вверх, внизу или вверху экрана.')}${st(3,'Пролистай вниз и выбери <b>«На экран „Домой“»</b>.')}${st(4,'Нажми <b>«Добавить»</b>. Значок Northfall появится на экране.')}</div>`:
  `<div class="panel"><h3>Android</h3>${DIP?st(1,'Нажми кнопку «Установить приложение» выше и подтверди.'):st(1,'Открой игру в <b>Chrome</b>.')+st(2,'Нажми меню <b>⋮</b> в правом верхнем углу.')+st(3,'Выбери <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.')}</div>`)+
@@ -1652,7 +1661,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.42</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.43</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1772,7 +1781,7 @@ function render(){
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
  if(BAN){$('#app').innerHTML=`<div class="panel"><h2>Доступ закрыт</h2><p>Администратор заблокировал этого героя.</p></div>`+LOGOUT;return}
- raidSub();skInit();if(GUEST&&S.lvl>=5&&!S.gnag){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя','Ты уже 5 уровня! Создай логин и пароль, чтобы не потерять героя и открыть кланы, рейды и чат.'),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}$('#app').innerHTML=xpbar()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(fight?fightView():tab==='home'?HBAN()+guestBar()+pushAsk()+nbView()+tipView()+annView()+menuView():tipView()+tabView())+
+ raidSub();skInit();if(GUEST&&S.lvl>=5&&!S.gnag){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя','Ты уже 5 уровня! Создай логин и пароль, чтобы не потерять героя и открыть кланы, рейды и чат.'),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}$('#app').innerHTML=xpbar()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(fight?fightView():tab==='home'?HBAN()+guestBar()+pwaQuest()+pushAsk()+nbView()+tipView()+annView()+menuView():tipView()+tabView())+
  (!fight?'':`<div class="panel" id="log">${logs.map(l=>`<p class="${l[1]}">${esc(l[0])}</p>`).join('')||'<p>Тишина.</p>'}</div>`)+FOOT()+(fight?'':bnav());
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
@@ -1831,7 +1840,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(a==='arena')return startFight('arena');
  if(a==='repclose'){REP=null;return render()}
  if(a==='hrclose'){HREP=null;return render()}
- if(a==='lclaim')return loginClaim();if(a==='refshare')return refShare();if(a==='instdo')return instDo();if(a==='paylog')return payLogLoad();if(a==='gcsend')return gcSend();if(a==='support'){tab='forum';FS='help';FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(a==='dmsend')return dmSend();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='nickdo')return nickDo();if(a==='sreset')return statReset();
+ if(a==='lclaim')return loginClaim();if(a==='refshare')return refShare();if(a==='instdo')return instDo();if(a==='pwaclaim')return pwaClaim();if(a==='paylog')return payLogLoad();if(a==='gcsend')return gcSend();if(a==='support'){tab='forum';FS='help';FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(a==='dmsend')return dmSend();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='nickdo')return nickDo();if(a==='sreset')return statReset();
  if(a==='pvback'){tab=PVB||'top';return render()}
  if(a==='dun')return startDun();if(a==='dunclose'){DREP=null;return render()}if(a==='dclclose'){DCL=null;return render()}
  if(a==='sellask'){sellArm=true;return render()}if(a==='sellno'){sellArm=false;return render()}if(a==='sellall')return sellAll();
