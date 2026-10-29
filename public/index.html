@@ -219,7 +219,7 @@ function EQ(){const t={atk:0,def:0,hp:0,reg:0,en:0,crit:0},e=Object.values(S.eq|
 const price=it=>Math.round((8+it.lv*6)*RAR[it.rar][3]*(1+it.up*.5)*(it.tr===5?1.5:1));
 const upCost=it=>Math.ceil((15+it.lv*5)*(it.up+1)/4);
 const dis=it=>Math.max(1,Math.round(price(it)*.15*(1+.1*cb('frg'))));
-const score=it=>{const m=1,b=it.b,ev=enVal(it),ek=it.en&&it.en.k;return((b.atk||0)*2+(b.def||0)*1.5+(b.hp||0)*.4+(b.reg||0)*3+(b.en||0)*2+(b.crit||0)*1.5)*m+(ev?ev*({atk:2,def:1.5,hp:.4,reg:3,crit:1.5}[ek]||0):0)};
+const score=it=>{const m=1,b=it.b,ev=enVal(it),ek=it.en&&it.en.k;return((b.atk||0)*2+(b.def||0)*1.5+(b.hp||0)*.4+(b.reg||0)*3+(b.en||0)*2+(b.crit||0)*1.5)*m+(ev?ev*({atk:2,def:1.5,hp:.4,reg:3,en:2,crit:1.5}[ek]||0):0)};
 const btxt=it=>{const m=1;return Object.keys(it.b).map(k=>`${LBL[k]} +${Math.round(it.b[k]*m)}`).join(', ')+((it.rn||[]).length?` · камни: ${it.rn.map(rTxt).join(', ')}`:'')+(it.en?` · <span style="color:var(--myth)">✨ ${enTxt(it)}</span>`:'')+(sockOf(it)>(it.rn||[]).length?` · гнёзд свободно: ${sockOf(it)-(it.rn||[]).length}`:'')};
 const iname=it=>`<span style="color:var(${RAR[it.rar][1]});font-weight:700">${it.up?'+'+it.up+' ':''}${esc(it.name)}</span>`;
 const SPR="/img/68f4f3b748c9aa.webp";
@@ -981,7 +981,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-ast]');if(
 document.addEventListener('click',e=>{if(e.target.closest('[data-a="strefresh"]')){e.preventDefault();STATS=null;render()}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-nb]');if(!b)return;e.preventDefault();nbClaim()});
 // ===== Чародей: чары пяти редкостей (обычные за серебро, остальные за золото) =====
-const ENK={atk:['Ярость',1],def:['Камень',1],hp:['Жизнь',1],reg:['Исцеление',.6],crit:['Острота',.5]};
+const ENK={atk:['Ярость',1],hp:['Жизнь',1],def:['Камень',1],reg:['Исцеление',.6],en:['Неутомимость',.5],crit:['Острота',.5]};
 const DUSTR=[1,2,4,8,15],ENCD=[2,4,8,14,25],ENR=[1,1.4,1.9,2.5,3.2],ENG=[0,2,4,8,15];
 const ENIC=["/img/6dcebdf9bfe2a1.webp", "/img/b17ee5e0036495.webp", "/img/13fb0cb54bfa0a.webp", "/img/5b381299925b16.webp", "/img/a7c4531ed06ffc.webp"],ENRN=['Обычная','Редкая','Эпическая','Легендарная','Мифическая'];// иконки чар по редкостям (добавятся)
 const dustOf=it=>DUSTR[it.rar|0]+(it.tr===5?5:0),enSil=it=>20+(it.lv|0)*10;
@@ -1000,12 +1000,12 @@ function doEnch(key,r){const it=enchKey(key);if(!it||ENBUSY)return;r=Math.max(0,
 function enchModal(key){const it=enchKey(key);if(!it)return;closeModal();const d=document.createElement('div');d.className='modal';d.setAttribute('role','dialog');
  const base=Object.keys(ENK);
  d.innerHTML=`<div class="mbox"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">${itemIcon(it,56,1)}<div><b style="color:var(${RAR[it.rar][1]})">${esc(it.name)}</b><br><small style="color:var(--mute)">${it.en?'Сейчас: '+enTxt(it):'Чар нет'}</small></div></div>
- <p style="margin:0 0 8px;font-size:14px;color:var(--mute)">Выбери редкость чары. Вид чары выпадет случайно: атака, защита, здоровье, регенерация или крит. Чем выше редкость, тем сильнее чара. Новая чара заменит старую.</p>
+ <p style="margin:0 0 8px;font-size:14px;color:var(--mute)">Выбери редкость чары. Вид чары выпадет случайно: сила (атака), здоровье, броня (защита), регенерация, энергия или крит. Чем выше редкость, тем сильнее чара. Новая чара заменит старую.</p>
  ${RAR.map((R,r)=>{const c=enCost(it,r),ok=(S.dust|0)>=c.d&&(r?(S.au|0)>=c.au:S.gold>=c.s);return`<div class="row"><div style="display:flex;gap:8px;align-items:center"><img src="${ENIC[r]}" alt="" width="36" height="36"><div><b style="color:var(${R[1]})">${ENRN[r]} чара</b><small>сила ×${String(ENR[r]).replace('.',',')} · ${c.d} пыли + ${r?`<b class="g">${c.au} зол.</b>`:`${c.s} сер.`}</small></div></div><button class="b ${r?'':'alt'}" data-er="${key}|${r}" ${ok?'':'disabled'}>Наложить</button></div>`}).join('')}
  <p style="margin:8px 0 0;font-size:14px">Пыль: <b style="color:var(--myth)">${S.dust|0}</b> · серебро: <b>${S.gold}</b> · золото: <b class="g">${S.au|0}</b></p><button class="b alt" data-a="mclose" style="width:100%;margin-top:8px">Закрыть</button></div>`;
  d.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('[data-er]');if(b&&!b.disabled){const [k,r]=b.dataset.er.split('|');return doEnch(k,+r)}if(e.target===d||e.target.closest('[data-a="mclose"]'))closeModal()});document.body.appendChild(d)}
 function enchView(){const rows=[];for(const k of Object.keys(S.eq))if(S.eq[k])rows.push(['eq:'+k,S.eq[k],'надето']);for(const it of S.inv)rows.push([it.uid,it,'рюкзак']);
- return`<div class="panel"><h3>Чародей</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Накладывает на вещь одну случайную чару: Ярость (атака), Камень (защита), Жизнь (здоровье), Исцеление (регенерация) или Острота (крит). Чары бывают пяти редкостей, как снаряжение: обычная — за серебро, редкая и выше — за золото, и чем выше редкость, тем сильнее чара. Каждая чара требует ещё рунической пыли: она выпадает при разборе вещей, в рейдах и у мирового босса. Новая чара заменяет старую.</p><p style="margin:0">Пыль: <b style="color:var(--myth)">${S.dust|0}</b> · серебро: <b class="g">${S.gold}</b> · золото: <b class="g">${S.au|0}</b></p></div>`+
+ return`<div class="panel"><h3>Чародей</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Накладывает на вещь одну случайную чару — на любой стат героя: Ярость (сила, атака), Жизнь (здоровье), Камень (броня, защита), Исцеление (регенерация), Неутомимость (энергия) или Острота (крит). Чары бывают пяти редкостей, как снаряжение: обычная — за серебро, редкая и выше — за золото, и чем выше редкость, тем сильнее чара. Каждая чара требует ещё рунической пыли: она выпадает при разборе вещей, в рейдах и у мирового босса. Новая чара заменяет старую.</p><p style="margin:0">Пыль: <b style="color:var(--myth)">${S.dust|0}</b> · серебро: <b class="g">${S.gold}</b> · золото: <b class="g">${S.au|0}</b></p></div>`+
  (ENMSG?`<div class="panel" style="border-left:4px solid var(--myth)"><p style="margin:0">✨ ${esc(ENMSG)}</p></div>`:'')+
  `<div class="panel"><h3>Вещи</h3>${rows.length?rows.map(([key,it,w])=>irow(it,`<button class="b ${it.en?'alt':''}" data-ec="${key}">${it.en?'Перечаровать':'Зачаровать'}</button>`,' · '+w)).join(''):'<p style="margin:0">Нет вещей.</p>'}</div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ec]');if(!b||b.disabled)return;e.preventDefault();enchModal(b.dataset.ec)});
@@ -1296,7 +1296,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.31';
+const GVER='1.4.32';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1615,7 +1615,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.31</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.32</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
