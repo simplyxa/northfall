@@ -382,6 +382,7 @@ function startFight(kind,botId){
 function enemyTurn(e){
  e=e||fight.e;
  let d=Math.max(1,Math.round(rnd(.8,1.2)*e.atk-def()*.6));
+ if(fight.wb){const red=Math.min(.4,def()/(def()+300));d=Math.max(d,Math.round(maxHp()*WBPCT*(e.wbm||1)*rnd(.85,1.15)*(1-red)))}
  if(e.crit&&Math.random()*100<e.crit){d=Math.round(d*1.6);fight.s.ecrit++;log(`${e.name} наносит удар в уязвимое место!`,'dmg')}
  if(fight.clk<fight.guardUntil){d=Math.max(1,Math.round(d*.4));log('Блок смягчает удар.')}
  if(fight.clk<(fight.weak||0))d=Math.max(1,Math.round(d*(fight.weakv||.6)));if(fight.clk<(fight.skin||0))d=Math.max(1,Math.round(d*.4));
@@ -718,7 +719,8 @@ function runeIn(k){const it=MODIT;if(!it||!(S.runes&&S.runes[k]>0)||!stFits(it,k
 function runeOut(i){const it=MODIT;if(!it||!it.rn||!it.rn[i])return;const k=it.rn[i],c=rCost(k);if((S.iron|0)<c){log(`Нужно ${c} железа, чтобы извлечь камень.`,'sys');return}S.iron-=c;it.rn.splice(i,1);addRune(k);log(`Камень извлечён: ${rName(k)} (−${c} железа).`,'sys');save();render();itemModal(it)}
 
 // ===== Мировой босс =====
-let WB={},wbUn=null,WREP=null,WCL=null;const WBN=['Фенрир','Хати','Скёль','Хрунгнир','Тиацци','Нидхёгг','Гарм'],WBMAX=40000,WBCD=3600000,WBT=45000;
+let WB={},wbUn=null,WREP=null,WCL=null;const WBPCT=.11;// удар мирового босса: 11% твоего макс. здоровья (броня снижает до 40%)
+const WBN=['Фенрир','Хати','Скёль','Хрунгнир','Тиацци','Нидхёгг','Гарм'],WBMAX=40000,WBCD=3600000,WBT=45000;
 // особенности мировых боссов: spd — раз в сколько секунд бьёт, chs — за сколько секунд заряжается твой удар
 const WBX=[
  {t:'Волк-губитель',d:'Быстрый: кусает раз в 3,5 секунды, но слабее обычного.',spd:3.5,atk:.85},
@@ -736,7 +738,7 @@ function wbSub(){if(!DB||wbUn)return;wbUn=DB.collection('world').limit(20).onSna
  if(tab==='boss'&&!fight)ui()},()=>{})}
 function startWB(){const B=WB['b'+DAY()];if(!B||B.killed||fight||!DB||S.lvl<WBLV)return;if(wbLeft()>0)return;if(S.en<3){log('Нужно 3 энергии.','sys');return render()}if(S.hp<=0){log('Ты ранен. Отдохни у костра.','sys');return render()}
  fixNum();HREP=null;REP=null;WREP=null;S.en-=3;S.wbnext=Date.now()+WBCD;ev('boss');
- const e=mkEnemy(wbName(B.day),Math.max(30,S.lvl+5),1.3),X=wbX(B.day);e.atk*=.7*(X.atk||1);if(X.def)e.def*=X.def;if(X.crit)e.crit=X.crit;if(X.tr)e.tr=X.tr;e.spd=X.spd||5;e.hp=Math.max(1,B.hp);e.max=B.max;e.title=`Мировой босс. Бой длится ${WBT/1000} секунд, урон идёт в общий счёт всех игроков.`;
+ const e=mkEnemy(wbName(B.day),Math.max(30,S.lvl+5),1.3),X=wbX(B.day);e.atk*=.7*(X.atk||1);if(X.def)e.def*=X.def;if(X.crit)e.crit=X.crit;if(X.tr)e.tr=X.tr;e.spd=X.spd||5;e.wbm=X.atk||1;e.hp=Math.max(1,B.hp);e.max=B.max;e.title=`Мировой босс. Бой длится ${WBT/1000} секунд, урон идёт в общий счёт всех игроков.`;
  fight={e,wb:{day:B.day},chs:X.chs||5,ch:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
  log(`Мировой босс: ${e.name}!`,'sys');tab='boss';save();render()}
 function wbEnd(why){const d=fight.s.dealt,D=fight.wb;fight=null;if(S.hp<=0)S.hp=1;WREP={dealt:d,why};log(`Мировой босс: нанесено ${d} урона.`,'sys');
@@ -750,7 +752,7 @@ function bossView(){if(!DB)return'<div class="panel"><p>Мировой босс 
  const top=Object.entries(B.dmg||{}).sort((a,b)=>b[1]-a[1]).slice(0,10),L=wbLeft(),mine=(B.dmg||{})[UID]|0;
  const rew=Object.keys(WB).filter(x=>WB[x].killed&&((WB[x].dmg||{})[UID]|0)>0&&!(S.wbcl||[]).includes(x));
  let h=(WCL?`<div class="panel" style="border-left:4px solid var(--moss)"><h3>Награда за босса</h3><p style="margin:0 0 4px">Твоя доля урона: ${WCL.sh}%. Серебро <b class="g">+${WCL.g}</b>, золото <b class="g">+${WCL.au|0}</b>, железо <b>+${WCL.ir}</b>, пыль <b style="color:var(--myth)">+5</b>, ${rName(WCL.rk)}.</p>${WCL.it?irow(WCL.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<button class="b alt" data-a="wclclose">Закрыть</button></div>`:'')+
- `<div class="panel" style="border-left:4px solid var(--blood)"><div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">${wbIc(B.day,88)}<div><h3 style="margin:0">Мировой босс: ${wbName(B.day)}</h3><small style="color:var(--mute)">${wbX(B.day).t}</small><p style="margin:4px 0 0;font-size:15px;color:var(--blood);font-weight:700">${wbX(B.day).d}</p></div></div><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Один босс на весь Север, новый каждый день. Бой 45 секунд, 3 энергии, раз в час. Когда босс пал, все, кто его бил, забирают награду: серебро, 1 золото, железо, камень и шанс на вещь. Чем больше твоя доля урона, тем богаче награда.</p>
+ `<div class="panel" style="border-left:4px solid var(--blood)"><div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">${wbIc(B.day,88)}<div><h3 style="margin:0">Мировой босс: ${wbName(B.day)}</h3><small style="color:var(--mute)">${wbX(B.day).t}</small><p style="margin:4px 0 0;font-size:15px;color:var(--blood);font-weight:700">${wbX(B.day).d}</p></div></div><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Один босс на весь Север, новый каждый день. Бой 45 секунд, 3 энергии, раз в час. Босс бьёт на процент твоего здоровья (около 11% за удар, броня снижает урон до 40%) — держи под рукой блок и бутылку. Когда босс пал, все, кто его бил, забирают награду: серебро, 1 золото, железо, камень и шанс на вещь. Чем больше твоя доля урона, тем богаче награда.</p>
  <div class="lbl"><span><b>${wbName(B.day)}</b></span><span>${B.killed?'повержен':B.hp.toLocaleString('ru-RU')+'/'+B.max.toLocaleString('ru-RU')}</span></div>${bar(B.hp,B.max,'--blood')}<p style="margin:8px 0">Твой урон сегодня: <b>${mine.toLocaleString('ru-RU')}</b></p>
  ${B.killed?'<p style="color:var(--moss);font-weight:700;margin:0">Босс повержен. Новый появится завтра.</p>':L>0?`<button class="b" disabled style="width:100%">Следующая атака через ${hm(L)}</button>`:`<button class="b red" data-a="wb" style="width:100%" ${S.en<3||S.hp<=0?'disabled':''}>Атаковать (3 энергии)</button>`}</div>`;
  h+=`<div class="panel" style="display:flex;gap:10px;align-items:center">${wbIc(B.day+1,48)}<div><small style="color:var(--mute)">Завтра придёт</small><br><b>${wbName(B.day+1)}</b> — ${wbX(B.day+1).t}<br><small style="color:var(--mute)">${wbX(B.day+1).d}</small></div></div>`;
@@ -1185,7 +1187,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.21';
+const GVER='1.4.22';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1492,7 +1494,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.21</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.22</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
