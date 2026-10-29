@@ -124,6 +124,11 @@ service cloud.firestore {
       // друзьям — бесплатно, остальным — письмо за 10 серебра (списывается в игре)
       allow create: if signed() && lg() in pid.split('~') && request.resource.data.from == lg()
         && request.resource.data.text is string && request.resource.data.text.size() <= 500;
+      // получатель забирает вещь из письма: можно поменять только claimed, и только один раз
+      allow update: if signed() && lg() in pid.split('~') && lg() != resource.data.from
+        && resource.data.get('claimed', true) == false
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed'])
+        && request.resource.data.claimed == true;
     }
     // Список переписок (письма не-друзьям): dmi/{чей список}/c/{собеседник}
     match /dmi/{uid}/c/{oid} {
