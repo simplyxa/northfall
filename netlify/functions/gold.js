@@ -116,6 +116,8 @@ exports.handler = async (event) => {
           if (!bs.exists) fail(404, 'Босс не найден');
           const B = bs.data();
           if (!B.killed || !((B.dmg || {})[uid] > 0)) fail(409, 'Нет награды');
+          const sv = await tx.get(db.collection('saves').doc(uid));
+          if (!sv.exists || (sv.data().lvl | 0) < 25) fail(409, 'Мировой босс доступен с 25 уровня');
           key = 'wb'; g = BOSSG.wb; cap = BOSSCAP.wb;
         } else fail(400, 'Неверные данные');
         if (!g) fail(409, 'За этого босса золото не даётся');
