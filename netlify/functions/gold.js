@@ -4,6 +4,7 @@ const admin = require('../lib/fb');
 const DOM = '@northfall.game';
 const ADMINS = ['shtorm1', 'admin'];
 const XLIM = 5, REFG = 10, MKFEE = 0.05, START_CAP = 1000;
+const WALLET_SINCE = Date.UTC(2026, 9, 30); // 30.10.2026: новые аккаунты начинают с пустым кошельком
 // золото за боссов: сколько даётся и сколько раз в день (r3 — Ледяной змей, r4 — Сурт, wb — мировой босс)
 const BOSSG = { r3: 1, r4: 3, wb: 1 }, BOSSCAP = { r3: 2, r4: 1, wb: 1 };
 const j = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
@@ -33,7 +34,10 @@ exports.handler = async (event) => {
     const ref = W(id), sn = await tx.get(ref);
     if (sn.exists) return { ref, w: sn.data() };
     const sv = await tx.get(db.collection('saves').doc(id));
-    const au = Math.max(0, Math.min(START_CAP, Math.floor((sv.exists && sv.data().au) || 0)));
+    // перенос золота из сохранения — только для аккаунтов, созданных до серверного кошелька
+    let old = false;
+    try { const u = await admin.auth().getUserByEmail(id + DOM); old = Date.parse(u.metadata.creationTime) < WALLET_SINCE; } catch (e) {}
+    const au = old ? Math.max(0, Math.min(START_CAP, Math.floor((sv.exists && sv.data().au) || 0))) : 0;
     const w = { au, created: Date.now() };
     tx.set(ref, w);
     return { ref, w };
