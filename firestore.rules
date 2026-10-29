@@ -93,11 +93,17 @@ service cloud.firestore {
         && (request.resource.data.st == resource.data.st || (resource.data.by != lg() && request.resource.data.st == 'ok'));
       allow delete: if signed() && (lg() == resource.data.a || lg() == resource.data.b);
     }
-    // Личные сообщения: только между друзьями
+    // Личные сообщения и письма
     match /dm/{pid}/m/{mid} {
       allow read: if signed() && lg() in pid.split('~');
+      // друзьям — бесплатно, остальным — письмо за 10 серебра (списывается в игре)
       allow create: if signed() && lg() in pid.split('~') && request.resource.data.from == lg()
-        && get(/databases/$(database)/documents/friends/$(pid)).data.st == 'ok';
+        && request.resource.data.text is string && request.resource.data.text.size() <= 500;
+    }
+    // Список переписок (письма не-друзьям): dmi/{чей список}/c/{собеседник}
+    match /dmi/{uid}/c/{oid} {
+      allow read: if signed() && lg() == uid;
+      allow write: if signed() && (lg() == uid || lg() == oid);
     }
 
     // Приглашения друзей: refs/{кто пригласил}/got/{кого пригласили}
