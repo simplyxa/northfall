@@ -1293,7 +1293,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.29';
+const GVER='1.4.30';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1424,7 +1424,8 @@ const CMAXL=10,CXK=10,cxOf=d=>Math.max(1,Math.round(d/CXK)),cNeed=L=>Math.round(
 function cxFlush(){if(!S||fight||!(S.cxq>0)||!DB||!S.clan)return;const n=S.cxq,cid=S.clan;S.cxq=0;S.cxt=(S.cxt|0)+n;save();
  const ref=DB.collection('clans').doc(cid);ref.get().then(sn=>{if(!sn.exists)return;const d=sn.data(),L0=cLv(d).L,nx=(d.xp|0)+n,w=d.wq&&d.wq.wk===curS()?d.wq:{wk:curS(),xp:0};return ref.update({xp:nx,wq:{...w,xp:(w.xp|0)+n}}).then(()=>{const L1=cLv({xp:nx}).L;if(L1>L0){log(`Клан достиг ${L1} уровня!`,'hit');clog(`Клан достиг ${L1} уровня! Мест в клане: ${5+3*(L1-1)}.`,'⭐',cid)}})}).catch(()=>{S.cxq=(S.cxq|0)+n;S.cxt-=n})}
 const treas=my=>{const t={gold:0,iron:0};DEP.forEach(d=>{t.gold+=d.gold|0;t.iron+=d.iron|0});t.gold-=(my.spent||{}).gold|0;t.iron-=(my.spent||{}).iron|0;return t};
-const ctabs=()=>`<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">${[['main','Клан'],['log','Летопись'],['dun','Подземелье'],['vault','Казна'],['build','Постройки']].map(x=>`<button class="b ${ctab===x[0]?'':'alt'}" data-ct="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+const CTI=["/img/06a594f425b0f8.webp", "/img/e355cd8a8a1357.webp", "/img/d008ee66c51018.webp", "/img/c20eeac237543e.webp", "/img/6e6aa04c537bb2.webp"];
+const ctabs=()=>`<div class="htab" style="grid-template-columns:repeat(5,1fr)">${[['main','Клан'],['log','Летопись'],['dun','Подземелье'],['vault','Казна'],['build','Постройки']].map((x,i)=>`<button class="${ctab===x[0]?'on':''}" data-ct="${x[0]}" style="padding:6px 2px;min-height:0"><img src="${CTI[i]}" alt="" width="40" height="40" style="display:block"><small style="font-size:11px">${x[1]}</small></button>`).join('')}</div>`;
 function vaultView(my){
  const t=treas(my),top=[...DEP].sort((x,y)=>((y.gold|0)+(y.iron|0)*10)-((x.gold|0)+(x.iron|0)*10)).slice(0,8);
  const btn=(k,n,l)=>`<button class="b alt" data-dn="${k}${n}" ${(k==='g'?S.gold:(S.iron|0))<n?'disabled':''}>${l}</button>`;
@@ -1611,7 +1612,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.29</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.30</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
