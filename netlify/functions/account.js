@@ -30,21 +30,25 @@ exports.handler = async (event) => {
       if (!process.env.RESEND_API_KEY) return j(503, { error: 'Восстановление пароля пока не настроено. Напиши на admin@playnorthfall.online.' });
       const id = String(q.login || '').trim().toLowerCase();
       const ok = j(200, { ok: true, msg: 'Если к этому логину привязана почта, письмо со ссылкой уже отправлено. Проверь и папку «Спам».' });
-      if (!/^[a-z0-9_]{3,16}$/.test(id)) return ok;
-      const ref = db.collection('priv').doc(id), sn = await ref.get();
+      if (!/^[a-zа-яё0-9_]{3,16}$/.test(id)) return ok;
+      // можно ввести и ник: находим настоящий логин
+      let login = /^[a-z0-9_]{3,16}$/.test(id) ? id : '';
+      { const nm = await db.collection('names').doc(id).get(); if (nm.exists && nm.data().uid) { const alt = nm.data().uid; const own = login ? await db.collection('priv').doc(login).get() : null; if (!own || !own.exists || !own.data().email) login = alt; } }
+      if (!login) return ok;
+      const ref = db.collection('priv').doc(login), sn = await ref.get();
       if (!sn.exists || !sn.data().email) return ok;
       const P = sn.data();
       if (Date.now() - (P.resetTs || 0) < RESET_GAP) return ok;
       await ref.set({ resetTs: Date.now() }, { merge: true });
       let link;
-      try { link = await admin.auth().generatePasswordResetLink(id + DOM); } catch (e) { console.error('reset link', e.message); return ok; }
+      try { link = await admin.auth().generatePasswordResetLink(login + DOM); } catch (e) { console.error('reset link', e.message); return ok; }
       const html = `<div style="font-family:Georgia,serif;font-size:16px;line-height:1.5;color:#222">
 <h2 style="margin:0 0 12px">Northfall: Barbarians</h2>
-<p>Кто-то (надеемся, ты) попросил сбросить пароль героя <b>${id}</b>.</p>
+<p>Кто-то (надеемся, ты) попросил сбросить пароль героя <b>${login}</b>.</p>
 <p><a href="${link}" style="display:inline-block;background:#c79a3c;color:#140f08;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Задать новый пароль</a></p>
 <p style="color:#666;font-size:14px">Ссылка действует 1 час. Если ты не просил сброс — просто удали это письмо, пароль останется прежним.</p>
-<p style="color:#666;font-size:14px">Вход в игру: логин <b>${id}</b> и новый пароль на <a href="https://playnorthfall.online">playnorthfall.online</a></p></div>`;
-      const text = `Northfall: Barbarians\n\nСброс пароля героя ${id}.\nЗадать новый пароль: ${link}\n\nСсылка действует 1 час. Если ты не просил сброс — удали письмо.`;
+<p style="color:#666;font-size:14px">Вход в игру: логин <b>${login}</b> (или твой ник) и новый пароль на <a href="https://playnorthfall.online">playnorthfall.online</a></p></div>`;
+      const text = `Northfall: Barbarians\n\nСброс пароля героя ${login}.\nЗадать новый пароль: ${link}\n\nСсылка действует 1 час. Если ты не просил сброс — удали письмо.`;
       try { await sendMail(P.email, 'Сброс пароля — Northfall', html, text); } catch (e) { console.error(e.message); return j(502, { error: 'Не удалось отправить письмо. Попробуй позже.' }); }
       return ok;
     }

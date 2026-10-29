@@ -53,6 +53,13 @@ service cloud.firestore {
       allow read, delete: if admin();
     }
 
+    // Ники для входа: names/{ник в нижнем регистре} → {uid}; читают все (нужно для входа), пишет владелец
+    match /names/{n} {
+      allow read: if true;
+      allow create: if signed() && request.resource.data.uid == lg();
+      allow update, delete: if signed() && resource.data.uid == lg() && (request.resource == null || request.resource.data.uid == lg());
+    }
+
     // Публичная карточка игрока: читают все, пишет только владелец
     match /players/{id} {
       allow read: if signed();

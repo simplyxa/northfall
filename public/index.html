@@ -289,7 +289,7 @@ const guestBar=()=>GUEST?`<div class="panel" style="border-left:4px solid var(--
 let PWMSG='',FBUSY=false,MYMAIL=null,MMSG='';
 async function acctApi(q,auth){const h={'Content-Type':'application/json'};if(auth){if(!FBA||!FBA.currentUser)throw new Error('Войди в игру заново');h.Authorization='Bearer '+await FBA.currentUser.getIdToken()}
  const r=await fetch('/.netlify/functions/account',{method:'POST',headers:h,body:JSON.stringify(q)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('ошибка '+r.status));return j}
-function forgotGo(){if(FBUSY)return;const id=($('#lg').value||'').trim().toLowerCase();if(!LOGIN_RE.test(id)){PWMSG='Введи логин героя.';return render()}FBUSY=true;PWMSG='Отправляю…';render();
+function forgotGo(){if(FBUSY)return;const id=($('#lg').value||'').trim().toLowerCase();if(!/^[a-zа-яё0-9_]{3,16}$/.test(id)){PWMSG='Введи логин или ник героя.';return render()}FBUSY=true;PWMSG='Отправляю…';render();
  acctApi({a:'reset',login:id}).then(j=>{PWMSG=j.msg||'Письмо отправлено.'}).catch(e=>{PWMSG=e.message}).finally(()=>{FBUSY=false;render()})}
 function mailLoad(){if(MYMAIL!==null||!UID||GUEST)return;MYMAIL='…';acctApi({a:'getmail'},1).then(j=>{MYMAIL=j.email||''}).catch(()=>{MYMAIL=''}).finally(()=>ui())}
 function mailSave(){const v=(($('#mymail')||{}).value||'').trim();MMSG='Сохраняю…';render();acctApi({a:'setmail',email:v},1).then(j=>{MYMAIL=j.email||'';MMSG=MYMAIL?'Почта привязана: '+MYMAIL:'Почта отвязана.'}).catch(e=>{MMSG=e.message}).finally(()=>render())}
@@ -327,6 +327,14 @@ const pushView=()=>`<div class="panel"><h3>Уведомления на теле�
 const pushAsk=()=>UID&&!(typeof GUEST!=='undefined'&&GUEST)&&S.lvl>=5&&!S.push&&!S.pushNo&&(pushOk()||isIOS())?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0 0 8px;font-size:15px">🔔 Включить уведомления? Напомним, когда энергия полна, придёт сообщение или соберётся рейд.</p><div style="display:flex;gap:6px"><button class="b" data-a="pushon" style="flex:1;margin:0">Включить</button><button class="b alt" data-a="pushno" style="flex:1;margin:0">Не сейчас</button></div>${PUSHMSG?`<p style="margin:8px 0 0">${esc(PUSHMSG)}</p>`:''}</div>`:'';
 document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('[data-pk]');if(c)pushKind(c.dataset.pk)});
 function goParam(){try{const g=new URLSearchParams(location.search).get('go');if(!g)return;history.replaceState(null,'',location.pathname);const T={friends:'friends',raid:'raid',boss:'boss',hunt:'home'};if(T[g])tab=T[g]}catch(e){}}
+
+// ===== Ники как логины =====
+async function nickFree(v){const l=v.toLowerCase();const sn=await DB.collection('names').doc(l).get();if(sn.exists&&sn.data().uid!==UID)return false;
+ if(/^[a-z0-9_]{3,16}$/.test(l)&&l!==UID){const p=await DB.collection('players').doc(l).get();if(p.exists)return false}return true}
+async function nickSet(old,v){const nl=v.toLowerCase(),ol=String(old||'').toLowerCase();await DB.collection('names').doc(nl).set({uid:UID,name:v,ts:Date.now()});
+ if(ol&&ol!==nl&&ol!==UID){try{const sn=await DB.collection('names').doc(ol).get();if(sn.exists&&sn.data().uid===UID)await DB.collection('names').doc(ol).delete()}catch(e){}}}
+async function nickUid(id){try{const sn=await DB.collection('names').doc(id).get();return sn.exists?sn.data().uid:null}catch(e){return null}}
+const NICKIN_RE=/^[a-zа-яё0-9_]{3,16}$/;
 let ENT=0,CRE=0,DBG='';
 function enter(h){ENT++;setTimeout(()=>{goParam();render()},0);S=JSON.parse(JSON.stringify(h));S._k=Math.random().toString(36).slice(2,6);norm();loginCheck();dqEnsure();exSettle(true);if(S.exlast&&S.exlast.done&&!S.exlast.seen){EXREP=S.exlast;S.exlast.seen=true}tab='home';fight=null;logs=[];regen();log(`С возвращением, ${S.name}.`,'sys');applyAdmin();save();render()}
 function logout(){clearTimeout(syncT);if(S){S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushDb();LOC=S}try{localStorage.removeItem(SES)}catch(e){}try{FBA&&FBA.signOut()}catch(e){}S=null;UID=null;fight=null;tab='home';scr='login';logs=[];AM='';render()}
@@ -705,10 +713,13 @@ function statReset(){const b=CL[S.cls].s,c=100*S.lvl;if(S.gold<c)return;let back
 const SETX=[];let SETMSG='',SETBUSY=false;
 const NICK_RE=/^[A-Za-zА-Яа-яЁё0-9_]{3,16}$/,NICKAU=50,CLSAU=30,CLSFREE=3;
 const nickTaken=v=>PL.some(p=>p.id!==UID&&String(p.name||'').toLowerCase()===v.toLowerCase());
-function nickDo(){if(SETBUSY)return;const v=(($('#nnick')||{}).value||'').trim();if(!NICK_RE.test(v)){SETMSG='Ник: 3–16 символов — буквы (русские или латинские), цифры и «_».';return render()}
+async function nickDo(){if(SETBUSY)return;const v=(($('#nnick')||{}).value||'').trim();if(!NICK_RE.test(v)){SETMSG='Ник: 3–16 символов — буквы (русские или латинские), цифры и «_».';return render()}
  if(v===S.name){SETMSG='Это и так твой ник.';return render()}if(nickTaken(v)){SETMSG='Такой ник уже занят.';return render()}
- const ok=()=>{const old=S.name;S.name=v;S.nickN=(S.nickN|0)+1;SETMSG=`Ник изменён: ${old} → ${v}.`;log(SETMSG,'sys');save();if(typeof news==='function')news(`${old} теперь зовётся ${v}.`);render()};
- if(!S.nickN)return ok();if((S.au|0)<NICKAU){SETMSG=`Нужно ${NICKAU} золота.`;return render()}SETBUSY=true;GOLD.pay(NICKAU,'nick',{v},()=>{SETBUSY=false;ok()});setTimeout(()=>{SETBUSY=false},8000)}
+ if(!S.nickN&&false){}if(S.nickN&&(S.au|0)<NICKAU){SETMSG=`Нужно ${NICKAU} золота.`;return render()}
+ SETBUSY=true;SETMSG='Проверяю ник…';render();
+ try{if(typeof nickFree==='function'&&!(await nickFree(v))){SETBUSY=false;SETMSG='Такой ник или логин уже занят.';return render()}}catch(e){SETBUSY=false;SETMSG='Не удалось проверить ник, попробуй ещё раз.';return render()}
+ const ok=async()=>{const old=S.name;try{if(typeof nickSet==='function')await nickSet(old,v)}catch(e){}S.name=v;S.nickN=(S.nickN|0)+1;SETBUSY=false;SETMSG=`Ник изменён: ${old} → ${v}.`+(typeof nickSet==='function'?` Теперь входи в игру с ником «${v}» и прежним паролем.`:'');log(SETMSG,'sys');save();if(typeof news==='function')news(`${old} теперь зовётся ${v}.`);render()};
+ if(!S.nickN)return ok();GOLD.pay(NICKAU,'nick',{v},()=>ok());setTimeout(()=>{if(SETBUSY){SETBUSY=false;render()}},10000)}
 function clsDo(k){if(SETBUSY||!CL[k]||k===S.cls)return;const free=(S.clsN|0)<CLSFREE;
  const ok=()=>{const ob=CL[S.cls].s,nb=CL[k].s,oldSk=skAll().map(x=>x[0]);for(const st in S.st){const add=Math.max(0,S.st[st]-(ob[st]|0));S.st[st]=(nb[st]|0)+add}
   const was=CL[S.cls].n;S.cls=k;S.clsN=(S.clsN|0)+1;if(S.skq){const q=oldSk.map(id=>S.skq[id]|0);S.skq={};skAll().forEach((x,i)=>S.skq[x[0]]=q[i]|0)}
@@ -716,7 +727,7 @@ function clsDo(k){if(SETBUSY||!CL[k]||k===S.cls)return;const free=(S.clsN|0)<CLS
  ask(`Сменить класс на «${CL[k].n}»? ${free?`Бесплатно (осталось бесплатных смен: ${CLSFREE-(S.clsN|0)}).`:`Стоит ${CLSAU} золота.`} Вложенные очки статов и качество умений сохранятся.`,()=>{if(free)return ok();if((S.au|0)<CLSAU){SETMSG=`Нужно ${CLSAU} золота.`;return render()}SETBUSY=true;GOLD.pay(CLSAU,'class',{k},()=>{SETBUSY=false;ok()});setTimeout(()=>{SETBUSY=false},8000)},'Сменить')}
 function settingsView(){const fr=!S.nickN,cf=Math.max(0,CLSFREE-(S.clsN|0));
  return (SETMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(SETMSG)}</p></div>`:'')+
- `<div class="panel"><h3>Ник</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Имя героя, которое видят другие игроки. ${fr?'<b style="color:var(--moss)">Первая смена — бесплатно.</b>':`Смена стоит <b class="g">${NICKAU} золота</b>.`}${UID?` Для входа в игру по-прежнему используй логин <b>${esc(UID)}</b>.`:''}</p><input id="nnick" maxlength="16" value="${esc(S.name)}" autocapitalize="none" spellcheck="false"><button class="b" data-a="nickdo" style="width:100%" ${SETBUSY?'disabled':''}>Сменить ник${fr?' бесплатно':` (${NICKAU} зол.)`}</button></div>`+
+ `<div class="panel"><h3>Ник</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Имя героя, которое видят другие игроки. ${fr?'<b style="color:var(--moss)">Первая смена — бесплатно.</b>':`Смена стоит <b class="g">${NICKAU} золота</b>.`}${UID?` После смены входи в игру с новым ником и прежним паролем.`:''}</p><input id="nnick" maxlength="16" value="${esc(S.name)}" autocapitalize="none" spellcheck="false"><button class="b" data-a="nickdo" style="width:100%" ${SETBUSY?'disabled':''}>Сменить ник${fr?' бесплатно':` (${NICKAU} зол.)`}</button></div>`+
  `<div class="panel"><h3>Класс · сейчас ${CL[S.cls].n}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Попробуй все пути воина. ${cf?`<b style="color:var(--moss)">Бесплатных смен осталось: ${cf} из ${CLSFREE}.</b>`:`Смена стоит <b class="g">${CLSAU} золота</b>.`} Вложенные очки статов переносятся, качество умений тоже.</p>${Object.keys(CL).map(k=>`<button class="cls ${S.cls===k?'on':''}" data-cs="${k}" ${S.cls===k?'disabled':''}><b>${CL[k].n}${S.cls===k?' · текущий':''}</b><br>${CL[k].d}</button>`).join('')}</div>`+
  (typeof setOnline==='function'?setOnline():'')+`<div class="panel"><h3>Звук</h3><label class="tgl"><input type="checkbox" data-a="mute" ${S.mute?'':'checked'}><span><b>Звуки в бою</b></span></label></div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cs]');if(!b||b.disabled)return;e.preventDefault();clsDo(b.dataset.cs)});
@@ -1282,7 +1293,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.28';
+const GVER='1.4.29';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1573,10 +1584,13 @@ async function doLogin(){
  if(AB)return;
  const id=($('#lg').value||'').trim().toLowerCase(),pw=$('#pw').value||'';
  if(!DB||!FBA){AM='База данных недоступна.';return render()}
- if(!LOGIN_RE.test(id)||!pw){AM='Введи логин и пароль.';return render()}
+ if(!NICKIN_RE.test(id)||!pw){AM='Введи логин (или ник) и пароль.';return render()}
  AB=true;AM='';render();
- try{await FBA.signInWithEmailAndPassword(id+MAILDOM,pw);AB=false;await enterAccount(id);if(!S)render();return}
- catch(e){AM=fbErr(e)}
+ let err=null;
+ if(LOGIN_RE.test(id)){try{await FBA.signInWithEmailAndPassword(id+MAILDOM,pw);AB=false;await enterAccount(id);if(!S)render();return}catch(e){err=e}}
+ const al=await nickUid(id);
+ if(al&&al!==id){try{await FBA.signInWithEmailAndPassword(al+MAILDOM,pw);AB=false;await enterAccount(al);if(!S)render();return}catch(e){err=e}}
+ AM=err?fbErr(err):'Неверный логин или пароль.';
  AB=false;render()}
 async function migrateLegacy(){try{localStorage.removeItem(KEY)}catch(e){}LEG=null}
 async function doReg(){
@@ -1585,6 +1599,7 @@ async function doReg(){
  if(!DB||!FBA){AM='База данных недоступна: регистрация невозможна.';return render()}
  if(!LOGIN_RE.test(id)){AM='Логин: 3–16 символов, латинские буквы, цифры и «_».';return render()}
  if(pw.length<6){AM='Пароль: минимум 6 символов.';return render()}
+ {const al=await nickUid(id);if(al&&al!==id){AM='Этот логин уже занят ником другого игрока.';return render()}}
  if(pw!==pw2){AM='Пароли не совпадают.';return render()}
  const leg=useLeg&&LEG;
  AB=true;AM='';render();
@@ -1596,14 +1611,14 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.28</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.29</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
  const gbtn=(DBS==='ok'&&(scr==='login'||scr==='reg'))?(LEG&&LEG.guest?`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Продолжить без аккаунта · ${esc(LEG.name)}, ур. ${LEG.lvl}</button>`:`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Играть сразу</button><p style="margin:6px 0 12px;font-size:14px;text-align:center;color:#b8c1c4">Без регистрации. Аккаунт можно создать позже — герой сохранится.</p>`):'';
  let body;
  if(scr==='gnew')body=`<p style="margin:0 0 6px">Выбери класс и аватар — и в бой. Имя героя станет твоим логином, когда сохранишь героя.</p>`+heroFields()+`<button class="b" data-a="gmk" style="width:100%">В бой!</button><button class="b alt" data-sc="login" style="width:100%">Назад</button>`;
- else if(scr==='login')body=`<h3>Логин</h3>${inp('lg','Логин','text','username')}<h3>Пароль</h3>${inp('pw','Пароль','password','current-password')}${err}<button class="b" data-a="login" style="width:100%" ${AB||DBS!=='ok'?'disabled':''}>${AB?'Проверяю…':'Войти'}</button>${DBS==='off'?`<button class="b alt" data-a="guest" style="width:100%">Играть без аккаунта (только в этом браузере)</button>`:''}<p style="font-size:14px;color:var(--mute);margin:10px 0 0">Нет аккаунта? Откройте вкладку «Регистрация».</p><button class="lnk" data-sc="forgot" style="padding:8px 0 0;color:#d6b56a">Забыли пароль?</button>`;
+ else if(scr==='login')body=`<h3>Логин</h3>${inp('lg','Логин или ник','text','username')}<h3>Пароль</h3>${inp('pw','Пароль','password','current-password')}${err}<button class="b" data-a="login" style="width:100%" ${AB||DBS!=='ok'?'disabled':''}>${AB?'Проверяю…':'Войти'}</button>${DBS==='off'?`<button class="b alt" data-a="guest" style="width:100%">Играть без аккаунта (только в этом браузере)</button>`:''}<p style="font-size:14px;color:var(--mute);margin:10px 0 0">Нет аккаунта? Откройте вкладку «Регистрация».</p><button class="lnk" data-sc="forgot" style="padding:8px 0 0;color:#d6b56a">Забыли пароль?</button>`;
  else if(scr==='forgot')body=`<h3>Восстановление пароля</h3><p style="margin:0 0 8px;font-size:15px">Введи логин героя. Если к нему привязана почта, туда придёт ссылка для нового пароля.</p>${inp('lg','Логин','text','username')}<button class="b" data-a="fgo" style="width:100%" ${FBUSY?'disabled':''}>Отправить ссылку</button>${PWMSG?`<p style="margin:8px 0 0">${esc(PWMSG)}</p>`:''}<p style="font-size:14px;margin:10px 0 0">Почта не привязана? Напиши на admin@playnorthfall.online с той почты, где сможешь подтвердить, что герой твой.</p>`;
  else if(scr==='reg')body=`<h3>Логин</h3>${inp('lg','Логин','text','username')}<h3>Пароль</h3>${inp('pw','Пароль (от 6 символов)','password','new-password')}${inp('pw2','Повтори пароль','password','new-password')}<input id="em" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="120" placeholder="Почта — чтобы восстановить пароль (по желанию)" aria-label="Почта"><p style="font-size:14px;color:var(--mute);margin:0 0 10px">Логин станет именем твоего героя: 3–16 символов, латинские буквы, цифры и «_». Восстановления пароля нет, запомни его.</p>`+(LEG?`<div class="panel" style="display:flex;align-items:center;gap:12px;margin:0 0 10px">${avatar(LEG.av,52)}<div style="flex:1"><b>${LEG.guest?'Твой герой без аккаунта':'Найден герой «'+esc(LEG.name)+'»'}</b><br><span style="color:var(--mute);font-size:15px">ур. ${LEG.lvl} · рейтинг ${LEG.rating}</span></div><button class="b ${useLeg?'':'alt'}" data-a="legtoggle">${useLeg?'Привязан':'Привязать'}</button></div>`:'')+((LEG&&useLeg)?'':heroFields())+err+`<button class="b" data-a="reg" style="width:100%" ${AB||DBS!=='ok'?'disabled':''}>${AB?'Создаю аккаунт…':'Зарегистрироваться'}</button>`;
  else body=`<p style="margin:0 0 6px">Героя <b>${esc(UID||'')}</b> ещё нет. Выбери класс и аватар.</p>`+heroFields()+err+`<button class="b" data-a="mkhero" style="width:100%">Создать героя</button><button class="b alt" data-a="logout" style="width:100%">Выйти из аккаунта</button>`;
