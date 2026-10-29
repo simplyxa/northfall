@@ -183,9 +183,9 @@ const MAILDOM='@northfall.game';
 <script>
 const ST={str:'Сила',hp:'Здоровье',arm:'Броня',reg:'Регенерация',en:'Энергия'};
 const CL={
- berserk:{n:'Берсерк',d:'Сила и здоровье: бьёт тяжело и долго стоит на ногах.',s:{str:6,hp:6,arm:3,reg:2,en:3}},
- hunter:{n:'Охотник',d:'Энергия и регенерация: больше боёв подряд и быстрее восстановление.',s:{str:4,hp:4,arm:3,reg:4,en:5}},
- shaman:{n:'Шаман',d:'Броня и регенерация: трудно убить, быстро залечивает раны.',s:{str:3,hp:5,arm:5,reg:5,en:2}}};
+ berserk:{n:'Берсерк',d:'Сила и здоровье: бьёт тяжело и долго стоит на ногах.',s:{str:6,hp:6,arm:3,reg:7,en:3}},
+ hunter:{n:'Охотник',d:'Энергия и регенерация: больше боёв подряд и быстрее восстановление.',s:{str:4,hp:4,arm:3,reg:9,en:5}},
+ shaman:{n:'Шаман',d:'Броня и регенерация: трудно убить, быстро залечивает раны.',s:{str:3,hp:5,arm:5,reg:10,en:2}}};
 const POT={b:{n:'Бутылка',sh:'Бутылка',h:2,en:1,p:40}};
 function drink(P){const h0=S.hp,e0=S.en;S.hp=Math.min(maxHp(),S.hp+Math.round(maxHp()*P.h));S.en=Math.min(maxEn(),S.en+Math.round(maxEn()*P.en));return[S.hp-h0,S.en-e0]}
 const BCD=90000,bleft=()=>Math.max(0,Math.min(BCD,(+S.bcd||0)-Date.now())),pdesc=P=>'Лечит '+Math.round(P.h*100)+'% здоровья и '+Math.round(P.en*100)+'% энергии. Только в бою, откат '+BCD/1000+' с';
@@ -212,7 +212,7 @@ function fixItem(it){if(it&&it.stv!==2){if(it.rn)it.rn=it.rn.map(rMig);it.stv=2}
   const n=gen(it.slot,SETLV[tr],tr===5?4:tr,rng,tr);it.tr=tr;it.rar=n.rar;it.lv=n.lv;it.name=n.name;it.b=n.b}
  if(it.fx!==3){const up=it.up|0,base=SETLV[it.tr];if(it.lv===base&&up>0){scaleTo(it,Math.min(LVMAX,base+5*up));}const sk=sockOf(it);while((it.rn||[]).length>sk)addRune(it.rn.pop())}
  it.fx=3;return it}
-function fixAll(){if(!S)return;stoneMig();if(S.pbv!==2){for(const it of [...Object.values(S.eq||{}),...(S.inv||[]),...(S.chest||[])])if(it&&!it.boss)it.pb=1;S.pbv=2}if(S.stv3!==1){for(const it of [...Object.values(S.eq||{}),...(S.inv||[]),...(S.chest||[])]){if(!it||!it.rn)continue;const keep=[];for(const k of it.rn){if(stFits(it,k))keep.push(k);else addRune(k)}it.rn=keep}S.stv3=1}for(const k in S.eq||{})fixItem(S.eq[k]);(S.inv||[]).forEach(fixItem);(S.chest||[]).forEach(fixItem)}
+function fixAll(){if(!S)return;stoneMig();if(S.regb!==1&&S.st){S.st.reg=(S.st.reg|0)+5;S.regb=1}if(S.pbv!==2){for(const it of [...Object.values(S.eq||{}),...(S.inv||[]),...(S.chest||[])])if(it&&!it.boss)it.pb=1;S.pbv=2}if(S.stv3!==1){for(const it of [...Object.values(S.eq||{}),...(S.inv||[]),...(S.chest||[])]){if(!it||!it.rn)continue;const keep=[];for(const k of it.rn){if(stFits(it,k))keep.push(k);else addRune(k)}it.rn=keep}S.stv3=1}for(const k in S.eq||{})fixItem(S.eq[k]);(S.inv||[]).forEach(fixItem);(S.chest||[]).forEach(fixItem)}
 function EQ(){const t={atk:0,def:0,hp:0,reg:0,en:0,crit:0},e=Object.values(S.eq||{}).filter(Boolean);
  for(const it of e){const m=1;for(const k in it.b)t[k]+=it.b[k]*m;for(const rk of it.rn||[])if(stFits(it,rk))t[SK[rT(rk)]]+=stBon(it,rk);if(it.en&&ENK[it.en.k])t[it.en.k]+=enVal(it)}
  if(e.length===10)t.def+=3;const sb=setBonus();if(sb)for(const k in t)t[k]*=1+sb.pct;for(const k in t)t[k]=Math.round(t[k]);return t}
@@ -361,7 +361,7 @@ function regen(){
 
 function create(name){
  CRE++;const c=CL[pick];
- S={name:name||'Безымянный',cls:pick,lvl:1,xp:0,gold:30,au:0,st:{...c.s},pts:0,hp:0,en:20,t:Date.now(),pt:{b:2},inv:[],eq:{},stock:null,stockLv:0,win:0,lose:0,rating:1000,clan:'',sid:Math.floor(Date.now()/604800000),srat:0,psid:0,psrat:0,sclaim:Math.floor(Date.now()/604800000),war:'',wp:0,wclaim:[],applied:[],av:{...av}};
+ S={regb:1,pbv:2,name:name||'Безымянный',cls:pick,lvl:1,xp:0,gold:30,au:0,st:{...c.s},pts:0,hp:0,en:20,t:Date.now(),pt:{b:2},inv:[],eq:{},stock:null,stockLv:0,win:0,lose:0,rating:1000,clan:'',sid:Math.floor(Date.now()/604800000),srat:0,psid:0,psrat:0,sclaim:Math.floor(Date.now()/604800000),war:'',wp:0,wclaim:[],applied:[],av:{...av}};
  S.reg=Date.now();S.rd=DAY();S.old=0;S.src=srcNow();S.act=[0];S.eq={w:gen('w',1,0),a:gen('a',1,0)};S.hp=maxHp();S.en=maxEn();log('Ты вышел из метели к костру племени. Здесь начинается твой путь.','sys');S.acc=UID||'';S._k=Math.random().toString(36).slice(2,6);tab='home';save();render();
 }
 
@@ -1333,7 +1333,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.41';
+const GVER='1.4.42';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1652,7 +1652,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.41</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.42</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
