@@ -876,7 +876,7 @@ const enCost=(it,r)=>r?{d:ENCD[r],au:ENG[r]}:{d:ENCD[0],s:enSil(it)};
 const enVal=it=>{const e=it&&it.en;if(!e||!ENK[e.k]||!EXTRA[e.k])return 0;const big=['atk','def','hp'].includes(e.k);return Math.max(1,Math.round(EXTRA[e.k](it.lv)*e.q*ENR[e.r|0]*ENK[e.k][1]*(big?RAR[it.rar][2]*.6:1)))};
 const enName=it=>it&&it.en&&ENK[it.en.k]?`${ENK[it.en.k][0]} (${ENRN[it.en.r|0].toLowerCase()})`:'';
 const enTxt=it=>it&&it.en&&ENK[it.en.k]?`${enName(it)}: ${LBL[it.en.k]} +${enVal(it)}`:'';
-const enBadge=(it,z)=>{if(!it||!it.en)return'';const r=it.en.r|0,b=Math.max(14,Math.round(z*.42));return ENIC[r]?`<img src="${ENIC[r]}" alt="" style="position:absolute;right:-5px;bottom:-5px;width:${b}px;height:${b}px;pointer-events:none;filter:drop-shadow(0 1px 2px #000)">`:`<span style="position:absolute;right:-5px;bottom:-5px;width:${b}px;height:${b}px;border-radius:50%;background:#111;box-shadow:0 0 0 2px ${RC[r]};display:flex;align-items:center;justify-content:center;font-size:${Math.round(b*.6)}px;line-height:1;pointer-events:none">✨</span>`};
+const enBadge=(it,z)=>{if(!it||!it.en)return'';const r=it.en.r|0,b=Math.max(14,Math.round(z*.42));return ENIC[r]?`<img src="${ENIC[r]}" alt="" style="position:absolute;right:-5px;top:-5px;width:${b}px;height:${b}px;pointer-events:none;filter:drop-shadow(0 1px 2px #000)">`:`<span style="position:absolute;right:-5px;top:-5px;width:${b}px;height:${b}px;border-radius:50%;background:#111;box-shadow:0 0 0 2px ${RC[r]};display:flex;align-items:center;justify-content:center;font-size:${Math.round(b*.6)}px;line-height:1;pointer-events:none">✨</span>`};
 let ENMSG='',ENBUSY=false;
 function enchKey(key){return key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.find(x=>x.uid===key)}
 function enApply(it,r){const ks=Object.keys(ENK),old=it.en?enTxt(it):'';it.en={k:ks[Math.floor(Math.random()*ks.length)],q:Math.round(rnd(.8,1.2)*100)/100,r};
@@ -1165,7 +1165,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='4.18';
+const GVER='4.19';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1472,7 +1472,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 4.18</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 4.19</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
