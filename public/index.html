@@ -244,7 +244,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const maxHp=()=>Math.round((40+S.st.hp*8+S.lvl*10+EQ().hp));
-const maxEn=()=>Math.round((15+S.st.en+EQ().en+(typeof cbl==='function'?cbl('tent'):0)));
+const maxEn=()=>Math.round((15+S.st.en*3+EQ().en+(typeof cbl==='function'?cbl('tent'):0)));
 const LVMAX=60,need=()=>{const L=S.lvl,m=L<=10?.3:Math.min(1,.3+.07*(L-10));return Math.round((20*L*L+.8*L*L*L)*m)};
 const cb=k=>{const c=S&&S.clan&&CLN.find(x=>x.id===S.clan);return c&&c.b?c.b[k]|0:0};
 const atk=()=>Math.round((S.st.str*2+EQ().atk+(typeof petAtk==='function'?petAtk():0))*(1+.03*cb('bar')+(typeof cbl==='function'?.02*cbl('rack'):0)));
@@ -319,7 +319,7 @@ async function pushOffAll(){try{const reg=await navigator.serviceWorker.ready,su
 function pushKind(k){S.pushOff=S.pushOff||[];S.pushOff=S.pushOff.includes(k)?S.pushOff.filter(x=>x!==k):[...S.pushOff,k];save();
  if(S.push&&pushOk())navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>sub&&pushApi({a:'sub',sub:sub.toJSON(),off:S.pushOff},1)).catch(()=>{});render()}
 function pushState(force){if(!S||!S.push||!UID||(typeof GUEST!=='undefined'&&GUEST))return;if(!force&&Date.now()-PUSHT<60000)return;PUSHT=Date.now();
- const m=maxEn(),enAt=S.en>=m?0:(+S.te||Date.now())+(m-S.en)*ENT_MS;pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
+ const m=maxEn(),enAt=S.en>=m?0:(+S.te||Date.now())+(m-S.en)*enMs();pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(1)});
 window.addEventListener('pagehide',()=>pushState(1));
 const pushView=()=>`<div class="panel"><h3>Уведомления на телефон</h3><p style="margin:0 0 8px;color:var(--mute);font-size:15px">Игра напомнит, когда энергия восстановится, придёт сообщение или соберётся рейд.${isIOS()&&!isApp()?' На iPhone сначала установи игру на экран «Домой» (Поделиться → «На экран Домой») и открой её оттуда.':''}</p>
@@ -350,11 +350,12 @@ function applyAdmin(){
  if(g.seasonReset&&S.sres!==g.seasonReset){S.sres=g.seasonReset;S.srat=0;ch=true}
  if(S.applied.length>50)S.applied=S.applied.slice(-50);if(ch)save()}
 function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
-const ENT_MS=60000;// энергия: 1 единица в минуту
+// энергия: базово 1 в 20 с, регенерация ускоряет (каждая единица −2%, не быстрее 1 в 8 с)
+const regTot=()=>(S.st.reg|0)+(EQ().reg|0),enMs=()=>Math.max(8000,Math.round(20000/(1+regTot()*.02)));
 function regen(){
  if(!S)return;const now=Date.now(),n=Math.floor((now-S.t)/20000);
  if(n>0){S.t+=n*20000;if(!fight&&S.hp>0)S.hp=Math.min(maxHp(),S.hp+n*regv())}
- if(!S.te)S.te=now;if(S.en>=maxEn()){S.te=now}else{const k=Math.floor((now-S.te)/ENT_MS);if(k>0){S.te+=k*ENT_MS;S.en=Math.min(maxEn(),S.en+k);if(S.en>=maxEn())S.te=now}}
+ if(!S.te)S.te=now;if(S.en>=maxEn()){S.te=now}else{const T=enMs(),k=Math.floor((now-S.te)/T);if(k>0){S.te+=k*T;S.en=Math.min(maxEn(),S.en+k);if(S.en>=maxEn())S.te=now}}
 }
 
 function create(name){
@@ -402,9 +403,9 @@ function repView(){
 const HMON={easy:['Лесной волк','Дикий кабан','Лиса-оборотень','Ворон-падальщик','Болотная крыса'],mid:['Лесной волк','Дикий кабан','Горный медведь','Снежный барс','Разбойник с тракта'],hard:['Горный медведь','Снежный барс','Вожак стаи','Драугр','Тролль-подросток']},HM={easy:.32,mid:.42,hard:.55},HKN={easy:'Опушка',mid:'Глухой лес',hard:'Чаща'};
 function hMon(kind){const n=HMON[kind],e=mkEnemy(n[Math.floor(Math.random()*n.length)],Math.max(1,S.lvl+(kind==='hard'?1:0)),HM[kind]);e.atk*=.6;if(Math.random()<.3){const ks=Object.keys(TRAITS),t=ks[Math.floor(Math.random()*ks.length)];e.tr=t;e.name=TRAITS[t][0]+' '+e.name.toLowerCase();e.xp*=1.5;e.gold*=1.5;if(t==='armor'){e.hp=e.max=Math.round(e.max*1.2)}}return{e,ech:Math.random()*.6,at:null}}
 function startHunt(kind){
- if(fight)return;if(S.en<1){log('Нет сил для охоты: нужна хотя бы 1 энергия.','sys');return render()}
+ if(fight)return;if(S.en<1){log('Нет сил для охоты: каждый удар стоит 1 энергию.','sys');return render()}
  if(S.hp<=0){log('Ты ранен. Отдохни у костра.','sys');return render()}
- fixNum();HREP=null;REP=null;const sl=[];for(let i=0;i<5;i++){if(S.en>=1){S.en--;sl.push(hMon(kind))}else sl.push({e:null,ech:0,at:null})}
+ fixNum();HREP=null;REP=null;const sl=[];for(let i=0;i<5;i++)sl.push(hMon(kind));
  fight={hunt:{kind,sl,kills:0,xp:0,gold:0,loot:[]},e:null,ch:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
  retarget();log(`Охота (${HKN[kind]}): на тебя выходят звери.`,'sys');save();render()}
 function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const s=fight.hunt.sl.find(x=>x.e&&x.e.hp>0);fight.e=s?s.e:null}
@@ -417,7 +418,7 @@ function huntEnd(why){const H=fight.hunt;if(why==='dead'){S.hp=1;S.lose++;log('�
 function huntTick(dt){const H=fight.hunt;let ch=false;
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n}}
  for(const s of H.sl){if(s.e){if(!(s.e.stun>fight.clk))s.ech+=dt/(s.e.tr==='fast'?3:5);if(s.ech>=1){s.ech=0;enemyTurn(s.e);ch=true;if(S.hp<=0)break}}
-  else if(s.at!=null&&fight.clk>=s.at){if(S.en>=1){S.en--;const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}else log('Сил больше нет, новые звери не придут.','sys');s.at=null;ch=true}}
+  else if(s.at!=null&&fight.clk>=s.at){{const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}s.at=null;ch=true}}
  if(petTick(dt))ch=true;
  if(ch){huntCheck();save();render()}else paintFight()}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);
@@ -482,6 +483,7 @@ function act(a){
   if(now<fight.gcd)return;fight.guardUntil=now+3000;fight.gcd=now+8000;log('Ты поднимаешь щит на 3 секунды.');
  }else{
   if(fight.ch<.2)return;
+  if(fight.hunt){if(S.en<1){log('Нет энергии для удара. Выйди из охоты и отдохни — энергия восстанавливается со временем.','sys');return render()}S.en--}
   const k=fight.ch;fight.ch=0;fight.s.r++;
   let d=(rnd(.8,1.2)*atk()-e.def*.5)*k;
   const c=Math.random()*100<crit();if(c)d*=1.8;if(fight.rage){d*=(+fight.rage>1?+fight.rage:2);fight.rage=false}if(e.tr==='armor')d*=.5;d=Math.max(1,Math.round(d));fx(c?'crit':'hit');
@@ -624,7 +626,7 @@ function tabView(){
  if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
  <button class="b" data-a="rest" ${S.hp>=maxHp()||S.gold<S.lvl*2?'disabled':''}>Отдохнуть у костра (${S.lvl*2} сер.)</button>
  <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p></div>`+sagaView()+campBuildView();
- if(tab==='hunt')return`<div class="panel"><h3>Охота</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Бесконечная битва: сразу выходят 5 зверей. Убил одного, и в течение 10 секунд из чащи приходит другой. Каждый зверь стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.</p>
+ if(tab==='hunt')return`<div class="panel"><h3>Охота</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Бесконечная битва: сразу выходят 5 зверей. Убил одного, и в течение 10 секунд из чащи приходит другой. Каждый твой удар стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.</p>
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Чаща<small>На уровень сильнее, добыча богаче${terTag('hard')}</small></div><button class="b red" data-a="h-hard" ${S.en<1?'disabled':''}>На охоту</button></div></div>`;
@@ -652,7 +654,7 @@ function tabView(){
  if(tab==='hero'&&htab==='bag')return htabs()+potPanel()+`<div class="panel"><h3>Рюкзак (${S.inv.length}/${INV_MAX})</h3><p style="margin:0 0 4px">Железо: <b class="g">${S.iron|0}</b> · руническая пыль: <b style="color:var(--myth)">${S.dust|0}</b>. Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>${S.lvl>=30?`<label class="tgl"><input type="checkbox" data-a="autodis" ${S.autodis?'checked':''}><span><b>Авторазбор ненужных вещей</b><small>Новые вещи, которые не лучше надетых, сразу разбираются на железо. Мифические вещи и вещи с камнями не трогаются.${S.adc?` Разобрано: ${S.adc} шт., +${S.adi} жел.`:''}</small></span></label>`:`<p style="color:var(--mute);font-size:14px;margin:4px 0">С 30 уровня откроется авторазбор ненужных вещей.</p>`}`+(()=>{const J=junk(),g=J.reduce((t,it)=>t+dis(it),0);if(!S.inv.length)return'';if(!J.length)return`<p style="color:var(--mute);font-size:15px;margin:6px 0">Все вещи в рюкзаке лучше надетых, разбирать нечего.</p>`;return sellArm?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px"><button class="b red" data-a="sellall">Да, разобрать ${J.length} шт. (+${g} жел.)</button><button class="b alt" data-a="sellno">Отмена</button></div>`:`<button class="b" data-a="sellask" style="width:100%;margin:6px 0 8px">Разобрать всё, кроме лучших (${J.length} шт., +${g} жел.)</button>`})()+(S.inv.length?[...S.inv].sort((x,y)=>y.rar-x.rar||y.lv-x.lv).map(it=>{const cur=curOf(it),lock=S.lvl<it.lv,better=!cur||score(it)>score(cur);
    return irow(it,`<button class="b" data-e="${it.uid}" ${lock?'disabled':''}>${lock?'С '+it.lv+' ур.':'Надеть'}</button><button class="b alt" data-x="${it.uid}">Разобрать +${dis(it)}</button><button class="b alt" data-tc="${it.uid}" ${(S.chest||[]).length>=CHEST_MAX?'disabled':''}>В сундук</button>`+'',better&&!lock?' · <span style="color:var(--moss)">лучше надетого</span>':'')}).join(''):'<p>Пусто. Трофеи падают после боёв, снаряжение продаётся в магазине.</p>')+`</div>`;
  if(htab==='gear')return htabs()+gearView();
- const EF={str:()=>`Атака ${atk()}`,hp:()=>`Макс. здоровье ${maxHp()}`,arm:()=>`Защита ${def()} (с учётом снаряжения)`,reg:()=>`+${regv()} здоровья за 20 с`,en:()=>`Макс. энергия ${maxEn()}`};
+ const EF={str:()=>`Атака ${atk()}`,hp:()=>`Макс. здоровье ${maxHp()}`,arm:()=>`Защита ${def()} (с учётом снаряжения)`,reg:()=>`+${regv()} здоровья за 20 с · энергия +1 каждые ${String(Math.round(enMs()/100)/10).replace('.',',')} с`,en:()=>`Макс. энергия ${maxEn()}`};
  const E=EQ(),GB={str:E.atk/2,hp:E.hp/8,arm:E.def,reg:E.reg,en:E.en},fx=v=>Math.round(v*10)/10;
  const EV={};Object.keys(ST).forEach(k=>EV[k]=Math.round(S.st[k]+GB[k]));const sum=Object.values(EV).reduce((t,v)=>t+v,0);
  return htabs()+avCard()+`<div class="menu" style="margin-bottom:10px">${MI('friends','Друзья',frIn().length?`<b style="color:var(--moss)">заявки: ${frIn().length}</b>`:'список друзей и заявки')}${MI('mail','Почта',dmUnN()?`<b style="color:var(--moss)">новые сообщения: ${dmUnN()}</b>`:'переписки, письма и передача вещей')}${MI('settings','Настройки',UID&&!GUEST&&(mailLoad(),MYMAIL==='')?'<span style="color:var(--blood)">привяжи почту, чтобы не потерять героя</span>':'ник, класс, почта, пароль, уведомления')}${MI('skills','Умения',skOpen()?skAll().map(k=>`<span style="color:var(${RAR[skQ(k[0])][1]})">${k[1]}</span>`).join(', '):'откроются после пути новичка')}</div>`+`<div class="panel"><h3>Герой${S.pts?` · очков: ${S.pts}`:''}</h3><p style="margin:0 0 6px;font-size:19px">Сумма всех статов: <b class="g">${sum}</b> <small style="color:var(--mute);font-size:14px">с учётом снаряжения</small></p>`+Object.keys(ST).map(k=>`<div class="row"><div>${ST[k]}: <b>${EV[k]}</b>${stFx(k)}${EV[k]!==S.st[k]?` <span style="color:var(--mute);font-size:14px">(${S.st[k]} + <span style="color:var(--moss)">${EV[k]-S.st[k]}</span>)</span>`:''}<small>${EF[k]()}</small></div>${S.pts?`<button class="b" data-s="${k}">+1</button>`:''}</div>`).join('')+
@@ -1117,7 +1119,7 @@ function clogView(my){const day=ts=>{const d=new Date(ts),t=new Date();return d.
  return ctabs()+`<div class="panel"><h3>Летопись клана «${esc(my.name)}»</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Всё важное, что происходит в клане: новые воины, постройки, победы над боссами, рост уровня.</p>${CLOG.length?CLOG.map(e=>{const d=day(e.ts),h=d!==last?`<div class="cday">${d}</div>`:'';last=d;return h+`<div class="clg"><span class="cli">${esc(e.ic||'•')}</span><span>${esc(e.t)}<small>${new Date(e.ts).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</small></span></div>`}).join(''):'<p style="margin:0">Летопись пока пуста. Здесь появятся события клана.</p>'}</div>`}
 // ===== Подсказки для новичков =====
 const TIPS={
- home:['Добро пожаловать на Север!','Начни с «Охоты»: там бьёшься с пятью зверями сразу и получаешь опыт, серебро и вещи. Каждый зверь стоит 1 энергию, она восстанавливается со временем. Загляни в «Задания»: там ежедневная награда за вход и три задания дня.'],
+ home:['Добро пожаловать на Север!','Начни с «Охоты»: там бьёшься с пятью зверями сразу и получаешь опыт, серебро и вещи. Каждый твой удар стоит 1 энергию, она восстанавливается со временем. Загляни в «Задания»: там ежедневная награда за вход и три задания дня.'],
  hunt:['Как охотиться','Удар заряжается 5 секунд, золотая обводка кнопки показывает заряд. Бей при полном заряде, урон максимальный. Нажми на зверя, чтобы выбрать цель. Следи за здоровьем: «Бутылка» восстанавливает всё, но работает раз в 90 секунд.'],
  hero:['Твой герой','За каждый уровень даётся 3 очка умений: раздай их кнопками «+1». Сила увеличивает урон, здоровье и броня помогают выжить. Иконки сверху: статы, снаряжение, рюкзак и сундук.'],
  shop:['Магазин','Здесь продаются наборы снаряжения, каждый открывается со своего уровня. Чем больше вещей одного набора надето, тем больше бонус: 3, 5 и 10 вещей.'],
@@ -1330,7 +1332,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.39';
+const GVER='1.4.40';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1649,7 +1651,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.39</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.40</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
