@@ -255,8 +255,8 @@ const crit=()=>Math.min(60,10+EQ().crit+(typeof petCrit==='function'?petCrit():0
 const bonus=()=>1+(S.clan?0.05:0)+.04*cb('mkt')+(typeof petLoot==='function'?petLoot():0)+(typeof cbl==='function'?.03*cbl('smoke'):0);
 
 let syncT,HREP=null,CLOUD={ok:0,err:''};
-function pushDb(){if(!DB||!UID||!S)return;
- DB.collection('players').doc(UID).set({name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}}).catch(()=>{});
+function pushDb(){if(!DB||!UID||!S)return;actMark();
+ DB.collection('players').doc(UID).set({name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}}).catch(()=>{});
  DB.collection('saves').doc(UID).set(JSON.parse(JSON.stringify(S))).then(()=>{CLOUD.ok=Date.now();CLOUD.err=''}).catch(e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80)})}
 function sync(){if(!DB||!UID||!S)return;clearTimeout(syncT);syncT=setTimeout(pushDb,1200)}
 function save(){if(S)S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}sync()}
@@ -298,7 +298,7 @@ function regen(){
 function create(name){
  CRE++;const c=CL[pick];
  S={name:name||'Безымянный',cls:pick,lvl:1,xp:0,gold:30,au:0,st:{...c.s},pts:0,hp:0,en:20,t:Date.now(),pt:{b:2},inv:[],eq:{},stock:null,stockLv:0,win:0,lose:0,rating:1000,clan:'',sid:Math.floor(Date.now()/604800000),srat:0,psid:0,psrat:0,sclaim:Math.floor(Date.now()/604800000),war:'',wp:0,wclaim:[],applied:[],av:{...av}};
- S.eq={w:gen('w',1,0),a:gen('a',1,0)};S.hp=maxHp();S.en=maxEn();log('Ты вышел из метели к костру племени. Здесь начинается твой путь.','sys');S.acc=UID||'';S._k=Math.random().toString(36).slice(2,6);tab='home';save();render();
+ S.reg=Date.now();S.rd=DAY();S.old=0;S.src=srcNow();S.act=[0];S.eq={w:gen('w',1,0),a:gen('a',1,0)};S.hp=maxHp();S.en=maxEn();log('Ты вышел из метели к костру племени. Здесь начинается твой путь.','sys');S.acc=UID||'';S._k=Math.random().toString(36).slice(2,6);tab='home';save();render();
 }
 
 function gain(xp,gold){
@@ -888,6 +888,8 @@ function nbClaim(){if(!nbOk())return;const q=NBQ[S.nb.i],xp=Math.round(need()*q.
  if(q.fin)S.nb={done:1};else S.nb={i:S.nb.i+1,p:0};SILFX={v:q.g,t:Date.now()};log(t+'.','hit');popup('Шаг пройден!',esc(t)+'.');save();render()}
 function nbView(){nbInit();if(!S.nb||S.nb.done)return'';const i=S.nb.i,q=NBQ[i],ok=nbOk(),p=q.c?(ok?1:0):(S.nb.p|0),n=q.c?1:q.n;
  return`<div class="panel" style="border-left:4px solid var(--gold)"><div class="lbl"><span style="color:var(--gold);font-weight:700">Путь новичка</span><span>шаг ${i+1} из ${NBQ.length}</span></div>${bar(i+(ok?1:0),NBQ.length,'--gold')}<h3 style="margin:8px 0 2px">${q.h}</h3><p style="margin:0 0 6px;font-size:15px">${q.d}</p>${q.c?'':`<p style="margin:0 0 6px;font-size:14px;color:var(--mute)">Прогресс: ${p}/${n}</p>`}<p style="margin:0 0 8px;font-size:14px;color:var(--mute)">Награда: ${q.g} серебра${q.x?`, опыт (${Math.round(q.x*100)}% уровня)`:''}${q.gift?', 3 бутылки, редкое оружие и умения класса':''}</p>${ok?'<button class="b" data-nb="1" style="width:100%">Забрать награду</button>':''}</div>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ast]');if(!b)return;e.preventDefault();atabS=b.dataset.ast;if(atabS==='stats')STATS=null;render()});
+document.addEventListener('click',e=>{if(e.target.closest('[data-a="strefresh"]')){e.preventDefault();STATS=null;render()}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-nb]');if(!b)return;e.preventDefault();nbClaim()});
 // ===== Чародей: чары пяти редкостей (обычные за серебро, остальные за золото) =====
 const ENK={atk:['Ярость',1],def:['Камень',1],hp:['Жизнь',1],reg:['Исцеление',.6],crit:['Острота',.5]};
@@ -1205,7 +1207,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.23';
+const GVER='1.4.24';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1512,7 +1514,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.23</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.24</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'?'':`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1522,10 +1524,37 @@ function authView(){
  else body=`<p style="margin:0 0 6px">Героя <b>${esc(UID||'')}</b> ещё нет. Выбери класс и аватар.</p>`+heroFields()+err+`<button class="b" data-a="mkhero" style="width:100%">Создать героя</button><button class="b alt" data-a="logout" style="width:100%">Выйти из аккаунта</button>`;
  return`<div class="abg" aria-hidden="true"></div><div class="alogo"><img src="${LOGO}" alt="Northfall: Barbarians"></div>`+`<div class="panel">${tabs}${body}<p style="font-size:14px;color:var(--mute);margin:12px 0 0">${st}</p></div><footer class="ft"><div class="ft5"><button class="lnk" data-lg="terms">Соглашение</button> · <button class="lnk" data-lg="privacy">Конфиденциальность</button> · <button class="lnk" data-lg="refund">Возвраты</button> · <button class="lnk" data-lg="contacts">Контакты</button></div></footer>`;
 }
+// ===== Статистика игроков (для админки) =====
+(function(){try{const q=new URLSearchParams(location.search),v=(q.get('from')||q.get('utm_source')||(q.get('ref')?'friend':'')||'').toLowerCase().replace(/[^a-z0-9_\-]/g,'').slice(0,24);if(v&&!localStorage.getItem('nf_src'))localStorage.setItem('nf_src',v)}catch(e){}})();
+const srcNow=()=>{try{return localStorage.getItem('nf_src')||'direct'}catch(e){return'direct'}};
+function actMark(){if(!S)return;const d=DAY();if(!S.reg){S.reg=Date.now();S.rd=d;S.old=CRE?0:1;if(!S.src)S.src=CRE?srcNow():'old'}const o=d-(S.rd!=null?S.rd:d);S.act=S.act||[];if(o>=0&&!S.act.includes(o)){S.act.push(o);S.act=S.act.slice(-40)}}
+let STATS=null,STBUSY=false,atabS='main';
+function statsLoad(){if(!DB||STBUSY)return;STBUSY=true;let q;try{q=DB.collection('players').limit(3000).get()}catch(e){q=Promise.reject(e)}Promise.resolve(q).then(sn=>{STATS={t:Date.now(),L:sn.docs.map(d=>({id:d.id,...d.data()}))};STBUSY=false;render()}).catch(()=>{STBUSY=false;STATS={t:Date.now(),L:[...PL]};render()})}
+function statsView(){if(!STATS){statsLoad();return'<div class="panel"><p>Загружаю статистику…</p></div>'}
+ const L=STATS.L,d=DAY(),now=Date.now(),pc=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+ const nw=L.filter(p=>p.rd!=null&&!p.old),on=L.filter(p=>p.seen&&now-p.seen<6*60000).length,dau=L.filter(p=>p.seen&&Math.floor((p.seen+2*3600000)/864e5)===d).length,wau=L.filter(p=>p.seen&&now-p.seen<7*864e5).length;
+ const age=p=>d-p.rd,has=(p,o)=>(p.act||[]).includes(o),hasGE=(p,o)=>(p.act||[]).some(x=>x>=o);
+ const c1=nw.filter(p=>age(p)>=1),c3=nw.filter(p=>age(p)>=3),c7=nw.filter(p=>age(p)>=7),c30=nw.filter(p=>age(p)>=30);
+ const box=(t,v,sub)=>`<div class="chip" style="flex-direction:column;align-items:flex-start;gap:0"><small style="margin:0;color:var(--mute)">${t}</small><b style="font-size:22px">${v}</b>${sub?`<small style="margin:0;color:var(--mute);font-size:12px">${sub}</small>`:''}</div>`;
+ let h=`<div class="panel"><div class="top"><h3 style="margin:0">Статистика</h3><button class="b alt" data-a="strefresh" style="margin:0">Обновить</button></div><p style="margin:4px 0 8px;color:var(--mute);font-size:14px">Всего героев: ${L.length}. Новые игроки считаются с версии 1.4.24, герои, созданные раньше, в удержание не входят.</p><div class="chips">${box('Сейчас онлайн',on)}${box('Играли сегодня',dau)}${box('За 7 дней',wau)}${box('Новых сегодня',nw.filter(p=>age(p)===0).length,'за 7 дней: '+nw.filter(p=>age(p)<7).length)}</div></div>`;
+ h+=`<div class="panel"><h3>Удержание новичков</h3><p style="margin:0 0 6px;color:var(--mute);font-size:14px">Сколько из пришедших вернулись. Хорошо для браузерной игры: 1-й день 30–40%, 7-й день 10–15%.</p>
+ <div class="row"><div>Вернулись на следующий день<small>из ${c1.length} пришедших не позже вчера</small></div><b>${pc(c1.filter(p=>has(p,1)).length,c1.length)}</b></div>
+ <div class="row"><div>Играли на 3-й день или позже<small>из ${c3.length}</small></div><b>${pc(c3.filter(p=>hasGE(p,3)).length,c3.length)}</b></div>
+ <div class="row"><div>Играли на 7-й день или позже<small>из ${c7.length}</small></div><b>${pc(c7.filter(p=>hasGE(p,7)).length,c7.length)}</b></div>
+ <div class="row"><div>Играли на 30-й день или позже<small>из ${c30.length}</small></div><b>${pc(c30.filter(p=>hasGE(p,30)).length,c30.length)}</b></div></div>`;
+ const lv=n=>nw.filter(p=>(p.lvl|0)>=n).length;
+ h+=`<div class="panel"><h3>Как далеко доходят новички</h3>${[[2,'2 уровень'],[5,'5 уровень'],[10,'10 уровень'],[15,'15 уровень (путь новичка)'],[25,'25 уровень (мировой босс)'],[30,'30 уровень']].map(([n,t])=>`<div class="row"><div>${t}</div><b>${lv(n)} · ${pc(lv(n),nw.length)}</b></div>`).join('')}</div>`;
+ const days=[...Array(14)].map((_,i)=>d-13+i),cnt=days.map(x=>nw.filter(p=>p.rd===x).length),mx=Math.max(1,...cnt);
+ h+=`<div class="panel"><h3>Новые игроки по дням</h3><div style="display:flex;gap:3px;align-items:flex-end;height:90px">${cnt.map((v,i)=>`<div title="${v}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%"><small style="font-size:10px;color:var(--mute)">${v||''}</small><div style="width:100%;height:${Math.round(v/mx*70)}px;min-height:${v?2:0}px;background:var(--gold);border-radius:3px 3px 0 0"></div></div>`).join('')}</div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:2px"><span>14 дней назад</span><span>сегодня</span></div></div>`;
+ const src={};nw.forEach(p=>{const k=p.src||'direct';(src[k]=src[k]||[]).push(p)});
+ h+=`<div class="panel"><h3>Откуда пришли</h3><p style="margin:0 0 6px;color:var(--mute);font-size:14px">Для каждой рекламы давай свою ссылку: <b>playnorthfall.online/?from=имя</b> (латиница, например tg1, vk_ads, streamer_ivan). Друзья по приглашению — «friend», без метки — «direct».</p>${Object.entries(src).sort((a,b)=>b[1].length-a[1].length).map(([k,A])=>{const a1=A.filter(p=>age(p)>=1),a7=A.filter(p=>age(p)>=7);return`<div class="row"><div><b>${esc(k)}</b><small>средний уровень ${Math.round(A.reduce((t,p)=>t+(p.lvl|0),0)/A.length)} · дошли до 15: ${A.filter(p=>(p.lvl|0)>=15).length}</small></div><span style="text-align:right"><b>${A.length}</b><small>1 день: ${pc(a1.filter(p=>has(p,1)).length,a1.length)} · 7 дней: ${pc(a7.filter(p=>hasGE(p,7)).length,a7.length)}</small></span></div>`}).join('')||'<p style="margin:0">Пока нет новых игроков.</p>'}</div>`;
+ return h}
 function admView(){
  if(!ADM)return'<div class="panel"><p>Нет доступа.</p></div>';
+ const at=`<div class="htab" style="grid-template-columns:1fr 1fr">${[['main','Управление'],['stats','Статистика']].map(([k,t])=>`<button class="${atabS===k?'on':''}" data-ast="${k}" style="min-height:40px">${t}</button>`).join('')}</div>`;
+ if(atabS==='stats')return at+statsView();
  const pl=[...PL].sort((x,y)=>y.rating-x.rating),sel=adm.sel&&PL.find(p=>p.id===adm.sel);
- let h=`<div class="panel"><h3>Объявление для игроков</h3><input id="am" maxlength="200" placeholder="Текст объявления" value="${esc(ANN&&ANN.msg||'')}"><button class="b" data-a="annset">Опубликовать</button><button class="b alt" data-a="annclr">Убрать</button><button class="b alt" data-a="sres">Сбросить сезонные очки</button></div>`;
+ let h=at+`<div class="panel"><h3>Объявление для игроков</h3><input id="am" maxlength="200" placeholder="Текст объявления" value="${esc(ANN&&ANN.msg||'')}"><button class="b" data-a="annset">Опубликовать</button><button class="b alt" data-a="annclr">Убрать</button><button class="b alt" data-a="sres">Сбросить сезонные очки</button></div>`;
  h+=`<div class="panel"><h3>Игроки (${pl.length})</h3>`+(pl.length?pl.map(p=>`<div class="row"><div>${p.av?avatar(p.av,30)+' ':''}${esc(p.name)}${(ADMD[p.id]||{}).banned?' · заблокирован':''}<small>ур. ${p.lvl} · рейтинг ${p.rating}${p.clan&&cname(p.clan)?' · '+esc(cname(p.clan)):''}</small></div><button class="b ${adm.sel===p.id?'':'alt'}" data-ap="${p.id}">Выбрать</button></div>`).join(''):'<p>Игроков пока нет.</p>')+`</div>`;
  if(sel){const bn=(ADMD[sel.id]||{}).banned;h+=`<div class="panel"><h3>${esc(sel.name)}</h3><input id="ag" type="number" placeholder="Серебро (можно отрицательное)"><input id="agu" type="number" placeholder="Золото (можно отрицательное)"><input id="ax" type="number" step="1" placeholder="Изменение уровня (например 5 или -3)"><input id="an" maxlength="120" placeholder="Сообщение игроку"><button class="b" data-a="gift">Отправить подарок</button><button class="b ${bn?'alt':'red'}" data-a="ban">${bn?'Разблокировать':'Заблокировать'}</button></div>`}
  h+=`<div class="panel"><h3>Кланы (${CLN.length})</h3>`+(CLN.length?CLN.map(c=>`<div class="row"><div>${esc(c.name)}<small>Участников: ${mem(c).length}</small></div><button class="b red" data-dc="${c.id}">Удалить</button></div>`).join(''):'<p>Кланов нет.</p>')+`</div>`;
