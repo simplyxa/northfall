@@ -6,6 +6,7 @@ const ADMINS = ['shtorm1', 'admin'];
 const XLIM = 5, REFG = 10, MKFEE = 0.05, START_CAP = 1000;
 const WALLET_SINCE = Date.UTC(2026, 9, 30); // 30.10.2026: новые аккаунты начинают с пустым кошельком
 // золото за боссов: сколько даётся и сколько раз в день (r3 — Ледяной змей, r4 — Сурт, wb — мировой босс)
+const WEEKG = 10;
 const BOSSG = { r3: 1, r4: 3, wb: 1 }, BOSSCAP = { r3: 2, r4: 1, wb: 1 };
 const j = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 const day = () => Math.floor((Date.now() + 2 * 3600000) / 864e5);
@@ -132,6 +133,15 @@ exports.handler = async (event) => {
         tx.update(ref, { au: (w.au | 0) + g, bd: d, bc }); tx.set(cref, { ts: Date.now(), g });
         logOp(tx, uid, { op: 'boss', n: g, k, id });
         return { au: (w.au | 0) + g };
+      }
+      if (a === 'week') { // подарок первой недели: 10 золота, один раз, аккаунту не моложе 6 дней
+        const { ref, w } = await ensure(tx, uid);
+        if (w.fw) fail(409, 'Подарок первой недели уже получен');
+        let age = 0;
+        try { const u = await admin.auth().getUserByEmail(uid + DOM); age = Date.now() - Date.parse(u.metadata.creationTime); } catch (e) {}
+        if (age < 6 * 864e5) fail(409, 'Подарок первой недели — на 7-й день игры');
+        tx.update(ref, { au: (w.au | 0) + WEEKG, fw: Date.now() }); logOp(tx, uid, { op: 'week', n: WEEKG });
+        return { au: (w.au | 0) + WEEKG };
       }
       fail(400, 'Неизвестное действие');
     });
