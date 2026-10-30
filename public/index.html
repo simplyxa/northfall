@@ -220,7 +220,8 @@ const durMax=it=>Math.max(10,Math.round(bsum(it)));
 const durOf=it=>it.dur==null?durMax(it):Math.max(0,Math.min(it.dur,durMax(it)));
 const broken=it=>!!it&&durOf(it)<=0;
 const durLost=it=>durMax(it)-durOf(it);
-function wear(n){if(!S||!n)return;let br=[];for(const it of Object.values(S.eq||{})){if(!it||broken(it))continue;const d=Math.max(0,durOf(it)-n);it.dur=d;if(d<=0)br.push(it.name)}
+const WEARLV=25;
+function wear(n){if(!S||!n||S.lvl<WEARLV)return;let br=[];for(const it of Object.values(S.eq||{})){if(!it||broken(it))continue;const d=Math.max(0,durOf(it)-n);it.dur=d;if(d<=0)br.push(it.name)}
  if(br.length){log(`Сломалось: ${br.map(x=>'«'+x+'»').join(', ')}. Вещь не даёт статов, пока её не починишь (Герой → Снаряжение).`,'dmg');clampV()}}
 function repair(id){const L=id==='all'?Object.values(S.eq||{}).filter(it=>it&&durLost(it)>0):[...Object.values(S.eq||{}),...S.inv].filter(it=>it&&it.uid===id&&durLost(it)>0).slice(0,1);if(!L.length)return;
  let ir=S.iron|0,fixed=0,spent=0;for(const it of L.sort((a,b)=>durOf(a)-durOf(b))){if(ir<=0)break;const n=Math.min(durLost(it),ir);it.dur=durOf(it)+n;if(it.dur>=durMax(it))delete it.dur;ir-=n;spent+=n;fixed++}
@@ -1375,7 +1376,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.51';
+const GVER='1.4.52';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1703,7 +1704,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.51</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.52</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1803,7 +1804,7 @@ function gearCenter(){
 
 const WARDI='/img/6f2f24aab8668c.webp';
 function repView(){const L=Object.values(S.eq||{}).filter(it=>it&&durLost(it)>0);if(!L.length)return'';const need=L.reduce((a,it)=>a+durLost(it),0),br=L.filter(broken).length,ir=S.iron|0;
- return`<div class="panel" style="border-left:4px solid ${br?'var(--blood)':'var(--gold)'}"><div class="row"><div><b>Ремонт снаряжения</b><small>${br?`<span style="color:var(--blood)">Сломано: ${br}</span> · `:''}нужно ${need} железа · у тебя ${ir}</small></div><button class="b${br?'':' alt'}" data-fix="all" ${ir<=0?'disabled':''}>Починить всё${ir<need?` · ${ir}`:''}</button></div>${L.sort((a,b)=>durOf(a)/durMax(a)-durOf(b)/durMax(b)).map(it=>`<div class="row"><div style="display:flex;gap:8px;align-items:center">${itemIcon(it,36)}<div>${iname(it)}<small>${durTxt(it)}</small></div></div><button class="b alt" data-fix="${it.uid}" ${ir<=0?'disabled':''}>${Math.min(durLost(it),ir)||durLost(it)} жел.</button></div>`).join('')}<p style="margin:6px 0 0;font-size:13px;color:var(--mute)">1 железо = 1 прочность. Прочность вещи равна сумме её статов. На охоте вещи изнашиваются на 1 за каждые 5 ударов врага, у боссов и в рейдах — на 1 за каждый удар. Сломанная вещь остаётся надетой, но не даёт статов.</p></div>`}
+ return`<div class="panel" style="border-left:4px solid ${br?'var(--blood)':'var(--gold)'}"><div class="row"><div><b>Ремонт снаряжения</b><small>${br?`<span style="color:var(--blood)">Сломано: ${br}</span> · `:''}нужно ${need} железа · у тебя ${ir}</small></div><button class="b${br?'':' alt'}" data-fix="all" ${ir<=0?'disabled':''}>Починить всё${ir<need?` · ${ir}`:''}</button></div>${L.sort((a,b)=>durOf(a)/durMax(a)-durOf(b)/durMax(b)).map(it=>`<div class="row"><div style="display:flex;gap:8px;align-items:center">${itemIcon(it,36)}<div>${iname(it)}<small>${durTxt(it)}</small></div></div><button class="b alt" data-fix="${it.uid}" ${ir<=0?'disabled':''}>${Math.min(durLost(it),ir)||durLost(it)} жел.</button></div>`).join('')}<p style="margin:6px 0 0;font-size:13px;color:var(--mute)">1 железо = 1 прочность. Прочность вещи равна сумме её статов. На охоте вещи изнашиваются на 1 за каждые 5 ударов врага, у боссов и в рейдах — на 1 за каждый удар. Сломанная вещь остаётся надетой, но не даёт статов. До ${WEARLV} уровня вещи не изнашиваются.</p></div>`}
 function gearView(){
  const ds=k=>{const t=GK.find(x=>x[0]===k)[1],it=S.eq[k];return`<button class="ds ${gsel===k?'on':''} ${it?'':'empty'}" data-q="${k}" title="${SL[t]}${it?': '+esc(it.name):''}" aria-label="${SL[t]}${it?': '+esc(it.name):', пусто'}">${it?itemIcon(it,54,1)+(it.up?`<span class="dup">+${it.up}</span>`:'')+durBar(it)+(broken(it)?'<span class="dbrk">✕</span>':''):`<span class="dl">${SL[t]}</span>`}</button>`};
  const cards=`<div class="doll" style="background-image:linear-gradient(90deg,rgba(6,5,4,.62),rgba(6,5,4,.1) 24%,rgba(6,5,4,.1) 76%,rgba(6,5,4,.62)),radial-gradient(ellipse at 50% 58%,rgba(0,0,0,0) 40%,rgba(5,4,3,.7) 100%),url(${WARDI});background-size:cover;background-position:center 60%"><div class="dcol">${['h','r','w','n1','b'].map(ds).join('')}</div><div class="dfig">${gearCenter()}</div><div class="dcol">${['c','a','g','o','p'].map(ds).join('')}</div></div>`;
