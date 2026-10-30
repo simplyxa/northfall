@@ -319,7 +319,7 @@ async function pushOffAll(){try{const reg=await navigator.serviceWorker.ready,su
 function pushKind(k){S.pushOff=S.pushOff||[];S.pushOff=S.pushOff.includes(k)?S.pushOff.filter(x=>x!==k):[...S.pushOff,k];save();
  if(S.push&&pushOk())navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>sub&&pushApi({a:'sub',sub:sub.toJSON(),off:S.pushOff},1)).catch(()=>{});render()}
 function pushState(force){if(!S||!S.push||!UID||(typeof GUEST!=='undefined'&&GUEST))return;if(!force&&Date.now()-PUSHT<60000)return;PUSHT=Date.now();
- const m=maxEn(),enAt=S.en>=m?0:(+S.te||Date.now())+(m-S.en)*enMs();pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
+ const m=maxEn(),enAt=S.en>=m?0:(+S.rt||Date.now())+Math.ceil(Math.max(0,m-S.en-(+S.enf||0))/enPS()*1000);pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(1)});
 window.addEventListener('pagehide',()=>pushState(1));
 const pushView=()=>`<div class="panel"><h3>Уведомления на телефон</h3><p style="margin:0 0 8px;color:var(--mute);font-size:15px">Игра напомнит, когда энергия восстановится, придёт сообщение или соберётся рейд.${isIOS()&&!isApp()?' На iPhone сначала установи игру на экран «Домой» (Поделиться → «На экран Домой») и открой её оттуда.':''}</p>
