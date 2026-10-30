@@ -319,7 +319,7 @@ async function pushOffAll(){try{const reg=await navigator.serviceWorker.ready,su
 function pushKind(k){S.pushOff=S.pushOff||[];S.pushOff=S.pushOff.includes(k)?S.pushOff.filter(x=>x!==k):[...S.pushOff,k];save();
  if(S.push&&pushOk())navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>sub&&pushApi({a:'sub',sub:sub.toJSON(),off:S.pushOff},1)).catch(()=>{});render()}
 function pushState(force){if(!S||!S.push||!UID||(typeof GUEST!=='undefined'&&GUEST))return;if(!force&&Date.now()-PUSHT<60000)return;PUSHT=Date.now();
- const m=maxEn(),enAt=S.en>=m?0:(+S.rt||Date.now())+Math.ceil(Math.max(0,m-S.en-(+S.enf||0))/enPS()*1000);pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
+ const m=maxEn(),enAt=S.en>=m?0:(+S.te||Date.now())+(m-S.en)*enMs();pushApi({a:'state',enAt,lvl:S.lvl,wbDay:S.wbDay|0,name:S.name},1).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(1)});
 window.addEventListener('pagehide',()=>pushState(1));
 const pushView=()=>`<div class="panel"><h3>Уведомления на телефон</h3><p style="margin:0 0 8px;color:var(--mute);font-size:15px">Игра напомнит, когда энергия восстановится, придёт сообщение или соберётся рейд.${isIOS()&&!isApp()?' На iPhone сначала установи игру на экран «Домой» (Поделиться → «На экран Домой») и открой её оттуда.':''}</p>
@@ -561,7 +561,16 @@ const BAGI='/img/73d22f80e342a9.webp';
 function xpbar(){if(S.lvl>=LVMAX)S.xp=0;const full=S.inv.length>=INV_MAX,upg=S.inv.filter(it=>S.lvl>=it.lv&&(()=>{const c=curOf(it);return!c||score(it)>score(c)})()).length,dm=dmUnN(),nf=!fight;
  const ic=k=>`<img src="${RIC[k]}" width="20" height="20" alt="" style="flex:0 0 auto">`,B=(at,cls,ti,inner)=>nf?`<button class="tbi ${cls}" ${at} title="${ti}" aria-label="${ti}">${inner}</button>`:`<span class="tbi ${cls}" title="${ti}">${inner}</span>`;
  return`<div id="xp"><div><div class="tb">${B('data-t="bank"','sv','Серебро: '+S.gold,ic('silver')+kf(S.gold)+(Date.now()-SILFX.t<5000?`<i class="tbf" style="animation-delay:-${Date.now()-SILFX.t}ms">+${SILFX.v}</i>`:''))}${B('data-t="bank"','g','Золото: '+(S.au|0),ic('gold')+kf(S.au|0))}<span style="flex:1"></span>${full?B('data-tb="bag"','tfull','Рюкзак полон: '+S.inv.length+'/'+INV_MAX,`<img src="${BAGI}" width="28" height="28" alt="" style="display:block">`):upg?B('data-tb="bag"','tupg','В рюкзаке вещи лучше надетых: '+upg,`<img src="${BAGI}" width="28" height="28" alt="" style="display:block">`):''}${dm?B('data-t="mail"','tmsg','Новые сообщения: '+dm,`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><i>${dm}</i>`):''}</div>${S.lvl>=LVMAX?bar(1,1,'--gold'):bar(S.xp,need(),'--gold')}</div></div>`}
-function tbPaint(){const el=document.getElementById('xp');if(el&&S)el.outerHTML=xpbar()}
+function tbPaint(){const el=document.getElementById('xp');if(!el||!S)return;const t=document.createElement('div');t.innerHTML=xpbar();if(t.firstElementChild)mNode(el,t.firstElementChild,el.parentNode)}
+// Обновление экрана без мигания: меняем только то, что действительно изменилось
+function morph(root,html){if(fight||!root.firstChild){root.innerHTML=html;return}const t=document.createElement('div');t.innerHTML=html;mKids(root,t)}
+function mKids(a,b){const an=[...a.childNodes],bn=[...b.childNodes];for(let i=0;i<bn.length;i++){if(an[i])mNode(an[i],bn[i],a);else a.appendChild(bn[i])}for(let i=bn.length;i<an.length;i++)an[i].remove()}
+function mNode(x,y,p){if(x.nodeType!==y.nodeType||x.nodeName!==y.nodeName){p.replaceChild(y,x);return}
+ if(x.nodeType!==1){if(x.nodeValue!==y.nodeValue)x.nodeValue=y.nodeValue;return}
+ const tn=x.nodeName;if(tn==='INPUT'||tn==='TEXTAREA'||tn==='SELECT'||tn==='CANVAS'||tn==='VIDEO'||(x.classList.contains('tbf'))){if(x.outerHTML!==y.outerHTML)p.replaceChild(y,x);return}
+ for(const at of [...x.attributes])if(!y.hasAttribute(at.name))x.removeAttribute(at.name);
+ for(const at of [...y.attributes])if(x.getAttribute(at.name)!==at.value)x.setAttribute(at.name,at.value);
+ mKids(x,y)}
 function head(){
  return`<div class="panel"><div class="top"><span style="display:flex;align-items:center;gap:10px">${avatar(S.av,44)}<h2 style="margin:0">${esc(S.name)}, ${CL[S.cls].n}</h2></span><span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 10px">Ур. ${S.lvl}<b title="Здоровье" style="display:inline-flex;align-items:center;gap:4px;color:var(--blood)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Здоровье"><path d="M12 21S3 15.500 3 8.800C3 5.600 5.400 4 7.600 4c1.800 0 3.400 1 4.400 2.700C13 5 14.600 4 16.400 4 18.600 4 21 5.600 21 8.800 21 15.500 12 21 12 21z"/></svg>${S.hp}/${maxHp()}</b><b title="Энергия" style="display:inline-flex;align-items:center;gap:4px;color:var(--moss)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Энергия"><path d="M13.500 2 5 13.500h5.500L9.500 22 19 10h-5.800z"/></svg>${S.en}/${maxEn()}</b><span class="sv">${S.gold} сер.</span><span class="g">${S.au|0} зол.</span><span title="Железо" style="color:var(--mute);font-weight:700">${S.iron|0} жел.</span></span></div>
 </div>`;
@@ -1775,17 +1784,13 @@ function menuView(){return`<div class="menu"><div class="mh">Лагерь</div>$
 document.addEventListener('click',e=>{const b=e.target.closest('.bnav [data-t]');if(b&&b.dataset.t===tab){window.scrollTo({top:0,behavior:'smooth'})}},true);
 function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главная'],['hero',hn],['clan','Клан']];if(ADM)it.push(['admin','Админка']);
  return`<nav class="bnav" aria-label="Основное меню">${it.map(([k,t])=>`<button class="${tab===k?'on':''}${k==='home'?' bhome':''}" data-t="${k}"${k==='home'?' aria-label="Главная"':''}><span style="position:relative;line-height:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k==='home'?'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>':IC[k]}</svg>${k==='hero'&&S.pts?`<i class="bdg">${S.pts}</i>`:''}</span>${k==='home'?'':`<span class="bnt">${esc(t)}</span>`}</button>`).join('')}</nav>`}
-// Мягкая перерисовка: по таймеру регенерации меняем только то, что изменилось, чтобы картинки не мигали
-let SOFT=0;
-function morph(a,b){const an=[...a.childNodes],bn=[...b.childNodes];for(let i=0;i<bn.length;i++){const x=an[i],y=bn[i];if(!x){a.appendChild(y);continue}if(x.nodeType!==y.nodeType||x.nodeName!==y.nodeName||(x.nodeType!==1&&x.nodeType!==3)){a.replaceChild(y,x);continue}if(x.nodeType===3){if(x.nodeValue!==y.nodeValue)x.nodeValue=y.nodeValue;continue}for(const t of [...x.attributes])if(!y.hasAttribute(t.name))x.removeAttribute(t.name);for(const t of [...y.attributes])if(x.getAttribute(t.name)!==t.value)x.setAttribute(t.name,t.value);if(x.disabled!==undefined)x.disabled=y.disabled;morph(x,y)}for(let i=an.length-1;i>=bn.length;i--)a.removeChild(an[i])}
-function appSet(h){const app=$('#app');if(!SOFT||!app.firstChild){app.innerHTML=h;return}const t=document.createElement('div');t.innerHTML=h;morph(app,t)}
 function render(){
  IREG=[];paySub();walletSub();refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();if(tab==='forum')ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
  const keep={};['gto','gtx','mlto','nnick','lg','pw','pw2','em','mymail','pwold','pwnew','pwnew2','nm','ftt','ftb','fpb','dmt','gct'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
  if(BAN){$('#app').innerHTML=`<div class="panel"><h2>Доступ закрыт</h2><p>Администратор заблокировал этого героя.</p></div>`+LOGOUT;return}
- raidSub();skInit();if(GUEST&&S.lvl>=5&&!S.gnag){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя','Ты уже 5 уровня! Создай логин и пароль, чтобы не потерять героя и открыть кланы, рейды и чат.'),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}appSet(xpbar()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(fight?fightView():tab==='home'?HBAN()+guestBar()+pwaQuest()+pushAsk()+nbView()+tipView()+annView()+menuView():tipView()+tabView())+
+ raidSub();skInit();if(GUEST&&S.lvl>=5&&!S.gnag){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя','Ты уже 5 уровня! Создай логин и пароль, чтобы не потерять героя и открыть кланы, рейды и чат.'),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}morph($('#app'),xpbar()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(fight?fightView():tab==='home'?HBAN()+guestBar()+pwaQuest()+pushAsk()+nbView()+tipView()+annView()+menuView():tipView()+tabView())+
  (!fight?'':`<div class="panel" id="log">${logs.map(l=>`<p class="${l[1]}">${esc(l[0])}</p>`).join('')||'<p>Тишина.</p>'}</div>`)+FOOT()+(fight?'':bnav()));
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
@@ -1855,7 +1860,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.target.id;if(i==='cm')say();else if(!S&&['lg','pw','pw2','nm'].includes(i)){if(scr==='login')doLogin();else if(scr==='reg')doReg();else doNewHero()}});
 load();render();initOnline();
 setInterval(fightTick,100);
-setInterval(()=>{if(S){const b=S.en,h=S.hp;if(S.ex){const k0=S.ex.k;exSettle();exBoss();if(!S.ex||S.ex.k!==k0){if(!fight)render()}}regen();if(S.en!==b||S.hp!==h){save();if(!fight){SOFT=1;try{render()}finally{SOFT=0}}}}},5000);
+setInterval(()=>{if(S){const b=S.en,h=S.hp;if(S.ex){const k0=S.ex.k;exSettle();exBoss();if(!S.ex||S.ex.k!==k0){if(!fight)render()}}regen();if(S.en!==b||S.hp!==h){save();if(!fight)render()}}},5000);
 
 // ===== Серверное золото (онлайн-версия) =====
 let SG=null,GBUSY=false,WUN=null,WFOR=null,WTRY=0;
