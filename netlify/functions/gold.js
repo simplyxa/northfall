@@ -72,9 +72,24 @@ exports.handler = async (event) => {
         const to = String(q.to || '');
         if (!/^[a-z0-9_]{3,16}$/.test(to) || !(Math.abs(n) > 0 && Math.abs(n) <= 100000)) fail(400, 'Неверные данные');
         const { ref, w } = await ensure(tx, to);
+        const gid = String(q.gid || '');
+        // подарок приходит письмом: золото ждёт, пока игрок нажмёт «Забрать» (списание — сразу)
+        if (n > 0 && /^g[a-z0-9]{1,15}$/.test(gid)) {
+          tx.update(ref, { ['gp.' + gid]: n }); logOp(tx, to, { op: 'giftp', n, by: uid, gid });
+          return { ok: true, pending: true };
+        }
         const au = Math.max(0, (w.au | 0) + n);
         tx.update(ref, { au }); logOp(tx, to, { op: 'gift', n, by: uid });
         return { ok: true };
+      }
+      if (a === 'gclaim') { // игрок забирает золото из письма администрации
+        const gid = String(q.gid || '');
+        if (!/^g[a-z0-9]{1,15}$/.test(gid)) fail(400, 'Неверные данные');
+        const { ref, w } = await ensure(tx, uid);
+        const g = (w.gp && w.gp[gid]) | 0;
+        if (g <= 0) fail(409, 'Подарок уже получен');
+        tx.update(ref, { au: (w.au | 0) + g, ['gp.' + gid]: admin.firestore.FieldValue.delete() }); logOp(tx, uid, { op: 'gift', n: g, gid });
+        return { au: (w.au | 0) + g };
       }
 
       if (a === 'ref') { // награда за приглашённого друга (10 уровень)

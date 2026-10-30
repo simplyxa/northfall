@@ -344,11 +344,23 @@ function delHero(){clearTimeout(syncT);try{localStorage.removeItem(KEY)}catch(e)
 function lvlCheck(){if(S.lvl>=LVMAX){S.lvl=LVMAX;S.xp=0;return}while(S.lvl<LVMAX&&S.xp>=need()){S.xp-=need();S.lvl++;S.pts+=3;S.hp=maxHp();log(`Новый уровень: ${S.lvl}!`,'sys')}}
 function applyAdmin(){
  if(!S||!UID)return;const m=ADMD[UID]||{},g=ADMD.global||{};BAN=!!m.banned;let ch=false;
- for(const x of m.gifts||[]){if(S.applied.includes(x.id))continue;S.applied.push(x.id);S.gold=Math.max(0,S.gold+(x.gold||0));GOLD.gift(x);if(x.runes&&typeof x.runes==='object')for(const k in x.runes)if(/^(str|hp|arm|reg|en)[0-4]$/.test(k)&&x.runes[k]>0)addRune(k,Math.min(50,x.runes[k]|0));S.xp+=Math.max(0,x.xp||0);lvlCheck();
-  const dl=Math.trunc(+x.lv)||0;if(dl){const l0=S.lvl;S.lvl=Math.max(1,Math.min(LVMAX,S.lvl+dl));const d=S.lvl-l0;if(d>0)S.pts+=3*d;else S.pts=Math.max(0,S.pts+3*d);S.xp=0;S.hp=maxHp();clampV()}
-  log(`Подарок от администрации: ${x.gold?x.gold+' сер. ':''}${x.au?x.au+' зол. ':''}${x.xp?x.xp+' опыта. ':''}${dl?'уровень '+(dl>0?'+':'')+dl+' (теперь '+S.lvl+'). ':''}${x.text||''}`,'sys');ch=true}
+ for(const x of m.gifts||[]){if(S.applied.includes(x.id))continue;if(!giftNeg(x)){if(!ADMNEW.has(x.id)){ADMNEW.add(x.id);if(!ADMNEW.lg){ADMNEW.lg=1;setTimeout(()=>{ADMNEW.lg=0},3000);log('✉️ Письмо от администрации — загляни в «Почту».','sys')}}continue}giftApply(x);ch=true}
  if(g.seasonReset&&S.sres!==g.seasonReset){S.sres=g.seasonReset;S.srat=0;ch=true}
  if(S.applied.length>50)S.applied=S.applied.slice(-50);if(ch)save()}
+// Письма от администрации: подарки, уровень и сообщения приходят в «Почту», награду забирают кнопкой
+const ADMNEW=new Set();let MLADM=false;
+const giftNeg=x=>(x.gold||0)<0||(x.au||0)<0||(Math.trunc(+x.lv)||0)<0;
+const admGifts=()=>(((ADMD[UID]||{}).gifts)||[]).slice().reverse();
+const admUn=()=>S?admGifts().filter(x=>!S.applied.includes(x.id)).length:0;
+function giftApply(x){if(!x||S.applied.includes(x.id))return;S.applied.push(x.id);S.gold=Math.max(0,S.gold+(x.gold||0));GOLD.gift(x);if(x.runes&&typeof x.runes==='object')for(const k in x.runes)if(/^(str|hp|arm|reg|en)[0-4]$/.test(k)&&x.runes[k]>0)addRune(k,Math.min(50,x.runes[k]|0));S.xp+=Math.max(0,x.xp||0);lvlCheck();
+  const dl=Math.trunc(+x.lv)||0;if(dl){const l0=S.lvl;S.lvl=Math.max(1,Math.min(LVMAX,S.lvl+dl));const d=S.lvl-l0;if(d>0)S.pts+=3*d;else S.pts=Math.max(0,S.pts+3*d);S.xp=0;S.hp=maxHp();clampV()}
+  const rw=[x.gold?x.gold+' сер.':'',x.au?x.au+' зол.':'',x.xp?x.xp+' опыта':'',dl?'уровень '+(dl>0?'+':'')+dl+' (теперь '+S.lvl+')':''].filter(Boolean).join(', ');if(rw)log(`Письмо от администрации: ${rw}`,'sys')}
+function giftClaim(id){const x=admGifts().find(g=>g.id===id);if(!x||S.applied.includes(id))return;giftApply(x);if(S.applied.length>50)S.applied=S.applied.slice(-50);save();render()}
+const giftRw=x=>{const dl=Math.trunc(+x.lv)||0,rn=x.runes&&typeof x.runes==='object'?Object.values(x.runes).reduce((a,b)=>a+(b|0),0):0;return[x.gold?`<b style="color:var(--silver)">${x.gold>0?'+':''}${x.gold} серебра</b>`:'',x.au?`<b class="g">${x.au>0?'+':''}${x.au} золота</b>`:'',x.xp?`<b>+${x.xp} опыта</b>`:'',dl?`<b style="color:var(--myth)">уровень ${dl>0?'+':''}${dl}</b>`:'',rn?`<b>камни: ${rn}</b>`:''].filter(Boolean).join(' · ')};
+function admMailView(){const L=admGifts();if(S)L.forEach(x=>{if(!S.applied.includes(x.id)&&!giftRw(x)){S.applied.push(x.id);setTimeout(()=>{save();tbPaint()},0)}});
+ return`<div class="panel"><button class="b alt" data-a="admback" style="margin:0 0 8px">← Почта</button><h3 style="margin:0">👑 Администрация</h3><p style="margin:2px 0 0;color:var(--mute);font-size:14px">Письма от администрации игры. Подарки забирай кнопкой «Забрать».</p></div>`+
+ (L.length?L.map(x=>{const got=S.applied.includes(x.id),rw=giftRw(x),t=parseInt(String(x.id).slice(1),36);return`<div class="panel" style="border-left:4px solid ${got?'var(--line)':'var(--gold)'}"><small style="color:var(--mute)">${t?new Date(t).toLocaleString('ru-RU',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):''}</small>${x.text?`<p style="margin:4px 0;white-space:pre-wrap">${esc(x.text)}</p>`:''}${rw?`<p style="margin:4px 0">${rw}</p>${got?`<p style="margin:4px 0 0;color:${giftNeg(x)?'var(--mute)':'var(--moss)'}">${giftNeg(x)?'Применено':'✓ Получено'}</p>`:`<button class="b" data-gc="${esc(x.id)}" style="width:100%;margin:6px 0 0">Забрать</button>`}`:''}</div>`}).join(''):'<div class="panel"><p style="margin:0">Писем пока нет.</p></div>')}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-gc],[data-a="admmail"],[data-a="admback"]');if(!b)return;e.preventDefault();if(b.dataset.gc)return giftClaim(b.dataset.gc);MLADM=b.dataset.a==='admmail';render();window.scrollTo(0,0)});
 function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
 // Регенерация (R) — скорость восстановления: энергия R/60 в секунду, здоровье R/180 в секунду
 const regTot=()=>Math.max(1,regv()),enPS=()=>regTot()/60,hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
@@ -1221,7 +1233,7 @@ function mailSub(){if(!DB||!UID||!S)return;if(mlFor===UID)return;if(mlUn)mlUn();
   MAIL.forEach(m=>{if(mUn(m)&&(m.lastTs||0)>(mlSeen[m.id]||0)&&!(tab==='dm'&&DMW===m.id)){if(mlSeen[m.id])log(`✉️ Письмо от ${m.name||m.id}.`,'sys')}mlSeen[m.id]=m.lastTs||1});ui();tbPaint()},()=>{})}
 const isFr=id=>{const f=frOf(id);return!!(f&&f.st==='ok')};
 const mUn=m=>!isFr(m.id)&&m.lastFrom&&m.lastFrom!==UID&&(m.lastTs||0)>(m.rd||0);
-const dmUnN=()=>(typeof FR==='function'?FR().filter(frUnread).length:0)+MAIL.filter(mUn).length;
+const dmUnN=()=>(typeof FR==='function'?FR().filter(frUnread).length:0)+MAIL.filter(mUn).length+admUn();
 function mailIdx(o,oname,t,ts){const me={name:oname,last:t.slice(0,60),lastFrom:UID,lastTs:ts,rd:ts},him={name:S.name,last:t.slice(0,60),lastFrom:UID,lastTs:ts};
  return Promise.all([DB.collection('dmi').doc(UID).collection('c').doc(o).set(me,{merge:true}),DB.collection('dmi').doc(o).collection('c').doc(UID).set(him,{merge:true})])}
 function mailRead(){const m=DMW&&MAIL.find(x=>x.id===DMW);if(!m||!mUn(m)||!DB)return;m.rd=Date.now();tbPaint();DB.collection('dmi').doc(UID).collection('c').doc(DMW).set({rd:m.rd},{merge:true}).catch(()=>{})}
@@ -1253,9 +1265,10 @@ function giveView(){const it=GIVE;if(!it||!S.inv.includes(it)){GIVE=null;return 
 function itemClaim(mid){const m=DM.find(x=>x._id===mid);if(!m||!m.item||m.claimed||m.from===UID)return;if(S.inv.length>=INV_MAX){popup('Рюкзак полон','Освободи место в рюкзаке, чтобы забрать вещь.',1);return}
  const ref=DB.collection('dm').doc(pid(UID,DMW)).collection('m').doc(mid);m.claimed=true;render();
  ref.update({claimed:true}).then(()=>{const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();it.pb=0;S.inv.push(it);log(`Получена вещь «${it.name}» от ${m.name||m.from}.`,'hit');save();render()}).catch(()=>{m.claimed=false;popup('Не получилось','Вещь уже забрали или нет связи.',1);render()})}
-function mailView(){if(!DB)return'<div class="panel"><p>Почта работает только с подключённой базой данных.</p></div>';
+function mailView(){if(MLADM)return admMailView();const AG=admGifts(),au=admUn(),arow=AG.length?`<div class="panel" style="border-left:4px solid var(--gold)"><div class="row frr"><div style="min-width:0;flex:1"><b>👑 Администрация</b><small style="display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(AG[0].text||'Подарок от администрации')}</small></div><button class="b" data-a="admmail" style="margin:0">${au?`<b class="bdg2">${au}</b> `:''}Открыть</button></div></div>`:'';
+ if(!DB)return arow||'<div class="panel"><p>Почта работает только с подключённой базой данных.</p></div>';
  const L=[...FR().filter(f=>f.st==='ok'&&f.lastTs).map(f=>({id:frOther(f),last:f.last,lastFrom:f.lastFrom,ts:f.lastTs,un:frUnread(f),fr:1})),...MAIL.filter(m=>!isFr(m.id)).map(m=>({id:m.id,last:m.last,lastFrom:m.lastFrom,ts:m.lastTs||0,un:mUn(m),fr:0}))].sort((a,b)=>(b.un-a.un)||(b.ts-a.ts));
- return`<div class="panel"><h3>Почта</h3><p style="margin:0 0 6px;color:var(--mute);font-size:14px">Все переписки. Друзьям писать бесплатно, остальным — ${MAILC} серебра за письмо. Новые вещи (добыча с боссов) можно передать письмом за 1 золото: нажми на вещь → «Передать по почте».</p><div style="display:flex;gap:6px"><input id="mlto" maxlength="16" placeholder="Написать: ник или логин" autocapitalize="none" spellcheck="false" style="flex:1;margin:0"><button class="b" data-a="mlnew" style="margin:0">Написать</button></div>${GMSG&&tab==='mail'?`<p style="margin:6px 0 0;color:var(--blood)">${esc(GMSG)}</p>`:''}</div>
+ return`<div class="panel"><h3>Почта</h3><p style="margin:0 0 6px;color:var(--mute);font-size:14px">Все переписки. Друзьям писать бесплатно, остальным — ${MAILC} серебра за письмо. Новые вещи (добыча с боссов) можно передать письмом за 1 золото: нажми на вещь → «Передать по почте».</p><div style="display:flex;gap:6px"><input id="mlto" maxlength="16" placeholder="Написать: ник или логин" autocapitalize="none" spellcheck="false" style="flex:1;margin:0"><button class="b" data-a="mlnew" style="margin:0">Написать</button></div>${GMSG&&tab==='mail'?`<p style="margin:6px 0 0;color:var(--blood)">${esc(GMSG)}</p>`:''}</div>${arow}
  <div class="panel">${L.length?L.map(c=>{const pl=PL.find(x=>x.id===c.id);return`<div class="row frr"><div style="min-width:0;flex:1"><b data-pv="${c.id}" style="cursor:pointer">${pl&&pl.av?avatar(pl.av,28)+' ':''}${esc(dmName(c.id))}</b>${c.fr?' <small style="display:inline;color:var(--moss)">друг</small>':''}<small style="display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.lastFrom===UID?'Ты: ':''}${esc(c.last||'')}</small></div><button class="b" data-dm="${c.id}" style="margin:0">${c.un?'<b class="bdg2">новое</b> ':''}Открыть</button></div>`}).join(''):'<p style="margin:0">Переписок пока нет.</p>'}</div>`}
 async function mailNew(){const v=(($('#mlto')||{}).value||'').trim();let p=findPl(v),id=p&&p.id;if(!id&&typeof nickUid==='function')id=await nickUid(v.toLowerCase());if(!id||id===UID){GMSG='Игрок не найден.';return render()}GMSG='';DMW=id;tab='dm';render()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-gv],[data-ic],[data-a="igive"],[data-a="gcancel"],[data-a="mlnew"]');if(!b)return;e.preventDefault();
@@ -1342,7 +1355,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.47';
+const GVER='1.4.48';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1670,7 +1683,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.47</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.48</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1736,7 +1749,7 @@ function admDo(a){
  else if(a==='annclr')w('global',{...g,msg:''});
  else if(a==='sres')w('global',{...g,seasonReset:Date.now()});
  else if(adm.sel){const d=ADMD[adm.sel]||{};
-  if(a==='gift'){const x={id:'g'+Date.now().toString(36),gold:+($('#ag').value)||0,au:Math.trunc(+($('#agu').value))||0,lv:Math.trunc(+($('#ax').value))||0,text:($('#an').value||'').slice(0,120)};if(!x.gold&&!x.au&&!x.lv&&!x.text){popup('Пустой подарок','Укажи серебро, изменение уровня или сообщение.',true);return}const pn=(PL.find(p=>p.id===adm.sel)||{}).name||adm.sel;w(adm.sel,{...d,gifts:[...(d.gifts||[]).slice(-9),x]}).then(ok=>{if(!ok)return;if(x.au)GOLD.adminGift(adm.sel,x.au,x.id);['ag','ax','an'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});popup('🎁 Подарок отправлен',`Игрок <b>${esc(pn)}</b> получит его при следующем входе в игру.<br>${[x.gold?`Серебро: <b>${x.gold>0?'+':''}${x.gold}</b>`:'',x.au?`Золото: <b>${x.au>0?'+':''}${x.au}</b>`:'',x.lv?`Уровень: <b>${x.lv>0?'+':''}${x.lv}</b>`:'',x.text?`Сообщение: «${esc(x.text)}»`:''].filter(Boolean).join('<br>')}`)})}
+  if(a==='gift'){const x={id:'g'+Date.now().toString(36),gold:+($('#ag').value)||0,au:Math.trunc(+($('#agu').value))||0,lv:Math.trunc(+($('#ax').value))||0,text:($('#an').value||'').slice(0,120)};if(!x.gold&&!x.au&&!x.lv&&!x.text){popup('Пустой подарок','Укажи серебро, изменение уровня или сообщение.',true);return}const pn=(PL.find(p=>p.id===adm.sel)||{}).name||adm.sel;w(adm.sel,{...d,gifts:[...(d.gifts||[]).slice(-9),x]}).then(ok=>{if(!ok)return;if(x.au)GOLD.adminGift(adm.sel,x.au,x.id);['ag','ax','an'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});popup('✉️ Письмо отправлено',`Игрок <b>${esc(pn)}</b> получит письмо от администрации в «Почте».<br>${[x.gold?`Серебро: <b>${x.gold>0?'+':''}${x.gold}</b>`:'',x.au?`Золото: <b>${x.au>0?'+':''}${x.au}</b>`:'',x.lv?`Уровень: <b>${x.lv>0?'+':''}${x.lv}</b>`:'',x.text?`Сообщение: «${esc(x.text)}»`:''].filter(Boolean).join('<br>')}`)})}
   else if(a==='ban')w(adm.sel,{...d,banned:!d.banned})}}
 const IC={camp:'<path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 2 1 2 0-3 0-5 1-7z"/>',hunt:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',arena:'<path d="M5 5l14 14M19 5L5 19M5 5h4M5 5v4M19 5h-4M19 5v4"/>',clan:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 14.5c3-.5 6 1.5 6 5.5"/>',top:'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 20h8"/>',forge:'<path d="M14 4l6 6-3 3-6-6zM12 9l-8 8 3 3 8-8"/>',shop:'<circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.500 9.500q2.500-2 5 0M9.500 14.500q2.500 2 5 0"/>',bag:'<path d="M8 8a4 4 0 0 1 8 0M6 8h12v12H6zM9 14h6"/>',hero:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',admin:'<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/>'};
 const MENU=[['camp','Лагерь','Отдых у костра и восстановление сил','--gold'],['hunt','Охота','Звери и разбойники, 3 энергии','--moss'],['arena','Арена','Бои с воинами кланов за рейтинг','--blood'],['clan','Клан','Чат, участники и войны','--gold'],['top','Рейтинг','Лучшие воины и кланы сезона','--moss'],['shop','Магазин','Снаряжение и бутылки','--gold'],['forge','Кузница','Усиление снаряжения за железо','--blood'],['hero','Герой','Статы и очки умений','--moss']];
@@ -1801,7 +1814,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.rt){rtab=d.rt;return render()}
  if(d.j){const c=CLN.find(x=>x.id===d.j);if(c&&(c.kicked||[]).includes(UID)){log('Лидер закрыл тебе вход в этот клан.','sys');return render()}if(c&&mem(c).length>=cCap(c)){log(`В клане «${c.name}» нет мест: ${mem(c).length}/${cCap(c)}.`,'sys');return render()}if(c&&c.closed)return applyClan(c.id);S.cxt=0;S.clan=d.j;log(`Ты вступил в клан «${cname(d.j)}».`,'sys');clog(`${S.name} вступил в клан.`,'➕');save();return render()}
  if(d.k)return kick(d.k);if(d.w)return declare(d.w);
- if(d.t){tab=d.t;return render()}
+ if(d.t){tab=d.t;MLADM=false;return render()}
  if(d.sc){scr=d.sc;AM='';PWMSG='';return render()}
  if(d.av)return pickAv(d.av);
  if(d.ap){adm.sel=adm.sel===d.ap?null:d.ap;return render()}
@@ -1879,8 +1892,8 @@ GOLD.pay=(n,why,x,ok)=>{if(SG!==true)return GL0.pay(n,why,x,ok);if((S.au|0)<n){l
  goldApi({a:'pay',n,why}).then(j=>{S.au=j.au|0;ok()}).catch(e=>{popup('Не получилось',esc(e.message||'Ошибка сервера'),true)}).finally(()=>{GBUSY=false;tbPaint()})};
 GOLD.xbuy=(n,ok)=>{if(SG!==true)return GL0.xbuy(n,ok);if(GBUSY)return;GBUSY=true;
  goldApi({a:'xbuy',n}).then(j=>{S.au=j.au|0;ok()}).catch(e=>{popup('Обмен не выполнен',esc(e.message||'Ошибка сервера'),true)}).finally(()=>{GBUSY=false;tbPaint()})};
-GOLD.gift=x=>{if(SG!==true)GL0.gift(x)};
-GOLD.adminGift=(to,n)=>{if(SG===true)goldApi({a:'gift',to,n}).catch(e=>popup('Золото не отправлено',esc(e.message||'Ошибка сервера'),true))};
+GOLD.gift=x=>{if(SG!==true)return GL0.gift(x);if(x&&(x.au|0)>0)goldApi({a:'gclaim',gid:x.id}).then(j=>{if(j.au!=null){S.au=j.au|0;tbPaint();ui()}}).catch(()=>{})};
+GOLD.adminGift=(to,n,gid)=>{if(SG===true)goldApi({a:'gift',to,n,gid}).catch(e=>popup('Золото не отправлено',esc(e.message||'Ошибка сервера'),true))};
 const _mkBuy=mkBuy,_mkCollect=mkCollect;
 mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||SG!==true)return _mkBuy(id);if(m.seller===UID||m.sold||(S.au|0)<m.price)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}if(GBUSY)return;GBUSY=true;
  goldApi({a:'market',id,name:S.name}).then(j=>{S.au=j.au|0;const it=fixItem(JSON.parse(JSON.stringify(j.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} зол.`;log(MKMSG,'sys');save();render()}).catch(e=>{MKMSG=e.message||'Покупка не удалась.';render()}).finally(()=>{GBUSY=false})};
