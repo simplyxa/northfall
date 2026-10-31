@@ -1382,7 +1382,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.60';
+const GVER='1.4.61';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1688,9 +1688,9 @@ async function enterAccount(id){
  if(hero){hero.acc=id;enter(hero)}else{scr='newhero';render()}seedNews()}
 
 const NEWS1={title:'Northfall начинает свою жизнь!',text:'Воины Севера, приветствуем вас!\n\nNorthfall: Barbarians официально начинает свою жизнь. Впереди охота в снежных лесах, бои на арене, подземелья кланов, мировые боссы, походы наёмников и многое другое, что мы будем добавлять вместе с вами.\n\nИгра только родилась, и нам очень важно ваше мнение. Мы будем рады получить:\n• новые идеи и предложения по дополнениям;\n• сообщения о неисправностях и ошибках;\n• и даже критику: честный отзыв помогает сделать игру лучше.\n\nПишите прямо здесь, в ответах к этой теме, или создавайте свои темы в разделах «Предложения» и «Помощь новичкам». Каждое сообщение будет прочитано.\n\nДо встречи в бою! Да хранит вас Один.'};
-async function seedNews(){if(!DB||!ADM)return;try{const ref=DB.collection('forum').doc('tnews001');const sn=await ref.get();if(sn.exists)return;const ts=Date.now();
+async function seedNews(){if(!DB||!ADM)return;try{const gref=DB.collection('admin').doc('global'),gs=await gref.get();if(gs.exists&&gs.data().newsSeeded)return;const ref=DB.collection('forum').doc('tnews001');const sn=await ref.get();const mark=()=>gref.set({newsSeeded:Date.now()},{merge:true}).catch(()=>{});if(sn.exists)return mark();const ts=Date.now();
  await ref.set({sec:'news',title:NEWS1.title,uid:'admin',name:'Администрация',ts,last:ts,lastn:'Администрация',cnt:1,pinned:true});
- await ref.collection('posts').doc('p0001').set({uid:'admin',name:'Администрация',text:NEWS1.text,ts});log('Новость «'+NEWS1.title+'» опубликована на форуме.','sys')}catch(e){console.error('seedNews',e)}}
+ await ref.collection('posts').doc('p0001').set({uid:'admin',name:'Администрация',text:NEWS1.text,ts});mark();log('Новость «'+NEWS1.title+'» опубликована на форуме.','sys')}catch(e){console.error('seedNews',e)}}
 async function autoLogin(){}
 const fbErr=e=>{const c=(e&&e.code)||'';return c.includes('wrong-password')||c.includes('invalid-credential')||c.includes('user-not-found')||c.includes('invalid-login')?'Неверный логин или пароль.':c.includes('too-many-requests')?'Слишком много попыток. Подожди немного.':c.includes('email-already-in-use')?'Этот логин уже занят.':c.includes('weak-password')?'Пароль слишком простой: минимум 6 символов.':c.includes('network')?'Нет связи с сервером.':'Ошибка: '+(c||'попробуй ещё раз')};
 async function doLogin(){
@@ -1724,7 +1724,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.60</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.61</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
