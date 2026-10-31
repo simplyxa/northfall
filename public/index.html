@@ -297,7 +297,7 @@ function norm(){
 let GUEST=false;
 const GTABS=['clan','arena','boss','raid','market','forum','gchat','friends','dm','mail','give','online','top','pl','admin','bank','gold'];
 function guestGo(){ADM=false;if(LEG){GUEST=true;return enter(LEG)}scr='gnew';AM='';render()}
-function guestMake(){GUEST=true;ADM=false;UID=null;create('Странник');S.guest=1;delete S.acc;save();render()}
+function guestMake(){GUEST=true;ADM=false;trk('guest');UID=null;create('Странник');S.guest=1;delete S.acc;save();render()}
 function guestSave(){if(!S)return;clearTimeout(syncT);S.guest=1;delete S.acc;S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}LEG=JSON.parse(JSON.stringify(S));LOC=LEG;useLeg=true;S=null;GUEST=false;fight=null;tab='home';scr='reg';AM='';logs=[];render();window.scrollTo(0,0)}
 const guestSaveView=()=>`<div class="panel" style="border-left:4px solid var(--blood)"><h3 style="margin:0 0 6px">Сохранить героя</h3><p style="margin:0 0 8px">Сейчас <b>${esc(S.name)}</b> (ур. ${S.lvl}) хранится только в этом браузере: если очистить браузер или зайти с другого устройства, герой пропадёт.</p><p style="margin:0 0 10px">Придумай логин и пароль — займёт 10 секунд. Весь прогресс останется, а ещё откроются кланы, арена, рейды, мировой босс, рынок, чат и золото.</p><button class="b gsvb" data-a="gsave" style="width:100%;font-size:18px;padding:12px">Сохранить героя</button></div>`;
 const guestLock=()=>`<div class="panel" style="border-left:4px solid var(--gold)"><h3>Нужен аккаунт</h3><p style="margin:0 0 8px">Кланы, арена, рейды, мировой босс, рынок, чат, форум, друзья и золото работают только с аккаунтом. Сохрани героя — весь прогресс останется с тобой.</p><button class="b" data-a="gsave" style="width:100%">Сохранить героя (логин и пароль)</button></div>`;
@@ -359,7 +359,7 @@ function logout(){clearTimeout(syncT);if(S){S.ts=Date.now();try{localStorage.set
 function delHero(){clearTimeout(syncT);try{localStorage.removeItem(KEY)}catch(e){}
  if(DB&&UID){DB.collection('saves').doc(UID).delete().catch(()=>{});DB.collection('players').doc(UID).delete().catch(()=>{})}
  LOC=null;S=null;logs=[];fight=null;tab='home';scr='newhero';AM='';render()}
-function lvlCheck(){if(S.lvl>=LVMAX){S.lvl=LVMAX;S.xp=0;return}while(S.lvl<LVMAX&&S.xp>=need()){S.xp-=need();S.lvl++;S.pts+=3;S.hp=maxHp();log(`Новый уровень: ${S.lvl}!`,'sys')}}
+function lvlCheck(){if(S.lvl>=LVMAX){S.lvl=LVMAX;S.xp=0;return}while(S.lvl<LVMAX&&S.xp>=need()){S.xp-=need();S.lvl++;S.pts+=3;S.hp=maxHp();log(`Новый уровень: ${S.lvl}!`,'sys');if(S.lvl>=5&&!S.t5){S.t5=1;trk('lvl5')}}}
 function applyAdmin(){
  if(!S||!UID)return;const m=ADMD[UID]||{},g=ADMD.global||{};BAN=!!m.banned;let ch=false;
  for(const x of m.gifts||[]){if(S.applied.includes(x.id))continue;if(!giftNeg(x)){if(!ADMNEW.has(x.id)){ADMNEW.add(x.id);if(!ADMNEW.lg){ADMNEW.lg=1;setTimeout(()=>{ADMNEW.lg=0},3000);log('✉️ Письмо от администрации — загляни в «Почту».','sys')}}continue}giftApply(x);ch=true}
@@ -1382,7 +1382,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.62';
+const GVER='1.4.63';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1717,18 +1717,18 @@ async function doReg(){
  const leg=useLeg&&LEG;
  AB=true;AM='';render();
  try{await FBA.createUserWithEmailAndPassword(id+MAILDOM,pw);UID=id;ADM=ADMINS.includes(id);AB=false;
-  if(leg){const L=JSON.parse(JSON.stringify(LEG));L.acc=id;if(L.guest){L.name=raw;delete L.guest;L.reg=L.reg||Date.now()}GUEST=false;await migrateLegacy();enter(L)}else create(raw);seedNews();refReg(id);if(em)acctApi({a:'setmail',email:em},1).then(j=>{MYMAIL=j.email||''}).catch(()=>{});return}
+  if(leg){const L=JSON.parse(JSON.stringify(LEG));L.acc=id;if(L.guest){L.name=raw;delete L.guest;L.reg=L.reg||Date.now()}GUEST=false;await migrateLegacy();enter(L)}else create(raw);seedNews();trk('reg');refReg(id);if(em)acctApi({a:'setmail',email:em},1).then(j=>{MYMAIL=j.email||''}).catch(()=>{});return}
  catch(e){AM=fbErr(e)}
  AB=false;render()}
 function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.62</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.63</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
- const gbtn=(DBS==='ok'&&(scr==='login'||scr==='reg'))?(LEG&&LEG.guest?`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Продолжить без аккаунта · ${esc(LEG.name)}, ур. ${LEG.lvl}</button>`:`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Играть сразу</button><p style="margin:6px 0 12px;font-size:14px;text-align:center;color:#b8c1c4">Без регистрации. Аккаунт можно создать позже — герой сохранится.</p>`):'';
+ const gbtn=(scr==='login'||scr==='reg')?(LEG&&LEG.guest?`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Продолжить без аккаунта · ${esc(LEG.name)}, ур. ${LEG.lvl}</button>`:`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Играть сразу</button><p style="margin:6px 0 12px;font-size:14px;text-align:center;color:#b8c1c4">Без регистрации. Аккаунт можно создать позже — герой сохранится.</p>`):'';
  let body;
  if(scr==='gnew')body=`<p style="margin:0 0 6px">Выбери класс и аватар — и в бой. Имя героя станет твоим логином, когда сохранишь героя.</p>`+heroFields()+`<button class="b" data-a="gmk" style="width:100%">В бой!</button><button class="b alt" data-sc="login" style="width:100%">Назад</button>`;
  else if(scr==='login')body=`<h3>Логин</h3>${inp('lg','Логин или ник','text','username')}<h3>Пароль</h3>${inp('pw','Пароль','password','current-password')}${err}<button class="b" data-a="login" style="width:100%" ${AB||DBS!=='ok'?'disabled':''}>${AB?'Проверяю…':'Войти'}</button>${DBS==='off'?`<button class="b alt" data-a="guest" style="width:100%">Играть без аккаунта (только в этом браузере)</button>`:''}<p style="font-size:14px;color:var(--mute);margin:10px 0 0">Нет аккаунта? Откройте вкладку «Регистрация».</p><button class="lnk" data-sc="forgot" style="padding:8px 0 0;color:#d6b56a">Забыли пароль?</button>`;
@@ -1754,7 +1754,22 @@ const srcNow=()=>{try{return localStorage.getItem('nf_src')||'direct'}catch(e){r
 function actMark(){if(!S)return;const d=DAY();if(!S.reg){S.reg=Date.now();S.rd=d;S.old=CRE?0:1;if(!S.src)S.src=CRE?srcNow():'old'}const o=d-(S.rd!=null?S.rd:d);S.act=S.act||[];if(o>=0&&!S.act.includes(o)){S.act.push(o);S.act=S.act.slice(-40)}}
 let STATS=null,STBUSY=false,atabS='main';
 function statsLoad(){if(!DB||STBUSY)return;STBUSY=true;let q;try{q=DB.collection('players').limit(3000).get()}catch(e){q=Promise.reject(e)}Promise.resolve(q).then(sn=>{STATS={t:Date.now(),L:sn.docs.map(d=>({id:d.id,...d.data()}))};STBUSY=false;render()}).catch(()=>{STBUSY=false;STATS={t:Date.now(),L:[...PL]};render()})}
-function statsView(){if(!STATS){statsLoad();return'<div class="panel"><p>Загружаю статистику…</p></div>'}
+
+// ===== Воронка игроков по источникам =====
+function trk(e){try{const s=(typeof srcNow==='function'?srcNow():'direct'),b=JSON.stringify({e,s});if(navigator.sendBeacon&&navigator.sendBeacon('/.netlify/functions/track',new Blob([b],{type:'application/json'})))return;fetch('/.netlify/functions/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b,keepalive:true}).catch(()=>{})}catch(_){}}
+(function(){try{const d=new Date().toISOString().slice(0,10);if(localStorage.getItem('nf_vd')!==d){localStorage.setItem('nf_vd',d);setTimeout(()=>trk('visit'),1500)}}catch(e){}})();
+let FUN=null,FUNB=false;
+async function funLoad(){if(FUNB||!FBA||!FBA.currentUser)return;FUNB=true;try{const t=await FBA.currentUser.getIdToken();const r=await fetch('/.netlify/functions/track',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({a:'get',days:14})});const j=await r.json();FUN=j.days||{};}catch(e){FUN={}}FUNB=false;render()}
+function funnelView(){if(!ADM)return'';if(FUN===null){funLoad();return'<div class="panel"><p style="margin:0">Загружаю воронку…</p></div>'}
+ const per={},days=Object.keys(FUN).sort().reverse(),add=(d,lim)=>{for(const k of d)for(const [f,v] of Object.entries(FUN[k]||{})){const [s,e]=f.split('__');if(!e)continue;per[s]=per[s]||{visit:0,guest:0,reg:0,lvl5:0};per[s][e]=(per[s][e]|0)+(v|0)}};
+ const pick=FUNR==='today'?days.slice(0,1):FUNR==='7'?days.slice(0,7):days;add(pick);
+ const L=Object.entries(per).sort((a,b)=>b[1].visit-a[1].visit),pc=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+ return`<div class="panel"><h3>Воронка по источникам</h3><p style="margin:0 0 6px;color:var(--mute);font-size:14px">Визиты считаются раз в день на браузер. «Гость» — начал играть без регистрации. Источник берётся из ссылки ?from=… при первом заходе.</p><div style="display:flex;gap:6px;margin-bottom:8px">${[['today','Сегодня'],['7','7 дней'],['14','14 дней']].map(([k,t])=>`<button class="b ${FUNR===k?'':'alt'}" data-fr2="${k}" style="margin:0;padding:6px 10px">${t}</button>`).join('')}<button class="b alt" data-fr2="re" style="margin:0;padding:6px 10px">↻</button></div>
+ ${L.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:15px"><tr style="color:var(--mute);text-align:right"><th style="text-align:left">Источник</th><th>Визиты</th><th>Гости</th><th>Регистр.</th><th>5 ур.</th></tr>${L.map(([s,v])=>`<tr style="text-align:right;border-top:1px solid var(--line)"><td style="text-align:left;padding:6px 0"><b>${esc(s)}</b></td><td>${v.visit}</td><td>${v.guest} <small style="display:inline;color:var(--mute)">${pc(v.guest,v.visit)}</small></td><td>${v.reg} <small style="display:inline;color:var(--mute)">${pc(v.reg,v.visit)}</small></td><td>${v.lvl5}</td></tr>`).join('')}</table></div>`:'<p style="margin:0">Пока нет данных: счётчики заработали только что.</p>'}</div>`}
+let FUNR='7';
+document.addEventListener('click',e=>{const b=e.target.closest('[data-fr2]');if(!b)return;e.preventDefault();const k=b.dataset.fr2;if(k==='re'){FUN=null}else FUNR=k;render()});
+function statsView(){return funnelView()+statsView0()}
+function statsView0(){if(!STATS){statsLoad();return'<div class="panel"><p>Загружаю статистику…</p></div>'}
  const L=STATS.L,d=DAY(),now=Date.now(),pc=(a,b)=>b?Math.round(a/b*100)+'%':'—';
  const nw=L.filter(p=>p.rd!=null&&!p.old),on=L.filter(p=>p.seen&&now-p.seen<6*60000).length,dau=L.filter(p=>p.seen&&Math.floor((p.seen+2*3600000)/864e5)===d).length,wau=L.filter(p=>p.seen&&now-p.seen<7*864e5).length;
  const age=p=>d-p.rd,has=(p,o)=>(p.act||[]).includes(o),hasGE=(p,o)=>(p.act||[]).some(x=>x>=o);
