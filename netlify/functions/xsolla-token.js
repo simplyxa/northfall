@@ -1,6 +1,7 @@
 // Создаёт заказ в Xsolla и возвращает ссылку на окно оплаты (Pay Station).
 const admin = require('../lib/fb');
 const PACKS = require('../lib/packs');
+const { promoNow } = require('../lib/promo');
 const DOM = '@northfall.game';
 const j = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 
@@ -51,9 +52,10 @@ async function main(event) {
     console.error('xsolla token error', r.status, JSON.stringify(out));
     return j(502, { error: 'Xsolla: ' + (out.errorMessage || out.message || r.status) });
   }
+  const promo = await promoNow(admin.firestore()); // акция фиксируется в момент покупки
   try {
     if (out.order_id) await admin.firestore().collection('payments').doc(String(out.order_id))
-      .set({ uid, sku: req.sku, gold: pack.gold, status: 'created', sandbox, ts: Date.now() }, { merge: true });
+      .set({ uid, sku: req.sku, gold: Math.round(pack.gold * promo), base: pack.gold, promo, status: 'created', sandbox, ts: Date.now() }, { merge: true });
   } catch (e) { console.error('payments log', e); }
   const host = sandbox ? 'https://sandbox-secure.xsolla.com' : 'https://secure.xsolla.com';
   return j(200, { url: `${host}/paystation4/?token=${out.token}`, order: out.order_id || null });
