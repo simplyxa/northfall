@@ -659,6 +659,7 @@ function plView(){const p=PV===UID&&S?{id:UID,title:S.title,name:S.name,cls:S.cl
  ${p.id!==UID&&DB?(()=>{const f=frOf(p.id);return`<div class="panel" style="display:flex;gap:8px;flex-wrap:wrap">${!f?`<button class="b" data-fr="${p.id}" style="margin:0">Добавить в друзья</button><button class="b alt" data-dm="${p.id}" style="margin:0">Написать письмо (${MAILC} сер.)</button>`:f.st==='ok'?`<button class="b" data-dm="${p.id}" style="margin:0">Написать</button><button class="b alt" data-fx="${p.id}" style="margin:0">Удалить из друзей</button>`:f.by===UID?`<button class="b alt" disabled style="margin:0">Заявка отправлена</button>`:`<button class="b" data-fa="${p.id}" style="margin:0">Принять в друзья</button>`}</div>`})():''}
  <button class="b alt" data-a="pvback">Назад</button>`}
 const CAMPI='/img/d1d48528ca4821.webp';
+const ARENAI='/img/4f427e449f2e2c.webp';
 const HUNTI='/img/f68471b5cb2941.webp';
 function tabView(){
  if(tab==='acc')return GUEST?guestLock():accView();
@@ -674,7 +675,7 @@ function tabView(){
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Чаща<small>На уровень сильнее, добыча богаче${terTag('hard')}</small></div><button class="b red" data-a="h-hard" ${S.en<1?'disabled':''}>На охоту</button></div></div>`;
- if(tab==='arena')return(REP?repView():'')+`<div class="panel"><h3>Арена (5 энергии)</h3><p style="margin:0 0 4px">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>`+(online?pvpList():'<div class="panel"><p style="margin:0">Арена доступна только с подключённой базой данных.</p></div>');
+ if(tab==='arena')return(REP?repView():'')+`<div class="dban"><img src="${ARENAI}" alt="Арена" style="aspect-ratio:3/1"><div class="dbt"><b>Арена Севера</b><span>Сойдись с воинами других кланов в честном бою</span></div></div><div class="panel"><h3>Арена (5 энергии)</h3><p style="margin:0 0 4px">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>`+(online?pvpList():'<div class="panel"><p style="margin:0">Арена доступна только с подключённой базой данных.</p></div>');
  if(tab==='shop'){
   const SN=SETN,TN=RAR.map(r=>r[0]),SD=['Дерево, кожа и шкуры. Обычное качество.','Железо. Редкое качество.','Сталь. Эпическое качество.','Тёмный металл и руны. Легендарное качество.','Сила богов. Мифическое качество.','Дар Всеотца: руны, вороны и тёмная сталь. Мифическое качество, самое мощное в игре.'];
   const tabs=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${TN.map((n,i)=>`<button class="b ${stab===String(i)?'':'alt'}" data-st="${i}"${stab===String(i)?'':` style="color:var(${RAR[i][1]})"`}>${n}</button>`).join('')}</div>`;
@@ -1377,7 +1378,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.58';
+const GVER='1.4.59';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1719,7 +1720,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.58</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.59</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
