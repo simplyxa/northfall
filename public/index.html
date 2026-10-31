@@ -422,6 +422,10 @@ const botLv=b=>Math.max(1,S.lvl+b.off);
 function mkBot(b){const e=mkEnemy(b.n,botLv(b),1.15);e.hp=e.max=Math.round(e.max*b.hp);e.atk*=b.atk;e.def*=b.def;e.xp*=b.rew;e.gold*=b.rew;e.crit=b.crit;e.title=b.t;return e}
 function mkRep(win,g,loot,r0,sr0,wp0,lost){
  const e=fight.e;REP={win,bot:e.name,title:e.title||'',lv:e.lv,s:{...fight.s},dR:S.rating-r0,rating:S.rating,dS:S.srat-sr0,srat:S.srat,xp:g?g.xp:0,gold:g?g.gold:-lost,lvUp:g?g.lv:0,loot:loot||'',war:(S.wp|0)-wp0,hp:S.hp,mhp:maxHp()}}
+// Отчёт о бое на арене — во всплывающем окне
+function repModal(){if(!REP)return;closeModal();const d=document.createElement('div');d.className='modal';d.setAttribute('role','dialog');d.setAttribute('aria-label','Отчёт о битве');
+ d.innerHTML=repView().replace('class="panel" style="border-left:4px solid','class="mbox" style="max-width:420px;border-top:4px solid').replace('data-a="repclose" style="margin-top:8px"','data-a="mclose" style="margin-top:10px;width:100%"').replace('Закрыть отчёт','Продолжить');
+ d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-a="mclose"]')){closeModal();REP=null;render()}});document.body.appendChild(d)}
 function repView(){
  const r=REP,s=r.s,sg=n=>(n>0?'+':n<0?'−':'±')+Math.abs(n),col=n=>n>0?'--moss':n<0?'--blood':'--mute',row=(a,b)=>`<div class="row"><div>${a}</div><b>${b}</b></div>`;
  return`<div class="panel" style="border-left:4px solid var(${r.win?'--moss':'--blood'})"><h3>${r.win?'Победа':'Поражение'} · отчёт о битве</h3><p style="margin:0 0 6px">Соперник: <b>${esc(r.bot)}</b> · ур. ${r.lv}${r.title?`<br><span style="color:var(--mute);font-size:15px">${esc(r.title)}</span>`:''}</p>
@@ -493,9 +497,9 @@ function settle(){
  if(fight.dun){if(e.hp<=0||S.hp<=0)dunEnd(e.hp<=0?'kill':'dead');return}
  if(fight.wb){if(e.hp<=0||S.hp<=0)wbEnd(e.hp<=0?'kill':'dead');return}
  if(e.hp<=0){
-  log(`${e.name} повержен.`,'hit');const r0=S.rating,sr0=S.srat,wp0=S.wp|0;if(fight.arena){arenaRes(true);ev('arena')}S.win++;petXp(2);const gg=fight.arena?null:gain(e.xp,e.gold),lt=fight.arena?'':drop(e.lv,false);if(!fight.arena)HREP={n:e.name,xp:gg.xp,gold:gg.gold,lv:gg.lv,lt:lt,G:S.gold,X:S.xp,L:S.lvl,k:S._k};if(fight.arena){mkRep(true,gg,lt,r0,sr0,wp0,0);setTimeout(()=>window.scrollTo(0,0),0)}fight=null;
+  log(`${e.name} повержен.`,'hit');const r0=S.rating,sr0=S.srat,wp0=S.wp|0;if(fight.arena){arenaRes(true);ev('arena')}S.win++;petXp(2);const gg=fight.arena?null:gain(e.xp,e.gold),lt=fight.arena?'':drop(e.lv,false);if(!fight.arena)HREP={n:e.name,xp:gg.xp,gold:gg.gold,lv:gg.lv,lt:lt,G:S.gold,X:S.xp,L:S.lvl,k:S._k};if(fight.arena){mkRep(true,gg,lt,r0,sr0,wp0,0);setTimeout(repModal,250)}fight=null;
  }else if(S.hp<=0){
-  const lost=Math.floor(S.gold*.1);S.gold-=lost;S.lose++;S.hp=1;const r0=S.rating,sr0=S.srat;if(fight.arena){arenaRes(false);mkRep(false,null,'',r0,sr0,S.wp|0,lost);setTimeout(()=>window.scrollTo(0,0),0)}
+  const lost=Math.floor(S.gold*.1);S.gold-=lost;S.lose++;S.hp=1;const r0=S.rating,sr0=S.srat;if(fight.arena){arenaRes(false);mkRep(false,null,'',r0,sr0,S.wp|0,lost);setTimeout(repModal,250)}
   log(`Ты теряешь сознание. Соплеменники вытаскивают тебя из боя (−${lost} серебра).`,'dmg');fight=null;
  }
 }
@@ -675,7 +679,7 @@ function tabView(){
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Чаща<small>На уровень сильнее, добыча богаче${terTag('hard')}</small></div><button class="b red" data-a="h-hard" ${S.en<1?'disabled':''}>На охоту</button></div></div>`;
- if(tab==='arena')return(REP?repView():'')+`<div class="dban"><img src="${ARENAI}" alt="Арена" style="aspect-ratio:3/1"><div class="dbt"><b>Арена Севера</b><span>Сойдись с воинами других кланов в честном бою</span></div></div><div class="panel"><h3>Арена (5 энергии)</h3><p style="margin:0 0 4px">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>`+(online?pvpList():'<div class="panel"><p style="margin:0">Арена доступна только с подключённой базой данных.</p></div>');
+ if(tab==='arena')return`<div class="dban"><img src="${ARENAI}" alt="Арена" style="aspect-ratio:3/1"><div class="dbt"><b>Арена Севера</b><span>Сойдись с воинами других кланов в честном бою</span></div></div><div class="panel"><h3>Арена (5 энергии)</h3><p style="margin:0 0 4px">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>`+(online?pvpList():'<div class="panel"><p style="margin:0">Арена доступна только с подключённой базой данных.</p></div>');
  if(tab==='shop'){
   const SN=SETN,TN=RAR.map(r=>r[0]),SD=['Дерево, кожа и шкуры. Обычное качество.','Железо. Редкое качество.','Сталь. Эпическое качество.','Тёмный металл и руны. Легендарное качество.','Сила богов. Мифическое качество.','Дар Всеотца: руны, вороны и тёмная сталь. Мифическое качество, самое мощное в игре.'];
   const tabs=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${TN.map((n,i)=>`<button class="b ${stab===String(i)?'':'alt'}" data-st="${i}"${stab===String(i)?'':` style="color:var(${RAR[i][1]})"`}>${n}</button>`).join('')}</div>`;
@@ -1378,7 +1382,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.59';
+const GVER='1.4.60';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1720,7 +1724,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.59</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.60</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
