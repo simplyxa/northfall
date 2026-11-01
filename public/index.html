@@ -358,7 +358,7 @@ const pushView=()=>`<div class="panel"><h3>Уведомления на теле�
  ${S.push?`<p style="margin:0 0 6px;color:var(--moss);font-weight:700">Включены</p>${PUSHK.map(([k,t])=>`<label class="tgl"><input type="checkbox" data-pk="${k}" ${(S.pushOff||[]).includes(k)?'':'checked'}><span><b>${t}</b></span></label>`).join('')}<button class="b alt" data-a="pushoff" style="width:100%">Выключить все уведомления</button>`:`<button class="b" data-a="pushon" style="width:100%">Включить уведомления</button>`}${PUSHMSG?`<p style="margin:8px 0 0">${esc(PUSHMSG)}</p>`:''}</div>`;
 const pushAsk=()=>UID&&!(typeof GUEST!=='undefined'&&GUEST)&&S.lvl>=5&&!S.push&&!S.pushNo&&(pushOk()||isIOS())?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0 0 8px;font-size:15px">🔔 Включить уведомления? Напомним, когда энергия полна, придёт сообщение или соберётся рейд.</p><div style="display:flex;gap:6px"><button class="b" data-a="pushon" style="flex:1;margin:0">Включить</button><button class="b alt" data-a="pushno" style="flex:1;margin:0">Не сейчас</button></div>${PUSHMSG?`<p style="margin:8px 0 0">${esc(PUSHMSG)}</p>`:''}</div>`:'';
 document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('[data-pk]');if(c)pushKind(c.dataset.pk)});
-function goParam(){try{const g=new URLSearchParams(location.search).get('go');if(!g)return;history.replaceState(null,'',location.pathname);const T={friends:'mail',raid:'raid',boss:'boss',hunt:'home'};if(T[g])tab=T[g]}catch(e){}}
+function goParam(){try{const g=new URLSearchParams(location.search).get('go');if(!g)return;history.replaceState(null,'',location.pathname);const T={friends:'mail',raid:'raid',boss:'boss',hunt:'home',gchat:'gchat'};if(T[g])tab=T[g]}catch(e){}}
 
 // ===== Ники как логины =====
 async function nickFree(v){const l=v.toLowerCase();const sn=await DB.collection('names').doc(l).get();if(sn.exists&&sn.data().uid!==UID)return false;
@@ -1398,7 +1398,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.70';
+const GVER='1.4.71';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1410,7 +1410,7 @@ function news(t){if(!DB||!UID||(typeof GUEST!=='undefined'&&GUEST)||!S)return;NW
 function newsFlush(){if(!NWQ.length||!DB||!UID||Date.now()-NWT<60000)return;NWT=Date.now();const t=NWQ.shift(),ts=Date.now();
  DB.collection('chat').doc('n'+ts.toString(36)+Math.random().toString(36).slice(2,5)).set({uid:UID,name:S.name,text:t,ts,sys:1}).catch(()=>{})}
 setInterval(newsFlush,20000);
-function gcSend(){const i=$('#gct');if(!i||!DB||!S)return;const t=i.value.trim();if(!t)return;if(Date.now()-lastGc<3000){GCMSG='Не так быстро: одно сообщение в 3 секунды.';return render()}lastGc=Date.now();i.value='';GCMSG='';const ts=Date.now();
+function gcSend(){const i=$('#gct');if(!i||!DB||!S)return;const t=i.value.trim();if(!t)return;if(Date.now()-lastGc<3000){GCMSG='Не так быстро: одно сообщение в 3 секунды.';return render()}lastGc=Date.now();i.value='';GCMSG='';const ts=Date.now();try{if(!ADM&&!(typeof GUEST!=='undefined'&&GUEST)){const pr=pushApi({a:'gchat',name:S.name,text:t},1);if(pr&&pr.catch)pr.catch(()=>{})}}catch(_){}
  DB.collection('chat').doc('g'+ts.toString(36)+Math.random().toString(36).slice(2,5)).set({uid:UID,name:S.name,text:t.slice(0,200),ts}).catch(()=>{GCMSG='Сообщение не отправлено.';render()})}
 function gcDel(id){if(!ADM||!DB)return;DB.collection('chat').doc(id).delete().catch(()=>{})}
 function gchatView(){if(!DB)return'<div class="panel"><p>Общий чат работает только с подключённой базой данных.</p></div>';
@@ -1753,7 +1753,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.70</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.71</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

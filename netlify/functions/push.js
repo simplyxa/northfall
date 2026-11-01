@@ -44,6 +44,16 @@ exports.handler = async (event) => {
       const sent = await sendTo(db, to, 'msg', { t: 'Northfall: новое сообщение', b: `${String(q.name || uid).slice(0, 20)} написал тебе`, tag: 'msg-' + uid, u: '/?go=friends' });
       return j(200, { ok: sent });
     }
+    if (q.a === 'gchat') { // сообщение в общем чате: зовём администрацию, не чаще раза в 3 минуты
+      const ADMINS = ['shtorm1', 'admin'];
+      if (ADMINS.includes(uid)) return j(200, { ok: false });
+      const st = db.collection('priv').doc('gchat-push'), ss = await st.get();
+      if (ss.exists && Date.now() - (ss.data().ts || 0) < 3 * 60000) return j(200, { ok: false });
+      await st.set({ ts: Date.now(), by: uid });
+      const name = String(q.name || uid).slice(0, 20), txt = String(q.text || '').replace(/\s+/g, ' ').slice(0, 90);
+      const r = await Promise.all(ADMINS.map(id => sendTo(db, id, 'msg', { t: 'Northfall: пишут в общем чате', b: `${name}: ${txt}`, tag: 'gchat', u: '/?go=gchat' })));
+      return j(200, { ok: r.some(Boolean) });
+    }
     if (q.a === 'raid') { // рейд собрался: зовём живых участников
       const rs = await db.collection('raids').doc(String(q.rid || '')).get();
       if (!rs.exists) return j(404, { error: 'Рейд не найден' });
