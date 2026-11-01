@@ -303,7 +303,7 @@ function gsGift(){if(!S||S.gsi)return;S.gsi=1;const it=gen('w',SETLV[1],1);it.pb
 function gsGold(){if(!S||!S.gsg||typeof goldApi!=='function')return;goldApi({a:'gsave'}).then(j=>{delete S.gsg;if(j.au!=null){S.au=j.au|0;log('Подарок за сохранение героя: +5 золота.','hit');tbPaint()}save();ui()}).catch(e=>{if(/уже|старый|409/.test(e.message||''))delete S.gsg;save()})}
 const GTABS=['clan','arena','boss','raid','market','forum','gchat','friends','dm','mail','give','online','top','pl','admin','bank','gold'];
 function guestGo(){ADM=false;if(LEG){GUEST=true;return enter(LEG)}scr='gnew';AM='';render()}
-function guestMake(){GUEST=true;ADM=false;trk('guest');UID=null;create('Странник');S.guest=1;delete S.acc;save();render()}
+function guestMake(){GUEST=true;ADM=false;trk('guest');UID=null;create('Странник');S.guest=1;delete S.acc;save();render();setTimeout(()=>{if(S&&!fight&&S.en>0){startHunt('easy');log('Звери вышли из чащи! Жми «Удар», когда полоска заряда заполнится.','sys');render();window.scrollTo(0,0)}},500)}
 function guestSave(){if(!S)return;closeModal();clearTimeout(syncT);S.guest=1;delete S.acc;S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}LEG=JSON.parse(JSON.stringify(S));LOC=LEG;useLeg=true;S=null;GUEST=false;fight=null;tab='home';scr='reg';AM='';logs=[];render();window.scrollTo(0,0)}
 const guestSaveView=()=>`<div class="panel" style="border-left:4px solid var(--blood)"><h3 style="margin:0 0 6px">Сохранить героя</h3><p style="margin:0 0 8px">Сейчас <b>${esc(S.name)}</b> (ур. ${S.lvl}) хранится только в этом браузере: если очистить браузер или зайти с другого устройства, герой пропадёт.</p><p style="margin:0 0 10px">Придумай логин и пароль — займёт 10 секунд. Весь прогресс останется, а ещё откроются кланы, арена, рейды, мировой босс, рынок, чат и золото.</p><button class="b gsvb" data-a="gsave" style="width:100%;font-size:18px;padding:12px">Сохранить героя</button></div>`;
 const guestLock=()=>`<div class="panel" style="border-left:4px solid var(--gold)"><h3>Нужен аккаунт</h3><p style="margin:0 0 8px">Кланы, арена, рейды, мировой босс, рынок, чат, форум, друзья и золото работают только с аккаунтом. Сохрани героя — весь прогресс останется с тобой.</p><button class="b" data-a="gsave" style="width:100%">Сохранить героя (логин и пароль)</button></div>`;
@@ -1388,7 +1388,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.64';
+const GVER='1.4.65';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1731,7 +1731,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.64</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.65</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
