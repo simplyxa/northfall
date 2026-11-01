@@ -44,6 +44,17 @@ exports.handler = async (event) => {
       const sent = await sendTo(db, to, 'msg', { t: 'Northfall: новое сообщение', b: `${String(q.name || uid).slice(0, 20)} написал тебе`, tag: 'msg-' + uid, u: '/?go=friends' });
       return j(200, { ok: sent });
     }
+    if (q.a === 'duelc') { // вызов на дуэль: не чаще раза в 2 минуты одному игроку
+      const to = String(q.to || '');
+      if (!/^[a-z0-9_]{3,16}$/.test(to) || to === uid) return j(400, { error: 'Неверные данные' });
+      const g = db.collection('push').doc(to), sn = await g.get();
+      if (!sn.exists) return j(200, { ok: false });
+      const last = (sn.data().duelFrom || {})[uid] || 0;
+      if (Date.now() - last < 2 * 60000) return j(200, { ok: false });
+      await g.set({ duelFrom: { [uid]: Date.now() } }, { merge: true });
+      const ok = await sendTo(db, to, 'msg', { t: 'Northfall: вызов на дуэль!', b: `${String(q.name || uid).slice(0, 20)} вызывает тебя на дуэль. 2 минуты на ответ!`, tag: 'duel', u: '/?go=duel' });
+      return j(200, { ok });
+    }
     if (q.a === 'gchat') { // сообщение в общем чате: зовём администрацию, не чаще раза в 3 минуты
       const ADMINS = ['shtorm1', 'admin'];
       if (ADMINS.includes(uid)) return j(200, { ok: false });
