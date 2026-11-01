@@ -1087,8 +1087,9 @@ function pvpList(){const L=PL.filter(p=>p.id!==UID&&p.stats).sort((a,b)=>Math.ab
  return`<div class="panel"><h3>Воины других игроков</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Бой с копией героя другого игрока: его атака, защита, здоровье и крит. Рейтинг зависит от разницы с его рейтингом.</p>${L.length?L.map(p=>{const diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(p.av,28)} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div><button class="b" data-pp="${p.id}" ${S.en<5?'disabled':''}>Вызвать</button></div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
 
 // ===== Рынок =====
-let MK=[],mkUn=null,MKMSG='';const MKFEE=.05,mkC=m=>m.au?'au':'gold',mkU=m=>m.au?'зол.':'сер.';
-function mkSub(){if(!DB||mkUn)return;mkUn=DB.collection('market').limit(200).onSnapshot(sn=>{MK=sn.docs.map(d=>({id:d.id,...JSON.parse(JSON.stringify(d.data()))}));if(tab==='market'&&!fight)ui();else if(MK.some(m=>m.seller===UID&&m.sold))ui()},()=>{})}
+let MK=[],mkUn=null,MKMSG='',mkMode='',mkFor=null;const MKFEE=.05,mkC=m=>m.au?'au':'gold',mkU=m=>m.au?'зол.':'сер.';
+// рынок целиком — только на вкладке «Рынок», в остальное время — только свои лоты (чтобы узнать о продаже)
+function mkSub(){if(!DB||!UID)return;const want=tab==='market'?'all':'mine';if(mkUn&&mkMode===want&&mkFor===UID)return;if(mkUn)mkUn();mkMode=want;mkFor=UID;mkUn=(want==='all'?DB.collection('market').limit(200):DB.collection('market').where('seller','==',UID).limit(30)).onSnapshot(sn=>{MK=sn.docs.map(d=>({id:d.id,...JSON.parse(JSON.stringify(d.data()))}));if(tab==='market'&&!fight)ui();else if(MK.some(m=>m.seller===UID&&m.sold))ui()},()=>{})}
 function mkList(){const it=MODIT;if(!it||!DB||!S.inv.includes(it)||it.pb)return;const el=document.getElementById('mprice'),pr=Math.max(1,Math.floor(+(el&&el.value)||0));if(!pr)return;
  const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);S.inv=S.inv.filter(x=>x!==it);save();closeModal();
  DB.collection('market').doc(id).set({seller:UID,sname:S.name,item:JSON.parse(JSON.stringify(it)),price:pr,au:true,ts:Date.now(),sold:false}).then(()=>{MKMSG=`«${it.name}» выставлен на рынок за ${pr} зол.`;log(MKMSG,'sys');render()}).catch(()=>{S.inv.push(it);save();log('Не удалось выставить вещь на рынок.','sys');render()});render()}
@@ -1223,7 +1224,7 @@ function petView(){const P=petA();S.pets=S.pets||{};
 // ===== Форум =====
 const FSEC=[['news','Новости и объявления','Новости от администрации',true],['gen','Общий зал','Разговоры обо всём',false],['help','Помощь новичкам','Вопросы об игре',false],['clan','Кланы','Набор в кланы, союзы и войны',false],['trade','Торговля','Обмен и продажа вещей',false],['idea','Предложения','Идеи по развитию игры',false]];
 let FT=[],ftUn=null,FP=[],fpFor=null,fpUn=null,FS=null,FTOP=null,FMSG='',lastPost=0;
-function ftSub(){if(!DB||ftUn)return;ftUn=DB.collection('forum').limit(300).onSnapshot(sn=>{FT=sn.docs.map(d=>({id:d.id,...JSON.parse(JSON.stringify(d.data()))}));if(tab==='forum'&&!fight)ui()},()=>{})}
+function ftSub(){if(!DB||tab!=='forum'){if(ftUn){ftUn();ftUn=null}return}if(ftUn)return;ftUn=DB.collection('forum').limit(300).onSnapshot(sn=>{FT=sn.docs.map(d=>({id:d.id,...JSON.parse(JSON.stringify(d.data()))}));if(tab==='forum'&&!fight)ui()},()=>{})}
 function fpSub(){if(!DB||tab!=='forum'||!FTOP){if(fpUn)fpUn();fpUn=null;fpFor=null;FP=[];return}if(fpFor===FTOP)return;if(fpUn)fpUn();fpFor=FTOP;FP=[];
  fpUn=DB.collection('forum').doc(FTOP).collection('posts').orderBy('ts','asc').limit(200).onSnapshot(sn=>{FP=sn.docs.map(d=>({id:d.id,...d.data()}));if(tab==='forum'&&!fight){const a=document.activeElement;if(!(a&&a.tagName==='TEXTAREA'))render()}},()=>{})}
 const fdate=ts=>{const d=new Date(ts),t=new Date();return d.toDateString()===t.toDateString()?d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})};
@@ -1395,7 +1396,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.66';
+const GVER='1.4.67';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1667,7 +1668,7 @@ async function initOnline(){
   else if(!S&&LEG&&LEG.guest){GUEST=true;enter(LEG)}
   else if(!S&&!LEG&&adSrc()&&(scr==='login'||scr==='reg'))scr='gnew';
   if(!S)render();
-  db.collection('admin').limit(100).onSnapshot(sn=>{ADMD={};sn.docs.forEach(d=>{ADMD[d.id]=d.data()});ANN=ADMD.global||null;applyAdmin();ui()},()=>{});
+  admSub();
   db.collection('wars').limit(60).onSnapshot(sn=>{WARS=sn.docs.map(d=>({id:d.id,...d.data()}));ui()},()=>{});
   // в реальном времени — только недавно заходившие игроки; лучших по рейтингу подгружаем по запросу (вкладка «Лучшие»)
   db.collection('players').orderBy('seen','desc').limit(120).onSnapshot(sn=>{PLB=sn.docs.map(d=>({id:d.id,...d.data()}));plMerge();ui()},()=>{});
@@ -1698,6 +1699,12 @@ async function hashPw(pw,saltB64){
  return{salt:btoa(String.fromCharCode(...salt)),h:btoa(String.fromCharCode(...new Uint8Array(bits)))}}
 const LOGIN_RE=/^[a-z0-9_]{3,16}$/;
 let PLB=[],PLX=[],PLXT=0;
+// админ-документы: всем — только общий, акция и свой; администратору — все
+let ADMUN=[],ADMM='';
+function admSub(){if(!DB)return;const m=ADM?'all':'u:'+(UID||'');if(ADMM===m)return;ADMUN.forEach(f=>f());ADMUN=[];ADMM=m;ADMD={};
+ const upd=()=>{ANN=ADMD.global||null;applyAdmin();ui()};
+ if(ADM){ADMUN.push(DB.collection('admin').limit(300).onSnapshot(sn=>{ADMD={};sn.docs.forEach(d=>{ADMD[d.id]=d.data()});upd()},()=>{}));return}
+ for(const id of ['global','promo-gold',...(UID?[UID]:[])])ADMUN.push(DB.collection('admin').doc(id).onSnapshot(d=>{if(d.exists)ADMD[id]=d.data();else delete ADMD[id];upd()},()=>{}))}
 function plMerge(){const ids=new Set(PLB.map(p=>p.id));PL=[...PLB,...PLX.filter(p=>!ids.has(p.id))]}
 const PLF={};function plFetch(id){if(!DB||PLF[id])return;PLF[id]=1;DB.collection('players').doc(id).get().then(d=>{if(d.exists){PLX=[...PLX.filter(x=>x.id!==id),{id,...d.data()}];plMerge();render()}}).catch(()=>{})}
 function topFetch(){if(!DB||Date.now()-PLXT<300000)return;PLXT=Date.now();DB.collection('players').orderBy('rating','desc').limit(60).get().then(sn=>{PLX=sn.docs.map(d=>({id:d.id,...d.data()}));plMerge();ui()}).catch(()=>{PLXT=0})}
@@ -1744,7 +1751,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.66</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.67</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -1877,7 +1884,7 @@ IC.gsave='<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><rect x="8" y="13" 
 function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главная'],['hero',hn],['clan','Клан']];if(GUEST)it.push(['gsave','Сохранить']);else if(ADM)it.push(['admin','Админка']);
  return`<nav class="bnav" aria-label="Основное меню">${it.map(([k,t])=>`<button class="${tab===k?'on':''}${k==='home'?' bhome':''}${k==='gsave'?' bsave':''}" data-t="${k}"${k==='home'?' aria-label="Главная"':''}><span style="position:relative;line-height:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k==='home'?'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>':IC[k]}</svg>${k==='hero'&&S.pts?`<i class="bdg">${S.pts}</i>`:''}</span>${k==='home'?'':`<span class="bnt">${esc(t)}</span>`}</button>`).join('')}</nav>`}
 function render(){
- IREG=[];paySub();walletSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();if(tab==='forum')ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
+ IREG=[];paySub();walletSub();admSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
  const keep={};['gto','gtx','mlto','nnick','lg','pw','pw2','em','mymail','pwold','pwnew','pwnew2','nm','ftt','ftb','fpb','dmt','gct'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
