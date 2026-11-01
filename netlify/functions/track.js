@@ -21,6 +21,18 @@ exports.handler = async (event) => {
       for (let i = 0; i < n; i++) { const k = day(Date.now() - i * 864e5); const sn = await db.collection('stats').doc(k).get(); if (sn.exists) out[k] = sn.data(); }
       return j(200, { days: out });
     }
+    // гости онлайн: гость раз в минуту отмечается, все игроки получают количество
+    if (q.a === 'ping' || q.a === 'online') {
+      const ref = db.collection('priv').doc('guests-online'), now = Date.now(), TTL = 3 * 60000;
+      if (q.a === 'online') { const sn = await ref.get(); const m = (sn.exists && sn.data().m) || {}; return j(200, { g: Object.values(m).filter(t => now - t < TTL).length }); }
+      const g = String(q.g || '').replace(/[^a-z0-9]/gi, '').slice(0, 16);
+      if (g.length < 8) return j(400, { error: 'bad id' });
+      let cnt = 0;
+      await db.runTransaction(async tx => { const sn = await tx.get(ref); const m0 = (sn.exists && sn.data().m) || {}, m = {};
+        for (const [k, t] of Object.entries(m0)) if (now - t < TTL) m[k] = t; m[g] = now; cnt = Object.keys(m).length;
+        if (cnt > 2000) return; tx.set(ref, { m }); });
+      return j(200, { g: cnt });
+    }
     const e = String(q.e || ''), s = (String(q.s || 'direct').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24)) || 'direct';
     if (!EV.includes(e)) return j(400, { error: 'bad event' });
     const hh = new Date().toLocaleString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Asia/Jerusalem' }).slice(0, 2);
