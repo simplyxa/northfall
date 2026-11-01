@@ -23,7 +23,9 @@ exports.handler = async (event) => {
     }
     const e = String(q.e || ''), s = (String(q.s || 'direct').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24)) || 'direct';
     if (!EV.includes(e)) return j(400, { error: 'bad event' });
-    await db.collection('stats').doc(day(Date.now())).set({ [s + '__' + e]: admin.firestore.FieldValue.increment(1) }, { merge: true });
+    const hh = new Date().toLocaleString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Asia/Jerusalem' }).slice(0, 2);
+    const inc = admin.firestore.FieldValue.increment(1);
+    await db.collection('stats').doc(day(Date.now())).set({ [s + '__' + e]: inc, ['h' + hh + '__' + s + '__' + e]: inc }, { merge: true });
     return j(200, { ok: true });
   } catch (err) { console.error('track', err); return j(200, { ok: false }); }
 };
