@@ -149,6 +149,15 @@ exports.handler = async (event) => {
         logOp(tx, uid, { op: 'boss', n: g, k, id });
         return { au: (w.au | 0) + g };
       }
+      if (a === 'gsave') { // подарок за сохранение героя-гостя: 5 золота, один раз, только новым аккаунтам
+        const { ref, w } = await ensure(tx, uid);
+        if (w.gs) fail(409, 'Подарок уже получен');
+        let age = 1e12;
+        try { const u = await admin.auth().getUserByEmail(uid + DOM); age = Date.now() - Date.parse(u.metadata.creationTime); } catch (e) {}
+        if (age > 3 * 864e5) fail(409, 'Аккаунт слишком старый для подарка');
+        tx.update(ref, { au: (w.au | 0) + 5, gs: Date.now() }); logOp(tx, uid, { op: 'gsave', n: 5 });
+        return { au: (w.au | 0) + 5 };
+      }
       if (a === 'pwa') { // задание «игра на экране Домой»: 5 золота, один раз
         const { ref, w } = await ensure(tx, uid);
         if (w.pwa) fail(409, 'Награда уже получена');
