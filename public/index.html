@@ -304,6 +304,9 @@ function norm(){
 // ===== Гость: игра без регистрации, герой хранится в браузере =====
 let GUEST=false;
 const GSGIFT='редкое оружие и 5 золота';
+const guestClanView=()=>{const F=[['🏰','Постройки клана','Казармы, стена, лазарет, торговый двор и кузня дают бонусы каждому воину: к атаке, защите, лечению, серебру и железу.'],['🕳️','Подземелье клана','Каждую неделю — общие боссы на этажах. Бейте вместе, награда делится по доле урона.'],['🐉','Рейды','Собирай отряд из соклановцев и иди на сильных противников, которых в одиночку не одолеть.'],['⚔️','Войны и земли','Объявляй войну другим кланам и захватывай территории Севера.'],['💰','Казна и задание недели','Общая казна серебра и железа и задание клана с наградой каждую неделю.'],['💬','Чат клана','Свой чат для своих: договориться о рейде, спросить совета, позвать на дуэль.']];
+ const top=(typeof CLN!=='undefined'?CLN:[]).slice().sort((a,b)=>(b.xp|0)-(a.xp|0)).slice(0,5);
+ return`<div class="dban"><img src="${DUNIMG}" alt="Кланы Севера"><div class="dbt"><b>Кланы Севера</b><span>Вместе вы сильнее любого зверя</span></div></div><div class="panel"><h3 style="margin:0 0 4px">Что даёт клан</h3>${F.map(([i,t,d])=>`<div class="row" style="align-items:flex-start"><div><b>${i} ${t}</b><small style="display:block;white-space:normal;font-size:14px">${d}</small></div></div>`).join('')}</div>${top.length?`<div class="panel"><h3 style="margin:0 0 4px">Кланы, которые ждут воинов</h3>${top.map(c=>`<div class="row"><div>${esc(c.name)}<small>Ур. ${cLv(c).L} · участников ${mem(c).length}/${cCap(c)}</small></div><span style="color:var(--mute);font-size:14px">${c.closed?'по заявке':'вход свободный'}</span></div>`).join('')}</div>`:''}<div class="panel" style="border-left:4px solid var(--blood)"><h3 style="margin:0 0 6px">Хочешь в клан?</h3><p style="margin:0 0 10px">Кланы доступны только сохранённым героям. Придумай логин и пароль — займёт 10 секунд, весь прогресс <b>${esc(S.name)}</b> останется, а в подарок получишь ${GSGIFT}.</p><button class="b gsvb" data-a="gsave" style="width:100%;font-size:18px;padding:12px">Сохранить героя и вступить в клан</button></div>`};
 const adSrc=()=>{try{const v=localStorage.getItem('nf_src')||'';return !!v&&v!=='direct'&&v!=='friend'}catch(e){return false}};
 // подарок за сохранение героя-гостя: оружие сразу, 5 золота — через сервер (один раз на аккаунт)
 function gsGift(){if(!S||S.gsi)return;S.gsi=1;const it=gen('w',SETLV[1],1);it.pb=1;S.inv.push(it);S.gsg=1;save();
@@ -685,6 +688,7 @@ const ARENAI='/img/4f427e449f2e2c.webp';
 const HUNTI='/img/f68471b5cb2941.webp';
 function tabView(){
  if(tab==='acc')return GUEST?guestLock():accView();
+ if(GUEST&&tab==='clan')return guestClanView();
  if(GUEST&&GTABS.includes(tab))return guestLock();
  if(GUEST&&tab==='gsave')return guestSaveView();
  if(tab==='pl')return plView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='raid')return raidView();if(tab==='duel')return duelView();if(tab==='skills')return skillsView();if(tab==='settings')return settingsView();if(tab==='mail')return mailView();if(tab==='give')return giveView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='invite')return inviteView();if(tab==='install')return installView();if(tab==='gold')return goldView();if(tab==='gchat')return gchatView();if(tab==='online')return onlineView();if(tab==='about')return aboutView();if(tab==='bank')return bankView();if(tab==='friends')return friendsView();if(tab==='dm')return dmView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
@@ -1507,7 +1511,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.82';
+const GVER='1.4.83';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1862,7 +1866,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.82</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.83</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
