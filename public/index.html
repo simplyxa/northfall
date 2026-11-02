@@ -401,10 +401,12 @@ function admMailView(){const L=admGifts();if(S)L.forEach(x=>{if(!S.applied.inclu
 document.addEventListener('click',e=>{const b=e.target.closest('[data-gc],[data-a="admmail"],[data-a="admback"]');if(!b)return;e.preventDefault();if(b.dataset.gc)return giftClaim(b.dataset.gc);MLADM=b.dataset.a==='admmail';render();window.scrollTo(0,0)});
 function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
 // Регенерация (R) — скорость восстановления: энергия R/60 в секунду, здоровье R/180 в секунду
-const regTot=()=>Math.max(1,regv()),enPS=()=>regTot()/60,hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
+const regTot=()=>Math.max(1,regv()),enPS=()=>regTot()/60,
+ // на охоте энергия восстанавливается на 60% и не быстрее 0,16/с (≈80% расхода авто-удара), чтобы охота не была бесконечной; чем выше реген — тем дольше охота
+ HUNTRG=.6,HUNTRC=.16,enPSH=()=>Math.min(enPS()*HUNTRG,HUNTRC),hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
 function regen(){
  if(!S)return;const now=Date.now();if(!S.rt)S.rt=now;const dt=Math.min(7*864e5,Math.max(0,now-S.rt))/1000;S.rt=now;if(dt<=0)return;
- if(S.en<maxEn()){S.enf=(+S.enf||0)+enPS()*dt;const k=Math.floor(S.enf);if(k>0){S.enf-=k;S.en=Math.min(maxEn(),S.en+k)}}else S.enf=0;
+ if(S.en<maxEn()){S.enf=(+S.enf||0)+(fight&&fight.hunt?enPSH():enPS())*dt;const k=Math.floor(S.enf);if(k>0){S.enf-=k;S.en=Math.min(maxEn(),S.en+k)}}else S.enf=0;
  if(!fight&&S.hp>0&&S.hp<maxHp()){S.hpf=(+S.hpf||0)+hpPS()*dt;const h=Math.floor(S.hpf);if(h>0){S.hpf-=h;S.hp=Math.min(maxHp(),S.hp+h)}}else if(S.hp>=maxHp())S.hpf=0;
 }
 
@@ -491,7 +493,7 @@ function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
 // звер бьёт — его карточка коротко «вздрагивает»
 function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)el.animate([{transform:'scale(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)'}],{duration:280,easing:'ease-out'})}),0)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Задание «${NQ.h}»</span><span><b>убито ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
- return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Новый зверь приходит в течение 10 секунд и стоит 1 энергию.</p>
+ return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Каждый удар стоит 1 энергию. На охоте энергия восстанавливается медленнее: +${(enPSH()*60).toFixed(1).replace('.',',')} в минуту (вне охоты +${(enPS()*60).toFixed(1).replace('.',',')}).</p>
  <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
  <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${mobImg(s.e.name)?' mbg':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"${mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · оглушён':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
  <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель.</p>
@@ -1559,7 +1561,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.93';
+const GVER='1.4.94';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1936,7 +1938,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.93</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.94</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
