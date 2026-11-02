@@ -305,7 +305,7 @@ function norm(){
  S.wclaim=S.wclaim||[];S.wp=S.wp||0;S.war=S.war||'';S.applied=S.applied||[];if(!S.pt)S.pt={b:S.pot|0};S.av=S.av||{s:0,c:0};fixNum();rollSeason()}
 
 // ===== Гость: игра без регистрации, герой хранится в браузере =====
-let GUEST=false,AUTHSLOW=0;
+let GUEST=false,AUTHSLOW=0;const INAPP=/Instagram|FBAN|FBAV|FB_IAB|Threads|TikTok|musical_ly|Line\/|VKClient|Telegram/i.test(navigator.userAgent||'');
 const GSGIFT='редкое оружие и 5 золота';
 const guestClanView=()=>{const F=[['🏰','Постройки клана','Казармы, стена, лазарет, торговый двор и кузня дают бонусы каждому воину: к атаке, защите, лечению, серебру и железу.'],['🕳️','Подземелье клана','Каждую неделю — общие боссы на этажах. Бейте вместе, награда делится по доле урона.'],['🐉','Рейды','Собирай отряд из соклановцев и иди на сильных противников, которых в одиночку не одолеть.'],['⚔️','Войны и земли','Объявляй войну другим кланам и захватывай территории Севера.'],['💰','Казна и задание недели','Общая казна серебра и железа и задание клана с наградой каждую неделю.'],['💬','Чат клана','Свой чат для своих: договориться о рейде, спросить совета, позвать на дуэль.']];
  const top=(typeof CLN!=='undefined'?CLN:[]).slice().sort((a,b)=>(b.xp|0)-(a.xp|0)).slice(0,5);
@@ -1561,7 +1561,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.97';
+const GVER='1.4.98';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1848,7 +1848,7 @@ async function initOnline(){
   if(!window.firebase||!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.includes('ВСТАВЬ'))return;
   if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
   const db=firebase.firestore();FBA=firebase.auth();
-  try{await Promise.race([FBA.setPersistence(firebase.auth.Auth.Persistence.LOCAL),new Promise(r=>setTimeout(r,2000))])}catch(e){}
+  try{await Promise.race([FBA.setPersistence(INAPP?firebase.auth.Auth.Persistence.SESSION:firebase.auth.Auth.Persistence.LOCAL),new Promise(r=>setTimeout(r,2000))])}catch(e){}
   DB=db;online=true;DBS='ok';
   const u=await new Promise(res=>{let done=false;const fin=x=>{if(done)return;done=true;res(x)};const un=FBA.onAuthStateChanged(x=>{try{un()}catch(e){}fin(x)});setTimeout(()=>{if(!done)AUTHSLOW=1;fin(null)},3000)});
   if(u&&u.email&&u.email.endsWith(MAILDOM)){const id=u.email.slice(0,-MAILDOM.length);ADM=ADMINS.includes(id);await enterAccount(id)}
@@ -1938,8 +1938,8 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.97</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
- const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.98</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
  const gbtn=(scr==='login'||scr==='reg')?(LEG&&LEG.guest?`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Продолжить без аккаунта · ${esc(LEG.name)}, ур. ${LEG.lvl}</button>`:`<button class="b" data-a="guestgo" style="width:100%;font-size:18px;padding:14px">▶ Играть сразу</button><p style="margin:6px 0 12px;font-size:14px;text-align:center;color:#b8c1c4">Без регистрации. Аккаунт можно создать позже — герой сохранится.</p>`):'';
