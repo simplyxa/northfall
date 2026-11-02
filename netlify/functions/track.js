@@ -3,7 +3,7 @@
 const admin = require('../lib/fb');
 const DOM = '@northfall.game';
 const ADMINS = ['shtorm1', 'admin'];
-const EV = ['visit', 'scr', 'tap', 'guest', 'reg', 'lvl5'];
+const EV = ['visit', 'scr', 'tap', 'guest', 'k2', 'nbc', 'l3', 'reg', 'lvl5'];
 const j = (c, o) => ({ statusCode: c, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o) });
 const day = (t) => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Asia/Jerusalem' });
 
