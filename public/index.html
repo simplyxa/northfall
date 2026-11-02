@@ -56,7 +56,7 @@ body.auth .panel h3{color:#f0e3c0}body.auth .panel p,body.auth .panel small{colo
 body.auth input{background:rgba(255,255,255,.08);color:#f1f3f4;border-color:#4a545b}body.auth input::placeholder{color:#8f9a9f}
 body.auth .b{background:#c79a3c;color:#140f08;border-color:#c79a3c}body.auth .b.alt{background:rgba(255,255,255,.08);color:#e3e7e8;border-color:#4a545b}body.auth .b:disabled{opacity:.5}
 body.auth .cls{background:rgba(255,255,255,.06);color:#e3e7e8;border-color:#4a545b}body.auth .cls.on{border-color:#c79a3c}
-.b.strk{position:relative;display:block;width:100%;min-height:56px;font-size:20px;letter-spacing:.04em;border:4px solid transparent;border-radius:10px;background:linear-gradient(var(--btn),var(--btn)) padding-box,conic-gradient(from 0deg,var(--gold) calc(var(--p)*1%),color-mix(in srgb,var(--line) 70%,transparent) 0) border-box;color:var(--btnt);transition:box-shadow .2s}
+.b.strk{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:6;display:block;width:100%;min-height:56px;font-size:20px;letter-spacing:.04em;border:4px solid transparent;border-radius:10px;background:linear-gradient(var(--btn),var(--btn)) padding-box,conic-gradient(from 0deg,var(--gold) calc(var(--p)*1%),color-mix(in srgb,var(--line) 70%,transparent) 0) border-box;color:var(--btnt);transition:box-shadow .2s}
 .b.strk:disabled{opacity:1;color:color-mix(in srgb,var(--btnt) 45%,transparent)}
 .b.strk.full{box-shadow:0 0 0 2px var(--gold),0 0 14px color-mix(in srgb,var(--gold) 60%,transparent)}
 .htab{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
@@ -472,8 +472,8 @@ function huntTick(dt){const H=fight.hunt;let ch=false;
   else if(s.at!=null&&fight.clk>=s.at){{const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}s.at=null;ch=true}}
  if(petTick(dt))ch=true;
  if(ch){huntCheck();save();render()}else paintFight()}
-function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);
- return`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Новый зверь приходит в течение 10 секунд и стоит 1 энергию.</p>
+function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Задание «${NQ.h}»</span><span><b>убито ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
+ return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Новый зверь приходит в течение 10 секунд и стоит 1 энергию.</p>
  <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
  <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.tr?` · <span style="color:var(--blood)">${TRAITS[s.e.tr][1]}</span>`:''}${s.e.stun>fight.clk?' · оглушён':''}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span><span class="mb"><i id="ma${i}" style="width:${Math.round(s.ech*100)}%;background:var(--gold)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
  <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель. Жёлтая полоска — его атака.</p>
@@ -1500,7 +1500,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.77';
+const GVER='1.4.79';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1855,7 +1855,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.77</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.79</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
