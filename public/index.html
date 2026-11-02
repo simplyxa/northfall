@@ -676,7 +676,7 @@ function plView(){const p=PV===UID&&S?{dr:S.dr,dn:S.dn,id:UID,title:S.title,name
  if(!p)return'<div class="panel"><p>Игрок не найден.</p><button class="b alt" data-a="pvback">Назад</button></div>';
  const c=p.clan&&CLN.find(x=>x.id===p.clan),eq=p.eq||{},st=p.stats;
  const slot=(k,t)=>{const it=eq[k];return`<div class="pvs">${it?itemIcon(it,52):`<span class="pve">${SL[t]}</span>`}<small>${it?esc(it.name)+(it.up?' +'+it.up:''):SL[t]}</small></div>`};
- return`<div class="panel pcard"><div class="phead"><span style="position:relative;display:inline-block;line-height:0;margin:0 12px 12px 0">${avatar(p.av,96,frameOf(p))}<span class="lvb">${p.lvl}</span></span><div class="pinfo"><b class="pname">${esc(p.name)}${p.id===UID?' (ты)':''}</b>${titleOf(p)?`<span class="ptl">${esc(titleOf(p))}</span>`:''}<span class="pcls">${CL[p.cls]?CL[p.cls].n:''} · ${p.lvl} уровень</span>${inEx(p)?'<span class="pcls" style="color:var(--moss);font-weight:700">в походе</span>':''}${c?`<b class="pclan">«${esc(c.name)}»</b><span class="pcls">Ранг: ${rankOf(c,p.id)}</span>`:'<b class="pclan">Без клана</b>'}</div></div>
+ return`<div class="panel pcard"><div class="phead"><span style="position:relative;display:inline-block;line-height:0;margin:0 12px 12px 0">${avatar(p.av,96,frameOf(p))}<span class="lvb">${p.lvl}</span></span><div class="pinfo"><b class="pname">${esc(p.name)}${p.id===UID?' (ты)':''}</b>${titleOf(p)?`<span class="ptl">${esc(titleOf(p))}</span>`:''}<span class="pcls">${CL[p.cls]?CL[p.cls].n:''} · ${p.lvl} уровень</span>${inEx(p)?'<span class="pcls" style="color:var(--moss);font-weight:700">в походе</span>':''}${c?`<b class="pclan" data-cpv="${c.id}" style="cursor:pointer;text-decoration:underline">«${esc(c.name)}»</b><span class="pcls">Ранг: ${rankOf(c,p.id)}</span>`:'<b class="pclan">Без клана</b>'}</div></div>
  <div class="pstat"><span>Побед <b>${p.win|0}</b></span><span>Поражений <b>${p.lose|0}</b></span><span>Рейтинг <b>${p.rating}</b></span></div></div>
  ${st?`<div class="panel"><h3>Характеристики</h3><div class="pstat" style="border:0;padding:0;margin:0"><span>Атака <b>${st.atk}</b></span><span>Защита <b>${st.def}</b></span><span>Здоровье <b>${st.hp}</b></span><span>Крит <b>${st.crit}%</b></span></div></div>`:''}
  <div class="panel"><h3>Снаряжение</h3>${p.eq?`<div class="pvg">${GK.map(([k,t])=>slot(k,t)).join('')}</div><p style="color:var(--mute);font-size:13px;margin:8px 0 0">Нажми на вещь, чтобы увидеть подробности.</p>`:'<p style="margin:0;color:var(--mute)">Игрок ещё не заходил в новую версию игры, снаряжение пока не видно.</p>'}</div>
@@ -691,7 +691,7 @@ function tabView(){
  if(GUEST&&tab==='clan')return guestClanView();
  if(GUEST&&GTABS.includes(tab))return guestLock();
  if(GUEST&&tab==='gsave')return guestSaveView();
- if(tab==='pl')return plView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='raid')return raidView();if(tab==='duel')return duelView();if(tab==='skills')return skillsView();if(tab==='settings')return settingsView();if(tab==='mail')return mailView();if(tab==='give')return giveView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='invite')return inviteView();if(tab==='install')return installView();if(tab==='gold')return goldView();if(tab==='gchat')return gchatView();if(tab==='online')return onlineView();if(tab==='about')return aboutView();if(tab==='bank')return bankView();if(tab==='friends')return friendsView();if(tab==='dm')return dmView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
+ if(tab==='pl')return plView();if(tab==='cpub')return clanPubView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='raid')return raidView();if(tab==='duel')return duelView();if(tab==='skills')return skillsView();if(tab==='settings')return settingsView();if(tab==='mail')return mailView();if(tab==='give')return giveView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='invite')return inviteView();if(tab==='install')return installView();if(tab==='gold')return goldView();if(tab==='gchat')return gchatView();if(tab==='online')return onlineView();if(tab==='about')return aboutView();if(tab==='bank')return bankView();if(tab==='friends')return friendsView();if(tab==='dm')return dmView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
  if(tab==='admin')return admView();
  if(tab==='top')return topView();if(tab==='clan')return clanView();
  if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
@@ -1511,7 +1511,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.83';
+const GVER='1.4.84';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1629,13 +1629,35 @@ function topView(){
  else if(rtab==='stats'){const l=PL.map(p=>p.id===UID?{...p,ssum:statSum()}:p).filter(p=>p.ssum!=null).sort((x,y)=>y.ssum-x.ssum).slice(0,20);h+=`<p style="color:var(--mute);font-size:15px">Сумма всех статов с учётом снаряжения.</p>`;body=l.length?l.map((p,i)=>prow(p,i,0,'',p.ssum)).join(''):'<p>Пока никто не сохранил статы. Они появятся, когда игроки зайдут в игру.</p>'}
  else if(rtab==='all'){const l=[...PL].sort((x,y)=>y.rating-x.rating).slice(0,20);body=l.length?l.map((p,i)=>prow(p,i)).join(''):'<p>Список пуст.</p>'}
  else{const l=CLN.map(c=>{const m=mem(c);return{...c,n:m.length,r:m.reduce((x,p)=>x+p.rating,0)}}).sort((x,y)=>y.r-x.r).slice(0,10);
-  body=l.length?l.map((c,i)=>`<div class="row"><div>${i+1}. ${esc(c.name)}<small>Участников: ${c.n}</small></div><span class="g">${c.r}</span></div>`).join(''):'<p>Кланов пока нет.</p>'}
+  body=l.length?l.map((c,i)=>`<div class="row" data-cpv="${c.id}" style="cursor:pointer"><div>${i+1}. <b style="text-decoration:underline">${esc(c.name)}</b><small>Участников: ${c.n}</small></div><span class="g">${c.r}</span></div>`).join(''):'<p>Кланов пока нет.</p>'}
  const claim=S.psid===cur-1&&S.sclaim!==S.psid&&S.psrat>0?`<div class="panel"><h3>Награда за прошлый сезон</h3><p>Твои очки: ${S.psrat}.</p><button class="b" data-a="sclaim">Забрать награду</button></div>`:'';
  return claim+h+body+'</div>';
 }
 const RKC={'Лидер':'--gold','Офицер':'--myth','Участник':'--moss'};
 function chatHtml(){const c=S&&CLN.find(x=>x.id===S.clan);return CH.length?CH.map(m=>{const rk=c&&m.uid?(mem(c).some(p=>p.id===m.uid)||m.uid===UID?rankOf(c,m.uid):''):'',col=rk?RKC[rk]:'--mute';return`<p><b style="color:var(${col})" title="${rk||'Не в клане'}">${esc(m.name)}:</b> ${esc(m.text)}</p>`}).join(''):'<p>Сообщений пока нет.</p>'}
 function lastWar(){return WARS.filter(w=>w.end<=Date.now()&&(w.a===S.clan||w.b===S.clan)).sort((x,y)=>y.end-x.end)[0]}
+// ===== Страница клана для всех: статистика и состав =====
+let CPV=null,CPVB='top';
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cpv]');if(!b||e.target.closest('[data-pv],[data-j],button'))return;e.preventDefault();if(tab!=='cpub')CPVB=tab;CPV=b.dataset.cpv;tab='cpub';MLADM=false;render();window.scrollTo(0,0)});
+function clanPubView(){const c=CLN.find(x=>x.id===CPV);const back=`<button class="b alt" data-a="cpvback" style="margin:0 0 10px">← Назад</button>`;
+ if(!c)return back+'<div class="panel"><p>Клан не найден или ещё загружается.</p></div>';
+ const m=mem(c),cl=cLv(c),b=c.b||{},ord={'Лидер':0,'Офицер':1,'Участник':2},cx=p=>p.id===UID?(S.cxt|0)+(S.cxq|0):(p.cxt|0),ld=m.find(p=>p.id===c.leader)||PL.find(p=>p.id===c.leader);
+ const rt=m.reduce((x,p)=>x+(p.rating|0),0),avgL=m.length?Math.round(m.reduce((x,p)=>x+(p.lvl|0),0)/m.length):0,onl=m.filter(p=>typeof isOn==='function'&&isOn(p)).length;
+ const rk=CLN.map(x=>({id:x.id,r:mem(x).reduce((s,p)=>s+(p.rating|0),0)})).sort((x,y)=>y.r-x.r).findIndex(x=>x.id===c.id)+1;
+ const wd=WARS.filter(w=>w.end<=Date.now()&&(w.a===c.id||w.b===c.id)),ww=wd.filter(w=>{const o=w.a===c.id?w.b:w.a;return warScore(w,c.id)>warScore(w,o)}).length,aw=WARS.find(w=>w.end>Date.now()&&(w.a===c.id||w.b===c.id));
+ const ters=Object.keys(TERN).filter(k=>{const o=terOwner(k);return o&&o.id===c.id}).map(k=>TERN[k]);
+ const bl=Object.keys(BLD).filter(k=>(b[k]|0)>0);
+ const mine=S.clan===c.id,full=m.length>=cCap(c),req=(c.req||[]).some(r=>r.id===UID);
+ const st=(t,v)=>`<span>${t} <b>${v}</b></span>`;
+ return back+`<div class="panel"><h3 style="margin:0 0 4px">Клан «${esc(c.name)}»</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">${cl.L} уровень${rk?` · ${rk} место в рейтинге кланов`:''} · ${c.closed?'вход по заявке':'вход свободный'}</p>${cl.L<CMAXL?`<div class="lbl"><span>Опыт клана</span><span>${kf(cl.cur)}/${kf(cl.need)}</span></div>${bar(cl.cur,cl.need,'--gold')}`:'<p class="g" style="margin:0 0 6px">Максимальный уровень клана</p>'}
+ <div class="pstat">${st('Участников',m.length+'/'+cCap(c))}${st('Рейтинг',rt)}${st('Ср. уровень',avgL)}${st('Войн выиграно',ww+'/'+wd.length)}</div>
+ ${ld?`<p style="margin:8px 0 0">Лидер: <b data-pv="${ld.id}" style="cursor:pointer;color:var(--gold)">${esc(ld.name)}</b></p>`:''}
+ ${aw?`<p style="margin:6px 0 0;color:var(--blood);font-weight:700">Идёт война с «${esc(cname(aw.a===c.id?aw.b:aw.a))}»: ${warScore(aw,c.id)} : ${warScore(aw,aw.a===c.id?aw.b:aw.a)}</p>`:''}
+ <p style="margin:6px 0 0;font-size:15px">Территории: ${ters.length?ters.map(t=>`<b>${t}</b>`).join(', '):'<span style="color:var(--mute)">нет</span>'}</p>
+ <p style="margin:6px 0 0;font-size:15px">Постройки: ${bl.length?bl.map(k=>`${BLD[k][0]} ${b[k]}`).join(', '):'<span style="color:var(--mute)">пока нет</span>'}</p>
+ ${!mine&&!S.clan&&!(typeof GUEST!=='undefined'&&GUEST)?`<button class="b" data-j="${c.id}" style="width:100%;margin-top:10px" ${full||req?'disabled':''}>${full?'Мест нет':req?'Заявка отправлена':c.closed?'Подать заявку':'Вступить в клан'}</button>`:''}</div>
+ <div class="panel"><h3 style="margin:0 0 4px">Состав</h3><div class="rleg">${Object.keys(RKC).map(k=>`<span><i style="background:var(${RKC[k]})"></i>${k}</span>`).join('')}</div>${[...m].sort((a,z)=>ord[rankOf(c,a.id)]-ord[rankOf(c,z.id)]||cx(z)-cx(a)).map(p=>{const r=rankOf(c,p.id),col=RKC[r];
+ return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${p.av?avatar(p.av,28,frameOf(p))+' ':''}<b style="color:var(${col})">${esc(p.name)}</b>${p.id===UID?' (ты)':''}${inEx(p)?' <span style="font-size:14px;font-weight:700;color:var(--moss)">в походе</span>':''}<small><span style="color:var(${col});font-weight:700">${r}</span> · ${CL[p.cls]?CL[p.cls].n+', ':''}ур. ${p.lvl} · рейтинг ${p.rating|0}</small></div><span style="text-align:right"><span class="g" title="Опыт, принесённый клану">${kf(cx(p))}</span><small style="display:block;color:var(--mute);font-size:11px">опыт клану</small></span></div>`}).join('')||'<p>Состав пока не загружен.</p>'}</div>`}
 function clanView(){
  if(!online)return offline('Клан');
  if(S.clan){
@@ -1648,7 +1670,7 @@ function clanView(){
    const lw=lastWar();
    if(lw&&S.war===lw.id&&S.wp>0&&!S.wclaim.includes(lw.id)&&Date.now()-lw.end<2592e5){const o=lw.a===my.id?lw.b:lw.a;war+=`<div class="panel"><h3>Война окончена</h3><p>Счёт против «${esc(cname(o))}»: ${warScore(lw,my.id)} : ${warScore(lw,o)}. Твой вклад: ${S.wp}.</p><button class="b" data-a="wclaim">Забрать награду</button></div>`}
    const t=CLN.filter(c=>c.id!==my.id&&!WARS.some(w=>w.end>Date.now()&&(w.a===c.id||w.b===c.id)));
-   war+=lead?`<div class="panel"><h3>Объявить войну (24 ч)</h3>${t.length?t.map(c=>`<div class="row"><div>${esc(c.name)}<small>Участников: ${mem(c).length}</small></div><button class="b red" data-w="${c.id}">Война</button></div>`).join(''):'<p>Нет свободных кланов.</p>'}</div>`:'<div class="panel"><p>Войну клану может объявить только лидер.</p></div>';
+   war+=lead?`<div class="panel"><h3>Объявить войну (24 ч)</h3>${t.length?t.map(c=>`<div class="row"><div data-cpv="${c.id}" style="cursor:pointer"><b style="text-decoration:underline">${esc(c.name)}</b><small>Участников: ${mem(c).length}</small></div><button class="b red" data-w="${c.id}">Война</button></div>`).join(''):'<p>Нет свободных кланов.</p>'}</div>`:'<div class="panel"><p>Войну клану может объявить только лидер.</p></div>';
   }
   const cl=cLv(my);return ctabs()+`<div class="panel"><h3>Клан «${esc(my.name)}» · ${cl.L} уровень</h3>${cl.L<CMAXL?`<div class="lbl"><span>Опыт клана</span><span>${kf(cl.cur)}/${kf(cl.need)}</span></div>${bar(cl.cur,cl.need,'--gold')}`:'<p class="g" style="margin:0 0 6px">Максимальный уровень клана</p>'}<p style="color:var(--mute);font-size:15px;margin:6px 0">Каждый твой удар в бою приносит клану опыт: 1 за каждые ${CXK} урона, минимум 1. Чем сильнее удар, тем больше опыта. Твой вклад: <b>${kf((S.cxt|0)+(S.cxq|0))}</b>. Уровень клана открывает места для новых участников и улучшения построек.</p><p>Участников: ${m.length}/${cCap(my)}. Общий рейтинг: <span class="g">${m.reduce((x,p)=>x+p.rating,0)}</span>. Бонус клана: +5% к добыче.</p>${(()=>{const RC=RKC,ord={'Лидер':0,'Офицер':1,'Участник':2},cxOfP=p=>p.id===UID?(S.cxt|0)+(S.cxq|0):(p.cxt|0);
  return`<div class="rleg">${Object.keys(RC).map(k=>`<span><i style="background:var(${RC[k]})"></i>${k}</span>`).join('')}</div>`+[...m].sort((a,b)=>ord[rankOf(my,a.id)]-ord[rankOf(my,b.id)]||cxOfP(b)-cxOfP(a)).map(p=>{const rk=rankOf(my,p.id),c=RC[rk],ck=canMng(my)&&p.id!==UID&&p.id!==my.leader&&(my.leader===UID||!isOff(my,p.id));
@@ -1656,7 +1678,7 @@ function clanView(){
   <div class="panel"><h3>Чат клана</h3><input id="cm" maxlength="200" placeholder="Сообщение" aria-label="Сообщение"><button class="b" data-a="say">Отправить</button><div id="chat" style="max-height:180px;overflow-y:auto;font-size:15px">${chatHtml()}</div></div>`;
  }
  return`<div class="panel"><h3>Создать клан (100 сер.)</h3><input id="cn" maxlength="20" placeholder="Название клана" aria-label="Название клана"><button class="b" data-a="mkclan" ${S.gold<100?'disabled':''}>Основать клан</button></div>
- <div class="panel"><h3>Вступить в клан</h3>${CLN.length?CLN.map(c=>{const full=mem(c).length>=cCap(c);return`<div class="row"><div>${esc(c.name)}<small>Ур. ${cLv(c).L} · участников ${mem(c).length}/${cCap(c)}</small></div><button class="b" data-j="${c.id}" ${full||(c.req||[]).some(r=>r.id===UID)?'disabled':''}>${full?'Мест нет':(c.req||[]).some(r=>r.id===UID)?'Заявка отправлена':c.closed?'Подать заявку':'Вступить'}</button></div>`}).join(''):'<p>Кланов пока нет. Основай первый.</p>'}</div>`;
+ <div class="panel"><h3>Вступить в клан</h3>${CLN.length?CLN.map(c=>{const full=mem(c).length>=cCap(c);return`<div class="row"><div data-cpv="${c.id}" style="cursor:pointer"><b style="text-decoration:underline">${esc(c.name)}</b><small>Ур. ${cLv(c).L} · участников ${mem(c).length}/${cCap(c)}</small></div><button class="b" data-j="${c.id}" ${full||(c.req||[]).some(r=>r.id===UID)?'disabled':''}>${full?'Мест нет':(c.req||[]).some(r=>r.id===UID)?'Заявка отправлена':c.closed?'Подать заявку':'Вступить'}</button></div>`}).join(''):'<p>Кланов пока нет. Основай первый.</p>'}</div>`;
 }
 const BLD={bar:['Казармы','+3% к атаке за уровень'],wall:['Крепостная стена','+1 к защите за уровень'],inf:['Лазарет','+1 к регенерации за уровень'],mkt:['Торговый двор','+4% серебра с боёв за уровень'],frg:['Клановая кузня','+10% железа при разборе за уровень']};
 const bcost=n=>({g:150*(n+1)*(n+1),i:20*(n+1)});
@@ -1793,7 +1815,7 @@ async function initOnline(){
   sync();
  }catch(e){console.error(e)}finally{if(!DB){DBS='off';if(!S)render()}}
 }
-function ui(){if(!S||fight||!['top','clan','admin','home','friends','mail','pl','gchat','online','forum','market','dm'].includes(tab))return;const a=document.activeElement;if(a&&a.tagName==='INPUT')return;render()}
+function ui(){if(!S||fight||!['top','clan','admin','home','friends','mail','pl','gchat','online','forum','market','dm','cpub'].includes(tab))return;const a=document.activeElement;if(a&&a.tagName==='INPUT')return;render()}
 const AVC=['#C0392B','#D2A24C','#3FB3A6','#8B63D6','#6FA85A','#6FA3D0'];
 let avN=0;
 const AVS='/img/067254a419e1f2.webp',AVN=10;
@@ -1866,7 +1888,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.83</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.84</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2077,7 +2099,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(a==='repclose'){REP=null;return render()}
  if(a==='hrclose'){HREP=null;return render()}
  if(a==='lclaim')return loginClaim();if(a==='refshare')return refShare();if(a==='instdo')return instDo();if(a==='pwaclaim')return pwaClaim();if(a==='paylog')return payLogLoad();if(a==='promoset')return promoSet();if(a==='promooff')return promoOff();if(a==='gcsend')return gcSend();if(a==='support'){tab='forum';FS='help';FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(a==='dmsend')return dmSend();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='nickdo')return nickDo();if(a==='sreset')return statReset();
- if(a==='pvback'){tab=PVB||'top';return render()}
+ if(a==='pvback'){tab=PVB||'top';return render()}if(a==='cpvback'){tab=CPVB||'top';return render()}
  if(a==='dun')return startDun();if(a==='dunclose'){DREP=null;return render()}if(a==='dclclose'){DCL=null;return render()}
  if(a==='sellask'){sellArm=true;return render()}if(a==='sellno'){sellArm=false;return render()}if(a==='sellall')return sellAll();
  if(a&&a.startsWith('bot-'))return startFight('arena',a.slice(4));
