@@ -461,6 +461,8 @@ function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)retur
 function huntCheck(){const H=fight.hunt;
  if(S.hp<=0)return huntEnd('dead');
  for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
+ // первое задание новичка выполнено — выводим с охоты на главную за наградой
+ if(S.nb&&!S.nb.done&&S.nb.i===0&&nbOk()){huntEnd('nb');HREP=null;tab='home';setTimeout(()=>{window.scrollTo(0,0);popup('⚔ Первая кровь!',`Ты одолел двух зверей и выполнил первое задание «Пути новичка».<br><br><button class="b" data-nb="1" style="width:100%">Забрать награду</button>`)},250);return}
  retarget();if(H.sl.every(s=>!s.e&&s.at==null))huntEnd('out')}
 function huntEnd(why){const H=fight.hunt;if(why==='dead'){S.hp=1;S.lose++;log('Ты теряешь сознание, соплеменники уносят тебя в лагерь.','dmg')}
  HREP={hunt:true,why,kills:H.kills,xp:H.xp,gold:H.gold,loot:H.loot,kind:H.kind};fight=null;tab='hunt'}
@@ -1127,7 +1129,7 @@ setInterval(()=>{if(!S||!DB||RBUSY)return;const b=myQ();if(b<0)return;{const q=R
 
 // ===== Путь новичка: 10 шагов до 15 уровня =====
 const NBQ=[
- {t:'kill',n:5,h:'Первая кровь',d:'Убей 5 зверей на охоте (Главная → Охота).',x:1,g:30},
+ {t:'kill',n:2,h:'Первая кровь',d:'Убей 2 зверей на охоте (Главная → Охота).',x:1,g:30},
  {c:()=>S.lvl>=2&&!S.pts,h:'Сила в руках',d:'Получи 2 уровень и распредели очки навыков (Герой → кнопки «+1»).',x:1,g:40},
  {t:'buy',n:1,h:'Лавка торговца',d:'Купи вещь в магазине (Главная → Магазин → Снаряжение).',x:.8,g:50},
  {t:'equip',n:1,h:'Новая броня',d:'Надень вещь из рюкзака (Герой → Рюкзак → нажми на вещь).',x:.8,g:50},
@@ -1498,7 +1500,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.76';
+const GVER='1.4.77';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1853,7 +1855,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.76</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.77</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2003,7 +2005,7 @@ function render(){
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){if(!SCRSENT){SCRSENT=true;setTimeout(()=>{try{trk('scr')}catch(e){}},300)}$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
  if(BAN){$('#app').innerHTML=`<div class="panel"><h2>Доступ закрыт</h2><p>Администратор заблокировал этого героя.</p></div>`+LOGOUT;return}
- raidSub();skInit();if(S.gsw&&!GUEST&&UID){delete S.gsw;gsGift()}if(GUEST&&S.lvl>=3&&!S.gnag){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя',`Ты уже ${S.lvl} уровня! Создай логин и пароль — герой не потеряется, откроются кланы, рейды и чат.<br><br>🎁 Подарок за сохранение: ${GSGIFT}.<br><br><button class="b red" data-a="gsave" style="width:100%">Сохранить героя</button>`),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}morph($('#app'),xpbar()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(fight?fightView():tab==='home'?HBAN()+promoBar()+guestBar()+pwaQuest()+pushAsk()+nbView()+tipView()+annView()+menuView():tipView()+tabView())+
+ raidSub();skInit();if(S.gsw&&!GUEST&&UID){delete S.gsw;gsGift()}if(GUEST&&S.lvl>=3&&!S.gnag&&!document.querySelector('.modal')&&S.nb&&(S.nb.done||S.nb.i>=2)){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя',`Ты уже ${S.lvl} уровня! Создай логин и пароль — герой не потеряется, откроются кланы, рейды и чат.<br><br>🎁 Подарок за сохранение: ${GSGIFT}.<br><br><button class="b red" data-a="gsave" style="width:100%">Сохранить героя</button>`),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}morph($('#app'),xpbar()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(fight?fightView():tab==='home'?HBAN()+promoBar()+guestBar()+pwaQuest()+pushAsk()+nbView()+tipView()+annView()+menuView():tipView()+tabView())+
  (!fight?'':`<div class="panel" id="log">${logs.map(l=>`<p class="${l[1]}">${esc(l[0])}</p>`).join('')||'<p>Тишина.</p>'}</div>`)+FOOT()+(fight?'':bnav()));
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
