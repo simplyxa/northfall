@@ -69,8 +69,8 @@ body.auth .cls{background:rgba(255,255,255,.06);color:#e3e7e8;border-color:#4a54
 .ptl{color:var(--myth);font-size:14px;font-style:italic}
 .lgn{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.ld{display:flex;flex-direction:column;align-items:center;padding:6px 2px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}.ld b{font-size:16px}.ld small{font-size:10px;color:var(--mute)}.ld.got{opacity:.5}.ld.now{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
 .skr{display:flex;gap:6px;margin:6px 0}.skr .sk{flex:1;margin:0;font-size:14px;padding:8px 6px;border-color:var(--myth);color:var(--myth)}.skr .sk:disabled{opacity:.55}
-#app.shake{animation:shk .3s}@keyframes shk{20%{transform:translate(-4px,1px)}40%{transform:translate(4px,-1px)}60%{transform:translate(-3px,0)}80%{transform:translate(2px,1px)}}
-@media (prefers-reduced-motion:reduce){#app.shake{animation:none}}
+#app.shake>:not(#xp):not(.bnav):not(.modal){animation:shk .3s}@keyframes shk{20%{transform:translate(-4px,1px)}40%{transform:translate(4px,-1px)}60%{transform:translate(-3px,0)}80%{transform:translate(2px,1px)}}
+@media (prefers-reduced-motion:reduce){#app.shake>*{animation:none!important}}
 .rnl{display:grid;grid-template-columns:1fr 1fr;gap:6px}.rnl .b{margin:0;font-size:13px;padding:6px}.rnl small{color:var(--mute)}
 .rnc{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;background:radial-gradient(circle,#3a2466,#120a24);color:#cfa8ff;font-size:24px;box-shadow:0 0 0 2px var(--myth);flex:0 0 auto}
 .modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
@@ -1561,7 +1561,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.94';
+const GVER='1.4.95';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1938,7 +1938,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.94</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.95</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
