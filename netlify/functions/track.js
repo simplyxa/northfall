@@ -3,7 +3,7 @@
 const admin = require('../lib/fb');
 const DOM = '@northfall.game';
 const ADMINS = ['shtorm1', 'admin'];
-const EV = ['visit', 'guest', 'reg', 'lvl5'];
+const EV = ['visit', 'scr', 'tap', 'guest', 'reg', 'lvl5'];
 const j = (c, o) => ({ statusCode: c, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o) });
 const day = (t) => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Asia/Jerusalem' });
 
@@ -19,7 +19,15 @@ exports.handler = async (event) => {
       if (!ADMINS.includes(uid)) return j(403, { error: 'Только для администрации' });
       const n = Math.max(1, Math.min(60, q.days | 0 || 14)), out = {};
       for (let i = 0; i < n; i++) { const k = day(Date.now() - i * 864e5); const sn = await db.collection('stats').doc(k).get(); if (sn.exists) out[k] = sn.data(); }
-      return j(200, { days: out });
+      const er = await db.collection('priv').doc('client-errors').get();
+      return j(200, { days: out, errors: ((er.exists && er.data().L) || []).slice(-30).reverse() });
+    }
+    // ошибки в браузерах игроков: последние 40 (без личных данных)
+    if (q.a === 'err') {
+      const ref = db.collection('priv').doc('client-errors');
+      const it = { t: Date.now(), m: String(q.m || '').slice(0, 220), u: String(q.u || '').slice(0, 160), v: String(q.v || '').slice(0, 12), s: String(q.s || '').slice(0, 24), w: String(q.w || '').slice(0, 20) };
+      await db.runTransaction(async tx => { const sn = await tx.get(ref); const L = ((sn.exists && sn.data().L) || []).slice(-39); L.push(it); tx.set(ref, { L }); });
+      return j(200, { ok: true });
     }
     // гости онлайн: гость раз в минуту отмечается, все игроки получают количество
     if (q.a === 'ping' || q.a === 'online') {
