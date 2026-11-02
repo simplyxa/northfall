@@ -24,6 +24,7 @@ exports.handler = async (event) => {
     }
     // ошибки в браузерах игроков: последние 40 (без личных данных)
     if (q.a === 'err') {
+      if (/^Script error|messageHandlers|IDBDatabase|Database deleted|IndexedDB/i.test(String(q.m || ''))) return j(200, { ok: true, skip: 1 });
       const ref = db.collection('priv').doc('client-errors');
       const it = { t: Date.now(), m: String(q.m || '').slice(0, 220), u: String(q.u || '').slice(0, 160), v: String(q.v || '').slice(0, 12), s: String(q.s || '').slice(0, 24), w: String(q.w || '').slice(0, 20) };
       await db.runTransaction(async tx => { const sn = await tx.get(ref); const L = ((sn.exists && sn.data().L) || []).slice(-39); L.push(it); tx.set(ref, { L }); });
