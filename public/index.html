@@ -484,15 +484,17 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-hx2]');if(
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ah]');if(!b||!S)return;e.preventDefault();if(!ahOk())return;S.ahunt=S.ahunt?0:1;log(S.ahunt?'Авто-удар включён: герой бьёт сам, когда заряд полный. Умения и бутылки — твои кнопки.':'Авто-удар выключен.','sys');save();render()});
 function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n}}
- for(const s of H.sl){if(s.e){if(!(s.e.stun>fight.clk))s.ech+=dt/(s.e.tr==='fast'?3:5);if(s.ech>=1){s.ech=0;enemyTurn(s.e);ch=true;if(S.hp<=0)break}}
+ for(const s of H.sl){if(s.e){if(!(s.e.stun>fight.clk))s.ech+=dt/(s.e.tr==='fast'?3:5);if(s.ech>=1){s.ech=0;enemyTurn(s.e);ch=true;(fight.hits=fight.hits||[]).push(H.sl.indexOf(s));if(S.hp<=0)break}}
   else if(s.at!=null&&fight.clk>=s.at){{const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}s.at=null;ch=true}}
  if(petTick(dt))ch=true;
- if(ch){huntCheck();save();render()}else paintFight()}
+ if(ch){huntCheck();save();render();mobPulse()}else paintFight()}
+// звер бьёт — его карточка коротко «вздрагивает»
+function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)el.animate([{transform:'scale(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)'}],{duration:280,easing:'ease-out'})}),0)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Задание «${NQ.h}»</span><span><b>убито ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
  return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Новый зверь приходит в течение 10 секунд и стоит 1 энергию.</p>
  <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
- <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${mobImg(s.e.name)?' mbg':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"${mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · оглушён':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span><span class="mb"><i id="ma${i}" style="width:${Math.round(s.ech*100)}%;background:var(--gold)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
- <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель. Жёлтая полоска — его атака.</p>
+ <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${mobImg(s.e.name)?' mbg':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"${mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · оглушён':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
+ <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель.</p>
  ${ahOk()?'':`<p style="margin:0 0 6px;font-size:13px;color:var(--mute)">Авто-удар откроется со ${AHLV} уровня.</p>`}<div class="srow"><button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар${fight.e?' · '+esc(fight.e.name):''}</button>${ahOk()?`<button class="sq ${S.ahunt?'on':''}" data-ah="1" title="Авто-удар" aria-label="Авто-удар ${S.ahunt?'включён':'выключен'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg></button><button class="sq ${S.hx2?'on':''}" data-hx2="1" title="Скорость x2" aria-label="Скорость x2 ${S.hx2?'включена':'выключена'}"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 6l8 6-8 6z"/><path d="M12 6l8 6-8 6z"/></svg></button>`:''}</div>
  ${skBtns()}<button class="b alt" id="bg" data-a="guard">Блок</button>${['b'].map(k=>{const L=bleft();return`<button class="b alt" id="bp${k}" data-a="pot-${k}" ${S.pt[k]<1||L>0?'disabled':''}>${POT[k].sh} (${S.pt[k]})${L>0?' '+Math.ceil(L/1000)+' с':''}</button>`}).join('')}
  <button class="b alt" data-a="flee">Вернуться в лагерь</button></div>`}
@@ -691,6 +693,8 @@ const xpTot=(lv,xp)=>{let t=xp|0;for(let L=1;L<(lv|0);L++)t+=xpNeedL(L);return t
 const cntPub=()=>{const c=S.cnt||{};return{k:c.k|0,aw:c.aw|0,rb:c.rb|0,bs:c.bs|0,df:c.df|0,dmg:Math.round(c.dmg||0)}};
 const dDays=t=>t?Math.max(0,Math.floor((Date.now()-t)/864e5)):null;
 const dWord=n=>{const a=n%10,b=n%100;return n+' '+(a===1&&b!==11?'день':a>=2&&a<=4&&(b<10||b>=20)?'дня':'дней')};
+const SIC={paw:'<circle cx="7" cy="8" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="8" r="2"/><path d="M8 15c0-2.5 2-4.5 4-4.5s4 2 4 4.5c0 2-1.8 3-4 3s-4-1-4-3z"/>',swords:'<path d="M4 4l9 9M20 4l-9 9"/><path d="M14 14l3 3M10 14l-3 3"/><path d="M16 18l2 2 2-2-2-2M8 18l-2 2-2-2 2-2"/>',dragon:'<path d="M4 19c2-6 6-9 11-9 2 0 4-2 5-5-3 1-5 1-7 0 0 2-1 3-3 3"/><path d="M15 10c1 3 0 6-3 9"/><circle cx="17" cy="7" r=".6" fill="currentColor"/>',skull:'<path d="M12 3a7 7 0 0 0-7 7c0 2.5 1.2 4 3 5v3h8v-3c1.8-1 3-2.5 3-5a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="10.5" r="1.4" fill="currentColor"/><circle cx="14.5" cy="10.5" r="1.4" fill="currentColor"/><path d="M10 18v3M14 18v3"/>',stairs:'<path d="M3 20h5v-4h4v-4h4V8h5"/><path d="M3 20V4h18v16z" opacity=".35"/>',duel:'<path d="M5 19L19 5M15 5h4v4"/><path d="M9 19H5v-4"/><path d="M14 14l5 5M10 10L5 5"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'};
+const sic=k=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-right:8px;color:var(--gold)" aria-hidden="true">${SIC[k]}</svg>`;
 function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
  const plc=(arr,val)=>{const i=arr.findIndex(x=>x.id===p.id);return i>=0?` · ${i+1} место`:''};
  const all=PL.map(x=>x.id===UID&&S?{...x,rating:S.rating,srat:S.srat,sid:S.sid,dr:S.dr,ssum:statSum()}:x);
@@ -698,15 +702,15 @@ function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
  const reg=p.reg||0,gd=dDays(reg),cd=c?dDays(p.cjt):null,sr=sScore(p,cur);
  const row=(t,v)=>`<div class="row" style="padding:6px 0"><div>${t}</div><b>${v}</b></div>`,fmt=n=>(n|0).toLocaleString('ru-RU');
  return`<div class="panel"><h3 style="margin:0 0 4px">Статистика</h3>
- ${row('🐺 Убито зверей на охоте',fmt(k.k))}
- ${row('⚔️ Побед на арене',fmt(p.win)+(p.lose!=null?` <small style="display:inline;color:var(--mute)">/ поражений ${fmt(p.lose)}</small>`:''))}
- ${row('🐉 Побеждено боссов в рейдах',fmt(k.rb))}
- ${row('👹 Ударов по мировому боссу',fmt(k.bs))}
- ${(k.df|0)?row('🕳️ Этаж подземелья клана',k.df):''}
- ${(p.dn|0)?row('🤺 Дуэлей выиграно',fmt(p.dw)+` <small style="display:inline;color:var(--mute)">из ${fmt(p.dn)}</small>`):''}
- ${row('✨ Набрано опыта',fmt(p.xpt!=null?p.xpt:xpTot(p.lvl,0)))}
- ${gd!=null?row('📅 Дней в игре',dWord(gd)):''}
- ${c&&cd!=null?row(`🛡️ Дней в клане «${esc(c.name)}»`,dWord(cd)):''}
+ ${row(sic('paw')+'Убито зверей на охоте',fmt(k.k))}
+ ${row(sic('swords')+'Побед на арене',fmt(p.win)+(p.lose!=null?` <small style="display:inline;color:var(--mute)">/ поражений ${fmt(p.lose)}</small>`:''))}
+ ${row(sic('dragon')+'Побеждено боссов в рейдах',fmt(k.rb))}
+ ${row(sic('skull')+'Ударов по мировому боссу',fmt(k.bs))}
+ ${(k.df|0)?row(sic('stairs')+'Этаж подземелья клана',k.df):''}
+ ${(p.dn|0)?row(sic('duel')+'Дуэлей выиграно',fmt(p.dw)+` <small style="display:inline;color:var(--mute)">из ${fmt(p.dn)}</small>`):''}
+ ${row(sic('star')+'Набрано опыта',fmt(p.xpt!=null?p.xpt:xpTot(p.lvl,0)))}
+ ${gd!=null?row(sic('cal')+'Дней в игре',dWord(gd)):''}
+ ${c&&cd!=null?row(sic('shield')+`Дней в клане «${esc(c.name)}»`,dWord(cd)):''}
  <h3 style="margin:10px 0 4px">Рейтинги</h3>
  ${row('Арена (всего)',(p.rating|0)+plc(rA))}
  ${row('Арена (сезон)',sr!=null?(p.srat|0)+plc(rS):'<span style="color:var(--mute);font-weight:400">нет боёв</span>')}
@@ -1555,7 +1559,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.91';
+const GVER='1.4.92';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1932,7 +1936,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.91</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.92</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
