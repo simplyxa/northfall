@@ -1129,18 +1129,18 @@ setInterval(()=>{if(!S||!DB||RBUSY)return;const b=myQ();if(b<0)return;{const q=R
 
 // ===== Путь новичка: 10 шагов до 15 уровня =====
 const NBQ=[
- {t:'kill',n:2,h:'Первая кровь',d:'Убей 2 зверей на охоте (Главная → Охота).',x:1,g:30},
- {c:()=>S.lvl>=2&&!S.pts,h:'Сила в руках',d:'Получи 2 уровень и распредели очки навыков (Герой → кнопки «+1»).',x:1,g:40},
- {t:'buy',n:1,h:'Лавка торговца',d:'Купи вещь в магазине (Главная → Магазин → Снаряжение).',x:.8,g:50},
- {t:'equip',n:1,h:'Новая броня',d:'Надень вещь из рюкзака (Герой → Рюкзак → нажми на вещь).',x:.8,g:50},
- {t:'kill',n:30,h:'Охотник',d:'Убей 30 зверей на охоте.',x:1,g:80},
- {t:'dis',n:1,h:'Кузнечное дело',d:'Разбери ненужную вещь на железо (Рюкзак → «Разобрать»).',x:.6,g:60},
- {t:'saga',n:1,h:'У костра',d:'Ответь на загадку сказителя (Главная → Лагерь).',x:.6,g:60},
- {t:'dq',n:1,h:'Дела племени',d:'Выполни и забери любое ежедневное задание (Главная → Задания).',x:.6,g:80},
- {c:()=>S.lvl>=10,h:'Закалённый',d:'Достигни 10 уровня.',x:1.5,g:150},
- {c:()=>S.lvl>=15,h:'Воин Севера',d:'Достигни 15 уровня. Награда: 500 серебра, 3 бутылки, редкое оружие и умения класса.',x:0,g:500,gift:1},
- {t:'skill',n:5,h:'Сила предков',d:'Используй умения класса в бою 5 раз: кнопки с картинками под «Ударом». Улучшать умения можно в профиле: Герой → Умения.',x:.5,g:200,fin:1}];
-function nbInit(){if(!S)return;if(!S.nb)S.nb=S.lvl>=15?{done:1}:{i:0,p:0}}
+ {t:'kill',n:2,h:'Первая кровь',d:'Убей 2 зверей на охоте (Главная → Охота).',x:1,g:30,go:'hunt'},
+ {c:()=>S.lvl>=2&&!S.pts,h:'Сила в руках',d:'Получи 2 уровень и распредели очки навыков (Герой → кнопки «+1»).',x:1,g:40,go:'stats'},
+ {t:'buy',n:1,h:'Лавка торговца',d:'Купи вещь в магазине (Главная → Магазин → Снаряжение).',x:.8,g:50,go:'shop'},
+ {t:'equip',n:1,h:'Новая броня',d:'Надень вещь из рюкзака (Герой → Рюкзак → нажми на вещь).',x:.8,g:50,go:'bag'},
+ {t:'kill',n:10,h:'Охотник',d:'Убей 10 зверей на охоте.',x:1,g:80,go:'hunt'},
+ {t:'dis',n:1,h:'Кузнечное дело',d:'Разбери ненужную вещь на железо (Рюкзак → «Разобрать»).',x:.6,g:60,go:'bag'},
+ {t:'saga',n:1,h:'У костра',d:'Ответь на загадку сказителя (Главная → Лагерь).',x:.6,g:60,go:'camp'},
+ {t:'dq',n:1,h:'Дела племени',d:'Выполни и забери любое ежедневное задание (Главная → Задания).',x:.6,g:80,go:'quest'},
+ {c:()=>S.lvl>=7,h:'Закалённый',d:'Достигни 7 уровня (охота даёт больше всего опыта).',x:1.5,g:150,go:'hunt'},
+ {c:()=>S.lvl>=10,go:'hunt',h:'Воин Севера',d:'Достигни 10 уровня. Награда: 500 серебра, 3 бутылки, редкое оружие и умения класса.',x:0,g:500,gift:1},
+ {t:'skill',n:3,go:'hunt',h:'Сила предков',d:'Используй умения класса в бою 3 раза: кнопки с картинками под «Ударом». Улучшать умения можно в профиле: Герой → Умения.',x:.5,g:200,fin:1}];
+function nbInit(){if(!S)return;if(!S.nb)S.nb=S.lvl>=10?{done:1}:{i:0,p:0}}
 function nbEv(t,n){if(!S||!S.nb||S.nb.done)return;const q=NBQ[S.nb.i];if(q&&q.t===t){S.nb.p=Math.min(q.n,(S.nb.p|0)+(n||1))}}
 const nbOk=()=>{const q=S.nb&&!S.nb.done&&NBQ[S.nb.i];return!!q&&(q.c?q.c():(S.nb.p|0)>=q.n)};
 // задание «Пути новичка» выполнено — сразу окно «Забрать награду»; по кнопке — на главную и награда
@@ -1152,7 +1152,10 @@ function nbClaim(){if(!nbOk())return;const q=NBQ[S.nb.i],xp=Math.round(need()*q.
  if(q.gift){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+3;const it=gen('w',S.lvl,1);if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}t+=`, 3 бутылки и «${it.name}»`;if(!S.skq){S.skq={};skAll().forEach(k=>S.skq[k[0]]=0)}t+=', а также базовые умения класса'}
  if(q.fin){S.nb={done:1};news(`${S.name} прошёл путь новичка и стал настоящим воином Севера!`)}else S.nb={i:S.nb.i+1,p:0};SILFX={v:q.g,t:Date.now()};log(t+'.','hit');popup('Шаг пройден!',esc(t)+'.');save();render()}
 function nbView(){nbInit();if(!S.nb||S.nb.done)return'';const i=S.nb.i,q=NBQ[i],ok=nbOk(),p=q.c?(ok?1:0):(S.nb.p|0),n=q.c?1:q.n;
- return`<div class="panel" style="border-left:4px solid var(--gold)"><div class="lbl"><span style="color:var(--gold);font-weight:700">Путь новичка</span><span>шаг ${i+1} из ${NBQ.length}</span></div>${bar(i+(ok?1:0),NBQ.length,'--gold')}<h3 style="margin:8px 0 2px">${q.h}</h3><p style="margin:0 0 6px;font-size:15px">${q.d}</p>${q.c?'':`<p style="margin:0 0 6px;font-size:14px;color:var(--mute)">Прогресс: ${p}/${n}</p>`}<p style="margin:0 0 8px;font-size:14px;color:var(--mute)">Награда: ${q.g} серебра${q.x?`, опыт (${Math.round(q.x*100)}% уровня)`:''}${q.gift?', 3 бутылки, редкое оружие и умения класса':''}</p>${ok?'<button class="b" data-nb="1" style="width:100%">Забрать награду</button>':''}</div>`}
+ return`<div class="panel" style="border-left:4px solid var(--gold)"><div class="lbl"><span style="color:var(--gold);font-weight:700">Путь новичка</span><span>шаг ${i+1} из ${NBQ.length}</span></div>${bar(i+(ok?1:0),NBQ.length,'--gold')}<h3 style="margin:8px 0 2px">${q.h}</h3><p style="margin:0 0 6px;font-size:15px">${q.d}</p>${q.c?'':`<p style="margin:0 0 6px;font-size:14px;color:var(--mute)">Прогресс: ${p}/${n}</p>`}<p style="margin:0 0 8px;font-size:14px;color:var(--mute)">Награда: ${q.g} серебра${q.x?`, опыт (${Math.round(q.x*100)}% уровня)`:''}${q.gift?', 3 бутылки, редкое оружие и умения класса':''}</p>${ok?'<button class="b" data-nb="1" style="width:100%">Забрать награду</button>':q.go?'<button class="b red" data-nbf="1" style="width:100%">Вперёд →</button>':''}</div>`}
+// «Вперёд» — сразу туда, где выполняется текущий шаг
+document.addEventListener('click',e=>{const b=e.target.closest('[data-nbf]');if(!b||!S||!S.nb||S.nb.done)return;e.preventDefault();const g=(NBQ[S.nb.i]||{}).go;if(!g)return;MLADM=false;
+ if(g==='stats'||g==='bag'){tab='hero';htab=g}else if(g==='shop'){tab='shop';shp='gear'}else tab=g;render();window.scrollTo(0,0)});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ast]');if(!b)return;e.preventDefault();atabS=b.dataset.ast;if(atabS==='stats')STATS=null;render()});
 document.addEventListener('click',e=>{if(e.target.closest('[data-a="strefresh"]')){e.preventDefault();STATS=null;render()}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-nb]');if(!b)return;e.preventDefault();nbClaim()});
@@ -1504,7 +1507,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.81';
+const GVER='1.4.82';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1859,7 +1862,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.81</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.82</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
