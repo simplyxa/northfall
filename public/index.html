@@ -474,6 +474,7 @@ const AHLV=2,AHHP=.3,ahOk=()=>S&&S.lvl>=AHLV;
 function autoHunt(){if(!S.ahunt||!ahOk()||!fight||!fight.hunt||document.querySelector('.modal'))return false;
  if(S.hp<maxHp()*AHHP){if((S.pt.b|0)>0&&bleft()<=0){act('pot-b');return true}S.ahunt=0;log('Авто-удар выключен: мало здоровья, а бутылок нет. Выпей зелье или вернись в лагерь.','sys');save();render();return true}
  if(fight.ch>=1&&fight.e&&fight.e.hp>0){if(S.en<1){S.ahunt=0;log('Авто-удар выключен: кончилась энергия.','sys');save();render();return true}act('strike');return true}return false}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-hx2]');if(!b||!S)return;e.preventDefault();if(!ahOk())return;S.hx2=S.hx2?0:1;log(S.hx2?'Охота ускорена в 2 раза: и ты, и звери действуют вдвое быстрее.':'Обычная скорость охоты.','sys');save();render()});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ah]');if(!b||!S)return;e.preventDefault();if(!ahOk())return;S.ahunt=S.ahunt?0:1;log(S.ahunt?'Авто-удар включён: герой бьёт сам, когда заряд полный. Умения и бутылки — твои кнопки.':'Авто-удар выключен.','sys');save();render()});
 function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n}}
@@ -486,7 +487,7 @@ function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb
  <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
  <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.tr?` · <span style="color:var(--blood)">${TRAITS[s.e.tr][1]}</span>`:''}${s.e.stun>fight.clk?' · оглушён':''}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span><span class="mb"><i id="ma${i}" style="width:${Math.round(s.ech*100)}%;background:var(--gold)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
  <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель. Жёлтая полоска — его атака.</p>
- ${ahOk()?`<button class="b ${S.ahunt?'':'alt'}" data-ah="1" style="width:100%;margin:0 0 6px">${S.ahunt?'🤖 Авто-удар: ВКЛ — нажми, чтобы выключить':'🤖 Включить авто-удар'}</button>`:`<p style="margin:0 0 6px;font-size:13px;color:var(--mute)">Авто-удар откроется со ${AHLV} уровня.</p>`}<button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар${fight.e?' · '+esc(fight.e.name):''}</button>
+ ${ahOk()?`<div style="display:flex;gap:6px;margin:0 0 6px"><button class="b ${S.ahunt?'':'alt'}" data-ah="1" style="flex:1;margin:0">${S.ahunt?'🤖 Авто: ВКЛ':'🤖 Авто-удар'}</button><button class="b ${S.hx2?'':'alt'}" data-hx2="1" style="margin:0;min-width:84px" title="Ускорить охоту в 2 раза">⏩ x2${S.hx2?' ВКЛ':''}</button></div>`:`<p style="margin:0 0 6px;font-size:13px;color:var(--mute)">Авто-удар откроется со ${AHLV} уровня.</p>`}<button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар${fight.e?' · '+esc(fight.e.name):''}</button>
  ${skBtns()}<button class="b alt" id="bg" data-a="guard">Блок</button>${['b'].map(k=>{const L=bleft();return`<button class="b alt" id="bp${k}" data-a="pot-${k}" ${S.pt[k]<1||L>0?'disabled':''}>${POT[k].sh} (${S.pt[k]})${L>0?' '+Math.ceil(L/1000)+' с':''}</button>`}).join('')}
  <button class="b alt" data-a="flee">Вернуться в лагерь</button></div>`}
 function hrepView(){const H=HREP;if(H.hunt)return`<div class="panel" style="border-left:4px solid var(${H.why==='dead'?'--blood':'--moss'})"><h3>Охота окончена${H.why==='dead'?': ты пал':H.why==='out'?': силы кончились':''}</h3><p style="margin:0 0 4px">Убито зверей: <b>${H.kills}</b> · опыт <b class="g">+${H.xp}</b> · серебро <b class="g">+${H.gold}</b></p>${H.loot.length?`<p style="margin:6px 0 4px">Трофеи:</p><div class="loot">${H.loot.map(l=>l.rune?`<div class="lt" title="${rName(l.rune)}">${stIc(l.rune,48)}<small style="color:var(${RAR[rR(l.rune)][1]})">${rName(l.rune)}</small></div>`:`<div class="lt" title="${esc(l.it.name)}">${itemIcon(l.it,48)}<small style="color:var(${RAR[l.it.rar][1]})">${esc(l.it.name)}</small>${l.dis?`<small>разобран: +${l.g} жел.</small>`:''}</div>`).join('')}</div>`:''}<p style="margin:0;color:var(--mute);font-size:15px">Теперь у тебя ${S.gold} серебра, опыт ${S.xp}.</p><button class="b alt" data-a="hrclose" style="margin-top:8px">Закрыть</button></div>`;
@@ -553,7 +554,7 @@ function act(a){
  settle();save();render();
 }
 function fightTick(){
- if(!fight)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);fight.clk+=dt*1000;
+ if(!fight)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
  fight.ch=Math.min(1,fight.ch+dt/(fight.chs||5));if(fight.hunt)return huntTick(dt);if(!(fight.e&&fight.e.stun>fight.clk))fight.ech+=dt/((fight.e&&fight.e.spd)||5);
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
@@ -1548,7 +1549,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.87';
+const GVER='1.4.88';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1925,7 +1926,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.87</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.88</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
