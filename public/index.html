@@ -1565,7 +1565,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.5.1';
+const GVER='1.5.2';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1942,7 +1942,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.5.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.5.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2051,7 +2051,7 @@ const CHEST_MAX=40;
 function toChest(id){S.chest=S.chest||[];if(S.chest.length>=CHEST_MAX){log('Сундук полон.','sys');return render()}const it=S.inv.find(x=>x.uid===id);if(!it)return;S.inv=S.inv.filter(x=>x!==it);S.chest.push(it);save();render()}
 function toBag(id){S.chest=S.chest||[];if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}const it=S.chest.find(x=>x.uid===id);if(!it)return;S.chest=S.chest.filter(x=>x!==it);S.inv.push(it);save();render()}
 function chestView(){const C=S.chest||[],bf=S.inv.length>=INV_MAX;
- return htabs()+`<div class="panel"><h3>Сундук (${C.length}/${CHEST_MAX})</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Дополнительное место для вещей. Из сундука нельзя надеть вещь, её можно только переложить в рюкзак.${bf?' <b style="color:var(--blood)">Рюкзак полон.</b>':''}</p>`+(C.length?[...C].sort((x,y)=>y.rar-x.rar||y.lv-x.lv).map(it=>irow(it,`<button class="b alt" data-tb="${it.uid}" ${bf?'disabled':''}>В рюкзак</button>`)).join(''):'<p style="margin:0">Сундук пуст. Перекладывай сюда вещи из рюкзака.</p>')+`</div>`}
+ return htabs()+`<div class="panel"><h3>Сундук (${C.length}/${CHEST_MAX})</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Дополнительное место для вещей. Из сундука нельзя надеть вещь, её можно только переложить в рюкзак.${bf?' <b style="color:var(--blood)">Рюкзак полон.</b>':''}</p>`+(C.length?[...C].sort((x,y)=>y.rar-x.rar||y.lv-x.lv).map(it=>irow(it,`<button class="b alt" data-tbg="${it.uid}" ${bf?'disabled':''}>В рюкзак</button>`)).join(''):'<p style="margin:0">Сундук пуст. Перекладывай сюда вещи из рюкзака.</p>')+`</div>`}
 const gPower=()=>Math.round(Object.values(S.eq).reduce((t,it)=>t+(it?score(it):0),0));
 function gearCenter(){
  const it=gsel&&S.eq[gsel];
@@ -2100,7 +2100,7 @@ function render(){
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
 document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
- const el=ev.target.closest('[data-a],[data-t],[data-b],[data-e],[data-s],[data-c],[data-j],[data-rt],[data-k],[data-w],[data-u],[data-g],[data-x],[data-q],[data-h],[data-sc],[data-av],[data-ap],[data-dc],[data-pb],[data-pu],[data-st],[data-ct],[data-dn],[data-bd],[data-dk],[data-tg],[data-iv],[data-pv],[data-tc],[data-tb],[data-qc],[data-ti],[data-ri],[data-rx],[data-mt],[data-rs],[data-rp],[data-ro],[data-wk],[data-pp],[data-mb],[data-mx],[data-mc],[data-ex],[data-tip],[data-pt],[data-pbuy],[data-gb],[data-sp],[data-ss],[data-ir],[data-rb],[data-gd],[data-sg],[data-cb],[data-tb],[data-xc],[data-fr],[data-fa],[data-fx],[data-dm],[data-fs],[data-ft],[data-fb],[data-fm],[data-fd],[data-of],[data-rq],[data-rn]');if(!el)return;
+ const el=ev.target.closest('[data-a],[data-t],[data-b],[data-e],[data-s],[data-c],[data-j],[data-rt],[data-k],[data-w],[data-u],[data-g],[data-x],[data-q],[data-h],[data-sc],[data-av],[data-ap],[data-dc],[data-pb],[data-pu],[data-st],[data-ct],[data-dn],[data-bd],[data-dk],[data-tg],[data-iv],[data-pv],[data-tc],[data-tb],[data-tbg],[data-qc],[data-ti],[data-ri],[data-rx],[data-mt],[data-rs],[data-rp],[data-ro],[data-wk],[data-pp],[data-mb],[data-mx],[data-mc],[data-ex],[data-tip],[data-pt],[data-pbuy],[data-gb],[data-sp],[data-ss],[data-ir],[data-rb],[data-gd],[data-sg],[data-cb],[data-tb],[data-xc],[data-fr],[data-fa],[data-fx],[data-dm],[data-fs],[data-ft],[data-fb],[data-fm],[data-fd],[data-of],[data-rq],[data-rn]');if(!el)return;
  const d=el.dataset;
  if(d.c){pick=d.c;return render()}
  if(d.rt){rtab=d.rt;return render()}
@@ -2124,7 +2124,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.mt){mtab=d.mt;return render()}if(d.rs){RSEL=d.rs;render();const el=document.getElementById('rsel');if(el)el.scrollIntoView({block:'start'});return}if(d.rp)return rmIn(d.rp);if(d.ro!=null)return rmOut(+d.ro);
  if(d.ri)return runeIn(d.ri);if(d.rx!=null)return runeOut(+d.rx);
  if(d.qc!=null)return dqClaim(+d.qc);if(d.ti){S.title=d.ti==='-'?'':d.ti;save();return render()}
- if(d.tc)return toChest(d.tc);if(d.tb)return toBag(d.tb);
+ if(d.tc)return toChest(d.tc);if(d.tbg)return toBag(d.tbg);
  if(d.ct){ctab=d.ct;return render()}
  if(d.tg!=null&&fight&&fight.hunt){const s=fight.hunt.sl[+d.tg];if(s&&s.e)fight.e=s.e;return render()}
  if(d.dk)return dunClaim(d.dk);
