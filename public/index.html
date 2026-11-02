@@ -278,8 +278,8 @@ let SAVEDT=0,PLT=0,PLSIG='',SLV=0;
 const APPM=()=>{try{const a=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;if(a&&S&&!S.appEver)S.appEver=1;return a}catch(e){return false}};
 const plSig=()=>{try{return JSON.stringify([S.dr|0,S.dn|0,APPM(),S.ex&&S.ex.end||0,S.name,S.cls,S.lvl,S.win,S.lose,S.rating,S.clan||'',S.sid,S.srat,S.war||'',S.wp|0,S.av,S.cxt|0,S.title||'',Object.values(S.eq||{}).map(i=>i?i.uid+':'+(i.up|0)+':'+(typeof broken==='function'&&broken(i)?0:1):'')])}catch(e){return String(Date.now())}};
 function saveNow(){if(!DB||!UID||!S)return;clearTimeout(syncT);pushDb(true)}
-function pushDb(force){if(!DB||!UID||!S)return;actMark();const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
- if(force||sig!==PLSIG||now-PLT>60000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0}).catch(()=>{})}
+function pushDb(force){if(!DB||!UID||!S)return;actMark();if(S.clan&&!S.cjt)S.cjt=Date.now();if(!S.clan&&S.cjt)delete S.cjt;const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
+ if(force||sig!==PLSIG||now-PLT>60000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0}).catch(()=>{})}
  DB.collection('saves').doc(UID).set(JSON.parse(JSON.stringify(S))).then(()=>{CLOUD.ok=Date.now();CLOUD.err=''}).catch(e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80)})}
 function sync(){if(!DB||!UID||!S)return;clearTimeout(syncT);const wait=S.lvl!==SLV?1200:Math.max(1200,SAVEDT+20000-Date.now());syncT=setTimeout(()=>pushDb(),wait)}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});window.addEventListener('pagehide',()=>saveNow());
@@ -672,7 +672,36 @@ function closeModal(){document.querySelectorAll('.modal').forEach(x=>x.remove())
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 let PV=null,PVB='top';
 const inEx=p=>p&&(p.id===UID&&S?!!(S.ex&&S.ex.end>Date.now()):+p.ex>Date.now());
-function plView(){const p=PV===UID&&S?{dr:S.dr,dn:S.dn,id:UID,title:S.title,name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan,av:S.av,eq:S.eq,stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}}:PL.find(x=>x.id===PV);
+// ===== Статистика героя в профиле =====
+const xpNeedL=L=>{const m=L<=10?.3:Math.min(1,.3+.07*(L-10));return Math.round((20*L*L+.8*L*L*L)*m)};
+const xpTot=(lv,xp)=>{let t=xp|0;for(let L=1;L<(lv|0);L++)t+=xpNeedL(L);return t};
+const cntPub=()=>{const c=S.cnt||{};return{k:c.k|0,aw:c.aw|0,rb:c.rb|0,bs:c.bs|0,df:c.df|0,dmg:Math.round(c.dmg||0)}};
+const dDays=t=>t?Math.max(0,Math.floor((Date.now()-t)/864e5)):null;
+const dWord=n=>{const a=n%10,b=n%100;return n+' '+(a===1&&b!==11?'день':a>=2&&a<=4&&(b<10||b>=20)?'дня':'дней')};
+function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
+ const plc=(arr,val)=>{const i=arr.findIndex(x=>x.id===p.id);return i>=0?` · ${i+1} место`:''};
+ const all=PL.map(x=>x.id===UID&&S?{...x,rating:S.rating,srat:S.srat,sid:S.sid,dr:S.dr,ssum:statSum()}:x);
+ const rA=[...all].sort((a,b)=>(b.rating|0)-(a.rating|0)),rS=all.filter(x=>sScore(x,cur)!=null).sort((a,b)=>(b.srat|0)-(a.srat|0)),rD=all.filter(x=>(x.dn|0)>0).sort((a,b)=>drOf(b)-drOf(a)),rT=all.filter(x=>x.ssum!=null).sort((a,b)=>b.ssum-a.ssum);
+ const reg=p.reg||0,gd=dDays(reg),cd=c?dDays(p.cjt):null,sr=sScore(p,cur);
+ const row=(t,v)=>`<div class="row" style="padding:6px 0"><div>${t}</div><b>${v}</b></div>`,fmt=n=>(n|0).toLocaleString('ru-RU');
+ return`<div class="panel"><h3 style="margin:0 0 4px">Статистика</h3>
+ ${row('🐺 Убито зверей на охоте',fmt(k.k))}
+ ${row('⚔️ Побед на арене',fmt(p.win)+(p.lose!=null?` <small style="display:inline;color:var(--mute)">/ поражений ${fmt(p.lose)}</small>`:''))}
+ ${row('🐉 Побеждено боссов в рейдах',fmt(k.rb))}
+ ${row('👹 Ударов по мировому боссу',fmt(k.bs))}
+ ${(k.df|0)?row('🕳️ Этаж подземелья клана',k.df):''}
+ ${(p.dn|0)?row('🤺 Дуэлей выиграно',fmt(p.dw)+` <small style="display:inline;color:var(--mute)">из ${fmt(p.dn)}</small>`):''}
+ ${row('✨ Набрано опыта',fmt(p.xpt!=null?p.xpt:xpTot(p.lvl,0)))}
+ ${gd!=null?row('📅 Дней в игре',dWord(gd)):''}
+ ${c&&cd!=null?row(`🛡️ Дней в клане «${esc(c.name)}»`,dWord(cd)):''}
+ <h3 style="margin:10px 0 4px">Рейтинги</h3>
+ ${row('Арена (всего)',(p.rating|0)+plc(rA))}
+ ${row('Арена (сезон)',sr!=null?(p.srat|0)+plc(rS):'<span style="color:var(--mute);font-weight:400">нет боёв</span>')}
+ ${row('Дуэли',`<span style="color:${rankOf2(p)[2]}">${rankOf2(p)[1]}</span> · ${drOf(p)}`+((p.dn|0)?plc(rD):''))}
+ ${p.ssum!=null||me?row('Сумма статов',fmt(me?statSum():p.ssum)+plc(rT)):''}
+ ${!me&&p.cnt==null?'<p style="margin:6px 0 0;font-size:13px;color:var(--mute)">Часть статистики появится, когда игрок зайдёт в новую версию.</p>':''}</div>`}
+const selfP=()=>({cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||(S.clan?Date.now():0),reg:S.reg||S.t,srat:S.srat,sid:S.sid,ssum:statSum(),dw:S.dw,dr:S.dr,dn:S.dn,id:UID,title:S.title,name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan,av:S.av,eq:S.eq,stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}});
+function plView(){const p=PV===UID&&S?selfP():PL.find(x=>x.id===PV);
  if(!p)return'<div class="panel"><p>Игрок не найден.</p><button class="b alt" data-a="pvback">Назад</button></div>';
  const c=p.clan&&CLN.find(x=>x.id===p.clan),eq=p.eq||{},st=p.stats;
  const slot=(k,t)=>{const it=eq[k];return`<div class="pvs">${it?itemIcon(it,52):`<span class="pve">${SL[t]}</span>`}<small>${it?esc(it.name)+(it.up?' +'+it.up:''):SL[t]}</small></div>`};
@@ -680,6 +709,7 @@ function plView(){const p=PV===UID&&S?{dr:S.dr,dn:S.dn,id:UID,title:S.title,name
  <div class="pstat"><span>Побед <b>${p.win|0}</b></span><span>Поражений <b>${p.lose|0}</b></span><span>Рейтинг <b>${p.rating}</b></span></div></div>
  ${st?`<div class="panel"><h3>Характеристики</h3><div class="pstat" style="border:0;padding:0;margin:0"><span>Атака <b>${st.atk}</b></span><span>Защита <b>${st.def}</b></span><span>Здоровье <b>${st.hp}</b></span><span>Крит <b>${st.crit}%</b></span></div></div>`:''}
  <div class="panel"><h3>Снаряжение</h3>${p.eq?`<div class="pvg">${GK.map(([k,t])=>slot(k,t)).join('')}</div><p style="color:var(--mute);font-size:13px;margin:8px 0 0">Нажми на вещь, чтобы увидеть подробности.</p>`:'<p style="margin:0;color:var(--mute)">Игрок ещё не заходил в новую версию игры, снаряжение пока не видно.</p>'}</div>
+ ${statBlock(p,c)}
  ${p.id!==UID&&DB?(()=>{const f=frOf(p.id);return`<div class="panel" style="display:flex;gap:8px;flex-wrap:wrap">${!f?`<button class="b" data-fr="${p.id}" style="margin:0">Добавить в друзья</button><button class="b alt" data-dm="${p.id}" style="margin:0">Написать письмо (${MAILC} сер.)</button>`:f.st==='ok'?`<button class="b" data-dm="${p.id}" style="margin:0">Написать</button><button class="b alt" data-fx="${p.id}" style="margin:0">Удалить из друзей</button>`:f.by===UID?`<button class="b alt" disabled style="margin:0">Заявка отправлена</button>`:`<button class="b" data-fa="${p.id}" style="margin:0">Принять в друзья</button>`}</div>`})():''}
  ${p.id!==UID&&DB&&UID&&p.lvl>=DLV&&S.lvl>=DLV?`<button class="b red" data-du="c:${p.id}" style="width:100%">⚔ Вызвать на дуэль</button>`:''}${p.dn>0?`<p style="margin:6px 0;font-size:14px;color:var(--mute)">Дуэли: <b style="color:${rankOf2(p)[2]}">${rankOf2(p)[1]}</b> · рейтинг ${drOf(p)}</p>`:''}
  <button class="b alt" data-a="pvback">Назад</button>`}
@@ -729,7 +759,7 @@ function tabView(){
  const E=EQ(),GB={str:E.atk/2,hp:E.hp/8,arm:E.def,reg:E.reg,en:E.en},fx=v=>Math.round(v*10)/10;
  const EV={};Object.keys(ST).forEach(k=>EV[k]=Math.round(S.st[k]+GB[k]));const sum=Object.values(EV).reduce((t,v)=>t+v,0);
  return htabs()+avCard()+`<div class="menu" style="margin-bottom:10px">${MI('friends','Друзья',frIn().length?`<b style="color:var(--moss)">заявки: ${frIn().length}</b>`:'список друзей и заявки')}${MI('mail','Почта',dmUnN()?`<b style="color:var(--moss)">новые сообщения: ${dmUnN()}</b>`:'переписки, письма и передача вещей')}${MI('settings','Настройки',UID&&!GUEST&&(mailLoad(),MYMAIL==='')?'<span style="color:var(--blood)">привяжи почту, чтобы не потерять героя</span>':'ник, класс, почта, пароль, уведомления')}${MI('skills','Умения',skOpen()?skAll().map(k=>`<span style="color:var(${RAR[skQ(k[0])][1]})">${k[1]}</span>`).join(', '):'откроются после пути новичка')}</div>`+`<div class="panel"><h3>Герой${S.pts?` · очков: ${S.pts}`:''}</h3><p style="margin:0 0 6px;font-size:19px">Сумма всех статов: <b class="g">${sum}</b> <small style="color:var(--mute);font-size:14px">с учётом снаряжения</small></p>`+Object.keys(ST).map(k=>`<div class="row"><div>${ST[k]}: <b>${EV[k]}</b>${stFx(k)}${EV[k]!==S.st[k]?` <span style="color:var(--mute);font-size:14px">(${S.st[k]} + <span style="color:var(--moss)">${EV[k]-S.st[k]}</span>)</span>`:''}<small>${EF[k]()}</small></div>${S.pts?`<button class="b" data-s="${k}">+1</button>`:''}</div>`).join('')+
- `<p style="color:var(--mute);font-size:15px">Крит ${crit()}%${S.clan?' · бонус клана +5% к добыче':''}</p>${(()=>{const sb=setBonus();return`<p style="margin:4px 0;font-size:15px">${sb?`Бонус набора «${SETN[sb.t]}»: <b>${sb.n}/10</b> вещей, <b class="g">+${Math.round(sb.pct*100)}%</b> к бонусам снаряжения.`:'Бонус набора: надень 3, 5 или 10 вещей одного набора, чтобы получить +5%, +12% или +25% к бонусам снаряжения.'}</p>`})()}${(()=>{const b=CL[S.cls].s,sp=Object.keys(S.st).reduce((t,k)=>t+Math.max(0,S.st[k]-(b[k]|0)),0),c=100*S.lvl;return sp?`<button class="b alt" data-a="sreset" ${S.gold<c?'disabled':''}>Сбросить статы (${c} сер.) · вернётся ${sp} очков</button>`:''})()}</div>`+resView();
+ `<p style="color:var(--mute);font-size:15px">Крит ${crit()}%${S.clan?' · бонус клана +5% к добыче':''}</p>${(()=>{const sb=setBonus();return`<p style="margin:4px 0;font-size:15px">${sb?`Бонус набора «${SETN[sb.t]}»: <b>${sb.n}/10</b> вещей, <b class="g">+${Math.round(sb.pct*100)}%</b> к бонусам снаряжения.`:'Бонус набора: надень 3, 5 или 10 вещей одного набора, чтобы получить +5%, +12% или +25% к бонусам снаряжения.'}</p>`})()}${(()=>{const b=CL[S.cls].s,sp=Object.keys(S.st).reduce((t,k)=>t+Math.max(0,S.st[k]-(b[k]|0)),0),c=100*S.lvl;return sp?`<button class="b alt" data-a="sreset" ${S.gold<c?'disabled':''}>Сбросить статы (${c} сер.) · вернётся ${sp} очков</button>`:''})()}</div>`+resView()+statBlock(selfP(),S.clan&&CLN.find(x=>x.id===S.clan));
 }
 const RIC={silver:'/img/f1ca527edb6c81.webp',gold:'/img/19ad7588f13c8b.webp',iron:'/img/3929e5d102f1ae.webp',bottle:'/img/f19611687dfd01.webp'};
 function resView(){const n=(S.pt&&S.pt.b)|0;
@@ -1000,6 +1030,7 @@ function rRound(R,acts){const B=RAIDS[R.b],L=[],shield={};let enr=R.r>[8,9,10,11
 function raidFinish(){const R=RAID;if(!R||R.st==='on'||!RAIDID||!S)return;S.rdone=S.rdone||[];if(S.rdone.includes(RAIDID))return;const me=R.mem[UID];if(!me)return;
  S.rdone.push(RAIDID);S.rdone=S.rdone.slice(-20);const t=R.b;if(!me.bot)wear(me.hits|0);
  if(R.st!=='win'){RRES={win:0};log(`Рейд «${RAIDS[t].n}»: поражение.`,'sys');save();return}
+ S.cnt=S.cnt||{};S.cnt.rb=(S.cnt.rb|0)+1;
  S.rcd=S.rcd||{};S.rcd[t]=Date.now()+RAIDS[t].cd*3600000;
  const hum=Object.values(R.mem).filter(x=>!x.bot).length,mf=hum<RSIZE?.7:1;const g=Math.round([150,400,900,1800,3500][t]*mf),ir=Math.round([20,40,70,110,160][t]*mf),du=Math.round([3,6,10,15,25][t]*mf),xp=Math.round(need()*[.25,.25,.3,.3,.35][t]*mf),rk=rndRune(t+1);
  S.gold+=g;S.iron=(S.iron|0)+ir;S.dust=(S.dust|0)+du;addRune(rk);S.xp+=xp;lvUp();let it=null;const ks=Object.keys(SL),sl=ks[Math.floor(Math.random()*ks.length)];
@@ -1229,7 +1260,7 @@ function setOff(id){const c=CLN.find(x=>x.id===S.clan);if(!c||c.leader!==UID||id
 function togClosed(){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;cUpd(c,{closed:!c.closed})}
 function applyClan(cid){const c=CLN.find(x=>x.id===cid);if(!c)return;if((c.req||[]).some(r=>r.id===UID))return;cUpd(c,{req:[...(c.req||[]).filter(r=>r.id!==UID),{id:UID,name:S.name,lvl:S.lvl}].slice(-30)}).then(()=>{log(`Заявка в клан «${c.name}» отправлена.`,'sys');render()})}
 function reqDo(id,ok){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;const o={req:(c.req||[]).filter(r=>r.id!==id)};if(ok){if(mem(c).length>=cCap(c)){log('В клане нет мест.','sys');return render()}o.acc=[...(c.acc||[]).filter(x=>x!==id),id]}cUpd(c,o)}
-function accCheck(){if(!S||S.clan||!DB)return;const c=CLN.find(x=>(x.acc||[]).includes(UID));if(!c)return;S.cxt=0;S.cxq=0;S.clan=c.id;cUpd(c,{acc:(c.acc||[]).filter(x=>x!==UID)});log(`Тебя приняли в клан «${c.name}».`,'hit');clog(`${S.name} принят в клан.`,'➕',c.id);save()}
+function accCheck(){if(!S||S.clan||!DB)return;const c=CLN.find(x=>(x.acc||[]).includes(UID));if(!c)return;S.cxt=0;S.cxq=0;S.clan=c.id;S.cjt=Date.now();cUpd(c,{acc:(c.acc||[]).filter(x=>x!==UID)});log(`Тебя приняли в клан «${c.name}».`,'hit');clog(`${S.name} принят в клан.`,'➕',c.id);save()}
 const WQT=c=>20000*cLv(c).L,WQR=c=>1500*cLv(c).L;
 function wqClaim(){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;const w=c.wq||{};if(w.wk!==curS()||(w.xp|0)<WQT(c)||w.done)return;const g=WQR(c);
  cUpd(c,{wq:{...w,done:true}}).then(()=>{const ref=DB.collection('clans').doc(c.id).collection('dep').doc('quest');return ref.get().then(sn=>{const o=sn.exists?sn.data():{};return ref.set({name:'Задания клана',gold:(o.gold|0)+g,iron:(o.iron|0)+Math.round(g/20)})})}).then(()=>{log(`Задание недели выполнено: +${g} серебра и +${Math.round(g/20)} железа в казну клана.`,'hit');clog(`Задание недели выполнено: в казну ${g} серебра.`,'🏆');render()})}
@@ -1511,7 +1542,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.4.84';
+const GVER='1.4.85';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1790,7 +1821,7 @@ function mkClan(){
  if(n.length<3){log('Название клана: от 3 символов.','sys');return render()}
  if(S.gold<100)return;
  const id='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- DB.collection('clans').doc(id).set({name:n,leader:UID}).then(()=>{S.gold-=100;S.clan=id;S.cxt=0;S.cxq=0;log(`Клан «${n}» основан.`,'sys');clog(`${S.name} основал клан «${n}».`,'🛡');save();render()}).catch(()=>{log('Не удалось основать клан: у тебя нет прав записи в общую базу.','sys');render()});
+ DB.collection('clans').doc(id).set({name:n,leader:UID}).then(()=>{S.gold-=100;S.clan=id;S.cjt=Date.now();S.cxt=0;S.cxq=0;log(`Клан «${n}» основан.`,'sys');clog(`${S.name} основал клан «${n}».`,'🛡');save();render()}).catch(()=>{log('Не удалось основать клан: у тебя нет прав записи в общую базу.','sys');render()});
 }
 let FBA=null;
 async function initOnline(){
@@ -1888,7 +1919,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.84</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.4.85</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'';
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2048,7 +2079,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  const d=el.dataset;
  if(d.c){pick=d.c;return render()}
  if(d.rt){rtab=d.rt;return render()}
- if(d.j){const c=CLN.find(x=>x.id===d.j);if(c&&(c.kicked||[]).includes(UID)){log('Лидер закрыл тебе вход в этот клан.','sys');return render()}if(c&&mem(c).length>=cCap(c)){log(`В клане «${c.name}» нет мест: ${mem(c).length}/${cCap(c)}.`,'sys');return render()}if(c&&c.closed)return applyClan(c.id);S.cxt=0;S.clan=d.j;log(`Ты вступил в клан «${cname(d.j)}».`,'sys');clog(`${S.name} вступил в клан.`,'➕');save();return render()}
+ if(d.j){const c=CLN.find(x=>x.id===d.j);if(c&&(c.kicked||[]).includes(UID)){log('Лидер закрыл тебе вход в этот клан.','sys');return render()}if(c&&mem(c).length>=cCap(c)){log(`В клане «${c.name}» нет мест: ${mem(c).length}/${cCap(c)}.`,'sys');return render()}if(c&&c.closed)return applyClan(c.id);S.cxt=0;S.clan=d.j;S.cjt=Date.now();log(`Ты вступил в клан «${cname(d.j)}».`,'sys');clog(`${S.name} вступил в клан.`,'➕');save();return render()}
  if(d.k)return kick(d.k);if(d.w)return declare(d.w);
  if(d.t){tab=d.t;MLADM=false;return render()}
  if(d.sc){scr=d.sc;AM='';PWMSG='';return render()}
