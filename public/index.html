@@ -495,7 +495,7 @@ function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
  if(petTick(dt))ch=true;
  if(ch){huntCheck();save();render();mobPulse()}else paintFight()}
 // звер бьёт — его карточка коротко «вздрагивает»
-function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)el.animate([{transform:'scale(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)'}],{duration:280,easing:'ease-out'})}),0)}
+function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)try{el.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)',filter:'brightness(1)'}],{duration:280,easing:'ease-out'})}catch(e){}}),0)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Задание «${NQ.h}»</span><span><b>убито ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
  return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Каждый удар стоит 1 энергию. ${nbOn()?'Пока идёшь «Путём новичка», энергия на охоте восстанавливается как обычно.':'На охоте энергия восстанавливается медленнее:'} +${(enPSH()*60).toFixed(1).replace('.',',')} в минуту (вне охоты +${(enPS()*60).toFixed(1).replace('.',',')}).</p>
  <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
@@ -1578,7 +1578,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.5.5';
+const GVER='1.5.6';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1955,7 +1955,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.5.5</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.5.6</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
