@@ -1258,10 +1258,15 @@ function pvpList(){const L=PL.filter(p=>p.id!==UID&&p.stats).sort((a,b)=>Math.ab
 // ===== Рынок =====
 let MK=[],mkUn=null,MKMSG='',mkMode='',mkFor=null;const MKFEE=.05,mkC=m=>m.au?'au':'gold',mkU=m=>m.au?'зол.':'сер.';
 // рынок целиком — только на вкладке «Рынок», в остальное время — только свои лоты (чтобы узнать о продаже)
-function mkSub(){if(!DB||!UID)return;const want=tab==='market'?'all':'mine';if(mkUn&&mkMode===want&&mkFor===UID)return;if(mkUn)mkUn();mkMode=want;mkFor=UID;mkUn=(want==='all'?DB.collection('market').limit(200):DB.collection('market').where('seller','==',UID).limit(30)).onSnapshot(sn=>{MK=sn.docs.map(d=>({id:d.id,...JSON.parse(JSON.stringify(d.data()))}));if(tab==='market'&&!fight)ui();else if(MK.some(m=>m.seller===UID&&m.sold))ui()},()=>{})}
+// рынок: свои лоты слушаем всегда отдельно (чтобы их было видно даже при многих лотах), все лоты — только на вкладке рынка, свежие сверху
+let MKA=[],MKM=[],mkUnA=null;const mkMerge=()=>{const m=new Map();for(const x of MKA)m.set(x.id,x);for(const x of MKM)m.set(x.id,x);MK=[...m.values()]};
+function mkSub(){if(!DB||!UID)return;const mapd=sn=>sn.docs.map(d=>({id:d.id,...JSON.parse(JSON.stringify(d.data()))}));
+ if(!mkUn||mkFor!==UID){if(mkUn)mkUn();if(mkUnA){mkUnA();mkUnA=null}MKA=[];mkFor=UID;mkUn=DB.collection('market').where('seller','==',UID).limit(50).onSnapshot(sn=>{MKM=mapd(sn);mkMerge();if(tab==='market'&&!fight)ui();else if(MKM.some(m=>m.sold))ui()},()=>{})}
+ const want=tab==='market';if(want&&!mkUnA){mkUnA=DB.collection('market').orderBy('ts','desc').limit(200).onSnapshot(sn=>{MKA=mapd(sn);mkMerge();if(tab==='market'&&!fight)ui()},()=>{})}else if(!want&&mkUnA){mkUnA();mkUnA=null;MKA=[];mkMerge()}}
 function mkList(){const it=MODIT;if(!it||!DB||!S.inv.includes(it)||it.pb)return;const el=document.getElementById('mprice'),pr=Math.max(1,Math.floor(+(el&&el.value)||0));if(!pr)return;
- const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);S.inv=S.inv.filter(x=>x!==it);save();closeModal();
- DB.collection('market').doc(id).set({seller:UID,sname:S.name,item:JSON.parse(JSON.stringify(it)),price:pr,au:true,ts:Date.now(),sold:false}).then(()=>{MKMSG=`«${it.name}» выставлен на рынок за ${pr} зол.`;log(MKMSG,'sys');render()}).catch(()=>{S.inv.push(it);save();log('Не удалось выставить вещь на рынок.','sys');render()});render()}
+ if(it.mkp)return;it.mkp=1;const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);closeModal();MKMSG='Выставляю на рынок…';
+ const to=setTimeout(()=>{if(it.mkp){delete it.mkp;MKMSG='';log('Нет связи с рынком: вещь осталась в рюкзаке, попробуй ещё раз.','sys');render()}},15000);
+ DB.collection('market').doc(id).set({seller:UID,sname:S.name,item:JSON.parse(JSON.stringify(Object.assign({},it,{mkp:undefined}))),price:pr,au:true,ts:Date.now(),sold:false}).then(()=>{clearTimeout(to);delete it.mkp;S.inv=S.inv.filter(x=>x!==it);save();MKMSG=`«${it.name}» выставлен на рынок за ${pr} зол.`;log(MKMSG,'sys');render()}).catch(()=>{clearTimeout(to);delete it.mkp;MKMSG='';log('Не удалось выставить вещь на рынок.','sys');render()});render()}
 function mkBuy(id){const m=MK.find(x=>x.id===id);if(!m||m.seller===UID||m.sold||(S[mkC(m)]|0)<m.price)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}
  const ref=DB.collection('market').doc(id);ref.get().then(sn=>{if(!sn.exists||sn.data().sold){MKMSG='Эту вещь уже купили.';return render()}
   return ref.update({sold:true,buyer:UID,bname:S.name}).then(()=>{if((S[mkC(m)]|0)<m.price){ref.update({sold:false,buyer:null}).catch(()=>{});return}S[mkC(m)]-=m.price;const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} ${mkU(m)}`;log(MKMSG,'sys');save();render()})}).catch(()=>{MKMSG='Покупка не удалась.';render()})}
@@ -1578,7 +1583,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.5.6';
+const GVER='1.5.7';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1955,7 +1960,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.5.6</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.5.7</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
