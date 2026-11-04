@@ -748,7 +748,7 @@ function tabView(){
  if(tab==='acc')return GUEST?guestLock():accView();
  if(GUEST&&tab==='clan')return guestClanView();
  if(GUEST&&GTABS.includes(tab))return guestLock();
- if(GUEST&&tab==='gsave')return gsOk()?guestSaveView():guestLock();
+ if(GUEST&&tab==='gsave')return guestSaveView();
  if(tab==='mypets')return heroPets();if(tab==='pl')return plView();if(tab==='cpub')return clanPubView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='raid')return raidView();if(tab==='duel')return duelView();if(tab==='skills')return skillsView();if(tab==='settings')return settingsView();if(tab==='mail')return mailView();if(tab==='give')return giveView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='invite')return inviteView();if(tab==='install')return installView();if(tab==='gold')return goldView();if(tab==='gchat')return gchatView();if(tab==='online')return onlineView();if(tab==='about')return aboutView();if(tab==='bank')return bankView();if(tab==='friends')return friendsView();if(tab==='dm')return dmView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
  if(tab==='admin')return admView();
  if(tab==='top')return topView();if(tab==='clan')return clanView();
@@ -1605,7 +1605,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.6.16';
+const GVER='1.6.17';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1985,7 +1985,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.6.16</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.6.17</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2132,7 +2132,7 @@ function menuView(){return`<div class="menu"><div class="mh">Лагерь</div>$
 document.addEventListener('click',e=>{const b=e.target.closest('.bnav [data-t]');if(b&&b.dataset.t===tab){if(tab==='hero')htab='stats';if(tab==='clan')ctab='main';window.scrollTo({top:0,behavior:'smooth'})}},true);
 const BNI={home:'/img/d77f9bea793ff4.webp',hero:'/img/36273d43cf80a8.webp',clan:'/img/3cbc3c2dea1f06.webp',admin:'/img/918a0ff517c174.webp'};
 IC.gsave='<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><rect x="8" y="13" width="8" height="6" rx="1"/>';
-function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главная'],['hero',hn],['clan','Клан']];if(GUEST&&gsOk())it.push(['gsave','Сохранить']);else if(ADM)it.push(['admin','Админка']);
+function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главная'],['hero',hn],['clan','Клан']];if(GUEST)it.push(['gsave','Сохранить']);else if(ADM)it.push(['admin','Админка']);
  return`<nav class="bnav" id="bnav" aria-label="Основное меню">${it.map(([k,t])=>`<button class="${tab===k?'on':''}${k==='home'?' bhome':''}${k==='gsave'?' bsave':''}" data-t="${k}"${k==='home'?' aria-label="Главная"':''}><span style="position:relative;line-height:0">${BNI[k]?`<img class="bni" src="${BNI[k]}" width="30" height="30" alt="" aria-hidden="true">`:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k==='home'?'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>':IC[k]}</svg>`}${k==='hero'&&S.pts?`<i class="bdg">${S.pts}</i>`:''}</span>${k==='home'?'':`<span class="bnt">${esc(t)}</span>`}</button>`).join('')}</nav>`}
 // при открытии чата — сразу к последним сообщениям (внизу)
 let CHK='';function chatScroll(){const k=tab==='gchat'||tab==='dm'?tab+'|'+(tab==='dm'?DMW:''):'';if(k===CHK)return;CHK=k;if(!k)return;const go=()=>{const el=document.getElementById(tab==='dm'?'dmbox':'gcbox');if(el)el.scrollTop=el.scrollHeight};go();setTimeout(go,120);setTimeout(go,600)}
