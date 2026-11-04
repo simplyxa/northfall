@@ -52,7 +52,7 @@ exports.handler = async (event) => {
       const last = (sn.data().duelFrom || {})[uid] || 0;
       if (Date.now() - last < 2 * 60000) return j(200, { ok: false });
       await g.set({ duelFrom: { [uid]: Date.now() } }, { merge: true });
-      const ok = await sendTo(db, to, 'msg', { t: 'Northfall: вызов на дуэль!', b: `${String(q.name || uid).slice(0, 20)} вызывает тебя на дуэль. 2 минуты на ответ!`, tag: 'duel', u: '/?go=duel' });
+      const ok = await sendTo(db, to, 'msg', { t: 'Northfall: вызов на лайв-арену!', b: `${String(q.name || uid).slice(0, 20)} вызывает тебя на дуэль. 2 минуты на ответ!`, tag: 'duel', u: '/?go=duel' });
       return j(200, { ok });
     }
     if (q.a === 'gchat') { // сообщение в общем чате: зовём администрацию, не чаще раза в 3 минуты
