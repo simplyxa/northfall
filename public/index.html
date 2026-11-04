@@ -345,7 +345,7 @@ function pwChange(){const o=($('#pwold')||{}).value||'',n=($('#pwnew')||{}).valu
 function setOnline(){return UID&&!GUEST?accView():''}
 
 // ===== Уведомления на телефон (Web Push) =====
-const PUSHK=[['en','Энергия восстановлена'],['msg','Новые сообщения и письма'],['raid','Рейд собран'],['wb','Мировой босс ждёт (вечером)']];
+const PUSHK=[['en','Энергия восстановлена'],['msg','Новые сообщения и письма'],['raid','Рейд собран'],['wb','Мировой босс ждёт (вечером)'],['la','Лайв-арена открылась (19:00 МСК)']];
 let PUSHMSG='',PUSHT=0;
 const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 async function pushApi(q,auth){const h={'Content-Type':'application/json'};if(auth){if(!FBA||!FBA.currentUser)throw new Error('Войди в игру заново');h.Authorization='Bearer '+await FBA.currentUser.getIdToken()}
@@ -1113,7 +1113,7 @@ function duelOpen(rid){if(DUU)DUU();if(DUU2)DUU2();DUELID=rid;DUEL=null;DACT={};
 function dAct(a){if(!DUEL||DUEL.st!=='on'||!DUELID)return;const me=DUEL.mem[UID];if(!me||me.hp<=0||me.stun>=DUEL.r)return;const ac=DACT[UID];if(ac&&ac.r===DUEL.r)return;
  if(a==='pow'&&me.pcd>DUEL.r)return;if(a==='sk'&&me.scd>DUEL.r)return;if(a==='pot'&&!me.pot)return;DACT[UID]={r:DUEL.r,a};rDraw();
  DB.collection('raids').doc(DUELID).collection('a').doc(UID).set({r:DUEL.r,a}).catch(()=>{})}
-function duelTick(){if(S&&UID&&!DBUSY&&!DOPEN()&&typeof inDQ==='function'&&inDQ()){DBUSY=true;dqPut(q=>{q.m=q.m.filter(x=>x.id!==UID)}).catch(()=>{}).then(()=>{DBUSY=false});DQT=0}if(tab==='duel'&&!DUEL&&Math.floor(Date.now()/1000)%15===0&&!document.querySelector('.modal'))render();if(!DUEL||!DUELID)return;const el=document.getElementById('ddt');if(DUEL.st==='on'&&el)el.textContent=Math.max(0,Math.ceil((DUEL.dl-Date.now())/1000))+' с';
+function duelTick(){if(S&&UID&&S.lvl>=DLV&&dOpenRaw()&&!fight&&!document.querySelector('.modal')){const d=Math.floor(Date.now()/864e5);if(S.laPop!==d){S.laPop=d;save();popup('⚔ Лайв-арена открыта!',`Бои 1 на 1 с живыми игроками — до ${dLocal(DWH[1])}. Сейчас ищут соперника: <b>${dqLive().length}</b>.<br><br><button class="b red" data-t="duel" style="width:100%" onclick="closeModal()">В Лайв-арену</button>`)}}if(S&&UID&&!DBUSY&&!DOPEN()&&typeof inDQ==='function'&&inDQ()){DBUSY=true;dqPut(q=>{q.m=q.m.filter(x=>x.id!==UID)}).catch(()=>{}).then(()=>{DBUSY=false});DQT=0}if(tab==='duel'&&!DUEL&&Math.floor(Date.now()/1000)%15===0&&!document.querySelector('.modal'))render();if(!DUEL||!DUELID)return;const el=document.getElementById('ddt');if(DUEL.st==='on'&&el)el.textContent=Math.max(0,Math.ceil((DUEL.dl-Date.now())/1000))+' с';
  if(DUEL.st!=='on'||DBUSY)return;const ids=Object.keys(DUEL.mem),need=ids.filter(id=>DUEL.mem[id].stun<DUEL.r),all=need.every(id=>DACT[id]&&DACT[id].r===DUEL.r);
  const my=DUEL.mem[UID]?DUEL.mem[UID].o:0;if(all||Date.now()>DUEL.dl+my*1500)dResolve()}
 function dResolve(){if(DBUSY)return;DBUSY=true;const ref=DB.collection('raids').doc(DUELID),r0=DUEL.r;
@@ -1601,7 +1601,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.6.4';
+const GVER='1.6.5';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1980,7 +1980,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.6.4</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.6.5</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

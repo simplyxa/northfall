@@ -31,6 +31,22 @@ exports.handler = async () => {
       }
     }
   }
+  // Лайв-арена: открывается в 19:00 МСК (16:00 UTC) — один раз в день оповещение всем с 5 уровня + запись в общий чат
+  const u = new Date(now);
+  if (u.getUTCHours() === 16) {
+    const LD = Math.floor(now / 864e5), fl = db.collection('priv').doc('la-notify'), fs = await fl.get();
+    if (!fs.exists || (fs.data().day | 0) !== LD) {
+      await fl.set({ day: LD, ts: now });
+      await db.collection('chat').doc('n' + now.toString(36) + 'la').set({ uid: 'admin', name: 'Администрация', sys: 1, ts: now,
+        text: '⚔ Лайв-арена открыта! Бои 1 на 1 с живыми игроками до 20:00 по Москве. Главная → Лайв-арена.' });
+      const ps = await db.collection('push').where('lvl', '>=', 5).limit(500).get();
+      for (const d of ps.docs) {
+        if ((d.data().laDay | 0) === LD) continue;
+        await d.ref.set({ laDay: LD }, { merge: true });
+        if (await sendTo(db, d.id, 'la', { t: 'Northfall: Лайв-арена открыта ⚔', b: 'Бои 1 на 1 с живыми игроками — только до 20:00 по Москве. Заходи!', tag: 'la', u: '/?go=duel' })) n++;
+      }
+    }
+  }
   console.log('push-cron sent', n);
   return { statusCode: 200 };
 };
