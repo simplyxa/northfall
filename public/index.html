@@ -1632,25 +1632,31 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-// ❄ снег на фоне
+// ✦ пыль в воздухе (фон)
 function snowOn(){try{return localStorage.getItem('nf_snow')!=='0'}catch(e){return true}}
 function snowSet(v){try{localStorage.setItem('nf_snow',v?'1':'0')}catch(e){}snowRun()}
-let SNC=null,SNF=[],SNT=0,SNL=0;
+let SNC=null,SNF=[],SNL=0;
 function snowRun(){
  let rm=false;try{rm=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
  if(!snowOn()||rm){if(SNC){SNC.remove();SNC=null}return}
  if(SNC)return;SNC=document.createElement('canvas');SNC.id='snow';SNC.setAttribute('aria-hidden','true');document.body.prepend(SNC);
  const cx=SNC.getContext('2d');let W=0,H=0;
+ const fl=()=>{const r=.5+Math.random()*1.3,a=Math.random()*6.283,sp=2+Math.random()*6;return{x:Math.random()*W,y:Math.random()*H,r,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.5,p:Math.random()*6.283,w:.3+Math.random()*.9,a:.4+Math.random()*.5,t:Math.random()*6.283}};
  const fit=()=>{const d=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;SNC.width=W*d;SNC.height=H*d;cx.setTransform(d,0,0,d,0,0);
-  const n=Math.round(Math.min(90,Math.max(30,W*H/14000)));while(SNF.length<n)SNF.push(fl(true));SNF.length=n};
- const fl=y0=>{const r=.6+Math.random()*1.8;return{x:Math.random()*W,y:y0?Math.random()*H:-5,r,v:12+r*14,a:.2+Math.random()*.4,p:Math.random()*6.28,w:.4+Math.random()*.8}};
+  const n=Math.round(Math.min(80,Math.max(28,W*H/15000)));while(SNF.length<n)SNF.push(fl());SNF.length=n};
  fit();addEventListener('resize',fit);
- const tick=t=>{if(!SNC)return;requestAnimationFrame(tick);if(document.hidden)return;const dt=Math.min(.1,(t-SNL)/1000);if(t-SNL<33)return;SNL=t;
-  cx.clearRect(0,0,W,H);let col='#fff';try{const m=getComputedStyle(document.body).backgroundColor.match(/\d+/g);if(m&&(+m[0]+ +m[1]+ +m[2])>450)col='#7f98a8'}catch(e){}for(const f of SNF){f.y+=f.v*dt;f.p+=f.w*dt;f.x+=Math.sin(f.p)*8*dt;if(f.y>H+5||f.x<-10||f.x>W+10){Object.assign(f,fl(false))}
-   cx.globalAlpha=f.a;cx.fillStyle=col;cx.beginPath();cx.arc(f.x,f.y,f.r,0,6.283);cx.fill()}};
+ const tick=t=>{if(!SNC)return;requestAnimationFrame(tick);if(document.hidden)return;if(t-SNL<33)return;const dt=Math.min(.1,(t-SNL)/1000);SNL=t;
+  let lt=false;try{const m=getComputedStyle(document.body).backgroundColor.match(/\d+/g);lt=m&&(+m[0]+ +m[1]+ +m[2])>450}catch(e){}
+  cx.clearRect(0,0,W,H);
+  for(const f of SNF){f.p+=f.w*dt;f.t+=dt*(.6+f.w);f.x+=(f.vx+Math.sin(f.p)*4)*dt;f.y+=(f.vy+Math.cos(f.p*.7)*3)*dt;
+   if(f.x<-5)f.x=W+5;else if(f.x>W+5)f.x=-5;if(f.y<-5)f.y=H+5;else if(f.y>H+5)f.y=-5;
+   const al=f.a*(.55+.45*Math.sin(f.t));
+   const g=cx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*3);const c=lt?'120,96,60':'240,214,160';
+   g.addColorStop(0,`rgba(${c},${al})`);g.addColorStop(.35,`rgba(${c},${al*.6})`);g.addColorStop(1,`rgba(${c},0)`);
+   cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.8.7';
+const GVER='1.8.8';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -1967,7 +1973,7 @@ function pickAv(code){const t=S?S.av:av,i=+code.slice(1);if(code[0]==='s')t.s=i;
 const avCard=()=>{const chip=(ic,v,l,c)=>`<div class="chip" style="color:var(${c})"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${ic}</svg><b>${v}</b><small>${l}</small></div>`;
  const HI='<path d="M12 21S3 15.500 3 8.800C3 5.600 5.400 4 7.600 4c1.800 0 3.400 1 4.400 2.700C13 5 14.600 4 16.400 4 18.600 4 21 5.600 21 8.800 21 15.500 12 21 12 21z"/>',BI='<path d="M13 2L4 14h6l-1 8 9-12h-6z"/>',GI='<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.500" fill="none" stroke="var(--panel)" stroke-width="1.600"/>',II='<path d="M5 9l3-4h8l3 4-7 11z"/>';
  return`<div class="panel pcard"><div class="phead"><span style="position:relative;display:inline-block;line-height:0;margin:0 12px 12px 0">${avatar(S.av,104,frameOf(meP()))}<span class="lvb" title="Уровень" aria-label="Уровень ${S.lvl}">${S.lvl}</span><button class="avedit ${avOpen?'on':''}" data-a="avtoggle" title="${avOpen?'Готово':'Сменить аватар'}" aria-label="${avOpen?'Готово':'Сменить аватар'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${avOpen?'<path d="M5 12.500l4.500 4.500L19 7.500"/>':'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.500 6.500l4 4"/>'}</svg></button></span><div class="pinfo"><b class="pname">${esc(S.name)}</b>${S.title?`<span class="ptl">${esc(titleOf(S))}</span>`:''}<span class="pcls">${CL[S.cls].n} · ${S.lvl} уровень</span>${(()=>{const c=S.clan&&CLN.find(x=>x.id===S.clan);return c?`<b class="pclan">«${esc(c.name)}»</b><span class="pcls">Ранг: ${rankOf(c,UID)}</span>`:`<b class="pclan">Без клана</b><span class="pcls">Ранг: —</span>`})()}</div></div><div class="chips">${chip(HI,S.hp+'/'+maxHp(),'здоровье','--blood')}${chip(BI,S.en+'/'+maxEn(),'энергия','--moss')}</div><div class="pstat"><span>Побед <b>${S.win}</b></span><span>Поражений <b>${S.lose}</b></span><span>Рейтинг <b>${S.rating}</b></span></div></div>${avOpen?`<div class="panel">${avPicker(S.av)}</div>`:''}`};
-const FOOT=()=>fight?'':`<footer class="ft"><div class="ft1"><button class="lnk" data-t="forum">Форум</button><button class="lnk" data-t="gchat">Чат</button><button class="lnk" data-t="top">Лучшие</button></div><div class="ft2"><button class="lnk" data-t="about">Об игре</button> | <button class="lnk" data-t="online">Онлайн</button>: ${onlineList().length}${GONL?` + ${GONL} ${GONL%10===1&&GONL%100!==11?'гость':GONL%10>=2&&GONL%10<=4&&(GONL%100<10||GONL%100>=20)?'гостя':'гостей'}`:''} | <button class="lnk" data-a="logout">Выход</button></div><div class="ft3"><button class="lnk" data-bg="open">Сообщить об ошибке</button> | <button class="lnk" data-a="support">Поддержка</button> | <button class="lnk" data-a="mute">Звук: ${S.mute?'выкл':'вкл'}</button> | <button class="lnk" data-a="snow">Снег: ${snowOn()?'вкл':'выкл'}</button></div><div class="ft5"><button class="lnk" data-lg="terms">Соглашение</button> · <button class="lnk" data-lg="privacy">Конфиденциальность</button> · <button class="lnk" data-lg="refund">Возвраты</button> · <button class="lnk" data-lg="contacts">Контакты</button></div><div class="ft4">Northfall: Barbarians © 2026 · версия ${GVER} <span class="beta">бета</span></div></footer>`;
+const FOOT=()=>fight?'':`<footer class="ft"><div class="ft1"><button class="lnk" data-t="forum">Форум</button><button class="lnk" data-t="gchat">Чат</button><button class="lnk" data-t="top">Лучшие</button></div><div class="ft2"><button class="lnk" data-t="about">Об игре</button> | <button class="lnk" data-t="online">Онлайн</button>: ${onlineList().length}${GONL?` + ${GONL} ${GONL%10===1&&GONL%100!==11?'гость':GONL%10>=2&&GONL%10<=4&&(GONL%100<10||GONL%100>=20)?'гостя':'гостей'}`:''} | <button class="lnk" data-a="logout">Выход</button></div><div class="ft3"><button class="lnk" data-bg="open">Сообщить об ошибке</button> | <button class="lnk" data-a="support">Поддержка</button> | <button class="lnk" data-a="mute">Звук: ${S.mute?'выкл':'вкл'}</button> | <button class="lnk" data-a="snow">Пыль: ${snowOn()?'вкл':'выкл'}</button></div><div class="ft5"><button class="lnk" data-lg="terms">Соглашение</button> · <button class="lnk" data-lg="privacy">Конфиденциальность</button> · <button class="lnk" data-lg="refund">Возвраты</button> · <button class="lnk" data-lg="contacts">Контакты</button></div><div class="ft4">Northfall: Barbarians © 2026 · версия ${GVER} <span class="beta">бета</span></div></footer>`;
 const LOGOUT='<button class="b alt" data-a="logout" style="width:100%;margin:4px 0 12px">Выйти из игры</button>';
 const annView=()=>ANN&&ANN.msg?`<div class="panel" style="border-left:4px solid var(--gold)"><b>Объявление</b><br>${esc(ANN.msg)}</div>`:'';
 async function hashPw(pw,saltB64){
@@ -2037,7 +2043,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.8.7</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.8.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
