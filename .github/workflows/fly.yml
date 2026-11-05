@@ -1,0 +1,23 @@
+# Автовыкладка на Fly.io при каждом пуше в main (как сейчас Netlify).
+# Нужен секрет репозитория FLY_API_TOKEN (Settings → Secrets and variables → Actions).
+name: Fly deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency: fly-deploy
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Есть ли токен Fly
+        id: tok
+        run: echo "ok=${{ secrets.FLY_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        if: steps.tok.outputs.ok == 'true'
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: steps.tok.outputs.ok == 'true'
+      - run: flyctl deploy --remote-only
+        if: steps.tok.outputs.ok == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

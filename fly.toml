@@ -1,0 +1,30 @@
+# Northfall на Fly.io. Имя приложения задаётся при `fly launch` — поправь строку app, если выберешь другое.
+app = "northfall"
+primary_region = "fra"   # Франкфурт: близко и к России, и к Израилю
+
+[env]
+  URL = "https://playnorthfall.online"
+  NODE_ENV = "production"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"   # сервер не засыпает: рассылка по расписанию и (дальше) сокеты
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
