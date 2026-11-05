@@ -315,13 +315,17 @@ let SAVEDT=0,PLT=0,PLSIG='',SLV=0;
 const APPM=()=>{try{const a=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;if(a&&S&&!S.appEver)S.appEver=1;return a}catch(e){return false}};
 const plSig=()=>{try{return JSON.stringify([S.dr|0,S.dn|0,APPM(),S.ex&&S.ex.end||0,S.name,S.cls,S.lvl,S.win,S.lose,S.rating,S.clan||'',S.sid,S.srat,S.war||'',S.wp|0,S.av,S.cxt|0,S.title||'',Object.values(S.eq||{}).map(i=>i?i.uid+':'+(i.up|0)+':'+(typeof broken==='function'&&broken(i)?0:1):'')])}catch(e){return String(Date.now())}};
 function saveNow(){if(!DB||!UID||!S)return;clearTimeout(syncT);pushDb(true)}
-function pushDb(force){if(!DB||!UID||!S)return;actMark();if(S.clan&&!S.cjt)S.cjt=Date.now();if(!S.clan&&S.cjt)delete S.cjt;const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
+// защита от «отката»: если игра открыта на двух устройствах, старая вкладка не затирает свежий прогресс
+let SESS=Math.random().toString(36).slice(2,10),SBASE=null,STALE=false;
+function staleHit(){if(STALE)return;STALE=true;clearTimeout(syncT);try{localStorage.removeItem(KEY)}catch(e){}
+ const d=document.createElement('div');d.className='modal';d.style.zIndex=200;d.innerHTML=`<div class="mbox" style="text-align:center"><h3 style="margin:0 0 8px">Игра открыта на другом устройстве</h3><p style="margin:0 0 12px">Свежий прогресс сохранён там. Чтобы его не затереть, здесь игра остановлена.</p><button class="b red" style="width:100%" onclick="location.reload()">Загрузить свежий прогресс</button></div>`;document.body.appendChild(d)}
+function pushDb(force){if(!DB||!UID||!S||STALE)return;actMark();if(S.clan&&!S.cjt)S.cjt=Date.now();if(!S.clan&&S.cjt)delete S.cjt;const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
  if(force||sig!==PLSIG||now-PLT>60000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0}).catch(()=>{})}
- DB.collection('saves').doc(UID).set(JSON.parse(JSON.stringify(S))).then(()=>{CLOUD.ok=Date.now();CLOUD.err=''}).catch(e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80)})}
+ S.ses=SESS;const sref=DB.collection('saves').doc(UID),sdat=JSON.parse(JSON.stringify(S));rTx(async t=>{const sn=await t.get(sref);const d=sn.exists?sn.data():null;if(d&&d.ses&&d.ses!==SESS&&d.ses!==SBASE)return'stale';t.set(sref,sdat);return'ok'}).then(r=>{if(r==='stale')return staleHit();SBASE=SESS;CLOUD.ok=Date.now();CLOUD.err=''}).catch(e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80)})}
 function sync(){if(!DB||!UID||!S)return;clearTimeout(syncT);const wait=S.lvl!==SLV?1200:Math.max(1200,SAVEDT+20000-Date.now());syncT=setTimeout(()=>pushDb(),wait)}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});window.addEventListener('pagehide',()=>saveNow());
 setInterval(()=>{if(S&&DB&&UID&&document.visibilityState==='visible'&&Date.now()-PLT>90000)pushDb()},30000);
-function save(){if(S)S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}sync()}
+function save(){if(STALE)return;if(S)S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}sync()}
 function load(){try{const r=localStorage.getItem(KEY);if(r){LOC=JSON.parse(r);if(!LOC.acc)LEG=LOC}}catch(e){LOC=null}}
 function fixNum(){
  const f=(v,d)=>typeof v==='number'&&isFinite(v)?v:d;
@@ -514,7 +518,7 @@ function huntCheck(){const H=fight.hunt;if(H.raid)return rCheck();
  for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
  // первое задание новичка выполнено — выводим с охоты на главную за наградой
  if(S.nb&&!S.nb.done&&S.nb.i===0&&nbOk()){huntEnd('nb');HREP=null;tab='home';setTimeout(()=>window.scrollTo(0,0),50);return}
- retarget();if(H.sl.every(s=>!s.e&&s.at==null))huntEnd('out')}
+ retarget();if(H.sl.every(s=>!s.e)&&(S.en<1||H.sl.every(s=>s.at==null)))huntEnd('out')}
 function huntEnd(why){const H=fight.hunt;if(H.raid)return rRunEnd(why);if(why==='dead'){S.hp=1;S.lose++;log('Ты теряешь сознание, соплеменники уносят тебя в лагерь.','dmg')}
  HREP={hunt:true,why,kills:H.kills,xp:H.xp,gold:H.gold,loot:H.loot,kind:H.kind};fight=null;tab='hunt'}
 // ===== Авто-удар на охоте (идея игрока Lanky): бьёт сам при полном заряде, умения — вручную =====
@@ -527,7 +531,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-ah]');if(!
 function huntTick(dt){const H=fight.hunt;let ch=false;if(H.raid&&rRunTick())return;if(autoHunt())return;
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n}}
  for(const s of H.sl){if(s.e){if(!(s.e.stun>fight.clk))s.ech+=dt/(s.e.tr==='fast'?3:5);if(s.ech>=1){s.ech=0;enemyTurn(s.e);ch=true;(fight.hits=fight.hits||[]).push(H.sl.indexOf(s));if(S.hp<=0)break}}
-  else if(s.at!=null&&fight.clk>=s.at){if(S.en<1){s.at=null;continue}S.en--;{const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}s.at=null;ch=true}}
+  else if(s.at!=null&&fight.clk>=s.at){if(S.en<1){continue}S.en--;{const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}s.at=null;ch=true}}
  if(petTick(dt))ch=true;
  if(ch){huntCheck();save();render();mobPulse()}else paintFight()}
 // звер бьёт — его карточка коротко «вздрагивает»
@@ -1773,7 +1777,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.9.5';
+const GVER='1.9.6';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2124,7 +2128,9 @@ async function enterAccount(id){
  for(let t=0;t<3&&!ok;t++){try{const sn=await DB.collection('saves').doc(id).get({source:'server'});ok=true;if(sn.exists)cloud=sn.data()}catch(e){if(t<2)await new Promise(r=>setTimeout(r,1500))}}
  // нет ответа сервера — нельзя считать, что героя нет (иначе новый герой затрёт старого)
  if(!ok){try{FBA&&FBA.signOut()}catch(e){}UID=null;ADM=false;scr='login';AM='Не удалось загрузить героя: нет связи с сервером. Прогресс цел — попробуй войти ещё раз.';return render()}
- const loc=LOC&&LOC.acc===id?LOC:null;let hero=cloud;if(loc&&(!hero||(loc.ts||0)>(hero.ts||0)))hero=loc;
+ STALE=false;SESS=Math.random().toString(36).slice(2,10);SBASE=cloud&&cloud.ses||null;
+ // локальная копия берётся, только если она новее и из той же «линии» сохранений (не со старой вкладки другого устройства)
+ const loc=LOC&&LOC.acc===id?LOC:null;let hero=cloud;if(loc&&(!hero||((loc.ts||0)>(hero.ts||0)&&(!hero.ses||loc.ses===hero.ses))))hero=loc;
  if(hero){hero.acc=id;enter(hero)}else{scr='newhero';render()}seedNews()}
 
 const NEWS1={title:'Northfall начинает свою жизнь!',text:'Воины Севера, приветствуем вас!\n\nNorthfall: Barbarians официально начинает свою жизнь. Впереди охота в снежных лесах, бои на арене, подземелья кланов, мировые боссы, походы наёмников и многое другое, что мы будем добавлять вместе с вами.\n\nИгра только родилась, и нам очень важно ваше мнение. Мы будем рады получить:\n• новые идеи и предложения по дополнениям;\n• сообщения о неисправностях и ошибках;\n• и даже критику: честный отзыв помогает сделать игру лучше.\n\nПишите прямо здесь, в ответах к этой теме, или создавайте свои темы в разделах «Предложения» и «Помощь новичкам». Каждое сообщение будет прочитано.\n\nДо встречи в бою! Да хранит вас Один.'};
@@ -2169,7 +2175,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.5</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.6</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
