@@ -419,7 +419,7 @@ function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
 // Регенерация (R) — скорость восстановления: энергия R/60 в секунду, здоровье R/180 в секунду
 const regTot=()=>Math.max(1,regv()),enPS=()=>regTot()/60,
  // на охоте энергия восстанавливается на 60% и не быстрее 0,16/с (≈80% расхода авто-удара), чтобы охота не была бесконечной; чем выше реген — тем дольше охота
- HUNTRG=.6,HUNTRC=.16,nbOn=()=>!!(S&&S.nb&&!S.nb.done),enPSH=()=>nbOn()?enPS():0,hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
+ HUNTRG=.6,HUNTRC=.16,nbOn=()=>!!(S&&S.nb&&!S.nb.done),enPSH=()=>nbOn()?enPS():Math.min(enPS()*HUNTRG,HUNTRC),hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
 function regen(){
  if(!S)return;const now=Date.now();if(!S.rt)S.rt=now;const dt=Math.min(7*864e5,Math.max(0,now-S.rt))/1000;S.rt=now;if(dt<=0)return;
  if(S.en<maxEn()){S.enf=(+S.enf||0)+(fight&&fight.hunt?enPSH():enPS())*dt;const k=Math.floor(S.enf);if(k>0){S.enf-=k;S.en=Math.min(maxEn(),S.en+k)}}else S.enf=0;
@@ -489,7 +489,7 @@ function startHunt(kind){
 function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const s=fight.hunt.sl.find(x=>x.e&&x.e.hp>0);fight.e=s?s.e:null}
 function huntCheck(){const H=fight.hunt;
  if(S.hp<=0)return huntEnd('dead');
- for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;{const sg=Math.max(1,Math.round(e.gold*.4*Math.max(.08,1-S.lvl/14)*bonus()));S.gold+=sg;H.gold+=sg}S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
+ for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
  // первое задание новичка выполнено — выводим с охоты на главную за наградой
  if(S.nb&&!S.nb.done&&S.nb.i===0&&nbOk()){huntEnd('nb');HREP=null;tab='home';setTimeout(()=>window.scrollTo(0,0),50);return}
  retarget();if(H.sl.every(s=>!s.e&&s.at==null))huntEnd('out')}
@@ -511,7 +511,7 @@ function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
 // звер бьёт — его карточка коротко «вздрагивает»
 function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)try{el.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)',filter:'brightness(1)'}],{duration:280,easing:'ease-out'})}catch(e){}}),0)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Задание «${NQ.h}»</span><span><b>убито ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
- return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Каждый удар и каждый новый зверь стоят 1 энергию. ${nbOn()?'Пока идёшь «Путём новичка», энергия на охоте восстанавливается.':'На охоте энергия не восстанавливается — только в лагере.'}</p>
+ return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Каждый удар и каждый новый зверь стоят 1 энергию. ${nbOn()?'Пока идёшь «Путём новичка», энергия на охоте восстанавливается как обычно.':'На охоте энергия восстанавливается медленнее:'} +${(enPSH()*60).toFixed(1).replace('.',',')} в минуту (вне охоты +${(enPS()*60).toFixed(1).replace('.',',')}).</p>
  <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
  <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${mobImg(s.e.name)?' mbg':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"${mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · оглушён':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
  <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель.</p>
@@ -540,7 +540,7 @@ function enemyTurn(e){
  if(fight.hunt&&e.tr!=='leader'&&fight.hunt.sl.some(x=>x.e&&x.e!==e&&x.e.tr==='leader'&&x.e.hp>0))d=Math.round(d*1.3);
  if(e.tr==='poison'){fight.pois={until:fight.clk+4000,dps:Math.max(1,Math.round(d*.2))}}
  {const pr=petDef();if(pr)d=Math.max(1,Math.round(d*(1-pr)))}S.hp=Math.max(0,S.hp-d);fight.s.taken+=d;fx('hurt');log(`${e.name} бьёт тебя на ${d}.`,'dmg');
- if(!fight.arena&&!fight.pvp){if(fight.wb||fight.dun)wear(1);else{fight.wh=(fight.wh|0)+1;if(fight.wh%15===0)wear(1)}}
+ if(!fight.arena&&!fight.pvp){if(fight.wb||fight.dun)wear(1);else{fight.wh=(fight.wh|0)+1;if(fight.wh%5===0)wear(1)}}
 }
 function usePot(){}
 function potPanel(){return`<div class="panel"><h3>Бутылки</h3>`+Object.keys(POT).map(k=>{const P=POT[k],n=S.pt[k]|0;return`<div class="row"><div>${P.n} · ${n} шт.<small>${pdesc(P)}</small></div></div>`}).join('')+`</div>`}
@@ -1070,7 +1070,7 @@ function raidFinish(){const R=RAID;if(!R||R.st==='on'||!RAIDID||!S)return;S.rdon
  S.rcd=S.rcd||{};S.rcd[t]=Date.now()+RAIDS[t].cd*3600000;
  const hum=Object.values(R.mem).filter(x=>!x.bot).length,mf=hum<RSIZE?.7:1;const g=Math.round([150,400,900,1800,3500][t]*mf),ir=Math.round([20,40,70,110,160][t]*mf),du=Math.round([3,6,10,15,25][t]*mf),xp=Math.round(need()*[.25,.25,.3,.3,.35][t]*mf),rk=rndRune(t+1);
  S.gold+=g;S.iron=(S.iron|0)+ir;S.dust=(S.dust|0)+du;addRune(rk);S.xp+=xp;lvUp();let it=null;const ks=Object.keys(SL),sl=ks[Math.floor(Math.random()*ks.length)];
- if(t>=2&&t<4&&Math.random()<.05)it=gen(sl,30,4,null,4);else if(t===4&&Math.random()<.1)it=gen(sl,30,4,null,5);else if(Math.random()<[.5,.55,.6,.6,.6][t])it=gen(sl,SETLV[t],t,null,t);
+ if(t===4&&Math.random()<.1)it=gen(sl,30,4,null,5);else if(Math.random()<[.5,.55,.6,.6,.6][t])it=gen(sl,SETLV[t],t,null,t);
  if(it){it.pb=0;it.boss=1}if(it&&!autoDis(it)){if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}}
  const au=hum>=3?BAU['r'+t]|0:0;if(au)GOLD.boss('raid',RAIDID,au);RRES={win:1,g,ir,xp,rk,it,au,du};{const H=Object.entries(R.mem).filter(([k,x])=>!x.bot).sort((a,b)=>a[1].o-b[1].o);if(H[0]&&H[0][0]===UID)news(`Группа ${H.map(x=>x[1].n).join(', ')} одолела ${RAIDS[t].n}!`)}if(it&&it.rar>=4)news(`${S.name} получил в рейде ${it.tr===5?'вещь Одина':'мифическую вещь'} «${it.name}»!`);SILFX={v:g,t:Date.now()};log(`Рейд «${RAIDS[t].n}» пройден: +${g} серебра, +${ir} железа, +${xp} опыта, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save()}
 function raidClose(){if(RAUN)RAUN();if(RAUN2)RAUN2();RAUN=RAUN2=null;RAID=null;RAIDID=null;RACT={};RRES=null;render()}
@@ -1629,7 +1629,7 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
-const GVER='1.8.0';
+const GVER='1.8.1';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2010,7 +2010,7 @@ function doNewHero(){
  AM='';create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.8.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.8.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
