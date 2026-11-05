@@ -55,6 +55,21 @@ exports.handler = async (event) => {
       const ok = await sendTo(db, to, 'msg', { t: 'Northfall: вызов на лайв-арену!', b: `${String(q.name || uid).slice(0, 20)} вызывает тебя на дуэль. 2 минуты на ответ!`, tag: 'duel', u: '/?go=duel' });
       return j(200, { ok });
     }
+    if (q.a === 'cinv') { // приглашение в клан: только лидер/офицер, приглашение должно быть в документе клана
+      const to = String(q.to || ''), cid = String(q.cid || '');
+      if (!/^[a-z0-9_]{3,16}$/.test(to) || to === uid || !cid || cid.includes('/')) return j(400, { error: 'Неверные данные' });
+      const cs = await db.collection('clans').doc(cid).get();
+      if (!cs.exists) return j(200, { ok: false });
+      const c = cs.data();
+      if (!(c.leader === uid || (c.off || []).includes(uid)) || !(c.inv || []).some(x => x && x.id === to)) return j(200, { ok: false });
+      const g = db.collection('push').doc(to), sn = await g.get();
+      if (!sn.exists) return j(200, { ok: false });
+      const last = (sn.data().invFrom || {})[cid] || 0;
+      if (Date.now() - last < 30 * 60000) return j(200, { ok: false });
+      await g.set({ invFrom: { [cid]: Date.now() } }, { merge: true });
+      const ok = await sendTo(db, to, 'msg', { t: 'Northfall: приглашение в клан', b: `${String(q.name || uid).slice(0, 20)} зовёт тебя в клан «${String(c.name || '').slice(0, 20)}»`, tag: 'cinv', u: '/?go=clan' });
+      return j(200, { ok });
+    }
     if (q.a === 'gchat') { // сообщение в общем чате: зовём администрацию, не чаще раза в 3 минуты
       const ADMINS = ['shtorm1', 'admin'];
       if (ADMINS.includes(uid)) return j(200, { ok: false });
