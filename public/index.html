@@ -966,8 +966,12 @@ const WBX=[
 const WBI=["/img/2fc9142021ec9a.webp", "/img/fe5eafb1528ed1.webp", "/img/141fcbd227c2b8.webp", "/img/0678ea7e732748.webp", "/img/ca2e794cebc114.webp", "/img/bfe41e1c1a4d1b.webp", "/img/3139673b7c25fd.webp"];// картинки мировых боссов (по порядку WBN), добавятся позже
 const wbX=d=>WBX[d%WBX.length],wbIc=(d,z)=>WBI[d%WBN.length]?`<img src="${WBI[d%WBN.length]}" alt="" width="${z}" height="${z}" style="flex:0 0 auto;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))">`:'';
 const wbName=d=>WBN[d%WBN.length],wbLeft=()=>Math.max(0,Math.min(WBCD,(+S.wbnext||0)-Date.now()));
-function wbSub(){if(!DB||wbUn)return;wbUn=DB.collection('world').limit(20).onSnapshot(sn=>{WB={};sn.docs.forEach(d=>{WB[d.id]=JSON.parse(JSON.stringify(d.data()))});const k='b'+DAY();
- if(!WB[k]&&!sn.metadata.fromCache){const n={day:DAY(),hp:WBMAX,max:WBMAX,dmg:{},nm:{},killed:false};WB[k]=n;DB.collection('world').doc(k).set(n).catch(()=>{})}
+// здоровье мирового босса подстраивается: убили быстро — завтра крепче, не убили — слабее
+function wbNextMax(){const P=WB['b'+(DAY()-1)];if(!P)return WBMAX;const base=P.max||WBMAX;let f=1;
+ if(P.killed&&P.kt){const h=(P.kt-((P.day*864e5)-2*36e5))/36e5;f=h<4?1.6:h<10?1.35:h<18?1.15:1}else if(!P.killed)f=.8;
+ return Math.max(WBMAX,Math.min(5e6,Math.round(base*f/1000)*1000))}
+function wbSub(){if(!DB||wbUn)return;wbUn=DB.collection('world').orderBy('day','desc').limit(8).onSnapshot(sn=>{WB={};sn.docs.forEach(d=>{WB[d.id]=JSON.parse(JSON.stringify(d.data()))});const k='b'+DAY();
+ if(!WB[k]&&!sn.metadata.fromCache){const mx=wbNextMax();const n={day:DAY(),hp:mx,max:mx,dmg:{},nm:{},killed:false};WB[k]=n;DB.collection('world').doc(k).set(n).catch(()=>{})}
  if(tab==='boss'&&!fight)ui()},()=>{})}
 function startWB(){const B=WB['b'+DAY()];if(!B||B.killed||fight||!DB||S.lvl<WBLV)return;if(wbLeft()>0)return;if(S.en<3){log('Нужно 3 энергии.','sys');return render()}if(S.hp<=0){log('Ты ранен. Отдохни у костра.','sys');return render()}
  fixNum();HREP=null;REP=null;WREP=null;S.en-=3;S.wbnext=Date.now()+WBCD;ev('boss');
@@ -1021,7 +1025,7 @@ function raidOpen(rid){if(RAUN)RAUN();if(RAUN2)RAUN2();RAIDID=rid;RAID=null;RACT
 function rDraw(){const a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;render()}
 // очередь
 function rJoin(b){const R=RAIDS[b];if(!DB||!S||!R)return;if(S.lvl<R.lv)return;if(rcdLeft(b)>0)return;const cur=myQ();if(cur>=0&&cur!==b)return popup('Ты уже в очереди',`Сначала выйди из очереди «${RAIDS[cur].n}».`,1);
- if(RAID&&RAID.st==='on')return;RBUSY=true;rDraw();const me={id:UID,n:S.name,lv:S.lvl,av:S.av||{s:0},ts:Date.now(),s:rStats()};
+ if(RAID&&RAID.st==='on')return;RBUSY=true;rDraw();const me={id:UID,n:S.name,lv:S.lvl,av:S.av||{s:0},ts:Date.now(),s:rStats(),sk:skOpen()?Object.fromEntries(skAll().map(k=>[k[0],skQ(k[0])])):{}};
  rqPut(b,q=>{q.m=rqLive(q).filter(x=>x.id!==UID);if(!q.m.length)q.t0=Date.now();q.m.push(me)}).catch(e=>popup('Не удалось встать в очередь',String(e&&e.message||e).slice(0,120),1)).then(()=>{RBUSY=false;rDraw()})}
 function rLeave(b){RBUSY=true;rDraw();rqPut(b,q=>{q.m=rqLive(q).filter(x=>x.id!==UID)}).catch(()=>{}).then(()=>{RBUSY=false;rDraw()})}
 function rMerc(b){rqPut(b,q=>{q.m=rqLive(q);const H=q.m.filter(x=>!x.id.startsWith('bot_'));if(!H.length||!q.t0||Date.now()-q.t0<RMERC)return;const A=H.map(x=>x.s),avg=k=>Math.round(A.reduce((t,x)=>t+(x[k]|0),0)/A.length*.85);let i=0;const NN=[...MERCN].sort(()=>Math.random()-.5);
@@ -1036,11 +1040,11 @@ function rMake(b,m){const t=b,mem={},A=m.map(x=>x.s);const avg=k=>A.reduce((s,x)
  const bDef=Math.round(avg('atk')*(.15+.05*t)),R=[8,9,10,11,12][t];
  const per=A.reduce((s,x)=>s+Math.max(1,x.atk-bDef*.5)*(1+(x.crit|0)/100*.8),0),hp=Math.max(100,Math.round(per*R));
  const bAtk=Math.round(avg('hp')*[.22,.25,.28,.31,.34][t]+avg('def')*.5);
- m.forEach((x,i)=>{mem[x.id]={n:x.n,lv:x.lv,av:x.av,o:i,hp:x.s.hp,max:x.s.hp,atk:x.s.atk,def:x.s.def,crit:Math.min(60,x.s.crit|0),pcd:0,pot:1,dealt:0,bot:x.id.startsWith('bot_')?1:0}});
+ m.forEach((x,i)=>{mem[x.id]={n:x.n,lv:x.lv,av:x.av,o:i,hp:x.s.hp,max:x.s.hp,atk:x.s.atk,def:x.s.def,crit:Math.min(60,x.s.crit|0),pcd:0,pot:1,dealt:0,sk:x.sk||{},scd:{},bot:x.id.startsWith('bot_')?1:0}});
  return{b,st:'on',r:1,dl:Date.now()+RTURN+5000,hp,max:hp,bAtk,bDef,mem,log:[`${RAIDS[b].ic} ${RAIDS[b].n} пробуждается. Бой начинается!`],ts:Date.now()}}
 // ход игрока
 function rAct(a){if(!RAID||RAID.st!=='on'||!RAIDID)return;const me=RAID.mem[UID];if(!me||me.hp<=0)return;const ac=RACT[UID];if(ac&&ac.r===RAID.r)return;
- if(a==='pow'&&me.pcd>RAID.r)return;if(a==='pot'&&!me.pot)return;RACT[UID]={r:RAID.r,a};rDraw();
+ if(a==='pow'&&me.pcd>RAID.r)return;if(a==='pot'&&!me.pot)return;if(a.startsWith('sk:')&&!rSkOk(me,a.slice(3),RAID.r))return;RACT[UID]={r:RAID.r,a};rDraw();
  DB.collection('raids').doc(RAIDID).collection('a').doc(UID).set({r:RAID.r,a}).catch(()=>{})}
 function raidTick(){if(!RAID||!RAIDID)return;const el=document.getElementById('rdt');if(RAID.st==='on'&&el)el.textContent=Math.max(0,Math.ceil((RAID.dl-Date.now())/1000))+' с';
  if(RAID.st!=='on'||RBUSY)return;const alive=Object.entries(RAID.mem).filter(([id,x])=>x.hp>0&&!x.bot);const all=alive.every(([id])=>RACT[id]&&RACT[id].r===RAID.r);
@@ -1051,16 +1055,29 @@ function rResolve(){if(RBUSY)return;RBUSY=true;const ref=DB.collection('raids').
   const ids=Object.keys(R.mem),acts={};for(const id of ids){if(R.mem[id].bot)continue;const a=await t.get(ref.collection('a').doc(id));if(a.exists&&a.data().r===R.r)acts[id]=a.data().a}
   if(Date.now()<R.dl&&ids.some(id=>!R.mem[id].bot&&R.mem[id].hp>0&&!acts[id]))return;
   rRound(R,acts);t.set(ref,R)}).catch(()=>{}).then(()=>{RBUSY=false})}
-function rRound(R,acts){const B=RAIDS[R.b],L=[],shield={};let enr=R.r>[8,9,10,11,12][R.b]+4?1+.15*(R.r-[8,9,10,11,12][R.b]-4):1;
+// умения в рейде: перезарядка в ходах
+const RSKCD={rage:4,roar:4,shot:3,trap:6,totem:5,skin:4};
+const rSkOk=(m,k,r)=>!!(m&&m.sk&&k in m.sk&&SKQ[k]&&((m.scd||{})[k]|0)<=r);
+const rSkN=k=>{for(const L of Object.values(SKL))for(const x of L)if(x[0]===k)return x[1];return k};
+const rSkD=(k,q)=>{const v=SKQ[k][q|0];return k==='rage'?`удар ×${nf(v)}`:k==='shot'?`${Math.round(v*100)}% атаки сквозь броню`:k==='roar'?`босс бьёт на ${v}% слабее`:k==='trap'?'босс пропускает ход':k==='totem'?`группа +${Math.round(v/2)}% здоровья`:'урон по тебе −60%'};
+function rRound(R,acts){const B=RAIDS[R.b],L=[],shield={},skin={};let roarK=1,stun=false;let enr=R.r>[8,9,10,11,12][R.b]+4?1+.15*(R.r-[8,9,10,11,12][R.b]-4):1;
  for(const [id,m] of Object.entries(R.mem).sort((a,b)=>a[1].o-b[1].o)){if(m.hp<=0)continue;let a=acts[id]||'atk';if(m.bot){a=R.r%3===0&&m.pcd<=R.r?'pow':(m.pot&&m.hp<m.max*.35?'pot':'atk')}
-  if(a==='pow'&&m.pcd>R.r)a='atk';if(a==='pot'&&!m.pot)a='atk';
+  if(a==='pow'&&m.pcd>R.r)a='atk';if(a==='pot'&&!m.pot)a='atk';if(String(a).startsWith('sk:')&&!rSkOk(m,a.slice(3),R.r))a='atk';
+  let mul=1,ign=false,tag='';
+  if(String(a).startsWith('sk:')){const k=a.slice(3),v=SKQ[k][m.sk[k]|0];m.scd=m.scd||{};m.scd[k]=R.r+RSKCD[k];
+   if(k==='rage'){mul=v;tag='ярость'}else if(k==='shot'){mul=v;ign=true;tag='меткий выстрел'}
+   else if(k==='roar'){roarK=Math.min(roarK,1-v/100);L.push(`${m.n}: Боевой рёв — босс бьёт на ${v}% слабее.`)}
+   else if(k==='trap'){stun=true;L.push(`${m.n}: Капкан — босс пропустит ход.`)}
+   else if(k==='totem'){const pc=Math.round(v/2);for(const x of Object.values(R.mem))if(x.hp>0)x.hp=Math.min(x.max,x.hp+Math.round(x.max*pc/100));L.push(`${m.n}: Тотем исцеления — вся группа +${pc}% здоровья.`)}
+   else if(k==='skin'){skin[id]=1;L.push(`${m.n}: Каменная кожа — урон по нему −60%.`)}}
   if(a==='pot'){const h=Math.min(m.max-m.hp,Math.round(m.max*.4));m.hp+=h;m.pot=0;L.push(`${m.n} пьёт бутылку: +${h} здоровья.`);continue}
   if(a==='def'){shield[id]=1;L.push(`${m.n} поднимает щит и отвлекает босса.`);continue}
-  let d=(rnd(.8,1.2)*m.atk-R.bDef*.5)*(a==='pow'?2:1);const c=Math.random()*100<m.crit;if(c)d*=1.8;d=Math.max(1,Math.round(d));if(a==='pow')m.pcd=R.r+3;
-  R.hp=Math.max(0,R.hp-d);m.dealt=(m.dealt|0)+d;L.push(`${m.n}: ${a==='pow'?'мощный удар':'удар'} — ${d}${c?' (крит!)':''}.`);if(R.hp<=0)break}
+  let d=(rnd(.8,1.2)*m.atk-(ign?0:R.bDef*.5))*(a==='pow'?2:1)*mul;const c=Math.random()*100<m.crit;if(c)d*=1.8;d=Math.max(1,Math.round(d));if(a==='pow')m.pcd=R.r+3;
+  R.hp=Math.max(0,R.hp-d);m.dealt=(m.dealt|0)+d;L.push(`${m.n}: ${a==='pow'?'мощный удар':tag||'удар'} — ${d}${c?' (крит!)':''}.`);if(R.hp<=0)break}
  if(R.hp<=0){R.st='win';L.push(`${B.ic} ${B.n} повержен! Победа!`)}
- else{const live=Object.entries(R.mem).filter(([id,m])=>m.hp>0);const hit=(id,m,k)=>{m.hits=(m.hits|0)+1;let d=(rnd(.85,1.15)*R.bAtk*enr-m.def*.5)*k;if(shield[id])d*=.5;d=Math.max(1,Math.round(d));m.hp=Math.max(0,m.hp-d);return d};
-  if(R.r%3===0){L.push(`${B.n} ${B.aoe}!`);for(const [id,m] of live){const d=hit(id,m,.5);L.push(`  ${m.n} −${d}${m.hp<=0?' — пал':''}`)}}
+ else{const live=Object.entries(R.mem).filter(([id,m])=>m.hp>0);const hit=(id,m,k)=>{m.hits=(m.hits|0)+1;let d=(rnd(.85,1.15)*R.bAtk*enr-m.def*.5)*k;if(shield[id])d*=.5;if(skin[id])d*=.4;d*=roarK;d=Math.max(1,Math.round(d));m.hp=Math.max(0,m.hp-d);return d};
+  if(stun){L.push(`${B.n} попал в капкан и пропускает ход!`)}
+  else if(R.r%3===0){L.push(`${B.n} ${B.aoe}!`);for(const [id,m] of live){const d=hit(id,m,.5);L.push(`  ${m.n} −${d}${m.hp<=0?' — пал':''}`)}}
   else{const sh=live.filter(([id])=>shield[id]);const pick=sh.length&&Math.random()<.7?sh[Math.floor(Math.random()*sh.length)]:live[Math.floor(Math.random()*live.length)];const [id,m]=pick;const d=hit(id,m,1);L.push(`${B.n} бьёт ${m.n}: −${d}${shield[id]?' (щит)':''}${m.hp<=0?' — пал':''}`)}
   if(enr>1)L.push(`${B.n} в ярости: урон +${Math.round((enr-1)*100)}%.`);
   if(Object.values(R.mem).every(m=>m.hp<=0)){R.st='lose';L.push('Вся группа пала. Поражение.')}else if(R.r>=RMAXR){R.st='lose';L.push(`${B.n} слишком силён. Группа отступает.`)}}
@@ -1197,12 +1214,12 @@ function raidFightView(){const R=RAID;if(!R)return'<div class="panel"><p>Заг�
  if(on&&me){const dead=me.hp<=0,dis=c=>dead||acted||c?'disabled':'';
   h+=`<div class="panel"><h3>${dead?'Ты пал — жди конца боя':acted?'Ход сделан, ждём остальных':'Твой ход'}</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
   <button class="b red" data-rd="act:atk" style="margin:0" ${dis(0)}>Удар</button><button class="b" data-rd="act:pow" style="margin:0" ${dis(me.pcd>R.r)}>Мощный удар${me.pcd>R.r?` (${me.pcd-R.r})`:''}</button>
-  <button class="b alt" data-rd="act:def" style="margin:0" ${dis(0)}>Щит</button><button class="b alt" data-rd="act:pot" style="margin:0" ${dis(!me.pot||me.hp>=me.max)}>Бутылка${me.pot?'':' (нет)'}</button></div>
-  <p style="margin:6px 0 0;font-size:13px;color:var(--mute)">Мощный удар — двойной урон, раз в 3 хода. Щит — половина урона и босс чаще бьёт тебя, прикрывая группу. Бутылка — +40% здоровья, одна на рейд.</p></div>`}
+  <button class="b alt" data-rd="act:def" style="margin:0" ${dis(0)}>Щит</button><button class="b alt" data-rd="act:pot" style="margin:0" ${dis(!me.pot||me.hp>=me.max)}>Бутылка${me.pot?'':' (нет)'}</button>${Object.keys(me.sk||{}).filter(k=>SKQ[k]).map(k=>{const cd=((me.scd||{})[k]|0)-R.r;return`<button class="b" data-rd="act:sk:${k}" style="margin:0;border-color:var(--gold)" ${dis(cd>0)}>${esc(rSkN(k))}${cd>0?` (${cd})`:''}<small style="display:block;font-size:11px;font-weight:400;opacity:.85">${rSkD(k,me.sk[k])}</small></button>`}).join('')}</div>
+  <p style="margin:6px 0 0;font-size:13px;color:var(--mute)">Мощный удар — двойной урон, раз в 3 хода. Щит — половина урона и босс чаще бьёт тебя, прикрывая группу. Бутылка — +40% здоровья, одна на рейд.${Object.keys(me.sk||{}).length?' Умения — сила зависит от их качества, перезарядка в ходах.':''}</p></div>`}
  h+=`<div class="panel"><h3>Группа</h3>${Object.entries(R.mem).sort((a,b)=>a[1].o-b[1].o).map(([id,m])=>{const done=m.bot||(RACT[id]&&RACT[id].r===R.r);return`<div style="display:flex;gap:8px;align-items:center;margin:6px 0;${m.hp<=0?'opacity:.45':''}">${avatar(m.av,30)}<div style="flex:1;min-width:0"><div class="lbl"><span><b style="color:var(--ink)">${esc(m.n)}</b>${id===UID?' (ты)':''}${on&&m.hp>0?(done?' <span style="color:var(--moss)">✓</span>':' …'):''}</span><span>${m.hp<=0?'пал':m.hp+'/'+m.max}</span></div>${bar(m.hp,m.max,'--moss')}<small style="color:var(--mute);font-size:12px">урон: ${(m.dealt|0).toLocaleString('ru-RU')}</small></div></div>`}).join('')}</div>`;
  h+=`<div class="panel"><h3>Ход боя</h3>${(R.log||[]).map(l=>`<p style="margin:0 0 3px;font-size:14px">${esc(l)}</p>`).join('')}</div>`;
  return h}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-rd]');if(!b||b.disabled)return;e.preventDefault();const [k,v]=b.dataset.rd.split(':');
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rd]');if(!b||b.disabled)return;e.preventDefault();const [k,...vv]=b.dataset.rd.split(':'),v=vv.join(':');
  if(k==='join')rJoin(+v);else if(k==='leave')rLeave(+v);else if(k==='bots')rBots(+v);else if(k==='merc')rMerc(+v);else if(k==='act')rAct(v);else if(k==='close')raidClose()});
 setInterval(()=>{if(!S||!DB||RBUSY)return;const b=myQ();if(b<0)return;{const q=RQ['b'+b];if(q&&q.t0&&Date.now()-q.t0>=RMERC+60000)rMerc(b)}const me=rqLive(RQ['b'+b]).find(x=>x.id===UID);if(me&&Date.now()-(+me.ts||0)>120000&&online)rqPut(b,q=>{q.m=rqLive(q);const x=q.m.find(y=>y.id===UID);if(x){x.ts=Date.now();x.s=rStats()}}).catch(()=>{})},30000);
 
@@ -1671,7 +1688,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.8.9';
+const GVER='1.9.0';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||tab!=='gchat'){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2058,7 +2075,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.8.9</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
