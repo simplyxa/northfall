@@ -1,5 +1,8 @@
-# Автовыкладка на Fly.io при каждом пуше в main (как сейчас Netlify).
-# Нужен секрет репозитория FLY_API_TOKEN (Settings → Secrets and variables → Actions).
+# Выкладка на Fly.io без установки flyctl на компьютер: всё делает GitHub.
+# Нужны секреты репозитория (Settings → Secrets and variables → Actions):
+#   FLY_API_TOKEN — токен из панели Fly (Account → Access Tokens);
+#   ключи игры — те же имена, что в Netlify (FIREBASE_SERVICE_ACCOUNT, XSOLLA_*, RESEND_API_KEY, MAIL_FROM).
+# Запуск: автоматически при пуше в main или вручную (Actions → Fly deploy → Run workflow).
 name: Fly deploy
 on:
   push:
@@ -9,6 +12,8 @@ concurrency: fly-deploy
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
       - name: Есть ли токен Fly
         id: tok
@@ -17,7 +22,34 @@ jobs:
         if: steps.tok.outputs.ok == 'true'
       - uses: superfly/flyctl-actions/setup-flyctl@master
         if: steps.tok.outputs.ok == 'true'
-      - run: flyctl deploy --remote-only
+      - name: Создать приложение (если его ещё нет)
+        if: steps.tok.outputs.ok == 'true'
+        run: |
+          APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
+          flyctl status -a "$APP" >/dev/null 2>&1 || flyctl apps create "$APP" --org personal
+      - name: Передать ключи в Fly (значения не попадают в логи)
         if: steps.tok.outputs.ok == 'true'
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          S_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          S_XSOLLA_API_KEY: ${{ secrets.XSOLLA_API_KEY }}
+          S_XSOLLA_WEBHOOK_SECRET: ${{ secrets.XSOLLA_WEBHOOK_SECRET }}
+          S_XSOLLA_PROJECT_ID: ${{ secrets.XSOLLA_PROJECT_ID }}
+          S_XSOLLA_MERCHANT_ID: ${{ secrets.XSOLLA_MERCHANT_ID }}
+          S_XSOLLA_SANDBOX: ${{ secrets.XSOLLA_SANDBOX }}
+          S_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          S_MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
+          ARGS=()
+          for N in FIREBASE_SERVICE_ACCOUNT XSOLLA_API_KEY XSOLLA_WEBHOOK_SECRET XSOLLA_PROJECT_ID XSOLLA_MERCHANT_ID XSOLLA_SANDBOX RESEND_API_KEY MAIL_FROM; do
+            V="S_$N"; V="${!V}"
+            if [ -n "$V" ]; then
+              # ключ Firebase передаём в base64: многострочный JSON так не ломается (сервер сам его раскодирует)
+              if [ "$N" = "FIREBASE_SERVICE_ACCOUNT" ]; then V=$(printf '%s' "$V" | base64 -w0); fi
+              ARGS+=("$N=$V")
+            fi
+          done
+          if [ ${#ARGS[@]} -gt 0 ]; then flyctl secrets set --stage -a "$APP" "${ARGS[@]}" >/dev/null; echo "ключей передано: ${#ARGS[@]}"; fi
+      - name: Выложить
+        if: steps.tok.outputs.ok == 'true'
+        run: flyctl deploy --remote-only --ha=false
