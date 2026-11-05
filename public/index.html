@@ -44,6 +44,8 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}html,body{min-height:100%;o
 .gcq{margin:2px 0 3px;padding:2px 8px;border-left:3px solid color-mix(in srgb,var(--gold) 70%,transparent);font-size:13px;color:var(--mute);background:color-mix(in srgb,var(--gold) 7%,transparent);border-radius:0 6px 6px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rplb{display:flex;align-items:center;gap:6px;margin:8px 8px 0;padding:4px 8px;border-left:3px solid var(--gold);border-radius:0 6px 6px 0;background:color-mix(in srgb,var(--gold) 10%,transparent);font-size:13px}
 .rplb span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rplb .lnk{padding:0 4px;font-size:15px}
+.rgrp{display:flex;flex-wrap:wrap;gap:4px 12px;margin:2px 0 8px;font-size:12px;color:var(--mute)}.rgrp b{color:var(--ink);font-weight:600}
+.mob.mboss{grid-column:1/-1;min-height:96px}.mob.mboss b{font-size:18px;color:var(--blood)}
 .chsb{position:fixed;inset:0;z-index:28;background:rgba(0,0,0,.45)}
 .chs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(40px + env(safe-area-inset-bottom,0px));width:min(640px,100%);height:min(68vh,560px);box-sizing:border-box;z-index:29;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.35);animation:chsIn .18s ease-out}
 @keyframes chsIn{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
@@ -507,22 +509,22 @@ function startHunt(kind){
  fight={hunt:{kind,sl,kills:0,xp:0,gold:0,loot:[]},e:null,ch:fb1()?1:0,hint:fb1()?1:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
  retarget();log(`Охота (${HKN[kind]}): на тебя выходят звери.`,'sys');save();render()}
 function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const s=fight.hunt.sl.find(x=>x.e&&x.e.hp>0);fight.e=s?s.e:null}
-function huntCheck(){const H=fight.hunt;
+function huntCheck(){const H=fight.hunt;if(H.raid)return rCheck();
  if(S.hp<=0)return huntEnd('dead');
  for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+rnd(1000,10000)}
  // первое задание новичка выполнено — выводим с охоты на главную за наградой
  if(S.nb&&!S.nb.done&&S.nb.i===0&&nbOk()){huntEnd('nb');HREP=null;tab='home';setTimeout(()=>window.scrollTo(0,0),50);return}
  retarget();if(H.sl.every(s=>!s.e&&s.at==null))huntEnd('out')}
-function huntEnd(why){const H=fight.hunt;if(why==='dead'){S.hp=1;S.lose++;log('Ты теряешь сознание, соплеменники уносят тебя в лагерь.','dmg')}
+function huntEnd(why){const H=fight.hunt;if(H.raid)return rRunEnd(why);if(why==='dead'){S.hp=1;S.lose++;log('Ты теряешь сознание, соплеменники уносят тебя в лагерь.','dmg')}
  HREP={hunt:true,why,kills:H.kills,xp:H.xp,gold:H.gold,loot:H.loot,kind:H.kind};fight=null;tab='hunt'}
 // ===== Авто-удар на охоте (идея игрока Lanky): бьёт сам при полном заряде, умения — вручную =====
 const AHLV=2,AHHP=.3,ahOk=()=>S&&S.lvl>=AHLV;
 function autoHunt(){if(!S.ahunt||!ahOk()||!fight||!fight.hunt||document.querySelector('.modal'))return false;
  if(S.hp<maxHp()*AHHP){if((S.pt.b|0)>0&&bleft()<=0){act('pot-b');return true}S.ahunt=0;log('Авто-удар выключен: мало здоровья, а бутылок нет. Выпей зелье или вернись в лагерь.','sys');save();render();return true}
- if(fight.ch>=1&&fight.e&&fight.e.hp>0){if(S.en<1){S.ahunt=0;log('Авто-удар выключен: кончилась энергия.','sys');save();render();return true}act('strike');return true}return false}
+ if(fight.ch>=1&&fight.e&&fight.e.hp>0){if(S.en<1&&!fight.hunt.raid){S.ahunt=0;log('Авто-удар выключен: кончилась энергия.','sys');save();render();return true}act('strike');return true}return false}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-hx2]');if(!b||!S)return;e.preventDefault();if(!ahOk())return;S.hx2=S.hx2?0:1;log(S.hx2?'Охота ускорена в 2 раза: и ты, и звери действуют вдвое быстрее.':'Обычная скорость охоты.','sys');save();render()});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ah]');if(!b||!S)return;e.preventDefault();if(!ahOk())return;S.ahunt=S.ahunt?0:1;log(S.ahunt?'Авто-удар включён: герой бьёт сам, когда заряд полный. Умения и бутылки — твои кнопки.':'Авто-удар выключен.','sys');save();render()});
-function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
+function huntTick(dt){const H=fight.hunt;let ch=false;if(H.raid&&rRunTick())return;if(autoHunt())return;
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n}}
  for(const s of H.sl){if(s.e){if(!(s.e.stun>fight.clk))s.ech+=dt/(s.e.tr==='fast'?3:5);if(s.ech>=1){s.ech=0;enemyTurn(s.e);ch=true;(fight.hits=fight.hits||[]).push(H.sl.indexOf(s));if(S.hp<=0)break}}
   else if(s.at!=null&&fight.clk>=s.at){if(S.en<1){s.at=null;continue}S.en--;{const n=hMon(H.kind);s.e=n.e;s.ech=n.ech;log(`Из чащи выходит ${s.e.name}.`,'sys')}s.at=null;ch=true}}
@@ -531,12 +533,12 @@ function huntTick(dt){const H=fight.hunt;let ch=false;if(autoHunt())return;
 // звер бьёт — его карточка коротко «вздрагивает»
 function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)try{el.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)',filter:'brightness(1)'}],{duration:280,easing:'ease-out'})}catch(e){}}),0)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Задание «${NQ.h}»</span><span><b>убито ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
- return nq+`<div class="panel"><h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Каждый удар и каждый новый зверь стоят 1 энергию. ${nbOn()?'Пока идёшь «Путём новичка», энергия на охоте восстанавливается как обычно.':'На охоте энергия восстанавливается медленнее:'} +${(enPSH()*60).toFixed(1).replace('.',',')} в минуту (вне охоты +${(enPS()*60).toFixed(1).replace('.',',')}).</p>
- <div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
- <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${mobImg(s.e.name)?' mbg':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"${mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · оглушён':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
- <p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель.</p>
- ${ahOk()?'':`<p style="margin:0 0 6px;font-size:13px;color:var(--mute)">Авто-удар откроется со ${AHLV} уровня.</p>`}${fight.hint?'<div class="sthint">👇 Жми «Удар»!</div>':''}<div class="srow"><button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар${fight.e?' · '+esc(fight.e.name):''}</button>${ahOk()?`<button class="sq ${S.ahunt?'on':''}" data-ah="1" title="Авто-удар" aria-label="Авто-удар ${S.ahunt?'включён':'выключен'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg></button><button class="sq ${S.hx2?'on':''}" data-hx2="1" title="Скорость x2" aria-label="Скорость x2 ${S.hx2?'включена':'выключена'}"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 6l8 6-8 6z"/><path d="M12 6l8 6-8 6z"/></svg></button>`:''}</div>
- ${skBtns()}<div class="frow">${bgBtn()}${['b'].map(k=>{const L=bleft();return`<button class="b alt fcd" id="bp${k}" data-a="pot-${k}" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt[k]<1||L>0?'disabled':''}>${L>0?POT[k].sh+' '+Math.ceil(L/1000)+' с':POT[k].sh+' ('+S.pt[k]+')'}</button>`}).join('')}<button class="b alt" data-a="flee">Отступить</button></div></div>`}
+ return nq+`<div class="panel">${H.raid?rHead():`<h3>Охота · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Убито: <b>${H.kills}</b> · опыт +${H.xp} · серебро +${H.gold}${H.loot.length?` · трофеев ${H.loot.length}`:''}. Каждый удар и каждый новый зверь стоят 1 энергию. ${nbOn()?'Пока идёшь «Путём новичка», энергия на охоте восстанавливается как обычно.':'На охоте энергия восстанавливается медленнее:'} +${(enPSH()*60).toFixed(1).replace('.',',')} в минуту (вне охоты +${(enPS()*60).toFixed(1).replace('.',',')}).</p>
+ `}<div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
+ <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${s.e.img||mobImg(s.e.name)?' mbg':''}${s.e.rbp?' mboss':''}" data-tg="${i}" aria-label="Цель: ${esc(s.e.name)}"${s.e.img||mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${s.e.img||mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>ур. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · оглушён':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Шорох в кустах…':'Пусто'}</small></div>`).join('')}</div>
+ ${H.raid?rGroup():'<p style="margin:2px 0 8px;color:var(--mute);font-size:13px">Нажми на зверя, чтобы выбрать цель.</p>'}
+ ${ahOk()?'':`<p style="margin:0 0 6px;font-size:13px;color:var(--mute)">Авто-удар откроется со ${AHLV} уровня.</p>`}${fight.hint?'<div class="sthint">👇 Жми «Удар»!</div>':''}<div class="srow"><button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар${fight.e?' · '+esc(fight.e.name):''}</button>${ahOk()?`<button class="sq ${S.ahunt?'on':''}" data-ah="1" title="Авто-удар" aria-label="Авто-удар ${S.ahunt?'включён':'выключен'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg></button><button class="sq ${S.hx2?'on':''}" ${H.raid?'hidden':''} data-hx2="1" title="Скорость x2" aria-label="Скорость x2 ${S.hx2?'включена':'выключена'}"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 6l8 6-8 6z"/><path d="M12 6l8 6-8 6z"/></svg></button>`:''}</div>
+ ${skBtns()}<div class="frow">${bgBtn()}${['b'].map(k=>{const L=bleft();return`<button class="b alt fcd" id="bp${k}" data-a="pot-${k}" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt[k]<1||L>0?'disabled':''}>${L>0?POT[k].sh+' '+Math.ceil(L/1000)+' с':POT[k].sh+' ('+S.pt[k]+')'}</button>`}).join('')}<button class="b alt" data-a="flee">${H.raid?'Покинуть':'Отступить'}</button></div></div>`}
 function hrepView(){const H=HREP;if(H.hunt)return`<div class="panel" style="border-left:4px solid var(${H.why==='dead'?'--blood':'--moss'})"><h3>Охота окончена${H.why==='dead'?': ты пал':H.why==='out'?': силы кончились':''}</h3><p style="margin:0 0 4px">Убито зверей: <b>${H.kills}</b> · опыт <b class="g">+${H.xp}</b> · серебро <b class="g">+${H.gold}</b></p>${H.loot.length?`<p style="margin:6px 0 4px">Трофеи:</p><div class="loot">${H.loot.map(l=>l.rune?`<div class="lt" title="${rName(l.rune)}">${stIc(l.rune,48)}<small style="color:var(${RAR[rR(l.rune)][1]})">${rName(l.rune)}</small></div>`:`<div class="lt" title="${esc(l.it.name)}">${itemIcon(l.it,48)}<small style="color:var(${RAR[l.it.rar][1]})">${esc(l.it.name)}</small>${l.dis?`<small>разобран: +${l.g} жел.</small>`:l.mail?'<small>на почте</small>':''}</div>`).join('')}</div>`:''}<p style="margin:0;color:var(--mute);font-size:15px">Теперь у тебя ${S.gold} серебра, опыт ${S.xp}.</p><button class="b alt" data-a="hrclose" style="margin-top:8px">Закрыть</button></div>`;
  return`<div class="panel" style="border-left:4px solid var(--moss)"><h3>Победа: ${esc(HREP.n)}</h3><p style="margin:0 0 4px">Опыт <b class="g">+${HREP.xp}</b> · серебро <b class="g">+${HREP.gold}</b>${HREP.lv?` · новый уровень ${HREP.L}`:''}</p>${HREP.lt?`<p style="margin:0 0 4px">Трофей: ${esc(HREP.lt)}</p>`:''}<p style="margin:0;color:var(--mute);font-size:15px">Теперь у тебя ${S.gold} серебра, опыт ${S.xp}.${UID?' '+(CLOUD.err?'Облако: ошибка сохранения ('+esc(CLOUD.err)+').':CLOUD.ok?'Облако: сохранено.':'Облако: сохраняю…'):''}</p><button class="b alt" data-a="hrclose" style="margin-top:8px">Закрыть</button></div>`}
 function startFight(kind,botId){
@@ -553,14 +555,14 @@ function startFight(kind,botId){
 function enemyTurn(e){
  e=e||fight.e;
  let d=Math.max(1,Math.round(rnd(.8,1.2)*e.atk-def()*.6));
- if(fight.wb){const red=Math.min(.4,def()/(def()+300));d=Math.max(d,Math.round(maxHp()*WBPCT*(e.wbm||1)*rnd(.85,1.15)*(1-red)))}
+ if(fight.wb||e.rbp){const red=Math.min(.4,def()/(def()+300));d=Math.max(d,Math.round(maxHp()*(e.rbp||WBPCT*(e.wbm||1))*rnd(.85,1.15)*(1-red)))}
  if(e.crit&&Math.random()*100<e.crit){d=Math.round(d*1.6);fight.s.ecrit++;log(`${e.name} наносит удар в уязвимое место!`,'dmg')}
  if(fight.clk<fight.guardUntil){d=Math.max(1,Math.round(d*.4));log('Блок смягчает удар.')}
  if(fight.clk<(fight.weak||0))d=Math.max(1,Math.round(d*(fight.weakv||.6)));if(fight.clk<(fight.skin||0))d=Math.max(1,Math.round(d*.4));
  if(fight.hunt&&e.tr!=='leader'&&fight.hunt.sl.some(x=>x.e&&x.e!==e&&x.e.tr==='leader'&&x.e.hp>0))d=Math.round(d*1.3);
  if(e.tr==='poison'){fight.pois={until:fight.clk+4000,dps:Math.max(1,Math.round(d*.2))}}
  {const pr=petDef();if(pr)d=Math.max(1,Math.round(d*(1-pr)))}S.hp=Math.max(0,S.hp-d);fight.s.taken+=d;fx('hurt');log(`${e.name} бьёт тебя на ${d}.`,'dmg');
- if(!fight.arena&&!fight.pvp){if(fight.wb||fight.dun)wear(1);else{fight.wh=(fight.wh|0)+1;if(fight.wh%5===0)wear(1)}}
+ if(!fight.arena&&!fight.pvp){if(fight.wb||fight.dun||e.rbp)wear(1);else{fight.wh=(fight.wh|0)+1;if(fight.wh%5===0)wear(1)}}
 }
 function usePot(){}
 function potPanel(){return`<div class="panel"><h3>Бутылки</h3>`+Object.keys(POT).map(k=>{const P=POT[k],n=S.pt[k]|0;return`<div class="row"><div>${P.n} · ${n} шт.<small>${pdesc(P)}</small></div></div>`}).join('')+`</div>`}
@@ -592,7 +594,7 @@ function act(a){
   if(now<fight.gcd)return;fight.guardUntil=now+3000;fight.gcd=now+8000;log('Ты поднимаешь щит на 3 секунды.');
  }else{
   if(fight.ch<.2)return;
-  if(fight.hunt){if(S.en<1){log('Нет энергии для удара. Выйди из охоты и отдохни — энергия восстанавливается со временем.','sys');return render()}S.en--}
+  if(fight.hunt&&!fight.hunt.raid){if(S.en<1){log('Нет энергии для удара. Выйди из охоты и отдохни — энергия восстанавливается со временем.','sys');return render()}S.en--}
   const k=fight.ch;fight.ch=0;fight.s.r++;
   let d=(rnd(.8,1.2)*atk()-e.def*.5)*k;
   const c=Math.random()*100<crit();if(c)d*=1.8;if(fight.rage){d*=(+fight.rage>1?+fight.rage:2);fight.rage=false}if(e.tr==='armor')d*=.5;d=Math.max(1,Math.round(d));if(fight.hunt&&fb1())d=Math.max(d,e.hp);if(fight.hint&&!S.th1){S.th1=1;try{trk('h1')}catch(_){}}fight.hint=0;fx(c?'crit':'hit');
@@ -601,7 +603,7 @@ function act(a){
  settle();save();render();
 }
 function fightTick(){
- if(!fight)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
+ if(!fight)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&!fight.hunt.raid&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
  fight.ch=Math.min(1,fight.ch+dt/(fight.chs||5));if(fight.hunt)return huntTick(dt);if(!(fight.e&&fight.e.stun>fight.clk))fight.ech+=dt/((fight.e&&fight.e.spd)||5);
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
@@ -1035,11 +1037,11 @@ const myQ=()=>{for(const b in RQ)if(b[0]==='b'&&rqLive(RQ[b]).some(x=>x.id===UID
 function raidSub(){if(!DB||!S||!UID)return;if(RQFOR===UID)return;if(RQUN)RQUN();RQFOR=UID;
  RQUN=DB.collection('raidq').onSnapshot(sn=>{RQ={};sn.docs.forEach(d=>{RQ[d.id]=d.data()});raidCheck();duelCheck();if((tab==='raid'||tab==='duel')&&!fight)rDraw()},()=>{});
  if(!RTMR)RTMR=setInterval(()=>{raidTick();duelTick();if(tab==='duel'&&inDQ()&&!fight){const el=document.activeElement;if(!(el&&el.tagName==='INPUT'))render()}},1000)}
-function raidCheck(){S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}popup('⚔ Рейд начался!','Группа собрана. Твой ход — 10 секунд, иначе герой ударит сам.');return}}}
+function raidCheck(){S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}RAUTO=L.rid;popup('⚔ Рейд начался!',`Группа собрана! ${RWV} волны врагов — каждый бьётся сам, как на охоте. Потом общий босс: урон всей группы складывается.`);return}}}
 function raidOpen(rid){if(RAUN)RAUN();if(RAUN2)RAUN2();RAIDID=rid;RAID=null;RACT={};RRES=null;
  const ref=DB.collection('raids').doc(rid);
- RAUN=ref.onSnapshot(sn=>{if(!sn.exists)return;RAID=sn.data();if(RAID.st!=='on')raidFinish();if(tab==='raid'&&!fight)rDraw()},()=>{});
- RAUN2=ref.collection('a').onSnapshot(sn=>{RACT={};sn.docs.forEach(d=>{RACT[d.id]=d.data()});if(tab==='raid'&&!fight)rDraw()},()=>{})}
+ RAUN=ref.onSnapshot(sn=>{if(!sn.exists)return;RAID=sn.data();if(RAID.st!=='on')raidFinish();if(RAID.w&&RAID.st==='on'&&RAUTO===rid&&!fight){RAUTO=null;return rRunStart()}if(tab==='raid'&&!fight)rDraw()},()=>{});
+ RAUN2=rid&&0?null:ref.collection('a').onSnapshot(sn=>{RACT={};sn.docs.forEach(d=>{RACT[d.id]=d.data()});if(tab==='raid'&&!fight)rDraw()},()=>{})}
 function rDraw(){const a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;render()}
 // очередь
 function rJoin(b){const R=RAIDS[b];if(!DB||!S||!R)return;if(S.lvl<R.lv)return;if(rcdLeft(b)>0)return;const cur=myQ();if(cur>=0&&cur!==b)return popup('Ты уже в очереди',`Сначала выйди из очереди «${RAIDS[cur].n}».`,1);
@@ -1056,15 +1058,15 @@ function rqPut(b,mut){const ref=DB.collection('raidq').doc('b'+b);
   t.set(ref,q)})}
 function rMake(b,m){const t=b,mem={},A=m.map(x=>x.s);const avg=k=>A.reduce((s,x)=>s+(x[k]|0),0)/A.length;
  const bDef=Math.round(avg('atk')*(.15+.05*t)),R=[8,9,10,11,12][t];
- const per=A.reduce((s,x)=>s+Math.max(1,x.atk-bDef*.5)*(1+(x.crit|0)/100*.8),0),hp=Math.max(100,Math.round(per*R));
+ const per=A.reduce((s,x)=>s+Math.max(1,x.atk-bDef*.5)*(1+(x.crit|0)/100*.8),0),hp=Math.max(300,Math.round(per*RWHP[t]));
  const bAtk=Math.round(avg('hp')*[.22,.25,.28,.31,.34][t]+avg('def')*.5);
- m.forEach((x,i)=>{mem[x.id]={n:x.n,lv:x.lv,av:x.av,o:i,hp:x.s.hp,max:x.s.hp,atk:x.s.atk,def:x.s.def,crit:Math.min(60,x.s.crit|0),pcd:0,pot:1,dealt:0,sk:x.sk||{},scd:{},bot:x.id.startsWith('bot_')?1:0}});
- return{b,st:'on',r:1,dl:Date.now()+RTURN+5000,hp,max:hp,bAtk,bDef,mem,log:[`${RAIDS[b].ic} ${RAIDS[b].n} пробуждается. Бой начинается!`],ts:Date.now()}}
+ m.forEach((x,i)=>{mem[x.id]={n:x.n,lv:x.lv,av:x.av,o:i,hp:x.s.hp,max:x.s.hp,atk:x.s.atk,def:x.s.def,crit:Math.min(60,x.s.crit|0),pcd:0,pot:1,dealt:0,sk:x.sk||{},scd:{},bot:x.id.startsWith('bot_')?1:0,wv:0,dead:0}});
+ return{b,w:1,st:'on',r:1,t0:Date.now(),dl:Date.now()+RWT,hp,max:hp,bAtk,bDef,mem,log:[`${RAIDS[b].ic} ${RAIDS[b].n} ждёт в глубине. Сначала — ${RWV} волны его слуг!`],ts:Date.now()}}
 // ход игрока
 function rAct(a){if(!RAID||RAID.st!=='on'||!RAIDID)return;const me=RAID.mem[UID];if(!me||me.hp<=0)return;const ac=RACT[UID];if(ac&&ac.r===RAID.r)return;
  if(a==='pow'&&me.pcd>RAID.r)return;if(a==='pot'&&!me.pot)return;if(a.startsWith('sk:')&&!rSkOk(me,a.slice(3),RAID.r))return;RACT[UID]={r:RAID.r,a};rDraw();
  DB.collection('raids').doc(RAIDID).collection('a').doc(UID).set({r:RAID.r,a}).catch(()=>{})}
-function raidTick(){if(!RAID||!RAIDID)return;const el=document.getElementById('rdt');if(RAID.st==='on'&&el)el.textContent=Math.max(0,Math.ceil((RAID.dl-Date.now())/1000))+' с';
+function raidTick(){if(!RAID||!RAIDID)return;if(RAID.w)return rWTick();const el=document.getElementById('rdt');if(RAID.st==='on'&&el)el.textContent=Math.max(0,Math.ceil((RAID.dl-Date.now())/1000))+' с';
  if(RAID.st!=='on'||RBUSY)return;const alive=Object.entries(RAID.mem).filter(([id,x])=>x.hp>0&&!x.bot);const all=alive.every(([id])=>RACT[id]&&RACT[id].r===RAID.r);
  const order=Object.entries(RAID.mem).filter(([id,x])=>!x.bot).sort((a,b)=>a[1].o-b[1].o).map(x=>x[0]),my=Math.max(0,order.indexOf(UID));
  if(all||Date.now()>RAID.dl+my*1500)rResolve()}
@@ -1100,6 +1102,71 @@ function rRound(R,acts){const B=RAIDS[R.b],L=[],shield={},skin={};let roarK=1,st
   if(enr>1)L.push(`${B.n} в ярости: урон +${Math.round((enr-1)*100)}%.`);
   if(Object.values(R.mem).every(m=>m.hp<=0)){R.st='lose';L.push('Вся группа пала. Поражение.')}else if(R.r>=RMAXR){R.st='lose';L.push(`${B.n} слишком силён. Группа отступает.`)}}
  R.log=[...L.reverse(),...(R.log||[])].slice(0,14);R.r++;R.dl=Date.now()+RTURN;R.ts=Date.now()}
+
+// ===== Рейды: 3 волны как на охоте + общий босс (урон группы складывается) =====
+const RWV=3,RWN=4,RWT=8*60000,RWHP=[18,20,22,24,26],RBPCT=[.08,.09,.1,.11,.12],RFLUSH=4000,RBOTK=.18;
+const RMOB=[['Лесной волк','Дикий кабан','Вожак стаи'],['Драугр','Болотная крыса','Разбойник с тракта'],['Тролль-подросток','Снежный барс','Горный медведь'],['Снежный барс','Драугр','Тролль-подросток'],['Драугр','Тролль-подросток','Вожак стаи']];
+let RAUTO=null;
+const rX=()=>fight&&fight.hunt&&fight.hunt.raid;
+function rRunStart(){const R=RAID;if(!R||!R.w||R.st!=='on'||fight||!S)return;const me=R.mem[UID];if(!me||me.dead||me.bot)return;
+ HREP=null;REP=null;S.hp=Math.max(S.hp,maxHp());
+ fight={hunt:{kind:'raid',sl:[],kills:0,xp:0,gold:0,loot:[],raid:{b:R.b,rid:RAIDID,wave:0,pend:0,ft:0,lastHp:0,boss:false}},e:null,ch:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
+ tab='raid';rWave((me.wv|0)+1);save();render();window.scrollTo(0,0)}
+function rWave(n){const H=fight.hunt,X=H.raid;if(n>RWV)return rBossPhase();X.wave=n;const L=RMOB[X.b],lv=Math.max(RAIDS[X.b].lv,S.lvl),k=RWN+(n===RWV?1:0);H.sl=[];
+ for(let i=0;i<k;i++){const e=mkEnemy(L[(i+n)%L.length],lv,.45+.05*n+.03*X.b);e.atk*=.55;e.xp*=.5;e.gold=0;
+  if(n===RWV&&i===k-1){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.hp=e.max=Math.round(e.max*1.8);e.atk*=1.2}
+  H.sl.push({e,ech:Math.random()*.5,at:null})}
+ fight.e=null;retarget();log(`Волна ${n} из ${RWV}: на тебя выходят слуги — ${RAIDS[X.b].n} ждёт впереди.`,'sys')}
+function rBossPhase(){const H=fight.hunt,X=H.raid,R=RAID,B=RAIDS[X.b];X.boss=true;X.wave=RWV+1;
+ const e={name:B.n,lv:Math.max(B.lv,S.lvl),hp:R.hp,max:R.max,atk:Math.max(1,R.bAtk*.45),def:R.bDef,xp:0,gold:0,rbp:RBPCT[X.b],img:RIMG[X.b],guard:false};X.lastHp=e.hp;X.ft=fight.clk;
+ H.sl=[{e,ech:0,at:null}];fight.e=e;log(`${B.ic} ${B.n}! Бей вместе с группой — урон всех складывается.`,'hit');rMem({wv:RWV,bs:1},true)}
+// записать своё состояние в рейд (волна, босс, гибель)
+function rMem(o,bon){const X=rX(),rid=X?X.rid:RAIDID;if(!DB||!rid)return Promise.resolve();const ref=DB.collection('raids').doc(rid);
+ return rTx(async t=>{const sn=await t.get(ref);if(!sn.exists)return;const R=JSON.parse(JSON.stringify(sn.data()));if(R.st!=='on')return;const m=R.mem[UID];if(!m)return;Object.assign(m,o);
+  if(bon&&!R.bon){R.bon=Date.now();R.bt=R.bon}
+  if(o.dead){const H=Object.values(R.mem).filter(x=>!x.bot);L0(R,`${m.n} пал в бою.`);if(H.every(x=>x.dead)){R.st='lose';L0(R,'Вся группа пала. Поражение.')}}
+  t.set(ref,R)}).catch(()=>{})}
+const L0=(R,t)=>{R.log=[t,...(R.log||[])].slice(0,14)};
+// урон по боссу копится и раз в несколько секунд записывается в общий рейд
+function rFlush(){const X=rX();if(!X||X.busy||!DB)return;const sent=Math.round(X.pend);X.busy=1;X.ft=fight.clk;const ref=DB.collection('raids').doc(X.rid);
+ rTx(async t=>{const sn=await t.get(ref);if(!sn.exists)return null;const R=JSON.parse(JSON.stringify(sn.data()));if(R.st!=='on')return R;const now=Date.now();
+  R.hp=Math.max(0,R.hp-sent);const m=R.mem[UID];if(m)m.dealt=(m.dealt|0)+sent;
+  if(R.bon){const dt=Math.min(12,Math.max(0,(now-(R.bt||R.bon))/1000));R.bt=now;for(const b of Object.values(R.mem))if(b.bot&&!b.dead&&R.hp>0){const d=Math.round(b.atk*RBOTK*dt*rnd(.8,1.2));R.hp=Math.max(0,R.hp-d);b.dealt=(b.dealt|0)+d}}
+  if(R.hp<=0){R.st='win';L0(R,`${RAIDS[R.b].ic} ${RAIDS[R.b].n} повержен! Победа!`)}
+  t.set(ref,R);return R}).then(R=>{const X2=rX();if(X2===X)X.pend=Math.max(0,X.pend-sent);if(R&&RAID&&RAIDID===X.rid){RAID.hp=R.hp;RAID.mem=R.mem;if(R.st!=='on'){RAID.st=R.st;raidFinish()}}}).catch(()=>{}).then(()=>{X.busy=0})}
+// каждый кадр боя в рейде; true — бой закончился
+function rRunTick(){const X=rX(),R=RAID;if(!R||RAIDID!==X.rid){rRunEnd('lost');return true}
+ if(R.st!=='on'){rRunEnd(R.st);return true}
+ if(X.boss){const e=X.e||fight.hunt.sl[0]&&fight.hunt.sl[0].e;if(e){const loc=X.lastHp-e.hp;if(loc>0)X.pend+=loc;e.hp=Math.max(0,R.hp-X.pend);e.max=R.max;X.lastHp=e.hp;
+  if((X.pend>0&&fight.clk-X.ft>=RFLUSH)||(e.hp<=0&&X.pend>0)||(fight.clk-X.ft>=RFLUSH*2))rFlush()}}
+ if(Date.now()>R.dl+2000){rTimeout();}
+ return false}
+function rCheck(){const H=fight.hunt,X=H.raid;if(S.hp<=0)return rRunEnd('dead');
+ if(X.boss){const e=H.sl[0]&&H.sl[0].e;if(e){const loc=X.lastHp-e.hp;if(loc>0){X.pend+=loc;X.lastHp=e.hp}if(e.hp<=0)rFlush();if(e.hp<=0)e.hp=1}return}
+ for(const s of H.sl)if(s.e&&s.e.hp<=0){H.kills++;S.win++;ev('kill');fx('kill');petXp(1);log(`${s.e.name} повержен.`,'hit');s.e=null;s.at=null}
+ retarget();if(H.sl.every(s=>!s.e)){const n=X.wave;rMem({wv:n});if(n<RWV)log(`Волна ${n} пройдена!`,'hit');rWave(n+1)}}
+function rRunEnd(why){const X=rX();if(!X)return;fight=null;tab='raid';
+ if(why==='dead'||why==='leave'){S.hp=Math.max(1,S.hp);if(why==='dead')log('Ты пал в рейде. Группа сражается дальше — награду получишь, если она победит.','dmg');else log('Ты покинул бой. Группа сражается дальше.','sys');
+  if(X.pend>0){const sent=Math.round(X.pend);X.pend=0;const ref=DB.collection('raids').doc(X.rid);rTx(async t=>{const sn=await t.get(ref);if(!sn.exists)return;const R=JSON.parse(JSON.stringify(sn.data()));if(R.st!=='on')return;R.hp=Math.max(0,R.hp-sent);if(R.mem[UID])R.mem[UID].dealt=(R.mem[UID].dealt|0)+sent;if(R.hp<=0){R.st='win';L0(R,`${RAIDS[R.b].n} повержен! Победа!`)}t.set(ref,R)}).catch(()=>{}).then(()=>rMem({dead:1}))}else rMem({dead:1})}
+ save();render()}
+let RTO=0;function rTimeout(){if(Date.now()-RTO<5000||!RAIDID||!DB)return;RTO=Date.now();const ref=DB.collection('raids').doc(RAIDID);
+ rTx(async t=>{const sn=await t.get(ref);if(!sn.exists)return;const R=JSON.parse(JSON.stringify(sn.data()));if(R.st!=='on'||Date.now()<=R.dl)return;R.st='lose';L0(R,`Время вышло: ${RAIDS[R.b].n} уходит в глубину. Поражение.`);t.set(ref,R)}).catch(()=>{})}
+function rWTick(){const R=RAID;const el=document.getElementById('rdt');if(el)el.textContent=rClock(R);if(R.st!=='on')return;
+ if(Date.now()>R.dl+2000)rTimeout();
+ if(!fight&&tab==='raid'&&R.mem[UID]&&!R.mem[UID].dead&&RAUTO===RAIDID){RAUTO=null;rRunStart()}}
+const rClock=R=>{const ms=Math.max(0,R.dl-Date.now()),m=Math.floor(ms/60000),sec=Math.floor(ms/1000)%60;return m+':'+String(sec).padStart(2,'0')};
+const rSt=(m,R)=>m.dead?'<span style="color:var(--blood)">пал</span>':m.bot?(R.bon?'бьёт босса':'идёт следом'):m.bs?'<span style="color:var(--blood)">у босса</span>':`волна ${Math.min(RWV,(m.wv|0)+1)}/${RWV}`;
+function rHead(){const X=rX(),R=RAID,B=RAIDS[X.b];return`<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">${rIc(X.b,48)}<div style="flex:1;min-width:0"><b style="font-size:17px">Рейд: ${B.n}</b><small style="display:block;color:var(--mute)">${X.boss?'<b style="color:var(--blood)">Босс</b> — бьёт вся группа':`Волна <b>${X.wave}</b> из ${RWV}`} · осталось <b id="rdt">${rClock(R)}</b></small></div></div>
+ ${X.boss?'':`<div class="lbl"><span>Здоровье босса (общее)</span><span>${R.hp.toLocaleString('ru-RU')}/${R.max.toLocaleString('ru-RU')}</span></div>${bar(R.hp,R.max,'--blood')}`}`}
+function rGroup(){const R=RAID;return`<div class="rgrp">${Object.entries(R.mem).sort((a,b)=>a[1].o-b[1].o).map(([id,m])=>`<span${m.dead?' style="opacity:.5"':''}><b>${esc(m.n)}${id===UID?' (ты)':''}</b> ${rSt(m,R)} · ${kf(m.dealt|0)}</span>`).join('')}</div>`}
+function raidWView(){const R=RAID,B=RAIDS[R.b],me=R.mem[UID],on=R.st==='on';let h='';
+ if(!on){const X=RRES;h+=`<div class="panel" style="border-left:4px solid var(${R.st==='win'?'--moss':'--blood'})"><h3>${R.st==='win'?'Победа!':'Поражение'}</h3>${X&&X.win?`<p style="margin:0 0 6px">Серебро <b class="g">+${X.g}</b>${X.au?`, золото <b class="g">+${X.au}</b>`:''}, железо <b>+${X.ir}</b>, пыль <b style="color:var(--myth)">+${X.du|0}</b>, опыт <b>+${X.xp}</b>, ${rName(X.rk)}.</p>${X.it?irow(X.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<p style="margin:6px 0 0;font-size:14px;color:var(--mute)">«${B.n}» откроется снова через ${B.cd} ч.</p>`:(R.st==='win'?'<p style="margin:0">Награда получена.</p>':'<p style="margin:0">Подземелье не закрылось — можно собрать группу и попробовать снова.</p>')}<button class="b" data-rd="close" style="width:100%;margin-top:8px">К списку рейдов</button></div>`}
+ h+=`<div class="panel" style="border-left:4px solid var(--blood)"><div style="display:flex;gap:12px;align-items:center">${rIc(R.b,88)}<div style="flex:1"><b style="font-size:18px">${B.n}</b><small style="display:block;color:var(--mute)">${on?`Осталось <b id="rdt">${rClock(R)}</b>`:'Бой окончен'}</small></div></div>
+ <div class="lbl" style="margin-top:8px"><span>Здоровье босса</span><span>${R.hp.toLocaleString('ru-RU')}/${R.max.toLocaleString('ru-RU')}</span></div>${bar(R.hp,R.max,'--blood')}
+ ${on&&me&&!me.bot?(me.dead?'<p style="margin:8px 0 0;color:var(--blood)">Ты пал. Группа сражается дальше — если она победит, награда будет и у тебя.</p>':`<button class="b red" data-rd="run" style="width:100%;margin-top:10px">⚔ ${(me.wv|0)>=RWV?'К боссу':(me.wv|0)>0?`Продолжить: волна ${(me.wv|0)+1}`:'В бой'}</button>`):''}</div>`;
+ h+=`<div class="panel"><h3>Группа</h3>${Object.entries(R.mem).sort((a,b)=>a[1].o-b[1].o).map(([id,m])=>`<div class="row" style="${m.dead?'opacity:.5':''}"><div style="display:flex;gap:8px;align-items:center">${avatar(m.av,30)}<div><b>${esc(m.n)}</b>${id===UID?' (ты)':''}<small style="display:block">${rSt(m,R)}</small></div></div><span style="text-align:right"><b class="g">${kf(m.dealt|0)}</b><small style="display:block;color:var(--mute);font-size:11px">урон по боссу</small></span></div>`).join('')}</div>`;
+ h+=`<div class="panel"><h3>Ход боя</h3>${(R.log||[]).map(l=>`<p style="margin:0 0 3px;font-size:14px">${esc(l)}</p>`).join('')}</div>`;
+ return h}
 // награда
 function raidFinish(){const R=RAID;if(!R||R.st==='on'||!RAIDID||!S)return;S.rdone=S.rdone||[];if(S.rdone.includes(RAIDID))return;const me=R.mem[UID];if(!me)return;
  S.rdone.push(RAIDID);S.rdone=S.rdone.slice(-20);const t=R.b;if(!me.bot)wear(me.hits|0);
@@ -1219,12 +1286,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-du]');if(!
 
 function raidView(){if(!DB)return'<div class="panel"><p>Рейды доступны только с подключённой базой данных.</p></div>';raidSub();
  if(RAID&&RAIDID)return raidFightView();const mq=myQ();
- return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Рейды</h3><p style="margin:0;color:var(--mute);font-size:15px">Пять боссов для группы из 5 воинов. Если за 5 минут группа не собралась, можно позвать наёмников. За Ледяного змея — 1 золото, за Сурта — 3 золота. Встань в очередь — когда соберутся пятеро, бой начнётся у всех сразу. Ход длится 10 секунд: не успел — герой бьёт сам. После победы подземелье закрывается для тебя на время отката.</p></div>`+
+ return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Рейды</h3><p style="margin:0;color:var(--mute);font-size:15px">Пять боссов для группы из 5 воинов. Если за 5 минут группа не собралась, можно позвать наёмников. За Ледяного змея — 1 золото, за Сурта — 3 золота. Встань в очередь — когда соберутся пятеро, бой начнётся у всех сразу. Сначала каждый проходит 3 волны врагов, как на охоте, потом вся группа бьёт общего босса — урон складывается. На всё 8 минут, энергия не тратится. После победы подземелье закрывается для тебя на время отката.</p></div>`+
  RAIDS.map((R,b)=>{const q=rqLive(RQ['b'+b]),inq=q.some(x=>x.id===UID),cd=rcdLeft(b),lock=S.lvl<R.lv;
   const btn=lock?`<button class="b" disabled style="width:100%">С ${R.lv} уровня</button>`:cd>0?`<button class="b" disabled style="width:100%">Откроется через ${rFmt(cd)}</button>`:inq?`<button class="b alt" data-rd="leave:${b}" style="width:100%" ${RBUSY?'disabled':''}>Выйти из очереди</button>`:`<button class="b red" data-rd="join:${b}" style="width:100%" ${RBUSY||(mq>=0)?'disabled':''}>Встать в очередь</button>`;
   return`<div class="panel" style="${lock?'opacity:.6':''}"><div style="display:flex;gap:12px;align-items:center">${rIc(b,72)}<div style="flex:1;min-width:0"><b style="font-size:18px">${R.n}</b><small style="display:block;color:var(--mute)">${R.d} · с ${R.lv} ур. · откат ${R.cd} ч</small></div><b style="font-size:20px;color:${q.length?'var(--moss)':'var(--mute)'}">${q.length}/${RSIZE}</b></div>
   ${inq&&q.length<RSIZE&&RQ['b'+b]&&RQ['b'+b].t0?(()=>{const left=RMERC-(Date.now()-RQ['b'+b].t0);return left>0?`<p style="margin:8px 0 0;font-size:14px;color:var(--mute)">Если не соберётся 5 воинов, через ${Math.ceil(left/60000)} мин. можно позвать наёмников.</p>`:`<button class="b" data-rd="merc:${b}" style="width:100%;margin-top:8px">Позвать наёмников (${RSIZE-q.length})</button><p style="margin:4px 0 0;font-size:13px;color:var(--mute)">С наёмниками награда ×0,7, золото — только если в группе от 3 живых воинов.</p>`})():''}${q.length?`<p style="margin:8px 0 0;font-size:14px;color:var(--mute)">В очереди: ${q.map(x=>esc(x.n)+(x.id===UID?' (ты)':'')).join(', ')}</p>`:''}<div style="margin-top:8px">${btn}</div>${inq&&ADM?`<button class="b alt" data-rd="bots:${b}" style="width:100%">Добавить ботов (тест, админ)</button>`:''}</div>`}).join('')}
-function raidFightView(){const R=RAID;if(!R)return'<div class="panel"><p>Загружаю рейд…</p></div>';const B=RAIDS[R.b],me=R.mem[UID],ac=RACT[UID],acted=ac&&ac.r===R.r,on=R.st==='on';
+function raidFightView(){const R=RAID;if(!R)return'<div class="panel"><p>Загружаю рейд…</p></div>';if(R.w)return raidWView();const B=RAIDS[R.b],me=R.mem[UID],ac=RACT[UID],acted=ac&&ac.r===R.r,on=R.st==='on';
  let h='';
  if(!on){const X=RRES;h+=`<div class="panel" style="border-left:4px solid var(${R.st==='win'?'--moss':'--blood'})"><h3>${R.st==='win'?'Победа!':'Поражение'}</h3>${X&&X.win?`<p style="margin:0 0 6px">Серебро <b class="g">+${X.g}</b>${X.au?`, золото <b class="g">+${X.au}</b>`:''}, железо <b>+${X.ir}</b>, пыль <b style="color:var(--myth)">+${X.du|0}</b>, опыт <b>+${X.xp}</b>, ${rName(X.rk)}.</p>${X.it?irow(X.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<p style="margin:6px 0 0;font-size:14px;color:var(--mute)">«${B.n}» откроется снова через ${B.cd} ч.</p>`:(R.st==='win'?'<p style="margin:0">Награда получена.</p>':'<p style="margin:0">Подземелье не закрылось — можно собрать группу и попробовать снова.</p>')}<button class="b" data-rd="close" style="width:100%;margin-top:8px">К списку рейдов</button></div>`}
  h+=`<div class="panel" style="border-left:4px solid var(--blood)"><div style="display:flex;gap:12px;align-items:center">${rIc(R.b,88)}<div style="flex:1"><b style="font-size:18px">${B.n}</b><small style="display:block;color:var(--mute)">${on?`Ход ${R.r} · осталось <b id="rdt">${Math.max(0,Math.ceil((R.dl-Date.now())/1000))} с</b>`:'Бой окончен'}</small></div></div>
@@ -1238,7 +1305,7 @@ function raidFightView(){const R=RAID;if(!R)return'<div class="panel"><p>Заг�
  h+=`<div class="panel"><h3>Ход боя</h3>${(R.log||[]).map(l=>`<p style="margin:0 0 3px;font-size:14px">${esc(l)}</p>`).join('')}</div>`;
  return h}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-rd]');if(!b||b.disabled)return;e.preventDefault();const [k,...vv]=b.dataset.rd.split(':'),v=vv.join(':');
- if(k==='join')rJoin(+v);else if(k==='leave')rLeave(+v);else if(k==='bots')rBots(+v);else if(k==='merc')rMerc(+v);else if(k==='act')rAct(v);else if(k==='close')raidClose()});
+ if(k==='join')rJoin(+v);else if(k==='leave')rLeave(+v);else if(k==='bots')rBots(+v);else if(k==='merc')rMerc(+v);else if(k==='act')rAct(v);else if(k==='run')rRunStart();else if(k==='close')raidClose()});
 setInterval(()=>{if(!S||!DB||RBUSY)return;const b=myQ();if(b<0)return;{const q=RQ['b'+b];if(q&&q.t0&&Date.now()-q.t0>=RMERC+60000)rMerc(b)}const me=rqLive(RQ['b'+b]).find(x=>x.id===UID);if(me&&Date.now()-(+me.ts||0)>120000&&online)rqPut(b,q=>{q.m=rqLive(q);const x=q.m.find(y=>y.id===UID);if(x){x.ts=Date.now();x.s=rStats()}}).catch(()=>{})},30000);
 
 // ===== Путь новичка: 10 шагов до 15 уровня =====
@@ -1706,7 +1773,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.9.2';
+const GVER='1.9.3';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2102,7 +2169,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.3</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
