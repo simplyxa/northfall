@@ -367,6 +367,47 @@ function rdMeter(){try{if(localStorage.getItem('nf_rdm')!=='1')return}catch(e){r
   P.get=function(...a){const k=rdKey(this)+' · doc get';return og.apply(this,a).then(sn=>{rdAdd(k,1);return sn})}};
  wrapQ(F.Query.prototype);wrapD(F.DocumentReference.prototype);
  const FP=F.Firestore&&F.Firestore.prototype;if(!FP)return;const rt=FP.runTransaction;FP.runTransaction=function(fn,...r){return rt.call(this,tx=>{const g=tx.get;tx.get=function(ref){rdAdd(rdKey(ref)+' · транзакция',1);return g.apply(this,arguments)};return fn(tx)},...r)}}catch(e){console.warn('rdMeter',e)}}
+
+// ===== Экономика через сервер: рынок, передача вещей, письма с вещами, казна клана =====
+// Действие отправляется вместе с сохранением одной транзакцией: сервер берёт вещь/ресурсы из сохранения на сервере.
+// Если наш сервер недоступен (превью, сбой) — работает прежний путь.
+const srvCan=()=>hubOn()&&typeof FBA!=='undefined'&&FBA&&FBA.currentUser&&UID&&S&&!STALE;
+async function srvOp(op){if(!srvCan())return null;S.ses=SESS;const sdat=JSON.parse(JSON.stringify(S)),base=SBASE;
+ let r;try{const tok=await FBA.currentUser.getIdToken();r=await fetch('/api/op',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({s:sdat,ses:SESS,base,op})})}catch(e){return null}
+ if(r.status===404||r.status===503)return null;const j=await r.json().catch(()=>({}));
+ if(r.status===409&&j.stale){staleHit();return{err:'stale'}}
+ if(!r.ok)return{err:j.error||('ошибка '+r.status)};
+ SBASE=SESS;CLOUD.ok=Date.now();CLOUD.err='';if(j.fix&&j.fix.gold!=null&&S.gold>j.fix.gold)S.gold=j.fix.gold;return{res:j.res||{}}}
+const _mkList=mkList,_mkCancel=mkCancel,_giveSend=giveSend,_itemClaim=itemClaim,_donate=donate;
+mkList=function(){const it=MODIT;if(!srvCan()||!it||!S.inv.includes(it)||it.pb)return _mkList();const el=document.getElementById('mprice'),pr=Math.max(1,Math.floor(+(el&&el.value)||0));if(!pr||it.mkp)return;
+ it.mkp=1;closeModal();MKMSG='Выставляю на рынок…';render();
+ srvOp({k:'mklist',iu:it.uid,price:pr}).then(r=>{delete it.mkp;if(!r){MKMSG='';log('Нет связи с рынком: вещь осталась в рюкзаке, попробуй ещё раз.','sys');return render()}
+  if(r.err){MKMSG=r.err==='stale'?'':'Не удалось выставить: '+r.err;return render()}
+  S.inv=S.inv.filter(x=>x.uid!==it.uid);save();MKMSG=`«${it.name}» выставлен на рынок за ${pr} зол.`;log(MKMSG,'sys');render()})};
+mkCancel=function(id){const m=MK.find(x=>x.id===id);if(!srvCan()||!m)return _mkCancel(id);if(m.seller!==UID||m.sold)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон, освободи место.','sys');return render()}
+ srvOp({k:'mkcancel',id}).then(r=>{if(!r)return _mkCancel(id);if(r.err){MKMSG=r.err==='stale'?'':r.err;return render()}
+  const it=fixItem(r.res.item);S.inv.push(it);MKMSG=`«${it.name}» снят с продажи и вернулся в рюкзак.`;save();render()})};
+giveSend=async function(toId){const it=GIVE;if(!srvCan()||!it||!S.inv.includes(it)||it.pb)return _giveSend(toId);let to=toId||'';
+ if(!to){const v=(($('#gto')||{}).value||'').trim();const p=findPl(v);if(p)to=p.id;else if(typeof nickUid==='function'){to=(await nickUid(v.toLowerCase()))||''}}
+ if(!to||to===UID){GMSG='Игрок не найден. Введи его ник или логин.';return render()}
+ if((S.au|0)<1){GMSG='Передача вещи стоит 1 золото.';return render()}
+ const note=((($('#gtx')||{}).value)||'').trim().slice(0,200),fr=isFr(to);GMSG='Отправляю…';render();
+ const r=await srvOp({k:'give',iu:it.uid,to,note});
+ if(!r){GMSG='Нет связи с сервером, вещь осталась в рюкзаке. Попробуй ещё раз.';return render()}
+ if(r.err){GMSG=r.err==='stale'?'':r.err;return render()}
+ const x=r.res;S.inv=S.inv.filter(y=>y.uid!==it.uid);if(x.au!=null)S.au=x.au|0;GIVE=null;GMSG='';save();tbPaint();
+ (fr?(()=>{const f=frOf(to),k=f.a===UID?'ra':'rb';return DB.collection('friends').doc(f.id).update({last:x.text.slice(0,60),lastFrom:UID,lastTs:x.ts,[k]:x.ts})})():mailIdx(to,dmName(to),x.text,x.ts)).catch(()=>{});
+ if(typeof pushApi==='function')pushApi({a:'msg',to,name:S.name},1).catch(()=>{});
+ log(`Вещь «${it.name}» отправлена игроку ${dmName(to)}.`,'sys');DMW=to;tab='dm';render()};
+itemClaim=function(mid){const m=DM.find(x=>x._id===mid);if(!srvCan()||!m)return _itemClaim(mid);if(!m.item||m.claimed||m.from===UID)return;
+ if(S.inv.length>=INV_MAX){popup('Рюкзак полон','Освободи место в рюкзаке, чтобы забрать вещь.',1);return}
+ m.claimed=true;render();srvOp({k:'take',pair:pid(UID,DMW),mid}).then(r=>{if(!r){m.claimed=false;return _itemClaim(mid)}
+  if(r.err){if(r.err!=='stale')popup('Не получилось',esc(r.err),1);if(!/забрали/.test(r.err))m.claimed=false;return render()}
+  const it=fixItem(r.res.item);S.inv.push(it);log(`Получена вещь «${it.name}» от ${m.name||m.from}.`,'hit');save();render()})};
+donate=function(kind,n){const cid=S&&S.clan;if(!srvCan()||!cid)return _donate(kind,n);if(!(n>0)||(kind==='g'?S.gold<n:(S.iron|0)<n))return;
+ srvOp({k:'donate',kind,n}).then(r=>{if(!r)return _donate(kind,n);if(r.err){if(r.err!=='stale'){log('Не удалось внести вклад: '+r.err,'sys');render()}return}
+  if(kind==='g')S.gold-=n;else S.iron=(S.iron|0)-n;S.dep=S.dep||{};S.dep[cid]=r.res.dep;
+  log(`В казну клана внесено: ${n} ${kind==='g'?'серебра':'железа'}.`,'sys');if(n>=100||kind!=='g')clog(`${S.name} внёс в казну ${n} ${kind==='g'?'серебра':'железа'}.`,'💰');save();render()})};
 // подозрительные изменения сохранений (сервер отмечает резкие скачки уровня и серебра)
 let FLG=null;
 function flagLoad(){if(typeof FBA==='undefined'||!FBA||!FBA.currentUser)return;FLG='…';FBA.currentUser.getIdToken().then(t=>fetch('/api/flags',{headers:{Authorization:'Bearer '+t}})).then(r=>r.json()).then(j=>{FLG=j.L||[];render()}).catch(()=>{FLG=[];render()})}
@@ -1864,7 +1905,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.11.1';
+const GVER='1.12.0';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2267,7 +2308,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.11.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.12.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

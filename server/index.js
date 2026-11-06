@@ -128,6 +128,10 @@ const server = http.createServer(async (req, res) => {
   if (u.pathname === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
   if (u.pathname === '/hubz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(HUB.stats())); }
   if (u.pathname === '/api/flags') return SAVE.flags(req, res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
+  if (u.pathname === '/api/op' && req.method === 'POST') {
+    let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
+    return SAVE.op(req, res, b).catch(e => { console.error('op', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
+  }
   if (u.pathname === '/api/save' && req.method === 'POST') {
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
     return SAVE(req, res, b).catch(e => { console.error('save', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
