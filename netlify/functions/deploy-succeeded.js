@@ -34,6 +34,7 @@ exports.handler = async (event) => {
     const cnt = ((ts0.exists && ts0.data().cnt) | 0) + (ts0.exists ? 1 : 2);
     await tref.set({ last: ts, lastn: NAME, cnt }, { merge: true });
     await db.collection('chat').doc('n' + ts.toString(36) + 'upd').set({ uid: 'admin', name: NAME, sys: 1, ts,
+      ft: TID,
       text: `Вышло обновление (${vs}). Что нового — на форуме в теме «Обновления игры».` });
     await st.set({ posted: [...done, ...fresh.map(x => x.v)].slice(-300), lastTs: ts }, { merge: true });
     return { statusCode: 200, body: 'posted ' + fresh.length };
