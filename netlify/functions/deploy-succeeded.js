@@ -36,6 +36,17 @@ exports.handler = async (event) => {
     await db.collection('chat').doc('n' + ts.toString(36) + 'upd').set({ uid: 'admin', name: NAME, sys: 1, ts,
       ft: TID,
       text: `Вышло обновление (${vs}). Что нового — на форуме в теме «Обновления игры».` });
+    // копия в Discord-канал новостей (вебхук канала задаётся секретом DISCORD_WEBHOOK)
+    const hook = (process.env.DISCORD_WEBHOOK || '').trim();
+    if (/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(hook)) {
+      try {
+        const body = { username: 'Northfall', allowed_mentions: { parse: [] }, embeds: [{
+          title: `Обновление ${date} (${vs})`, url: 'https://playnorthfall.online/', color: 0x8b5cf6,
+          description: (fresh.map(x => '• ' + x.t).join('\n')).slice(0, 3900) + '\n\n[Играть →](https://playnorthfall.online/)' }] };
+        const r = await fetch(hook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        console.log('discord', r.status);
+      } catch (e) { console.error('discord', e.message); }
+    }
     await st.set({ posted: [...done, ...fresh.map(x => x.v)].slice(-300), lastTs: ts }, { merge: true });
     return { statusCode: 200, body: 'posted ' + fresh.length };
   } catch (e) {

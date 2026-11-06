@@ -38,10 +38,11 @@ jobs:
           S_XSOLLA_SANDBOX: ${{ secrets.XSOLLA_SANDBOX || vars.XSOLLA_SANDBOX }}
           S_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           S_MAIL_FROM: ${{ secrets.MAIL_FROM || vars.MAIL_FROM }}
+          S_DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
           ARGS=()
-          for N in FIREBASE_SERVICE_ACCOUNT XSOLLA_API_KEY XSOLLA_WEBHOOK_SECRET XSOLLA_PROJECT_ID XSOLLA_MERCHANT_ID XSOLLA_SANDBOX RESEND_API_KEY MAIL_FROM; do
+          for N in FIREBASE_SERVICE_ACCOUNT XSOLLA_API_KEY XSOLLA_WEBHOOK_SECRET XSOLLA_PROJECT_ID XSOLLA_MERCHANT_ID XSOLLA_SANDBOX RESEND_API_KEY MAIL_FROM DISCORD_WEBHOOK; do
             V="S_$N"; V="${!V}"
             if [ -n "$V" ]; then
               # ключ Firebase передаём в base64: многострочный JSON так не ломается (сервер сам его раскодирует)
