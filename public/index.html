@@ -1681,7 +1681,7 @@ function frSub(){if(!DB||!UID||!S){return}if(frFor===UID)return;if(frUn)frUn();f
 const FR=()=>{const m={};[...FRA,...FRB].forEach(f=>{if(f.a===UID||f.b===UID)m[f.id]=f});return Object.values(m)},frOther=f=>f.a===UID?f.b:f.a,frName=f=>{const o=frOther(f),pl=PL.find(x=>x.id===o);return pl?pl.name:(f.a===o?f.na:f.nb)||o};
 const frOf=id=>FR().find(f=>f.id===pid(UID,id)),frUnread=f=>f.st==='ok'&&f.lastFrom&&f.lastFrom!==UID&&(f.lastTs||0)>((f.a===UID?f.ra:f.rb)||0);
 const frIn=()=>FR().filter(f=>f.st==='p'&&f.by!==UID),frNew=()=>FR().filter(frUnread).length+frIn().length;
-const isOn=pl=>!!pl&&(HUB.onl?HUB.onl.has(pl.id)||(pl.id===UID&&!!UID):!!(pl.seen&&Date.now()-pl.seen<6*60000));
+const isOn=pl=>!!pl&&((HUB.onl&&HUB.onl.has(pl.id))||(pl.id===UID&&!!UID)||!!(pl.seen&&Date.now()-pl.seen<6*60000));
 function frAdd(id){if(!DB||!id||id===UID)return;const f=frOf(id);if(f){if(f.st==='p'&&f.by!==UID)return frAcc(id);return}
  if(FR().filter(x=>x.st==='ok').length>=FRMAX){FRMSG=`Не больше ${FRMAX} друзей.`;return render()}
  const pl=PL.find(x=>x.id===id),[a,b]=[UID,id].sort(),me=S.name,him=pl?pl.name:id;
@@ -1854,7 +1854,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.10.2';
+const GVER='1.10.3';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2257,7 +2257,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.10.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.10.3</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2318,7 +2318,7 @@ setTimeout(gonl,4000);setTimeout(gonl,12000);setInterval(gonl,60000);
 function statsView(){return rdView()+funnelView()+statsView0()}
 function statsView0(){if(!STATS){statsLoad();return'<div class="panel"><p>Загружаю статистику…</p></div>'}
  const L=STATS.L,d=DAY(),now=Date.now(),pc=(a,b)=>b?Math.round(a/b*100)+'%':'—';
- const nw=L.filter(p=>p.rd!=null&&!p.old),on=L.filter(p=>p.seen&&now-p.seen<6*60000).length,dau=L.filter(p=>p.seen&&Math.floor((p.seen+2*3600000)/864e5)===d).length,wau=L.filter(p=>p.seen&&now-p.seen<7*864e5).length;
+ const nw=L.filter(p=>p.rd!=null&&!p.old),on=onlineList().length,dau=L.filter(p=>p.seen&&Math.floor((p.seen+2*3600000)/864e5)===d).length,wau=L.filter(p=>p.seen&&now-p.seen<7*864e5).length;
  const age=p=>d-p.rd,has=(p,o)=>(p.act||[]).includes(o),hasGE=(p,o)=>(p.act||[]).some(x=>x>=o);
  const c1=nw.filter(p=>age(p)>=1),c3=nw.filter(p=>age(p)>=3),c7=nw.filter(p=>age(p)>=7),c30=nw.filter(p=>age(p)>=30);
  const box=(t,v,sub)=>`<div class="chip" style="flex-direction:column;align-items:flex-start;gap:0"><small style="margin:0;color:var(--mute)">${t}</small><b style="font-size:22px">${v}</b>${sub?`<small style="margin:0;color:var(--mute);font-size:12px">${sub}</small>`:''}</div>`;
