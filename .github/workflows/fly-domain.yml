@@ -1,0 +1,25 @@
+# Подключение домена к Fly: выдаёт адреса и сертификаты, печатает, какие DNS-записи нужны.
+# Ничего не меняет на текущем сайте: пока DNS смотрит на Netlify, сертификат просто ждёт.
+name: Fly domain
+on:
+  workflow_dispatch:
+jobs:
+  domain:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Адреса и сертификаты
+        run: |
+          APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
+          flyctl ips list -a "$APP"
+          flyctl ips list -a "$APP" | grep -q v6 || flyctl ips allocate-v6 -a "$APP"
+          flyctl ips list -a "$APP" | grep -qE 'shared|v4' || flyctl ips allocate-v4 --shared -a "$APP"
+          echo "===== IPs"; flyctl ips list -a "$APP"
+          for H in playnorthfall.online www.playnorthfall.online; do
+            flyctl certs show "$H" -a "$APP" >/dev/null 2>&1 || flyctl certs add "$H" -a "$APP" || true
+            echo "===== $H"; flyctl certs show "$H" -a "$APP" || true
+            flyctl certs setup "$H" -a "$APP" 2>/dev/null || true
+          done
