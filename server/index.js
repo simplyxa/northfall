@@ -125,12 +125,21 @@ const server = http.createServer(async (req, res) => {
   const host = (req.headers.host || '').toLowerCase();
   if (host.startsWith('www.')) { res.writeHead(301, { Location: 'https://' + host.slice(4) + req.url }); return res.end(); }
   if (u.pathname === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
+  if (u.pathname === '/hubz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(HUB.stats())); }
   const m = u.pathname.match(/^\/(?:\.netlify\/functions|api)\/([a-z0-9-]+)\/?$/);
   if (m) return fnRoute(req, res, u, m[1]);
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); return res.end(); }
   sendStatic(req, res, u.pathname);
 });
 server.keepAliveTimeout = 65000;
+// сокет-хаб: живые списки и «онлайн» по WebSocket (/ws)
+const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
+const HUB = require('./hub')(server, () => { const a = fbAdmin(); return a ? a.firestore() : null; }, async tok => {
+  const a = fbAdmin(); if (!a) throw new Error('no firebase');
+  const d = await a.auth().verifyIdToken(tok), DOM = '@northfall.game';
+  if (!d.email || !d.email.endsWith(DOM)) throw new Error('bad user');
+  return d.email.slice(0, -DOM.length);
+});
 server.listen(PORT, () => console.log('Northfall server on :' + PORT));
 
 // расписание: push-cron каждые 15 минут (по границе :00/:15/:30/:45, как в Netlify)

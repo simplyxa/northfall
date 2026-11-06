@@ -322,6 +322,35 @@ function staleHit(){if(STALE)return;STALE=true;clearTimeout(syncT);try{localStor
  const d=document.createElement('div');d.className='modal';d.style.zIndex=200;d.innerHTML=`<div class="mbox" style="text-align:center"><h3 style="margin:0 0 8px">Игра открыта на другом устройстве</h3><p style="margin:0 0 12px">Свежий прогресс сохранён там. Чтобы его не затереть, здесь игра остановлена.</p><button class="b red" style="width:100%" onclick="location.reload()">Загрузить свежий прогресс</button></div>`;document.body.appendChild(d)}
 // вернулся во вкладку — сразу проверяем, не играли ли тем временем на другом устройстве (чтобы не играть впустую)
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!DB||!UID||!S||STALE||!SBASE&&!SLAST)return;DB.collection('saves').doc(UID).get().then(sn=>{const d=sn.exists?sn.data():null;if(d&&d.ses&&d.ses!==SESS&&d.ses!==SBASE)staleHit()}).catch(()=>{})});
+// ===== Сокет-хаб: живые списки и «онлайн» приходят с нашего сервера по WebSocket =====
+// Сервер один раз слушает базу и раздаёт изменения всем — клиенты больше не читают эти списки из Firestore сами.
+// Если сокет недоступен (превью, сбой сервера) — тихо возвращаемся к прямому чтению Firestore.
+const HUB={ws:null,ok:false,dead:false,L:{},n:0,onl:null,g:0,who:null,tm:null};
+function hubOn(){try{return /^https?:$/.test(location.protocol)&&!/(^|\.)claude\.(ai|site)$|claudeusercontent|anthropic/.test(location.hostname)}catch(e){return false}}
+function hubSend(m){try{if(HUB.ws&&HUB.ws.readyState===1)HUB.ws.send(JSON.stringify(m))}catch(e){}}
+function hubSn(d){const docs=d.map(x=>{const{id,...r}=x;return{id,data:()=>JSON.parse(JSON.stringify(r)),exists:true}});return{docs,size:docs.length,empty:!docs.length,metadata:{fromCache:false,hasPendingWrites:false},docChanges:()=>[],forEach(f){docs.forEach(f)}}}
+function hubFs(name){const L=HUB.L[name];if(!L||L.fs||!L.cbs.size||!L.q)return;L.fs=L.q.onSnapshot(sn=>{for(const e of L.cbs)try{e.cb(sn)}catch(x){console.error(x)}},er=>{for(const e of L.cbs)e.err&&e.err(er)})}
+function hubHello(){if(!HUB.ok)return;const who=UID||('g:'+(typeof GUEST!=='undefined'&&GUEST?1:0));if(HUB.who===who)return;HUB.who=who;
+ let g='';try{g=localStorage.getItem('nf_gid')||''}catch(e){}
+ const tk=UID&&typeof FBA!=='undefined'&&FBA&&FBA.currentUser?FBA.currentUser.getIdToken().catch(()=>''):Promise.resolve('');
+ tk.then(tok=>hubSend({t:'hello',tok:tok||undefined,g:!tok&&g?g:undefined}))}
+function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws')}catch(e){HUB.dead=true;return}
+ HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;for(const k in HUB.L)hubFs(k);HUB.n++;
+  if(HUB.n>8&&!HUB.everOk){HUB.dead=true;return}clearTimeout(HUB.tm);HUB.tm=setTimeout(hubStart,Math.min(30000,1500*HUB.n))};
+ ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;hubHello();const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
+ ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
+  if(m.t==='snap'){const L=HUB.L[m.c];if(!L)return;L.data=m.d;if(L.fs){try{L.fs()}catch(x){}L.fs=null}const sn=()=>hubSn(m.d);for(const x of L.cbs)try{x.cb(sn())}catch(er){console.error(er)}}
+  else if(m.t==='nofeed'){hubFs(m.c)}
+  else if(m.t==='onl'){HUB.onl=new Set(m.u||[]);HUB.g=m.g|0;if(typeof GONL!=='undefined')GONL=HUB.g;if(typeof ui==='function')ui()}};
+ ws.onclose=fail;ws.onerror=()=>{try{ws.close()}catch(x){}}}
+// подписка на живой список: через хаб, а если его нет — напрямую на запрос Firestore q
+function HS(name,q,cb,err){const L=HUB.L[name]=HUB.L[name]||{cbs:new Set(),fs:null,q:null,data:null};if(!L.q)L.q=q;const ent={cb,err};L.cbs.add(ent);
+ hubStart();
+ if(HUB.ok){if(L.cbs.size===1)hubSend({t:'sub',c:[name]});else if(L.data){const d=L.data;setTimeout(()=>{if(L.cbs.has(ent))cb(hubSn(d))},0)}}
+ else if(HUB.dead||!hubOn())hubFs(name);
+ else setTimeout(()=>{if(!HUB.ok&&L.cbs.has(ent))hubFs(name)},3500);
+ if(L.fs&&L.cbs.size>1){/* прямая подписка уже идёт и сама вызовет новый cb при следующем изменении */}
+ return()=>{L.cbs.delete(ent);if(!L.cbs.size){if(L.fs){try{L.fs()}catch(x){}L.fs=null}hubSend({t:'unsub',c:[name]});L.data=null}}}
 // ===== Счётчик чтений базы (для админки): сколько документов прочитала эта вкладка и откуда =====
 const RDM={t0:Date.now(),n:0,k:{}};
 function rdAdd(k,n){if(!n)return;RDM.n+=n;RDM.k[k]=(RDM.k[k]||0)+n}
@@ -1020,7 +1049,7 @@ const wbName=d=>WBN[d%WBN.length],wbLeft=()=>Math.max(0,Math.min(WBCD,(+S.wbnext
 function wbNextMax(){const P=WB['b'+(DAY()-1)];if(!P)return WBMAX;const base=P.max||WBMAX;let f=1;
  if(P.killed&&P.kt){const h=(P.kt-((P.day*864e5)-2*36e5))/36e5;f=h<4?1.6:h<10?1.35:h<18?1.15:1}else if(!P.killed)f=.8;
  return Math.max(WBMAX,Math.min(5e6,Math.round(base*f/1000)*1000))}
-function wbSub(){if(!DB||wbUn)return;wbUn=DB.collection('world').orderBy('day','desc').limit(8).onSnapshot(sn=>{WB={};sn.docs.forEach(d=>{WB[d.id]=JSON.parse(JSON.stringify(d.data()))});const k='b'+DAY();
+function wbSub(){if(!DB||wbUn)return;wbUn=HS('world',DB.collection('world').orderBy('day','desc').limit(8),sn=>{WB={};sn.docs.forEach(d=>{WB[d.id]=JSON.parse(JSON.stringify(d.data()))});const k='b'+DAY();
  if(!WB[k]&&!sn.metadata.fromCache){const mx=wbNextMax();const n={day:DAY(),hp:mx,max:mx,dmg:{},nm:{},killed:false};WB[k]=n;DB.collection('world').doc(k).set(n).catch(()=>{})}
  if(tab==='boss'&&!fight)ui()},()=>{})}
 function startWB(){const B=WB['b'+DAY()];if(!B||B.killed||fight||!DB||S.lvl<WBLV)return;if(wbLeft()>0)return;if(S.en<3){log('Нужно 3 энергии.','sys');return render()}if(S.hp<=0){log('Ты ранен. Отдохни у костра.','sys');return render()}
@@ -1065,7 +1094,7 @@ function rTx(fn){if(DB.runTransaction)return DB.runTransaction(fn);const ops=[];
 const rqLive=q=>((q&&q.m)||[]).filter(x=>x.id.startsWith('bot_')||Date.now()-(+x.ts||0)<RSTALE);
 const myQ=()=>{for(const b in RQ)if(b[0]==='b'&&rqLive(RQ[b]).some(x=>x.id===UID))return+b.slice(1);return -1};
 function raidSub(){if(!DB||!S||!UID)return;if(RQFOR===UID)return;if(RQUN)RQUN();RQFOR=UID;
- RQUN=DB.collection('raidq').onSnapshot(sn=>{RQ={};sn.docs.forEach(d=>{RQ[d.id]=d.data()});raidCheck();duelCheck();if((tab==='raid'||tab==='duel')&&!fight)rDraw()},()=>{});
+ RQUN=HS('raidq',DB.collection('raidq'),sn=>{RQ={};sn.docs.forEach(d=>{RQ[d.id]=d.data()});raidCheck();duelCheck();if((tab==='raid'||tab==='duel')&&!fight)rDraw()},()=>{});
  if(!RTMR)RTMR=setInterval(()=>{raidTick();duelTick();if(tab==='duel'&&inDQ()&&!fight){const el=document.activeElement;if(!(el&&el.tagName==='INPUT'))render()}},1000)}
 function raidCheck(){S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}RAUTO=L.rid;popup('⚔ Рейд начался!',`Группа собрана! ${RWV} волны врагов — каждый бьётся сам, как на охоте. Потом общий босс: урон всей группы складывается.`);return}}}
 function raidOpen(rid){if(RAUN)RAUN();if(RAUN2)RAUN2();RAIDID=rid;RAID=null;RACT={};RRES=null;
@@ -1477,7 +1506,7 @@ const WQT=c=>20000*cLv(c).L,WQR=c=>1500*cLv(c).L;
 function wqClaim(){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;const w=c.wq||{};if(w.wk!==curS()||(w.xp|0)<WQT(c)||w.done)return;const g=WQR(c);
  cUpd(c,{wq:{...w,done:true}}).then(()=>{const ref=DB.collection('clans').doc(c.id).collection('dep').doc('quest');return ref.get().then(sn=>{const o=sn.exists?sn.data():{};return ref.set({name:'Задания клана',gold:(o.gold|0)+g,iron:(o.iron|0)+Math.round(g/20)})})}).then(()=>{log(`Задание недели выполнено: +${g} серебра и +${Math.round(g/20)} железа в казну клана.`,'hit');clog(`Задание недели выполнено: в казну ${g} серебра.`,'🏆');render()})}
 let TER={},terUn=null;const TERN={easy:'Опушка',mid:'Глухой лес',hard:'Чаща'},TERB=.15;
-function terSub(){if(!DB||terUn)return;terUn=DB.collection('terr').limit(10).onSnapshot(sn=>{TER={};sn.docs.forEach(d=>{TER[d.id]=JSON.parse(JSON.stringify(d.data()))});if(['hunt','clan'].includes(tab)&&!fight)ui()},()=>{})}
+function terSub(){if(!DB||terUn)return;terUn=HS('terr',DB.collection('terr').limit(10),sn=>{TER={};sn.docs.forEach(d=>{TER[d.id]=JSON.parse(JSON.stringify(d.data()))});if(['hunt','clan'].includes(tab)&&!fight)ui()},()=>{})}
 const terOwner=k=>{const t=TER[k];if(!t)return null;if(t.wk===curS())return t.owner?{id:t.owner,name:t.oname}:null;const e=Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1])[0];return e?{id:e[0],name:(t.names||{})[e[0]]||cname(e[0])}:null};
 function terFlush(){if(!S||fight||!DB||!S.clan||!S.tq)return;const q=S.tq;S.tq=null;save();const cid=S.clan,cn=cname(cid);
  for(const k in q){const n=q[k];if(!(n>0))continue;const ref=DB.collection('terr').doc(k);ref.get().then(sn=>{let t=sn.exists?JSON.parse(JSON.stringify(sn.data())):{wk:curS(),pts:{},names:{}};
@@ -1633,7 +1662,7 @@ function frSub(){if(!DB||!UID||!S){return}if(frFor===UID)return;if(frUn)frUn();f
 const FR=()=>{const m={};[...FRA,...FRB].forEach(f=>{if(f.a===UID||f.b===UID)m[f.id]=f});return Object.values(m)},frOther=f=>f.a===UID?f.b:f.a,frName=f=>{const o=frOther(f),pl=PL.find(x=>x.id===o);return pl?pl.name:(f.a===o?f.na:f.nb)||o};
 const frOf=id=>FR().find(f=>f.id===pid(UID,id)),frUnread=f=>f.st==='ok'&&f.lastFrom&&f.lastFrom!==UID&&(f.lastTs||0)>((f.a===UID?f.ra:f.rb)||0);
 const frIn=()=>FR().filter(f=>f.st==='p'&&f.by!==UID),frNew=()=>FR().filter(frUnread).length+frIn().length;
-const isOn=pl=>pl&&pl.seen&&Date.now()-pl.seen<6*60000;
+const isOn=pl=>!!pl&&(HUB.onl?HUB.onl.has(pl.id)||(pl.id===UID&&!!UID):!!(pl.seen&&Date.now()-pl.seen<6*60000));
 function frAdd(id){if(!DB||!id||id===UID)return;const f=frOf(id);if(f){if(f.st==='p'&&f.by!==UID)return frAcc(id);return}
  if(FR().filter(x=>x.st==='ok').length>=FRMAX){FRMSG=`Не больше ${FRMAX} друзей.`;return render()}
  const pl=PL.find(x=>x.id===id),[a,b]=[UID,id].sort(),me=S.name,him=pl?pl.name:id;
@@ -1806,11 +1835,11 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.9.14';
+const GVER='1.10.0';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
- gcUn=DB.collection('chat').orderBy('ts','desc').limit(60).onSnapshot(sn=>{GC=sn.docs.map(d=>({id:d.id,...d.data()})).reverse();const els=['#gcbox','#gcbox2'].map(x=>$(x)).filter(Boolean);if(els.length){els.forEach(el=>{const end=el.scrollHeight-el.scrollTop-el.clientHeight<60;el.innerHTML=gcHtml();if(end)el.scrollTop=el.scrollHeight})}else ui()},()=>{})}
+ gcUn=HS('chat',DB.collection('chat').orderBy('ts','desc').limit(60),sn=>{GC=sn.docs.map(d=>({id:d.id,...d.data()})).reverse();const els=['#gcbox','#gcbox2'].map(x=>$(x)).filter(Boolean);if(els.length){els.forEach(el=>{const end=el.scrollHeight-el.scrollTop-el.clientHeight<60;el.innerHTML=gcHtml();if(end)el.scrollTop=el.scrollHeight})}else ui()},()=>{})}
 const gcHtml=()=>GC.length?GC.map(m=>{if(m.sys)return`<div style="text-align:center;font-style:italic;color:var(--gold);font-size:14px;padding:6px 2px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)">📜 ${esc(m.text)} <small style="color:var(--mute);font-style:normal">${fdate(m.ts)}</small>${ADM?`<button class="lnk" data-gd="${m.id}" style="padding:0 0 0 6px;color:var(--blood)" aria-label="Удалить">✕</button>`:''}</div>`;const pl=PL.find(x=>x.id===m.uid);return`<div class="gcm ${m.uid===UID?'me':''}"><div class="gch"><b data-pv="${m.uid}" style="cursor:pointer;color:var(${m.uid===UID?'--moss':'--gold'})">${esc(m.name||m.uid)}</b>${pl?`<small>${CL[pl.cls]?CL[pl.cls].n+', ':''}ур. ${pl.lvl}</small>`:''}<small style="margin-left:auto">${fdate(m.ts)}</small>${m.uid!==UID&&UID?`<button class="lnk rplk" data-rpm="g|${m.id}" aria-label="Ответить">↩ ответить</button>`:''}${ADM?`<button class="lnk" data-gd="${m.id}" style="padding:0 0 0 6px;color:var(--blood)" aria-label="Удалить">✕</button>`:''}</div>${rqHtml(m)}<div class="gct">${esc(m.text)}</div></div>`}).join(''):'<p style="margin:0;color:var(--mute);text-align:center">Чат пуст. Напиши первым!</p>';
 // ===== Новости Севера: реальные события игроков в общем чате =====
 let NWQ=[],NWT=0;
@@ -2114,11 +2143,11 @@ async function initOnline(){
   // общие списки (игроки, кланы, войны) — самые «дорогие» чтения: гостям из рекламы подключаем их,
   // только когда они уходят дальше первой охоты или играют дольше 3 минут
   SOCF=()=>{
-  db.collection('wars').limit(60).onSnapshot(sn=>{WARS=sn.docs.map(d=>({id:d.id,...d.data()}));ui()},()=>{});
+  HS('wars',db.collection('wars').limit(60),sn=>{WARS=sn.docs.map(d=>({id:d.id,...d.data()}));ui()},()=>{});
   // список игроков (до 300); лучших по рейтингу дополнительно подгружаем на вкладке «Лучшие»
-  db.collection('players').limit(300).onSnapshot(sn=>{PLB=sn.docs.map(d=>({id:d.id,...d.data()}));plMerge();ui()},()=>{});
+  HS('players',db.collection('players').limit(300),sn=>{PLB=sn.docs.map(d=>({id:d.id,...d.data()}));plMerge();ui()},()=>{});
   topFetch();
-  db.collection('clans').limit(100).onSnapshot(sn=>{CLN=sn.docs.map(d=>({id:d.id,...d.data()}));
+  HS('clans',db.collection('clans').limit(100),sn=>{CLN=sn.docs.map(d=>({id:d.id,...d.data()}));
    if(S&&S.clan){const c=CLN.find(x=>x.id===S.clan);if(c&&(c.kicked||[]).includes(UID)){S.clan='';log('Лидер исключил тебя из клана.','sys');save()}else if(!c&&!sn.metadata.fromCache){S.clan='';save()}}ui()},()=>{});
   };socMaybe();setTimeout(()=>socMaybe(true),180000);
   sync();
@@ -2209,7 +2238,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.14</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.10.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2264,7 +2293,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-fr2]');if(
 
 // ===== Гости онлайн =====
 let GONL=0;
-function gonl(){try{if(document.visibilityState!=='visible'||!S)return;let b;if(typeof GUEST!=='undefined'&&GUEST){let g='';try{g=localStorage.getItem('nf_gid')||'';if(!g){g=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-6);localStorage.setItem('nf_gid',g)}}catch(e){g='t'+Math.random().toString(36).slice(2,12)}b={a:'ping',g}}else if(UID)b={a:'online'};else return;
+function gonl(){try{if(document.visibilityState!=='visible'||!S||(typeof HUB!=='undefined'&&HUB.ok&&HUB.onl))return;let b;if(typeof GUEST!=='undefined'&&GUEST){let g='';try{g=localStorage.getItem('nf_gid')||'';if(!g){g=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-6);localStorage.setItem('nf_gid',g)}}catch(e){g='t'+Math.random().toString(36).slice(2,12)}b={a:'ping',g}}else if(UID)b={a:'online'};else return;
  fetch('/.netlify/functions/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json()).then(j=>{const n=j.g|0;if(n!==GONL){GONL=n;if(typeof ui==='function')ui()}}).catch(()=>{})}catch(e){}}
 setTimeout(gonl,4000);setTimeout(gonl,12000);setInterval(gonl,60000);
 function statsView(){return rdView()+funnelView()+statsView0()}
@@ -2378,7 +2407,7 @@ function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главна
 // при открытии чата — сразу к последним сообщениям (внизу)
 let CHK='';function chatScroll(){const k=tab==='gchat'||tab==='dm'?tab+'|'+(tab==='dm'?DMW:''):'';if(k===CHK)return;CHK=k;if(!k)return;const go=()=>{const el=document.getElementById(tab==='dm'?'dmbox':'gcbox');if(el)el.scrollTop=el.scrollHeight};go();setTimeout(go,120);setTimeout(go,600)}
 function render(){
- socMaybe();setTimeout(chatScroll,0);
+ socMaybe();hubHello();setTimeout(chatScroll,0);
  setTimeout(nbPopCheck,60);
  IREG=[];paySub();walletSub();admSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
  const keep={};['gto','gtx','mlto','nnick','lg','pw','pw2','em','mymail','pwold','pwnew','pwnew2','nm','ftt','ftb','fpb','dmt','gct'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
