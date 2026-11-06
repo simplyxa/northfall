@@ -33,11 +33,11 @@ jobs:
           S_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           S_XSOLLA_API_KEY: ${{ secrets.XSOLLA_API_KEY }}
           S_XSOLLA_WEBHOOK_SECRET: ${{ secrets.XSOLLA_WEBHOOK_SECRET }}
-          S_XSOLLA_PROJECT_ID: ${{ secrets.XSOLLA_PROJECT_ID }}
-          S_XSOLLA_MERCHANT_ID: ${{ secrets.XSOLLA_MERCHANT_ID }}
-          S_XSOLLA_SANDBOX: ${{ secrets.XSOLLA_SANDBOX }}
+          S_XSOLLA_PROJECT_ID: ${{ secrets.XSOLLA_PROJECT_ID || vars.XSOLLA_PROJECT_ID }}
+          S_XSOLLA_MERCHANT_ID: ${{ secrets.XSOLLA_MERCHANT_ID || vars.XSOLLA_MERCHANT_ID }}
+          S_XSOLLA_SANDBOX: ${{ secrets.XSOLLA_SANDBOX || vars.XSOLLA_SANDBOX }}
           S_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          S_MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          S_MAIL_FROM: ${{ secrets.MAIL_FROM || vars.MAIL_FROM }}
         run: |
           APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
           ARGS=()
