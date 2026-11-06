@@ -53,3 +53,10 @@ jobs:
       - name: Выложить
         if: steps.tok.outputs.ok == 'true'
         run: flyctl deploy --remote-only --ha=false
+      - name: Проверка после выкладки
+        if: steps.tok.outputs.ok == 'true'
+        run: |
+          sleep 20
+          curl -s -o /dev/null -w "сайт: %{http_code}\n" https://playnorthfall.online/
+          curl -s -w "\n" https://playnorthfall.online/hubz || true
+          node -e "const w=new WebSocket('wss://playnorthfall.online/ws');w.onopen=()=>{w.send(JSON.stringify({t:'hello',g:'ci0000000'}));w.send(JSON.stringify({t:'sub',c:['players','clans']}))};w.onmessage=e=>{const m=JSON.parse(e.data);console.log('ws:',m.t,m.c||'',m.d?m.d.length+' док.':'')};setTimeout(()=>process.exit(0),6000)" || true
