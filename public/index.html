@@ -337,11 +337,13 @@ function hubHello(){if(!HUB.ok)return;const who=UID||('g:'+(typeof GUEST!=='unde
 function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws')}catch(e){HUB.dead=true;return}
  HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;for(const k in HUB.L)hubFs(k);HUB.n++;
   if(HUB.n>8&&!HUB.everOk){HUB.dead=true;return}clearTimeout(HUB.tm);HUB.tm=setTimeout(hubStart,Math.min(30000,1500*HUB.n))};
- ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
+ ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}try{dHubJoin()}catch(e){}},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
   if(m.t==='snap'){const L=HUB.L[m.c];if(!L)return;L.data=m.d;if(L.fs){try{L.fs()}catch(x){}L.fs=null}const sn=()=>hubSn(m.d);for(const x of L.cbs)try{x.cb(sn())}catch(er){console.error(er)}}
   else if(m.t==='nofeed'){hubFs(m.c)}
   else if(m.t==='rs'){if(typeof rHubState==='function')rHubState(m)}
+  else if(m.t==='ds'){if(typeof dHubState==='function')dHubState(m)}
+  else if(m.t==='dno'){if(typeof DHUB!=='undefined'&&DHUB===m.rid)DHUB=null}
   else if(m.t==='rno'){if(typeof RHUB!=='undefined'&&RHUB===m.rid)RHUB=null}
   else if(m.t==='onl'){HUB.onl=new Set(m.u||[]);HUB.g=m.g|0;if(typeof GONL!=='undefined')GONL=HUB.g;if(typeof ui==='function')ui()}};
  ws.onclose=fail;ws.onerror=()=>{try{ws.close()}catch(x){}}}
@@ -1098,7 +1100,7 @@ const myQ=()=>{for(const b in RQ)if(b[0]==='b'&&rqLive(RQ[b]).some(x=>x.id===UID
 function raidSub(){if(!DB||!S||!UID)return;if(RQFOR===UID)return;if(RQUN)RQUN();RQFOR=UID;
  RQUN=HS('raidq',DB.collection('raidq'),sn=>{RQ={};sn.docs.forEach(d=>{RQ[d.id]=d.data()});raidCheck();duelCheck();if((tab==='raid'||tab==='duel')&&!fight)rDraw()},()=>{});
  if(!RTMR)RTMR=setInterval(()=>{raidTick();duelTick();if(tab==='duel'&&inDQ()&&!fight){const el=document.activeElement;if(!(el&&el.tagName==='INPUT'))render()}},1000)}
-function raidCheck(){S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}RAUTO=L.rid;popup('⚔ Рейд начался!',`Группа собрана! ${RWV} волны врагов — каждый бьётся сам, как на охоте. Потом общий босс: урон всей группы складывается.`);return}}}
+function raidCheck(){if(!S)return;S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}RAUTO=L.rid;popup('⚔ Рейд начался!',`Группа собрана! ${RWV} волны врагов — каждый бьётся сам, как на охоте. Потом общий босс: урон всей группы складывается.`);return}}}
 function raidOpen(rid){if(RAUN)RAUN();if(RAUN2)RAUN2();RAIDID=rid;RAID=null;RACT={};RRES=null;RHUB=null;setTimeout(rHubJoin,600);
  const ref=DB.collection('raids').doc(rid);
  RAUN=ref.onSnapshot(sn=>{if(!sn.exists)return;RAID=sn.data();if(RAID.st!=='on')raidFinish();if(RAID.w&&RAID.st==='on'&&RAUTO===rid&&!fight){RAUTO=null;return rRunStart()}if(tab==='raid'&&!fight)rDraw()},()=>{});
@@ -1292,16 +1294,23 @@ function duelCheck(){if(!S||!UID)return;S.ddone=S.ddone||[];
  const c=RQ['dc_'+UID];if(c&&Date.now()-(+c.ts||0)<DINV&&c.ts!==DCSEEN&&!(DUEL&&DUEL.st==='on')){DCSEEN=c.ts;closeModal();const d=document.createElement('div');d.className='modal';d.setAttribute('role','alertdialog');
   d.innerHTML=`<div class="mbox" style="text-align:center;max-width:340px;border-top:4px solid var(--blood)"><h3 style="margin:0 0 8px">⚔ Вызов на дуэль</h3><p style="margin:0 0 14px">${esc(c.n)} (ур. ${c.lv}, ${rankOf2(c)[1]}) вызывает тебя на дуэль!</p><button class="b red" data-dx="yes" style="width:100%">Принять</button><button class="b alt" data-dx="no" style="width:100%">Отказаться</button></div>`;
   d.addEventListener('click',e=>{const b=e.target.closest('[data-dx]');if(!b)return;closeModal();if(b.dataset.dx==='yes')dAccept();else dDecline()});document.body.appendChild(d)}}
-function duelOpen(rid){if(DUU)DUU();if(DUU2)DUU2();DUELID=rid;DUEL=null;DACT={};DRES=null;const ref=DB.collection('raids').doc(rid);
+// лайв-арена через сокет: ходы мгновенно, раунд считает сервер; без сокета — по-старому через базу
+let DHUB=null;const dHub=()=>HUB.ok&&DHUB&&DHUB===DUELID;
+function dHubJoin(){if(!HUB.ok||!DUELID||!UID||(DUEL&&DUEL.st!=='on'))return;DHUB=DUELID;hubSend({t:'dj',rid:DUELID})}
+function dHubState(m){if(m.rid!==DUELID)return;const st0=DUEL&&DUEL.st;DUEL=m.R;DHUB=DUELID;if(DUU2){try{DUU2()}catch(e){}DUU2=null}
+ if(DACT[UID]&&DACT[UID].r!==DUEL.r)delete DACT[UID];
+ if(DUEL.st!=='on')duelFinish();if(tab==='duel'&&!fight)rDraw()}
+function duelOpen(rid){if(DUU)DUU();if(DUU2)DUU2();DUELID=rid;DUEL=null;DACT={};DRES=null;DHUB=null;setTimeout(dHubJoin,500);const ref=DB.collection('raids').doc(rid);
  DUU=ref.onSnapshot(sn=>{if(!sn.exists)return;DUEL=sn.data();if(DUEL.st!=='on')duelFinish();if(tab==='duel'&&!fight)rDraw()},()=>{});
  DUU2=ref.collection('a').onSnapshot(sn=>{DACT={};sn.docs.forEach(d=>{DACT[d.id]=d.data()});if(tab==='duel'&&!fight)rDraw()},()=>{});
  S.dd=S.dd||{};const d=DAY();if(S.dd.d!==d)S.dd={d,n:0};if(!(S.dstart||[]).includes(rid)){S.dstart=[...(S.dstart||[]),rid].slice(-20);S.dd.n++;save()}}
 function dAct(a){if(!DUEL||DUEL.st!=='on'||!DUELID)return;const me=DUEL.mem[UID];if(!me||me.hp<=0||me.stun>=DUEL.r)return;const ac=DACT[UID];if(ac&&ac.r===DUEL.r)return;
  if(a==='pow'&&me.pcd>DUEL.r)return;if(a==='sk'&&me.scd>DUEL.r)return;if(a==='pot'&&!me.pot)return;DACT[UID]={r:DUEL.r,a};rDraw();
+ if(dHub()){hubSend({t:'da',rid:DUELID,a});return}
  DB.collection('raids').doc(DUELID).collection('a').doc(UID).set({r:DUEL.r,a}).catch(()=>{})}
 function duelTick(){if(S&&UID&&S.lvl>=DLV&&dOpenRaw()&&!fight&&!document.querySelector('.modal')){const d=Math.floor(Date.now()/864e5);if(S.laPop!==d){S.laPop=d;save();popup('⚔ Лайв-арена открыта!',`Бои 1 на 1 с живыми игроками — до ${dLocal(DWH[1])}. Сейчас ищут соперника: <b>${dqLive().length}</b>.<br><br><button class="b red" data-t="duel" style="width:100%" onclick="closeModal()">В Лайв-арену</button>`)}}if(S&&UID&&!DBUSY&&!DOPEN()&&typeof inDQ==='function'&&inDQ()){DBUSY=true;dqPut(q=>{q.m=q.m.filter(x=>x.id!==UID)}).catch(()=>{}).then(()=>{DBUSY=false});DQT=0}if(tab==='duel'&&!DUEL&&Math.floor(Date.now()/1000)%15===0&&!document.querySelector('.modal'))render();if(!DUEL||!DUELID)return;const el=document.getElementById('ddt');if(DUEL.st==='on'&&el)el.textContent=Math.max(0,Math.ceil((DUEL.dl-Date.now())/1000))+' с';
  if(DUEL.st!=='on'||DBUSY)return;const ids=Object.keys(DUEL.mem),need=ids.filter(id=>DUEL.mem[id].stun<DUEL.r),all=need.every(id=>DACT[id]&&DACT[id].r===DUEL.r);
- const my=DUEL.mem[UID]?DUEL.mem[UID].o:0;if(all||Date.now()>DUEL.dl+my*1500)dResolve()}
+ const my=DUEL.mem[UID]?DUEL.mem[UID].o:0;if(dHub()){if(Date.now()>DUEL.dl+8000)dResolve();return}if(all||Date.now()>DUEL.dl+my*1500)dResolve()}
 function dResolve(){if(DBUSY)return;DBUSY=true;const ref=DB.collection('raids').doc(DUELID),r0=DUEL.r;
  rTx(async t=>{const sn=await t.get(ref);if(!sn.exists)return;const R=JSON.parse(JSON.stringify(sn.data()));if(R.st!=='on'||R.r!==r0)return;const acts={};
   for(const id of Object.keys(R.mem)){const a=await t.get(ref.collection('a').doc(id));if(a.exists&&a.data().r===R.r)acts[id]=a.data().a}
@@ -1845,7 +1854,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.10.1';
+const GVER='1.10.2';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2248,7 +2257,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.10.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.10.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

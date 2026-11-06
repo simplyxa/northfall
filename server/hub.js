@@ -21,6 +21,7 @@ const MAXMSG = 64 * 1024;
 module.exports = function hub(server, getDb, verify) {
   const clients = new Set();
   const RAID = require('./raid')(getDb);
+  const DUEL = require('./duel')(getDb);
   const feeds = {}; // name → {un, docs, subs:Set, idle, ready}
 
   // ---------- WebSocket ----------
@@ -75,7 +76,7 @@ module.exports = function hub(server, getDb, verify) {
     if (!c.open) return; c.open = false; clients.delete(c);
     try { c.sock.destroy(); } catch (e) {}
     for (const f of c.subs) unsub(c, f);
-    RAID.onClose(c);
+    RAID.onClose(c); DUEL.onClose(c);
     onlineChanged();
   }
   // проверка живости: Fly закрывает тихие соединения, браузер на свёрнутой вкладке может «пропасть»
@@ -100,6 +101,7 @@ module.exports = function hub(server, getDb, verify) {
     if (m.t === 'sub' && Array.isArray(m.c)) { for (const f of m.c) if (FEEDS[f]) sub(c, f); return; }
     if (m.t === 'unsub' && Array.isArray(m.c)) { for (const f of m.c) unsub(c, f); return; }
     if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm') return RAID.onMsg(c, m, send);
+    if (m.t === 'dj' || m.t === 'da') return DUEL.onMsg(c, m, send);
   }
 
   // ---------- подписки на Firestore ----------
@@ -140,7 +142,7 @@ module.exports = function hub(server, getDb, verify) {
     }, now ? 300 : 1500);
   }
 
-  return { stats: () => ({ raids: RAID.stats(), clients: clients.size, feeds: Object.fromEntries(Object.entries(feeds).map(([k, F]) => [k, { subs: F.subs.size, docs: F.docs.length }])) }) };
+  return { stats: () => ({ raids: RAID.stats(), duels: DUEL.stats(), clients: clients.size, feeds: Object.fromEntries(Object.entries(feeds).map(([k, F]) => [k, { subs: F.subs.size, docs: F.docs.length }])) }) };
 };
 
 // данные Firestore → обычный JSON (метки времени → миллисекунды)
