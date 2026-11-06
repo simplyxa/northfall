@@ -5,6 +5,10 @@ primary_region = "fra"   # Франкфурт: близко и к России, 
 [env]
   URL = "https://playnorthfall.online"
   NODE_ENV = "production"
+  # пока домен на Netlify, рассылку и список изменений делает Netlify — иначе игроки получат пуши дважды.
+  # После переключения домена на Fly эти две строки удаляем.
+  CRON = "off"
+  CHANGELOG = "off"
 
 [http_service]
   internal_port = 8080
