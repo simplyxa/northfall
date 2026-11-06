@@ -8,6 +8,9 @@
 const DOM = '@northfall.game';
 const MAXB = 900 * 1024; // документ Firestore — до 1 МБ
 
+// честный потолок дохода серебром в секунду: ~15 убийств в минуту сильных зверей своего уровня (с запасом ×2,25 на особенности)
+const silverRate = lv => 15 * (5 + lv * 9) / 60;
+
 module.exports = function saves(admin) {
   const last = new Map(); // uid → {lvl, gold, at, applied}
   const recent = new Map(); // uid → время последнего флага (не спамить)
@@ -48,17 +51,29 @@ module.exports = function saves(admin) {
     let q; try { q = JSON.parse(body.toString('utf8')); } catch (e) { return J(400, { error: 'json' }); }
     const s = q && q.s, ses = String(q.ses || ''), base = q.base ? String(q.base) : null;
     if (!s || typeof s !== 'object' || !ses || s.acc && s.acc !== uid) return J(400, { error: 'bad save' });
-    s.ses = ses; s.acc = uid;
+    s.ses = ses; s.acc = uid; delete s._eb;
     const db = a.firestore(), ref = db.collection('saves').doc(uid);
-    let prev = null, stale = false;
+    let prev = null, stale = false, fix = null, clamp = null;
     try {
       await db.runTransaction(async tx => {
         const sn = await tx.get(ref); prev = sn.exists ? sn.data() : null;
         if (prev && prev.ses && prev.ses !== ses && prev.ses !== base) { stale = true; return; }
+        // «копилка» серебра: сколько честно можно было заработать с прошлого сохранения
+        const now = Date.now(), lv = Math.max(1, s.lvl | 0), rate = silverRate(lv), cap = rate * 7200 + 50000;
+        const eb = prev && prev._eb ? prev._eb : { b: cap, t: now };
+        let bud = Math.min(cap, (+eb.b || 0) + Math.max(0, now - (+eb.t || now)) / 1000 * rate);
+        const gift = prev && JSON.stringify(prev.applied || []) !== JSON.stringify(s.applied || []);
+        if (prev && !gift) {
+          const gain = (+s.gold || 0) - (+prev.gold || 0);
+          if (gain > bud) { clamp = { from: prev.gold | 0, to: s.gold | 0, allowed: Math.floor(bud) }; s.gold = (+prev.gold || 0) + Math.floor(bud); fix = { gold: s.gold }; bud = 0; }
+          else if (gain > 0) bud -= gain;
+        }
+        s._eb = { b: Math.round(bud), t: now };
         tx.set(ref, s);
       });
     } catch (e) { console.error('save tx', uid, e.message); return J(500, { error: 'db' }); }
     if (stale) return J(409, { stale: 1 });
+    if (clamp) flag(db, uid, 'clamp', { ...clamp, dtMin: 0 });
     // подозрительные скачки — только записываем для админа, игру не блокируем
     try {
       const p = prev || {}, now = Date.now(), dt = Math.max(1, now - (last.get(uid) || p.ts || now - 60000));
@@ -70,6 +85,6 @@ module.exports = function saves(admin) {
       }
       last.set(uid, now);
     } catch (e) {}
-    return J(200, { ok: 1 });
+    return J(200, fix ? { ok: 1, fix } : { ok: 1 });
   }
 };
