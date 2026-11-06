@@ -19,5 +19,7 @@ const day = t => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Asia/Jerus
   const ps = await db.collection('players').select('lvl', 'seen', 'ts').get(), L = {}; let act7 = 0;
   ps.forEach(d => { const x = d.data(), l = x.lvl | 0, b = l < 3 ? '1-2' : l < 5 ? '3-4' : l < 10 ? '5-9' : l < 20 ? '10-19' : l < 40 ? '20-39' : '40+'; L[b] = (L[b] || 0) + 1; if (Date.now() - (x.seen || 0) < 7 * 864e5) act7++; });
   console.log('players', ps.size, 'active7d', act7, JSON.stringify(L));
+  const er = await db.collection('priv').doc('client-errors').get();
+  for (const x of ((er.exists && er.data().L) || []).slice(-40)) console.log('ERR', new Date(x.t).toISOString().slice(5, 16), x.v, x.s, x.w, '|', x.m, '|', (x.u || '').replace(/^https?:\/\/[^/]+/, '').slice(0, 60));
   process.exit(0);
 })().catch(e => { console.error(e.message); process.exit(1); });
