@@ -100,7 +100,7 @@ module.exports = function hub(server, getDb, verify) {
     }
     if (m.t === 'sub' && Array.isArray(m.c)) { for (const f of m.c) if (FEEDS[f]) sub(c, f); return; }
     if (m.t === 'unsub' && Array.isArray(m.c)) { for (const f of m.c) unsub(c, f); return; }
-    if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm') return RAID.onMsg(c, m, send);
+    if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm' || m.t === 'rh') return RAID.onMsg(c, m, send);
     if (m.t === 'dj' || m.t === 'da') return DUEL.onMsg(c, m, send);
   }
 

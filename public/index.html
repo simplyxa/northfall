@@ -1168,10 +1168,10 @@ const myQ=()=>{for(const b in RQ)if(b[0]==='b'&&rqLive(RQ[b]).some(x=>x.id===UID
 function raidSub(){if(!DB||!S||!UID)return;if(RQFOR===UID)return;if(RQUN)RQUN();RQFOR=UID;
  RQUN=HS('raidq',DB.collection('raidq'),sn=>{RQ={};sn.docs.forEach(d=>{RQ[d.id]=d.data()});raidCheck();duelCheck();if((tab==='raid'||tab==='duel')&&!fight)rDraw()},()=>{});
  if(!RTMR)RTMR=setInterval(()=>{raidTick();duelTick();if(tab==='duel'&&inDQ()&&!fight){const el=document.activeElement;if(!(el&&el.tagName==='INPUT'))render()}},1000)}
-function raidCheck(){if(!S)return;S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}RAUTO=L.rid;popup('⚔ Рейд начался!',`Группа собрана! ${RWV} волны врагов — каждый бьётся сам, как на охоте. Потом общий босс: урон всей группы складывается.`);return}}}
+function raidCheck(){if(!S)return;S.rdone=S.rdone||[];for(const b in RQ){const L=RQ[b].last;if(L&&L.rid&&(L.m||[]).includes(UID)&&Date.now()-(+L.ts||0)<1800000&&!S.rdone.includes(L.rid)&&RAIDID!==L.rid){if(L.m.filter(x=>!x.startsWith('bot_'))[0]===UID&&Date.now()-(+L.ts||0)<90000)pushApi({a:'raid',rid:L.rid},1).catch(()=>{});raidOpen(L.rid);if(!fight){tab='raid';render();window.scrollTo(0,0)}RAUTO=L.rid;popup('⚔ Рейд начался!',`Группа собрана! ${RWV} волны врагов — бьёте их всей группой, как на охоте. Потом общий босс: урон всей группы складывается.`);return}}}
 function raidOpen(rid){if(RAUN)RAUN();if(RAUN2)RAUN2();RAIDID=rid;RAID=null;RACT={};RRES=null;RHUB=null;setTimeout(rHubJoin,600);
  const ref=DB.collection('raids').doc(rid);
- RAUN=ref.onSnapshot(sn=>{if(!sn.exists)return;RAID=sn.data();if(RAID.st!=='on')raidFinish();if(RAID.w&&RAID.st==='on'&&RAUTO===rid&&!fight){RAUTO=null;return rRunStart()}if(tab==='raid'&&!fight)rDraw()},()=>{});
+ RAUN=ref.onSnapshot(sn=>{if(!sn.exists)return;RAID=sn.data();if(rHub()&&RHS&&RAID.st==='on'&&RHS.st==='on'){const{hp,mem,sw,wv,mobs,go,bon,log}=RHS;Object.assign(RAID,{hp,mem,sw,wv,mobs,go,bon,log})}if(RAID.st!=='on')raidFinish();if(RAID.w&&RAID.st==='on'&&RAUTO===rid&&!fight){RAUTO=null;return rRunStart()}if(tab==='raid'&&!fight)rDraw()},()=>{});
  RAUN2=rid&&0?null:ref.collection('a').onSnapshot(sn=>{RACT={};sn.docs.forEach(d=>{RACT[d.id]=d.data()});if(tab==='raid'&&!fight)rDraw()},()=>{})}
 function rDraw(){const a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;render()}
 // очередь
@@ -1237,18 +1237,36 @@ function rRound(R,acts){const B=RAIDS[R.b],L=[],shield={},skin={};let roarK=1,st
 // ===== Рейды: 3 волны как на охоте + общий босс (урон группы складывается) =====
 const RWV=3,RWN=4,RWT=8*60000,RWHP=[18,20,22,24,26],RBPCT=[.08,.09,.1,.11,.12],RFLUSH=4000,RBOTK=.18;
 const RMOB=[['Лесной волк','Дикий кабан','Вожак стаи'],['Драугр','Болотная крыса','Разбойник с тракта'],['Тролль-подросток','Снежный барс','Горный медведь'],['Снежный барс','Драугр','Тролль-подросток'],['Драугр','Тролль-подросток','Вожак стаи']];
-let RAUTO=null,RHUB=null,RHT=0;
+let RAUTO=null,RHUB=null,RHT=0,RHS=null,RHW=0;
 // рейд через сокет: сервер держит общего босса; без сокета — старый путь через транзакции
 const rHub=()=>HUB.ok&&RHUB&&RHUB===RAIDID;
 function rHubJoin(){if(!HUB.ok||!RAIDID||!RAID||!RAID.w||RAID.st!=='on'||!UID)return;RHUB=RAIDID;hubSend({t:'rj',rid:RAIDID})}
-function rHubState(m){if(m.rid!==RAIDID)return;const r=m.r;if(!RAID)RAID={};const st0=RAID.st;Object.assign(RAID,r);RHUB=RAIDID;
+function rHubState(m){if(m.rid!==RAIDID)return;const r=m.r;if(!RAID)RAID={};const st0=RAID.st;Object.assign(RAID,r);RHUB=RAIDID;RHS=r;
  if(RAID.st!=='on'){if(st0==='on'||!RRES)raidFinish();if(rX())rRunEnd(RAID.st);else if(tab==='raid')rDraw();return}
+ if(RAUTO===RAIDID&&!fight){RAUTO=null;return rRunStart()}
+ {const X=rX();if(X&&X.sh&&rSync())render()}
  if(!fight&&tab==='raid'&&Date.now()-RHT>300){RHT=Date.now();rDraw()}}
 const rX=()=>fight&&fight.hunt&&fight.hunt.raid;
 function rRunStart(){const R=RAID;if(!R||!R.w||R.st!=='on'||fight||!S)return;const me=R.mem[UID];if(!me||me.dead||me.bot)return;
+ // сначала ждём сервер: там общие волны
+ if(HUB.ok&&!rHub()){if(!RHW||Date.now()-RHW>15000){RHW=Date.now();RAUTO=RAIDID;rHubJoin();setTimeout(()=>{if(RAUTO===RAIDID&&!fight){RAUTO=null;rRunStart()}},2600);return}if(Date.now()-RHW<2500){RAUTO=RAIDID;return}}
  HREP=null;REP=null;S.hp=Math.max(S.hp,maxHp());
  fight={hunt:{kind:'raid',sl:[],kills:0,xp:0,gold:0,loot:[],raid:{b:R.b,rid:RAIDID,wave:0,pend:0,ft:0,lastHp:0,boss:false}},e:null,ch:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
- tab='raid';rWave((me.wv|0)+1);save();render();window.scrollTo(0,0)}
+ tab='raid';const X=fight.hunt.raid;
+ if(rHub()&&R.sw){X.sh=1;X.q=me.q|0;X.ph=[];X.kd={};hubSend({t:'rm',rid:RAIDID,go:1});if(!rSync()&&!X.boss)log(`Волна ${R.wv} из ${RWV}: бейте слуг вместе с группой!`,'sys');save();render();window.scrollTo(0,0);return}
+ rWave((me.wv|0)+1);save();render();window.scrollTo(0,0)}
+// общие волны: состояние слуг приходит с сервера, свои удары — сразу на сервер
+function rSync(){const X=rX(),R=RAID;if(!X||!X.sh||!R||R.st!=='on')return false;const H=fight.hunt;
+ if((R.wv|0)>RWV){if(!X.boss){rBossPhase();return true}return false}
+ let ch=false;if(X.wave!==R.wv){if(X.wave)log(`Волна ${R.wv} из ${RWV}: бейте слуг вместе с группой!`,'sys');X.wave=R.wv;H.sl=[];X.kd={};X.ph=[];fight.e=null;ch=true}
+ const q=(R.mem[UID]||{}).q|0;X.ph=X.ph.filter(p=>p.q>q);
+ (R.mobs||[]).forEach((m,i)=>{let s=H.sl[i];if(!s)s=H.sl[i]={e:null,ech:Math.random()*.5,at:null,lh:0};
+  const pend=X.ph.reduce((a,p)=>a+(p.i===i?p.d:0),0),hp=Math.max(0,m.hp-pend);
+  if(hp<=0){if(s.e){rKill(s,i);ch=true}return}
+  if(!s.e){if(X.kd[X.wave+':'+i]&&m.hp>0)delete X.kd[X.wave+':'+i];const e=mkEnemy(m.n,m.lv,m.k);e.atk*=.55;e.xp*=.5;e.gold=0;if(m.ld){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.atk*=1.2}s.e=e;ch=true}
+  if(s.e.hp!==hp||s.e.max!==m.max)ch=true;s.e.max=m.max;s.e.hp=hp;s.lh=hp});
+ if(fight.e&&!H.sl.some(s=>s.e===fight.e))fight.e=null;retarget();return ch}
+function rKill(s,i){const X=rX(),H=fight.hunt,k=X.wave+':'+i;if(!X.kd[k]){X.kd[k]=1;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);log(`${s.e.name} повержен.`,'hit')}if(fight.e===s.e)fight.e=null;s.e=null}
 function rWave(n){const H=fight.hunt,X=H.raid;if(n>RWV)return rBossPhase();X.wave=n;const L=RMOB[X.b],lv=Math.max(RAIDS[X.b].lv,S.lvl),k=RWN+(n===RWV?1:0);H.sl=[];
  for(let i=0;i<k;i++){const e=mkEnemy(L[(i+n)%L.length],lv,.45+.05*n+.03*X.b);e.atk*=.55;e.xp*=.5;e.gold=0;
   if(n===RWV&&i===k-1){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.hp=e.max=Math.round(e.max*1.8);e.atk*=1.2}
@@ -1280,6 +1298,7 @@ function rRunTick(){const X=rX(),R=RAID;if(!R||RAIDID!==X.rid){rRunEnd('lost');r
  if(Date.now()>R.dl+2000&&!rHub()){rTimeout();}
  return false}
 function rCheck(){const H=fight.hunt,X=H.raid;if(S.hp<=0)return rRunEnd('dead');
+ if(X.sh&&!X.boss){H.sl.forEach((s,i)=>{if(!s||!s.e)return;const loc=Math.round(s.lh-s.e.hp);if(loc>0){X.q=(X.q|0)+1;X.ph.push({q:X.q,i,d:loc});hubSend({t:'rh',rid:X.rid,w:X.wave,i,d:loc,q:X.q});s.lh=s.e.hp}if(s.e.hp<=0)rKill(s,i)});retarget();return}
  if(X.boss){const e=H.sl[0]&&H.sl[0].e;if(e){const loc=X.lastHp-e.hp;if(loc>0){X.pend+=loc;X.lastHp=e.hp}if(e.hp<=0)rFlush();if(e.hp<=0)e.hp=1}return}
  for(const s of H.sl)if(s.e&&s.e.hp<=0){H.kills++;S.win++;ev('kill');fx('kill');petXp(1);log(`${s.e.name} повержен.`,'hit');s.e=null;s.at=null}
  retarget();if(H.sl.every(s=>!s.e)){const n=X.wave;rMem({wv:n});if(n<RWV)log(`Волна ${n} пройдена!`,'hit');rWave(n+1)}}
@@ -1294,7 +1313,7 @@ function rWTick(){const R=RAID;const el=document.getElementById('rdt');if(el)el.
  if(Date.now()>R.dl+2000&&!rHub())rTimeout();
  if(!fight&&tab==='raid'&&R.mem[UID]&&!R.mem[UID].dead&&RAUTO===RAIDID){RAUTO=null;rRunStart()}}
 const rClock=R=>{const ms=Math.max(0,R.dl-Date.now()),m=Math.floor(ms/60000),sec=Math.floor(ms/1000)%60;return m+':'+String(sec).padStart(2,'0')};
-const rSt=(m,R)=>m.dead?'<span style="color:var(--blood)">пал</span>':m.bot?(R.bon?'бьёт босса':'идёт следом'):m.bs?'<span style="color:var(--blood)">у босса</span>':`волна ${Math.min(RWV,(m.wv|0)+1)}/${RWV}`;
+const rSt=(m,R)=>m.dead?'<span style="color:var(--blood)">пал</span>':R.sw&&rHub()?(m.bot?(R.go?'в бою':'идёт следом'):!m.go?'ждёт':(R.wv|0)>RWV?'<span style="color:var(--blood)">у босса</span>':`волна ${R.wv}/${RWV}`):m.bot?(R.bon?'бьёт босса':'идёт следом'):m.bs?'<span style="color:var(--blood)">у босса</span>':`волна ${Math.min(RWV,(m.wv|0)+1)}/${RWV}`;
 function rHead(){const X=rX(),R=RAID,B=RAIDS[X.b];return`<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">${rIc(X.b,48)}<div style="flex:1;min-width:0"><b style="font-size:17px">Рейд: ${B.n}</b><small style="display:block;color:var(--mute)">${X.boss?'<b style="color:var(--blood)">Босс</b> — бьёт вся группа':`Волна <b>${X.wave}</b> из ${RWV}`} · осталось <b id="rdt">${rClock(R)}</b></small></div></div>
  ${X.boss?'':`<div class="lbl"><span>Здоровье босса (общее)</span><span>${R.hp.toLocaleString('ru-RU')}/${R.max.toLocaleString('ru-RU')}</span></div>${bar(R.hp,R.max,'--blood')}`}`}
 function rGroup(){const R=RAID;return`<div class="rgrp">${Object.entries(R.mem).sort((a,b)=>a[1].o-b[1].o).map(([id,m])=>`<span${m.dead?' style="opacity:.5"':''}><b>${esc(m.n)}${id===UID?' (ты)':''}</b> ${rSt(m,R)} · ${kf(m.dealt|0)}</span>`).join('')}</div>`}
@@ -1302,7 +1321,7 @@ function raidWView(){const R=RAID,B=RAIDS[R.b],me=R.mem[UID],on=R.st==='on';let 
  if(!on){const X=RRES;h+=`<div class="panel" style="border-left:4px solid var(${R.st==='win'?'--moss':'--blood'})"><h3>${R.st==='win'?'Победа!':'Поражение'}</h3>${X&&X.win?`<p style="margin:0 0 6px">Серебро <b class="g">+${X.g}</b>${X.au?`, золото <b class="g">+${X.au}</b>`:''}, железо <b>+${X.ir}</b>, пыль <b style="color:var(--myth)">+${X.du|0}</b>, опыт <b>+${X.xp}</b>, ${rName(X.rk)}.</p>${X.it?irow(X.it,'<span style="color:var(--moss);font-weight:700">получено</span>'):''}<p style="margin:6px 0 0;font-size:14px;color:var(--mute)">«${B.n}» откроется снова через ${B.cd} ч.</p>`:(R.st==='win'?'<p style="margin:0">Награда получена.</p>':'<p style="margin:0">Подземелье не закрылось — можно собрать группу и попробовать снова.</p>')}<button class="b" data-rd="close" style="width:100%;margin-top:8px">К списку рейдов</button></div>`}
  h+=`<div class="panel" style="border-left:4px solid var(--blood)"><div style="display:flex;gap:12px;align-items:center">${rIc(R.b,88)}<div style="flex:1"><b style="font-size:18px">${B.n}</b><small style="display:block;color:var(--mute)">${on?`Осталось <b id="rdt">${rClock(R)}</b>`:'Бой окончен'}</small></div></div>
  <div class="lbl" style="margin-top:8px"><span>Здоровье босса</span><span>${R.hp.toLocaleString('ru-RU')}/${R.max.toLocaleString('ru-RU')}</span></div>${bar(R.hp,R.max,'--blood')}
- ${on&&me&&!me.bot?(me.dead?'<p style="margin:8px 0 0;color:var(--blood)">Ты пал. Группа сражается дальше — если она победит, награда будет и у тебя.</p>':`<button class="b red" data-rd="run" style="width:100%;margin-top:10px">⚔ ${(me.wv|0)>=RWV?'К боссу':(me.wv|0)>0?`Продолжить: волна ${(me.wv|0)+1}`:'В бой'}</button>`):''}</div>`;
+ ${on&&me&&!me.bot?(me.dead?'<p style="margin:8px 0 0;color:var(--blood)">Ты пал. Группа сражается дальше — если она победит, награда будет и у тебя.</p>':`<button class="b red" data-rd="run" style="width:100%;margin-top:10px">⚔ ${R.sw&&rHub()?((R.wv|0)>RWV?'К боссу':R.go?`В бой: волна ${R.wv}`:'В бой'):(me.wv|0)>=RWV?'К боссу':(me.wv|0)>0?`Продолжить: волна ${(me.wv|0)+1}`:'В бой'}</button>`):''}</div>`;
  h+=`<div class="panel"><h3>Группа</h3>${Object.entries(R.mem).sort((a,b)=>a[1].o-b[1].o).map(([id,m])=>`<div class="row" style="${m.dead?'opacity:.5':''}"><div style="display:flex;gap:8px;align-items:center">${avatar(m.av,30)}<div><b>${esc(m.n)}</b>${id===UID?' (ты)':''}<small style="display:block">${rSt(m,R)}</small></div></div><span style="text-align:right"><b class="g">${kf(m.dealt|0)}</b><small style="display:block;color:var(--mute);font-size:11px">урон по боссу</small></span></div>`).join('')}</div>`;
  h+=`<div class="panel"><h3>Ход боя</h3>${(R.log||[]).map(l=>`<p style="margin:0 0 3px;font-size:14px">${esc(l)}</p>`).join('')}</div>`;
  return h}
@@ -1432,7 +1451,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-du]');if(!
 
 function raidView(){if(!DB)return'<div class="panel"><p>Рейды доступны только с подключённой базой данных.</p></div>';raidSub();
  if(RAID&&RAIDID)return raidFightView();const mq=myQ();
- return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Рейды</h3><p style="margin:0;color:var(--mute);font-size:15px">Пять боссов для группы из 5 воинов. Если за 5 минут группа не собралась, можно позвать наёмников. За Ледяного змея — 1 золото, за Сурта — 3 золота. Встань в очередь — когда соберутся пятеро, бой начнётся у всех сразу. Сначала каждый проходит 3 волны врагов, как на охоте, потом вся группа бьёт общего босса — урон складывается. На всё 8 минут, энергия не тратится. После победы подземелье закрывается для тебя на время отката.</p></div>`+
+ return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Рейды</h3><p style="margin:0;color:var(--mute);font-size:15px">Пять боссов для группы из 5 воинов. Если за 5 минут группа не собралась, можно позвать наёмников. За Ледяного змея — 1 золото, за Сурта — 3 золота. Встань в очередь — когда соберутся пятеро, бой начнётся у всех сразу. Сначала вся группа вместе бьёт 3 волны слуг — у зверей общее здоровье, как на охоте, — потом общего босса. Урон всех складывается, наёмники тоже помогают. На всё 8 минут, энергия не тратится. После победы подземелье закрывается для тебя на время отката.</p></div>`+
  RAIDS.map((R,b)=>{const q=rqLive(RQ['b'+b]),inq=q.some(x=>x.id===UID),cd=rcdLeft(b),lock=S.lvl<R.lv;
   const btn=lock?`<button class="b" disabled style="width:100%">С ${R.lv} уровня</button>`:cd>0?`<button class="b" disabled style="width:100%">Откроется через ${rFmt(cd)}</button>`:inq?`<button class="b alt" data-rd="leave:${b}" style="width:100%" ${RBUSY?'disabled':''}>Выйти из очереди</button>`:`<button class="b red" data-rd="join:${b}" style="width:100%" ${RBUSY||(mq>=0)?'disabled':''}>Встать в очередь</button>`;
   return`<div class="panel" style="${lock?'opacity:.6':''}"><div style="display:flex;gap:12px;align-items:center">${rIc(b,72)}<div style="flex:1;min-width:0"><b style="font-size:18px">${R.n}</b><small style="display:block;color:var(--mute)">${R.d} · с ${R.lv} ур. · откат ${R.cd} ч</small></div><b style="font-size:20px;color:${q.length?'var(--moss)':'var(--mute)'}">${q.length}/${RSIZE}</b></div>
@@ -1922,7 +1941,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.12.6';
+const GVER='1.13.0';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2325,7 +2344,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.12.6</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.13.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

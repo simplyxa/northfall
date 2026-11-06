@@ -6,13 +6,32 @@
 const RN = [['🐻', 'Медведь-шатун'], ['💀', 'Конунг драугров'], ['🪨', 'Горный тролль'], ['🐍', 'Ледяной змей'], ['🔥', 'Сурт Огненный']];
 const RBOTK = 0.18;          // наёмник наносит ~18% атаки в секунду (как в клиенте)
 const PERSIST = 30000, TICK = 1000, CAST = 250;
+// общие волны: все игроки группы бьют одних и тех же слуг (здоровье — на сервере)
+const RWV = 3, RWN = 4, RLV = [10, 20, 30, 45, 60];
+const RMOB = [['Лесной волк', 'Дикий кабан', 'Вожак стаи'], ['Драугр', 'Болотная крыса', 'Разбойник с тракта'], ['Тролль-подросток', 'Снежный барс', 'Горный медведь'], ['Снежный барс', 'Драугр', 'Тролль-подросток'], ['Драугр', 'Тролль-подросток', 'Вожак стаи']];
+const humans = R => Object.values(R.mem).filter(x => !x.bot);
+function spawn(R, n) {
+  R.mobs = [];
+  if (n > RWV) { R.wv = RWV + 1; if (!R.bon) R.bon = Date.now(); for (const m of Object.values(R.mem)) m.wv = RWV; return; }
+  R.wv = n;
+  const H = humans(R), alive = H.filter(x => !x.dead).length || 1;
+  const lv = Math.max(RLV[R.b] || 10, Math.round(H.reduce((s, x) => s + (x.lv | 0), 0) / (H.length || 1)));
+  const k = 0.45 + 0.05 * n + 0.03 * R.b, cnt = RWN + (n === RWV ? 1 : 0), mul = Math.max(1, 0.8 * alive), L = RMOB[R.b] || RMOB[0];
+  for (let i = 0; i < cnt; i++) {
+    const ld = n === RWV && i === cnt - 1 ? 1 : 0;
+    const max = Math.round((28 + lv * 13 * k) * mul * (ld ? 1.8 : 1));
+    R.mobs.push({ n: L[(i + n) % L.length], lv, k, ld, hp: max, max });
+  }
+  for (const m of Object.values(R.mem)) m.wv = Math.max(m.wv | 0, n - 1);
+}
+function waveDone(R) { return R.sw && R.wv <= RWV && R.mobs && R.mobs.length && R.mobs.every(m => m.hp <= 0); }
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 module.exports = function raids(getDb) {
   const rooms = new Map(); // rid → {R, subs:Set, dirty, last, saved, loading}
 
   function L0(R, t) { R.log = [t, ...(R.log || [])].slice(0, 14); }
-  function pub(R) { return { b: R.b, w: R.w, st: R.st, hp: R.hp, max: R.max, dl: R.dl, bon: R.bon || 0, mem: R.mem, log: R.log }; }
+  function pub(R) { return { b: R.b, w: R.w, st: R.st, hp: R.hp, max: R.max, dl: R.dl, bon: R.bon || 0, mem: R.mem, log: R.log, sw: R.sw || 0, wv: R.wv || 0, mobs: R.mobs || [], go: R.go || 0 }; }
 
   async function load(rid) {
     let r = rooms.get(rid);
@@ -23,6 +42,9 @@ module.exports = function raids(getDb) {
     r.loading = db.collection('raids').doc(rid).get().then(sn => { r.R = sn.exists ? sn.data() : null; }).catch(() => { r.R = null; });
     await r.loading; r.loading = null;
     if (!r.R || !r.R.w) { rooms.delete(rid); return null; } // только новые рейды с волнами
+    const R = r.R;
+    // свежий рейд (никто ещё не продвинулся) — включаем общие волны
+    if (R.sw == null && R.st === 'on' && !Object.values(R.mem).some(x => !x.bot && ((x.wv | 0) > 0 || x.bs || (x.dealt | 0) > 0))) { R.sw = 1; spawn(R, 1); L0(R, `Волна 1 из ${RWV}: бейте слуг всей группой!`); }
     return r;
   }
 
@@ -42,6 +64,7 @@ module.exports = function raids(getDb) {
           x.bs = Math.max(x.bs | 0, m.bs | 0); x.dead = Math.max(x.dead | 0, m.dead | 0);
         }
         if (R.bon && !D.bon) D.bon = R.bon;
+        if (R.sw) { D.sw = 1; D.wv = R.wv; D.mobs = R.mobs; D.go = R.go || 0; }
         if (D.st === 'on' && R.st !== 'on') D.st = R.st;
         if (D.st !== 'on' && R.st === 'on') R.st = D.st;           // кто-то без сокета уже закончил рейд
         if (D.hp <= 0 && D.st === 'on') D.st = 'win';
@@ -53,6 +76,11 @@ module.exports = function raids(getDb) {
     } catch (e) { console.error('raid persist', rid, e.message); }
   }
 
+  function nextWave(R) {
+    const n = (R.wv | 0) + 1;
+    spawn(R, n);
+    L0(R, n > RWV ? `${RN[R.b][0]} ${RN[R.b][1]} выходит на группу! Бейте вместе.` : `Волна ${n} из ${RWV}!`);
+  }
   function finish(R) {
     if (R.st !== 'on') return;
     if (R.hp <= 0) { R.st = 'win'; L0(R, `${RN[R.b][0]} ${RN[R.b][1]} повержен! Победа!`); }
@@ -62,7 +90,7 @@ module.exports = function raids(getDb) {
 
   function cast(rid, r, send, force) {
     const now = Date.now();
-    if (!force && now - r.last < CAST) { r.dirty = true; return; }
+    if (!force && now - r.last < CAST) { r.dirty = true; if (!r.tm) r.tm = setTimeout(() => { r.tm = null; if (r.dirty) cast(rid, r, send, true); }, CAST - (now - r.last) + 5); return; }
     r.last = now; r.dirty = false;
     const msg = { t: 'rs', rid, r: pub(r.R) };
     for (const c of r.subs) send(c, msg);
@@ -74,6 +102,14 @@ module.exports = function raids(getDb) {
     for (const [rid, r] of rooms) {
       const R = r.R; if (!R) continue;
       if (R.st === 'on') {
+        if (R.sw && R.go && R.wv <= RWV && R.mobs) {
+          for (const b of Object.values(R.mem)) if (b.bot && !b.dead) {
+            const L = R.mobs.filter(m => m.hp > 0); if (!L.length) break;
+            const m = L[Math.floor(Math.random() * L.length)], d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2));
+            m.hp = Math.max(0, m.hp - d); r.dirty = true;
+          }
+          if (waveDone(R)) nextWave(R);
+        }
         if (R.bon) {
           for (const b of Object.values(R.mem)) if (b.bot && !b.dead && R.hp > 0) {
             const d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2)); R.hp = Math.max(0, R.hp - d); b.dealt = (b.dealt | 0) + d; r.dirty = true;
@@ -113,7 +149,19 @@ module.exports = function raids(getDb) {
       if (R.st !== 'on') persist(rid, r);
       return;
     }
+    if (m.t === 'rh') { // удар по слуге общей волны
+      if (!R.sw || me.dead || +m.w !== R.wv || !R.mobs) return;
+      const mob = R.mobs[+m.i | 0]; if (!mob || mob.hp <= 0) { if (m.q) me.q = Math.max(me.q | 0, +m.q | 0); return cast(rid, r, send); }
+      const now = Date.now(), dt = Math.min(10, Math.max(0.25, (now - (me._h || now - 1000)) / 1000)); me._h = now;
+      const cap = Math.max((me.atk || 100) * 8, (me.atk || 100) * 12 * dt, mob.max * 0.05);
+      const d = Math.max(0, Math.min(Math.round(+m.d || 0), cap));
+      mob.hp = Math.max(0, mob.hp - d); me.wd = (me.wd | 0) + d;
+      if (m.q) me.q = Math.max(me.q | 0, +m.q | 0);
+      if (waveDone(R)) { nextWave(R); return cast(rid, r, send, true); }
+      return cast(rid, r, send);
+    }
     if (m.t === 'rm') { // продвижение: волна, дошёл до босса, пал
+      if (m.go && !me.go) { me.go = 1; if (!R.go) R.go = Date.now(); }
       if (Number.isFinite(+m.wv)) me.wv = Math.max(me.wv | 0, Math.min(3, +m.wv | 0));
       if (m.bs) { me.bs = 1; if (!R.bon) { R.bon = Date.now(); } }
       if (m.dead && !me.dead) { me.dead = 1; L0(R, `${me.n} пал в бою.`); }
