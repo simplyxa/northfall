@@ -2315,7 +2315,7 @@ async function doReg(){
  AB=true;AM='';render();
  let uid=id;if(!LOGIN_RE.test(id)){try{uid=await cyrUid(id)}catch(e){uid=trl(id).slice(0,11)+'_'+Math.random().toString(36).slice(2,5)}}
  try{if(uid!==id){let k=0;for(;;){try{await FBA.createUserWithEmailAndPassword(uid+MAILDOM,pw);break}catch(e){if(e&&e.code==='auth/email-already-in-use'&&k++<5){uid=trl(id).slice(0,11)+'_'+Math.random().toString(36).slice(2,5);continue}throw e}}}else await FBA.createUserWithEmailAndPassword(uid+MAILDOM,pw);UID=uid;ADM=ADMINS.includes(uid);AB=false;if(uid!==id)nickSet('',raw).catch(()=>{});
-  if(leg){const L=JSON.parse(JSON.stringify(LEG));L.acc=uid;if(L.guest){L.name=raw;delete L.guest;L.reg=L.reg||Date.now();L.gsw=1}GUEST=false;await migrateLegacy();enter(L)}else create(raw);seedNews();trk('reg');refReg(uid);if(em)acctApi({a:'setmail',email:em},1).then(j=>{MYMAIL=j.email||''}).catch(()=>{});return}
+  if(leg){const L=JSON.parse(JSON.stringify(LEG));L.acc=uid;if(L.guest){L.name=raw;delete L.guest;L.reg=L.reg||Date.now();L.gsw=1}GUEST=false;await migrateLegacy();enter(L)}else create(raw);seedNews();trk('reg');setTimeout(()=>{try{pushDb(true)}catch(e){}},400);refReg(uid);if(em)acctApi({a:'setmail',email:em},1).then(j=>{MYMAIL=j.email||''}).catch(()=>{});return}
  catch(e){AM=fbErr(e)}
  AB=false;render()}
 async function doNewHero(){
