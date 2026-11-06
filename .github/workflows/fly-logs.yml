@@ -1,0 +1,16 @@
+# Последние логи сервера на Fly (для диагностики)
+name: Fly logs
+on:
+  workflow_dispatch:
+jobs:
+  logs:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: |
+          APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
+          flyctl status -a "$APP" || true
+          timeout 25 flyctl logs -a "$APP" --no-tail | tail -150 || true
