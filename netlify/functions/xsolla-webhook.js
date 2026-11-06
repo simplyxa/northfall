@@ -17,7 +17,7 @@ function signed(raw, header) {
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return err(405, 'METHOD');
   const raw = event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString('utf8') : (event.body || '');
-  if (!signed(raw, event.headers.authorization)) return err(400, 'INVALID_SIGNATURE', 'Invalid signature');
+  if (!signed(raw, event.headers.authorization)) { console.error('xsolla webhook: подпись не совпала', { secret: !!process.env.XSOLLA_WEBHOOK_SECRET, secretLen: (process.env.XSOLLA_WEBHOOK_SECRET || '').length, header: !!event.headers.authorization, bodyLen: raw.length }); return err(400, 'INVALID_SIGNATURE', 'Invalid signature'); }
   let d;
   try { d = JSON.parse(raw); } catch (e) { return err(400, 'INVALID_PARAMETER', 'Bad JSON'); }
   const db = admin.firestore();
@@ -27,6 +27,7 @@ exports.handler = async (event) => {
     const id = String((d.user && (d.user.id || d.user.external_id)) || '');
     if (!id) return err(400, 'INVALID_USER', 'Invalid user');
     const sn = await db.collection('saves').doc(id).get();
+    if (!sn.exists) console.error('xsolla webhook: нет игрока', id);
     return sn.exists ? ok : err(400, 'INVALID_USER', 'Invalid user');
   }
 

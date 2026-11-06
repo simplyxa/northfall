@@ -113,6 +113,7 @@ async function fnRoute(req, res, u, name) {
   let r;
   try { r = await runFn(name, event); }
   catch (e) { console.error('fn', name, e); r = { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Ошибка сервера' }) }; }
+  if (name !== 'track') console.log('fn', name, r.statusCode || 200, (r.statusCode || 200) >= 400 ? String(r.body || '').slice(0, 160) : '');
   const out = r.isBase64Encoded ? Buffer.from(r.body || '', 'base64') : Buffer.from(r.body == null ? '' : String(r.body));
   res.writeHead(r.statusCode || 200, { ...SEC, 'Cache-Control': 'no-store', ...(r.headers || {}), 'Content-Length': out.length });
   res.end(out);
