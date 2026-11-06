@@ -414,7 +414,7 @@ donate=function(kind,n){const cid=S&&S.clan;if(!srvCan()||!cid)return _donate(ki
   if(kind==='g')S.gold-=n;else S.iron=(S.iron|0)-n;S.dep=S.dep||{};S.dep[cid]=r.res.dep;
   log(`В казну клана внесено: ${n} ${kind==='g'?'серебра':'железа'}.`,'sys');if(n>=100||kind!=='g')clog(`${S.name} внёс в казну ${n} ${kind==='g'?'серебра':'железа'}.`,'💰');save();render()})};
 // ===== Discord-сервер игры: кнопка «Присоединиться» и 10 золота один раз =====
-const DISC_URL='',DISCG=10;
+const DISC_URL='https://discord.gg/F6kUTQh7Rv',DISCG=10;
 function discordView(){const got=S&&S.dsc,acc=UID&&!(typeof GUEST!=='undefined'&&GUEST);
  return`<div class="panel" style="text-align:center"><div style="font-size:46px;line-height:1">💬</div><h3 style="margin:6px 0">Discord Northfall</h3>
  <p style="margin:0 0 10px">Новости и обновления первыми, сбор в рейды и на лайв-арену, поиск клана, помощь новичкам и прямая связь с создателем игры.</p>
