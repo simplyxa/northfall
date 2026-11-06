@@ -7,6 +7,9 @@
 //  • /api/flags — список подозрительных изменений (для админов).
 'use strict';
 const DOM = '@northfall.game';
+const checkHero = require('./items');
+// вещи: пока только отмечаем подозрительные (ITEM_CLAMP=on — урезать завышенные характеристики)
+const ITEM_CLAMP = process.env.ITEM_CLAMP === 'on';
 const MAXB = 900 * 1024;
 const ADMINS = ['shtorm1', 'admin'];
 const INV_MAX = 20, GAU = 1, MAX_PRICE = 1e6;
@@ -51,10 +54,18 @@ module.exports = function saves(admin) {
       else if (gain > 0) bud -= gain;
     }
     s._eb = { b: Math.round(bud), t: now };
-    return { fix, clamp };
+    // вещи: проверяем копию; при ITEM_CLAMP — правим в самом сохранении и сообщаем игре
+    let items = null;
+    try {
+      const target = ITEM_CLAMP ? s : JSON.parse(JSON.stringify({ inv: s.inv, eq: s.eq }));
+      const bad = checkHero(target);
+      if (bad.length) { items = bad.map(b => ({ uid: b.uid, where: b.where, why: b.why, name: b.item.name })); if (ITEM_CLAMP) { fix = fix || {}; fix.items = bad.map(b => ({ uid: b.uid, where: b.where, item: b.item })); } }
+    } catch (e) {}
+    return { fix, clamp, items };
   }
   function after(db, uid, prev, s, g) {
     if (g.clamp) flag(db, uid, 'clamp', { ...g.clamp, dtMin: 0 });
+    if (g.items) flag(db, uid, 'item', { list: g.items.slice(0, 5), clamped: ITEM_CLAMP, dtMin: 0 });
     try {
       const p = prev || {}, now = Date.now(), dt = Math.max(1, now - (last.get(uid) || p.ts || now - 60000));
       const gift = JSON.stringify(p.applied || []) !== JSON.stringify(s.applied || []);
