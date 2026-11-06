@@ -322,6 +322,22 @@ function staleHit(){if(STALE)return;STALE=true;clearTimeout(syncT);try{localStor
  const d=document.createElement('div');d.className='modal';d.style.zIndex=200;d.innerHTML=`<div class="mbox" style="text-align:center"><h3 style="margin:0 0 8px">Игра открыта на другом устройстве</h3><p style="margin:0 0 12px">Свежий прогресс сохранён там. Чтобы его не затереть, здесь игра остановлена.</p><button class="b red" style="width:100%" onclick="location.reload()">Загрузить свежий прогресс</button></div>`;document.body.appendChild(d)}
 // вернулся во вкладку — сразу проверяем, не играли ли тем временем на другом устройстве (чтобы не играть впустую)
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!DB||!UID||!S||STALE||!SBASE&&!SLAST)return;DB.collection('saves').doc(UID).get().then(sn=>{const d=sn.exists?sn.data():null;if(d&&d.ses&&d.ses!==SESS&&d.ses!==SBASE)staleHit()}).catch(()=>{})});
+// ===== Счётчик чтений базы (для админки): сколько документов прочитала эта вкладка и откуда =====
+const RDM={t0:Date.now(),n:0,k:{}};
+function rdAdd(k,n){if(!n)return;RDM.n+=n;RDM.k[k]=(RDM.k[k]||0)+n}
+function rdKey(x){try{const d=x._delegate||x;const seg=d._query&&d._query.path?d._query.path.segments:(d._key&&d._key.path?d._key.path.segments:(d.path||'').split('/'));
+ return seg.filter((_,i)=>i%2===0).join('/')+(d._query&&d._query.filters&&d._query.filters.length?' (фильтр)':'')+(d._query&&d._query.limit?' lim '+d._query.limit:'')}catch(e){return'?'}}
+function rdMeter(){try{if(localStorage.getItem('nf_rdm')!=='1')return}catch(e){return}try{if(!window.firebase||!firebase.firestore||rdMeter.on)return;rdMeter.on=1;const F=firebase.firestore;
+ const wrapQ=P=>{const os=P.onSnapshot,og=P.get;P.onSnapshot=function(...a){const k=rdKey(this);let first=true;const i=a.findIndex(f=>typeof f==='function');if(i>=0){const cb=a[i];a[i]=function(sn){try{if(!sn.metadata.fromCache){rdAdd(k,first?Math.max(1,sn.size):sn.docChanges().length);first=false}}catch(e){}return cb.apply(this,arguments)}}return os.apply(this,a)};
+  P.get=function(...a){const k=rdKey(this)+' · get';return og.apply(this,a).then(sn=>{rdAdd(k,Math.max(1,sn.size||0));return sn})}};
+ const wrapD=P=>{const os=P.onSnapshot,og=P.get;P.onSnapshot=function(...a){const k=rdKey(this)+' · doc';const i=a.findIndex(f=>typeof f==='function');if(i>=0){const cb=a[i];a[i]=function(sn){try{if(!sn.metadata.fromCache&&!sn.metadata.hasPendingWrites)rdAdd(k,1)}catch(e){}return cb.apply(this,arguments)}}return os.apply(this,a)};
+  P.get=function(...a){const k=rdKey(this)+' · doc get';return og.apply(this,a).then(sn=>{rdAdd(k,1);return sn})}};
+ wrapQ(F.Query.prototype);wrapD(F.DocumentReference.prototype);
+ const FP=F.Firestore&&F.Firestore.prototype;if(!FP)return;const rt=FP.runTransaction;FP.runTransaction=function(fn,...r){return rt.call(this,tx=>{const g=tx.get;tx.get=function(ref){rdAdd(rdKey(ref)+' · транзакция',1);return g.apply(this,arguments)};return fn(tx)},...r)}}catch(e){console.warn('rdMeter',e)}}
+function rdView(){let on=false;try{on=localStorage.getItem('nf_rdm')==='1'}catch(e){}
+ if(!on||!rdMeter.on)return`<div class="panel"><h3>Чтения базы</h3><p style="margin:0 0 6px;font-size:14px">Счётчик показывает, сколько документов читает игра в этой вкладке и какие запросы самые «дорогие». Включается только у тебя, игрокам ничего не меняет.</p><button class="b" data-a="rdon">${on?'Перезагрузить и начать счёт':'Включить счётчик'}</button></div>`;
+ const m=Math.max(1,(Date.now()-RDM.t0)/60000),L=Object.entries(RDM.k).sort((a,b)=>b[1]-a[1]);
+ return`<div class="panel"><h3>Чтения базы в этой вкладке</h3><p style="margin:0 0 6px;font-size:14px">Всего <b>${RDM.n}</b> за ${Math.round(m)} мин (≈ <b>${Math.round(RDM.n/m*60)}</b> в час). Сюда не входят чтения сервера (функции) и консоли Firebase.</p>${L.length?L.slice(0,25).map(([k,n])=>`<div class="row"><span style="font-size:13px">${esc(k)}</span><b>${n}</b></div>`).join(''):'<p>Пока ничего.</p>'}<button class="b alt" data-a="rdrs" style="margin-top:6px">Обнулить</button><button class="b alt" data-a="rdoff" style="margin-top:6px">Выключить счётчик</button></div>`}
 // ленивое подключение общих списков (экономия чтений базы)
 let SOCF=null,SOCON=false;
 function socMaybe(t){if(SOCON||!SOCF)return;const g=typeof GUEST!=='undefined'&&GUEST;if(t||(UID&&!g)||(S&&!['home','hunt'].includes(tab))){SOCON=true;try{SOCF()}catch(e){}}}
@@ -1790,7 +1806,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.9.13';
+const GVER='1.9.14';
 let GC=[],gcUn=null,lastGc=0,GCMSG='';
 const onlineList=()=>PL.filter(p=>p.id===UID||isOn(p));
 function gcSub(){if(!DB||(tab!=='gchat'&&CHP!=='g')){if(gcUn){gcUn();gcUn=null}return}if(gcUn)return;
@@ -2085,6 +2101,7 @@ async function initOnline(){
  try{
   if(!window.firebase||!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.includes('ВСТАВЬ'))return;
   if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+  rdMeter();
   const db=firebase.firestore();FBA=firebase.auth();
   try{await Promise.race([FBA.setPersistence(INAPP?firebase.auth.Auth.Persistence.SESSION:firebase.auth.Auth.Persistence.LOCAL),new Promise(r=>setTimeout(r,2000))])}catch(e){}
   DB=db;online=true;DBS='ok';
@@ -2192,7 +2209,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.13</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.9.14</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2250,7 +2267,7 @@ let GONL=0;
 function gonl(){try{if(document.visibilityState!=='visible'||!S)return;let b;if(typeof GUEST!=='undefined'&&GUEST){let g='';try{g=localStorage.getItem('nf_gid')||'';if(!g){g=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-6);localStorage.setItem('nf_gid',g)}}catch(e){g='t'+Math.random().toString(36).slice(2,12)}b={a:'ping',g}}else if(UID)b={a:'online'};else return;
  fetch('/.netlify/functions/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json()).then(j=>{const n=j.g|0;if(n!==GONL){GONL=n;if(typeof ui==='function')ui()}}).catch(()=>{})}catch(e){}}
 setTimeout(gonl,4000);setTimeout(gonl,12000);setInterval(gonl,60000);
-function statsView(){return funnelView()+statsView0()}
+function statsView(){return rdView()+funnelView()+statsView0()}
 function statsView0(){if(!STATS){statsLoad();return'<div class="panel"><p>Загружаю статистику…</p></div>'}
  const L=STATS.L,d=DAY(),now=Date.now(),pc=(a,b)=>b?Math.round(a/b*100)+'%':'—';
  const nw=L.filter(p=>p.rd!=null&&!p.old),on=L.filter(p=>p.seen&&now-p.seen<6*60000).length,dau=L.filter(p=>p.seen&&Math.floor((p.seen+2*3600000)/864e5)===d).length,wau=L.filter(p=>p.seen&&now-p.seen<7*864e5).length;
@@ -2428,7 +2445,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(a==='arena')return startFight('arena');
  if(a==='repclose'){REP=null;return render()}
  if(a==='hrclose'){HREP=null;return render()}
- if(a==='lclaim')return loginClaim();if(a==='refshare')return refShare();if(a==='instdo')return instDo();if(a==='pwaclaim')return pwaClaim();if(a==='paylog')return payLogLoad();if(a==='promoset')return promoSet();if(a==='promooff')return promoOff();if(a==='gcsend')return gcSend();if(a==='chp'){CHP=CHP?null:(chUnreadC()&&!chUnreadG()?'c':CHP0||'g');if(CHP==='c'&&!(S&&S.clan))CHP='g';CHK2='';return render()}if(a==='chpx'){CHP=null;return render()}if(a==='chpg'){CHP0=CHP='g';CHK2='';return render()}if(a==='chpc'){CHP0=CHP='c';CHK2='';return render()}if(a==='chpsend')return CHP==='c'?say('cm2'):gcSend('gct2');if(a==='support'){tab='forum';FS='help';FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(a==='dmsend')return dmSend();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='snow'){snowSet(!snowOn());return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='nickdo')return nickDo();if(a==='sreset')return statReset();
+ if(a==='lclaim')return loginClaim();if(a==='refshare')return refShare();if(a==='instdo')return instDo();if(a==='pwaclaim')return pwaClaim();if(a==='paylog')return payLogLoad();if(a==='promoset')return promoSet();if(a==='promooff')return promoOff();if(a==='gcsend')return gcSend();if(a==='chp'){CHP=CHP?null:(chUnreadC()&&!chUnreadG()?'c':CHP0||'g');if(CHP==='c'&&!(S&&S.clan))CHP='g';CHK2='';return render()}if(a==='chpx'){CHP=null;return render()}if(a==='chpg'){CHP0=CHP='g';CHK2='';return render()}if(a==='chpc'){CHP0=CHP='c';CHK2='';return render()}if(a==='chpsend')return CHP==='c'?say('cm2'):gcSend('gct2');if(a==='support'){tab='forum';FS='help';FTOP=null;FMSG='';render();window.scrollTo(0,0);return}if(a==='dmsend')return dmSend();if(a==='fnew')return fNew();if(a==='freply')return fReply();if(a==='tipsoff'){S.tipsOff=true;save();return render()}if(a==='exstop')return exStop();if(a==='autodis'){if(S.lvl>=30){S.autodis=!S.autodis;save()}return render()}if(a==='rmclose'){RSEL=null;return render()}if(a==='wqc')return wqClaim();if(a==='togcl')return togClosed();if(a==='mlist')return mkList();if(a==='wb')return startWB();if(a==='wclclose'){WCL=null;return render()}if(a==='wrepclose'){WREP=null;return render()}if(a==='rdon'){try{localStorage.setItem('nf_rdm','1')}catch(e){}return location.reload()}if(a==='rdoff'){try{localStorage.removeItem('nf_rdm')}catch(e){}return location.reload()}if(a==='rdrs'){RDM.t0=Date.now();RDM.n=0;RDM.k={};return render()}if(a==='snow'){snowSet(!snowOn());return render()}if(a==='mute'){S.mute=!S.mute;save();return render()}if(a==='nickdo')return nickDo();if(a==='sreset')return statReset();
  if(a==='pvback'){tab=PVB||'top';return render()}if(a==='cpvback'){tab=CPVB||'top';return render()}
  if(a==='dun')return startDun();if(a==='dunclose'){DREP=null;return render()}if(a==='dclclose'){DCL=null;return render()}
  if(a==='sellask'){sellArm=true;return render()}if(a==='sellno'){sellArm=false;return render()}if(a==='sellall')return sellAll();
