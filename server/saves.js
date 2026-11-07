@@ -9,6 +9,7 @@
 const DOM = '@northfall.game';
 const checkHero = require('./items');
 const { makeLimiter } = require('./ratelimit');
+const ARENA = require('./arena');
 // Клиент шлёт сохранение раз в 5 секунд (автосейв при изменении энергии/здоровья),
 // в бою — чаще. Запас большой: обычный игрок укладывается в 12-20 сохранений в минуту.
 // Каждое сохранение — транзакция Firestore, поэтому и режем, и защищаем кошелёк.
@@ -54,7 +55,7 @@ module.exports = function saves(admin) {
   }
 
   // общая часть: проверка линии сохранений и копилки серебра (внутри транзакции, до записи)
-  function guard(prev, s, ses, base, uid) {
+  function guard(prev, s, ses, base, uid, dt) {
     if (prev && prev.ses && prev.ses !== ses && prev.ses !== base) return { stale: true };
     s.ses = ses; s.acc = uid; delete s._eb;
     const now = Date.now(), lv = Math.max(1, s.lvl | 0), rate = silverRate(lv), cap = rate * 7200 + 50000;
@@ -68,6 +69,32 @@ module.exports = function saves(admin) {
       else if (gain > 0) bud -= gain;
     }
     s._eb = { b: Math.round(bud), t: now };
+
+    // ---- уровень: не выше 60 и не больше +10 за запись (раньше это держали правила Firestore) ----
+    const lvl = ARENA.clampLevel(prev, s.lvl);
+    if (lvl !== (s.lvl | 0)) { fix = fix || {}; fix.lvl = lvl; }
+    s.lvl = lvl;
+
+    // ---- рейтинг, сезон, билеты арены: считает сервер, не клиент ----
+    const st = ARENA.readState(prev, now);
+    const claim = s.ar && typeof s.ar.d === 'number' && isFinite(s.ar.d) ? { d: s.ar.d } : null;
+    const res = ARENA.applyResult(st, claim);
+    delete s.ar;                       // заявка одноразовая — иначе второй раз спишем билет
+    const claimedRating = s.rating | 0, claimedSrat = s.srat | 0;
+    s.rating = res.rt; s.srat = res.srt; s.sid = st.sid; s.psid = st.psid; s.psrat = st.psrat;
+    s.atk = res.atk; s.atkt = res.atkt;
+    if (res.rej) flag(db, uid, 'arena', { why: 'no_ticket' });
+    fix = fix || {};
+    fix.rating = s.rating; fix.srat = s.srat; fix.sid = s.sid; fix.psid = s.psid; fix.psrat = s.psrat;
+    fix.atk = s.atk; fix.atkt = s.atkt;
+    fix.ar = res.used ? 1 : 0;
+    if (claimedRating !== s.rating || claimedSrat !== s.srat) fix.ar = 1;
+
+    // ---- счётчики побед и поражений: клиент тоже считал сам, ограничиваем рост ----
+    const wc = ARENA.clampWins(prev, now, dt);
+    s.win = wc.win + Math.min(Math.max(0, (s.win | 0) - wc.win), wc.max);
+    s.lose = wc.lose + Math.min(Math.max(0, (s.lose | 0) - wc.lose), wc.max);
+
     // вещи: проверяем копию; при ITEM_CLAMP — правим в самом сохранении и сообщаем игре
     let items = null;
     try {
@@ -106,8 +133,14 @@ module.exports = function saves(admin) {
       let prev = null, g = null;
       await db.runTransaction(async tx => {
         const sn = await tx.get(ref); prev = sn.exists ? sn.data() : null;
-        g = guard(prev, s, ses, base, uid); if (g.stale) return;
+        g = guard(prev, s, ses, base, uid, prev && prev.ts ? Date.now() - prev.ts : 5000); if (g.stale) return;
         tx.set(ref, s);
+        // карточку игрока пишет сервер: рейтинг, сезон и счётчики — его данные
+        const card = { lvl: s.lvl, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, seen: Date.now() };
+        const changed = !prev || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
+          || card.win !== (prev.win | 0) || card.lose !== (prev.lose | 0) || card.sid !== (prev.sid | 0)
+          || card.lvl !== (prev.lvl | 0);
+        if (changed) tx.set(db.collection('players').doc(uid), card, { merge: true });
       });
       if (g.stale) return J(res, 409, { stale: 1 });
       after(db, uid, prev, s, g);
@@ -138,7 +171,7 @@ module.exports = function saves(admin) {
         if (k === 'take') { dref = db.collection('dm').doc(String(o.pair || '')).collection('m').doc(String(o.mid || '')); ds = await tx.get(dref); }
         if (k === 'donate') { if (!s.clan) throw new Fail(400, 'Нет клана'); dref = db.collection('clans').doc(String(s.clan)).collection('dep').doc(uid); ds = await tx.get(dref); }
 
-        g = guard(prev, s, ses, base, uid); if (g.stale) return;
+        g = guard(prev, s, ses, base, uid, prev && prev.ts ? Date.now() - prev.ts : 5000); if (g.stale) return;
         const takeItem = iu => { const i = s.inv.findIndex(x => x && x.uid === iu); if (i < 0) throw new Fail(409, 'Вещи нет в рюкзаке'); const it = s.inv[i]; if (it.pb) throw new Fail(400, 'Эту вещь нельзя передать'); s.inv.splice(i, 1); const c = JSON.parse(JSON.stringify(it)); delete c.uid; delete c.mkp; return c; };
         const putItem = it => { if (s.inv.length >= INV_MAX) throw new Fail(409, 'Рюкзак полон'); const c = JSON.parse(JSON.stringify(it)); c.uid = rid('i'); c.pb = 0; s.inv.push(c); return c; };
 

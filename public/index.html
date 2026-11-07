@@ -387,6 +387,16 @@ function rdMeter(){try{if(localStorage.getItem('nf_rdm')!=='1')return}catch(e){r
 // исправления от сервера: урезанное серебро, поправленные вещи
 function srvFix(f){if(!f||!S)return;let ch=false;
  if(f.gold!=null&&S.gold>f.gold){S.gold=f.gold;ch=true;log('Сервер поправил серебро: сохранение не совпало с заработанным.','sys')}
+ // рейтинг, сезон, билеты и уровень считает сервер — клиент только показывает
+ if(f.rating!=null&&(S.rating|0)!==f.rating){S.rating=f.rating;ch=true}
+ if(f.srat!=null&&(S.srat|0)!==f.srat){S.srat=f.srat;ch=true}
+ if(f.sid!=null&&(S.sid|0)!==f.sid){S.sid=f.sid;ch=true}
+ if(f.psid!=null&&(S.psid|0)!==f.psid){S.psid=f.psid;ch=true}
+ if(f.psrat!=null&&(S.psrat|0)!==f.psrat){S.psrat=f.psrat;ch=true}
+ if(f.atk!=null&&(S.atk|0)!==f.atk){S.atk=f.atk;ch=true}
+ if(f.atkt!=null&&S.atkt!==f.atkt){S.atkt=f.atkt;ch=true}
+ if(f.lvl!=null&&(S.lvl|0)!==f.lvl){S.lvl=f.lvl;ch=true}
+ if(f.ar)delete S.ar;
  if(Array.isArray(f.items))for(const x of f.items){if(!x||!x.item)continue;const i=S.inv.findIndex(y=>y.uid===x.uid);if(i>=0){S.inv[i]=x.item;ch=true}else for(const k in S.eq||{})if(S.eq[k]&&S.eq[k].uid===x.uid){S.eq[k]=x.item;ch=true}}
  if(ch){SLAST='';try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()}}
 const srvCan=()=>hubOn()&&typeof FBA!=='undefined'&&FBA&&FBA.currentUser&&UID&&S&&!STALE;
@@ -453,7 +463,7 @@ function socMaybe(t){if(SOCON||!SOCF)return;const g=typeof GUEST!=='undefined'&&
 // сервер не отвечает: говорим игроку один раз и ждём следующей попытки
 function cloudDown(){if(CLOUD.warn)return;CLOUD.warn=1;log('Облако недоступно — прогресс сохранён локально и уйдёт на сервер, когда тот оживёт.','sys');if(typeof ui==='function')ui()}
 function pushDb(force){if(!DB||!UID||!S||STALE)return;actMark();if(S.clan&&!S.cjt)S.cjt=Date.now();if(!S.clan&&S.cjt)delete S.cjt;const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
- if(force||sig!==PLSIG||now-PLT>180000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({lg:LANG,name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0}).catch(()=>{})}
+ if(force||sig!==PLSIG||now-PLT>180000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({lg:LANG,name:S.name,cls:S.cls,clan:S.clan||'',war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0},{merge:true}).catch(()=>{})}
  S.ses=SESS;const sref=DB.collection('saves').doc(UID),sdat=JSON.parse(JSON.stringify(S));{const k=JSON.stringify({...sdat,ts:0,act:0,hpf:0,enf:0,rt:0});if(k===SLAST)return;SLAST=k}const done=r=>{if(r==='stale')return staleHit();SBASE=SESS;CLOUD.ok=Date.now();CLOUD.err='';CLOUD.warn=0},bad=e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80);CLOUD.ok=0},
   // сервер не ответил — данные остаются в localStorage, и повтор уйдёт при следующей попытке.
   // Прямой записи в saves здесь намеренно нет: она обходила серверную проверку
@@ -1019,9 +1029,9 @@ const warScore=(w,side)=>PL.filter(p=>p.war===w.id&&p.clan===side).reduce((a,p)=
 const sScore=(p,s)=>p.sid===s?p.srat:(p.psid===s?p.psrat:null);
 function rollSeason(){const c=curS();if(S.sid==null){S.sid=c;S.srat=0;S.psid=0;S.psrat=0;S.sclaim=c}else if(S.sid!==c){S.psid=S.sid;S.psrat=S.srat;S.sid=c;S.srat=0}}
 function arenaRes(w){rollSeason();const gw=(fight&&fight.rw)||22,gl=(fight&&fight.rl)||12;
- if(w){S.rating+=gw;S.srat+=gw;log(`Рейтинг +${gw} (общий и сезонный).`,'sys');
+ if(w){S.rating+=gw;S.srat+=gw;S.ar={d:gw};log(`Рейтинг +${gw} (общий и сезонный).`,'sys');
   const aw=actWar();if(aw){if(S.war!==aw.id){S.war=aw.id;S.wp=0}S.wp+=10;log('Очки клановой войны +10.','sys')}}
- else{const r=Math.min(gl,S.rating);S.rating-=r;S.srat=Math.max(0,S.srat-gl);log(`Рейтинг −${r}.`,'sys')}}
+ else{const r=Math.min(gl,S.rating);S.rating-=r;S.srat=Math.max(0,S.srat-gl);S.ar={d:-gl};log(`Рейтинг −${r}.`,'sys')}}
 function prow(p,i,k,lead,val,ex){return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer" title="Профиль">${i!=null?(i+1)+'. ':''}${p.av?avatar(p.av,28,frameOf(p))+' ':''}${esc(p.name)}${p.id===UID?' (ты)':''}${p.id===lead?' · лидер':''}${titleOf(p)?` <span class="ptl" style="display:inline">«${esc(titleOf(p))}»</span>`:''}<small>${CL[p.cls]?CL[p.cls].n+', ':''}ур. ${p.lvl} · побед ${p.win|0}${p.clan&&cname(p.clan)?' · клан '+esc(cname(p.clan)):''}${ex||''}</small></div><span><span class="g">${val!=null?val:p.rating}</span>${k?` <button class="b alt" data-k="${p.id}">Исключить</button>`:''}</span></div>`}
 function statSum(){const E=EQ(),GB={str:E.atk/2,hp:E.hp/8,arm:E.def,reg:E.reg,en:E.en};return Object.keys(ST).reduce((t,k)=>t+Math.round(S.st[k]+GB[k]),0)}
 

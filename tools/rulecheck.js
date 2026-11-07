@@ -48,6 +48,31 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
       catch (e) { return e.code || (e.message || '').slice(0, 80); }
     };
     out.saves = await write('saves/' + login, { lvl: 1, gold: 999999, inv: [], ts: Date.now() });
+    // подделка рейтинга в сохранении: сервер должен её проигнорировать
+    try {
+      const r = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await user.getIdToken() },
+        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'p1', rating: 99999, srat: 99999 }, ses: 'p1', base: null })
+      });
+      const j = await r.json().catch(() => ({}));
+      out.fix = j.fix || null;
+    } catch (e) { out.fix = 'ошибка ' + e.message; }
+    // а теперь честная заявка на победу: +22 к рейтингу
+    try {
+      const r = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await user.getIdToken() },
+        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'p2', rating: 1022, srat: 22, ar: { d: 22 } }, ses: 'p2', base: 'p1' })
+      });
+      const j = await r.json().catch(() => ({}));
+      out.fix2 = j.fix || null;
+    } catch (e) { out.fix2 = 'ошибка ' + e.message; }
+    await new Promise(r => setTimeout(r, 1200));
+    try { const s = await db.doc('saves/' + login).get(); out.savedRating = s.exists ? (s.data().rating | 0) : 'нет'; }
+    catch (e) { out.savedRating = 'ошибка: ' + e.code; }
+    try { const s = await db.doc('players/' + login).get(); out.cardRating = s.exists ? (s.data().rating | 0) : 'нет'; }
+    catch (e) { out.cardRating = 'ошибка: ' + e.code; }
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
     out.players = await write('players/' + login, { name: 'check', lvl: 1 });
     // сквозной сценарий: сохранение через сервер игры
@@ -79,6 +104,10 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
   c('POST /api/save принят сервером', res.saveStatus === 200, 'HTTP ' + res.saveStatus);
   c('сохранение попало в базу', res.saveInDb === 'да, gold=30', res.saveInDb);
   c('клиент читает своё сохранение', res.clientRead === 'ок', res.clientRead);
+  c('подделка рейтинга проигнорирована (сервер оставил 1000)', res.fix && res.fix.rating === 1000, res.fix ? 'рейтинг сервера: ' + res.fix.rating : 'нет данных');
+  c('честная заявка засчитана (1000 → 1022)', res.fix2 && res.fix2.rating === 1022, res.fix2 ? 'рейтинг сервера: ' + res.fix2.rating : 'нет данных');
+  c('в сохранении лежит серверный рейтинг', res.savedRating === 1022, 'рейтинг=' + res.savedRating);
+  c('в карточке игрока тот же рейтинг', res.cardRating === 1022, 'рейтинг=' + res.cardRating);
   c('тестовый аккаунт и документы удалены', res.cleanup === 'аккаунт удалён', res.cleanup);
   console.log(failed ? '\n  есть проблемы: ' + failed + '\n' : '\n  всё в порядке\n');
   await b.close();
