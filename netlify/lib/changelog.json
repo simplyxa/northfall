@@ -380,5 +380,10 @@
   "v": "1.16.1",
   "t": "Итог охоты теперь во всплывающем окне, как награда «Пути новичка»: сколько убито, опыт, серебро и трофеи. Кнопка «Снова на охоту» сразу ведёт в ту же зону.",
   "te": "The hunt summary now opens in a popup, like the Newcomer's Path reward: beasts killed, XP, silver and trophies. «Hunt again» takes you straight back to the same area."
+ },
+ {
+  "v": "1.17.0",
+  "t": "Арена теперь работает на билетах вместо энергии: бой стоит 1 билет, билетов максимум 10, каждый час восстанавливается один. Сколько билетов осталось — видно на арене и в меню.",
+  "te": "The arena now uses tickets instead of energy: a battle costs 1 ticket, you can hold up to 10, and one is restored every hour. Your tickets are shown in the arena and in the menu."
  }
 ]

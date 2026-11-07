@@ -2484,5 +2484,11 @@
 "🏹 Охота окончена": "🏹 Hunt over",
 " · соплеменники унесли тебя в лагерь": " · your tribesmen carried you to camp",
 "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">Трофеев в этот раз нет.</p>": "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">No trophies this time.</p>",
-"\" style=\"width:100%;margin-top:12px\" onclick=\"closeModal()\">Снова на охоту</button>": "\" style=\"width:100%;margin-top:12px\" onclick=\"closeModal()\">Hunt again</button>"
+"\" style=\"width:100%;margin-top:12px\" onclick=\"closeModal()\">Снова на охоту</button>": "\" style=\"width:100%;margin-top:12px\" onclick=\"closeModal()\">Hunt again</button>",
+"Нет билетов арены: новый появится через ": "No arena tickets: a new one arrives in ",
+" мин.": " min.",
+"\" alt=\"Арена\" style=\"aspect-ratio:3/1\"><div class=\"dbt\"><b>Арена Севера</b><span>Сойдись с воинами других кланов в честном бою</span></div></div><div class=\"panel\"><h3 style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap\"><span>Арена</span><span style=\"font-size:16px;color:var(--gold)\">": "\" alt=\"Arena\" style=\"aspect-ratio:3/1\"><div class=\"dbt\"><b>Arena of the North</b><span>Face warriors of other clans in a fair fight</span></div></div><div class=\"panel\"><h3 style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap\"><span>Arena</span><span style=\"font-size:16px;color:var(--gold)\">",
+"</span></h3><p style=\"margin:0 0 6px;font-size:15px\">Бой стоит <b>1 билет</b>. Билетов максимум 10, каждый час восстанавливается один.</p><p style=\"margin:0 0 4px\">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>": "</span></h3><p style=\"margin:0 0 6px;font-size:15px\">A battle costs <b>1 ticket</b>. You can hold up to 10 tickets, and one is restored every hour.</p><p style=\"margin:0 0 4px\">Duels only against other players' heroes: their attack, defense, health and crit. The higher the opponent's rating, the more rating you get for a win. In battle your strike charges for 5 seconds, and the enemy hits once every 5 seconds. No XP, silver or trophies are given in the arena, only rating. A defeat costs 10% of your silver and a little rating.</p></div>",
+" · следующий через ": " · next in ",
+"поединки с копиями героев · 🎟 ": "duels with hero copies · 🎟 "
 }
