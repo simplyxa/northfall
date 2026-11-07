@@ -375,5 +375,10 @@
   "v": "1.16.0",
   "t": "Новая сцена охоты: поляна с водопадом и рунными кругами, берсерк теперь стоит на поле боя в полный рост (охотник и шаман — скоро). На охоте одновременно 4 зверя, зато новые выходят из чащи быстрее.",
   "te": "New hunting stage: a clearing with a waterfall and rune circles, and the berserker now stands on the battlefield at full height (hunter and shaman coming soon). Up to 4 beasts at once, but new ones come out of the thicket faster."
+ },
+ {
+  "v": "1.16.1",
+  "t": "Итог охоты теперь во всплывающем окне, как награда «Пути новичка»: сколько убито, опыт, серебро и трофеи. Кнопка «Снова на охоту» сразу ведёт в ту же зону.",
+  "te": "The hunt summary now opens in a popup, like the Newcomer's Path reward: beasts killed, XP, silver and trophies. «Hunt again» takes you straight back to the same area."
  }
 ]
