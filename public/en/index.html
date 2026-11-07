@@ -323,7 +323,7 @@ const clampV=()=>{S.hp=Math.min(S.hp,maxHp());S.en=Math.min(S.en,maxEn())};
 const crit=()=>Math.min(60,10+EQ().crit+(typeof petCrit==='function'?petCrit():0));
 const bonus=()=>1+(S.clan?0.05:0)+.04*cb('mkt')+(typeof petLoot==='function'?petLoot():0)+(typeof cbl==='function'?.03*cbl('smoke'):0);
 
-let syncT,HREP=null,CLOUD={ok:0,err:''};
+let syncT,HREP=null,CLOUD={ok:0,err:'',warn:0};
 // Экономная синхронизация: полное сохранение в базу не чаще раза в 20 с (сразу — при новом уровне и при сворачивании игры),
 // карточка игрока в общем списке — только при важных изменениях или раз в минуту. На устройстве всё сохраняется мгновенно.
 let SAVEDT=0,PLT=0,PLSIG='',SLV=0;
@@ -452,13 +452,19 @@ function rdView(){let on=false;try{on=localStorage.getItem('nf_rdm')==='1'}catch
 // ленивое подключение общих списков (экономия чтений базы)
 let SOCF=null,SOCON=false;
 function socMaybe(t){if(SOCON||!SOCF)return;const g=typeof GUEST!=='undefined'&&GUEST;if(t||(UID&&!g)||(S&&!['home','hunt'].includes(tab))){SOCON=true;try{SOCF()}catch(e){}}}
+// сервер не отвечает: говорим игроку один раз и ждём следующей попытки
+function cloudDown(){if(CLOUD.warn)return;CLOUD.warn=1;log('Cloud unavailable — your progress is saved locally and will sync once the server is back.','sys');if(typeof ui==='function')ui()}
 function pushDb(force){if(!DB||!UID||!S||STALE)return;actMark();if(S.clan&&!S.cjt)S.cjt=Date.now();if(!S.clan&&S.cjt)delete S.cjt;const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
  if(force||sig!==PLSIG||now-PLT>180000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({lg:LANG,name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan||'',sid:S.sid,srat:S.srat,psid:S.psid||0,psrat:S.psrat||0,war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0}).catch(()=>{})}
- S.ses=SESS;const sref=DB.collection('saves').doc(UID),sdat=JSON.parse(JSON.stringify(S));{const k=JSON.stringify({...sdat,ts:0,act:0,hpf:0,enf:0,rt:0});if(k===SLAST)return;SLAST=k}const done=r=>{if(r==='stale')return staleHit();SBASE=SESS;CLOUD.ok=Date.now();CLOUD.err=''},bad=e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80)},
+ S.ses=SESS;const sref=DB.collection('saves').doc(UID),sdat=JSON.parse(JSON.stringify(S));{const k=JSON.stringify({...sdat,ts:0,act:0,hpf:0,enf:0,rt:0});if(k===SLAST)return;SLAST=k}const done=r=>{if(r==='stale')return staleHit();SBASE=SESS;CLOUD.ok=Date.now();CLOUD.err='';CLOUD.warn=0},bad=e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80);CLOUD.ok=0},
+  // сервер не ответил — данные остаются в localStorage, и повтор уйдёт при следующей попытке.
+  // Прямой записи в saves здесь намеренно нет: она обходила серверную проверку
+  // (копилку серебра и проверку вещей) — игрок мог бы писать в базу сам.
+  fail=e=>{bad(e);SLAST='';cloudDown()},
   direct=()=>rTx(async t=>{const sn=await t.get(sref);const d=sn.exists?sn.data():null;if(d&&d.ses&&d.ses!==SESS&&d.ses!==SBASE)return'stale';t.set(sref,sdat);return'ok'}).then(done).catch(bad);
- // через наш сервер (он проверяет линию сохранений и следит за подозрительными скачками); без сервера — напрямую в базу
+ // через наш сервер (он проверяет линию сохранений и следит за подозрительными скачками)
  if(hubOn()&&typeof FBA!=='undefined'&&FBA&&FBA.currentUser){const base=SBASE;FBA.currentUser.getIdToken().then(tok=>fetch('/api/save',{method:'POST',keepalive:JSON.stringify(sdat).length<60000,headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({s:sdat,ses:SESS,base})}))
-  .then(r=>r.status===409?done('stale'):r.ok?r.json().then(j=>{if(j&&j.fix)srvFix(j.fix)}).catch(()=>{}).then(()=>done('ok')):(r.status>=500||r.status===404)?direct():bad({code:'srv '+r.status})).catch(()=>direct())}
+  .then(r=>r.status===409?done('stale'):r.ok?r.json().then(j=>{if(j&&j.fix)srvFix(j.fix)}).catch(()=>{}).then(()=>done('ok')):fail({code:'srv '+r.status})).catch(()=>fail({code:'net'}))}
  else direct()}
 function sync(){if(!DB||!UID||!S)return;clearTimeout(syncT);const wait=S.lvl!==SLV?1200:Math.max(1200,SAVEDT+20000-Date.now());syncT=setTimeout(()=>pushDb(),wait)}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});window.addEventListener('pagehide',()=>saveNow());
@@ -2677,7 +2683,7 @@ const _mkBuy=mkBuy,_mkCollect=mkCollect;
 mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||SG!==true)return _mkBuy(id);if(m.seller===UID||m.sold||(S.au|0)<m.price)return;if(S.inv.length>=INV_MAX){log('Backpack is full.','sys');return render()}if(GBUSY)return;GBUSY=true;
  goldApi({a:'market',id,name:S.name}).then(j=>{S.au=j.au|0;const it=fixItem(JSON.parse(JSON.stringify(j.item)));it.uid=uid();S.inv.push(it);MKMSG=`Bought: “${it.name}” for ${m.price} gold`;log(MKMSG,'sys');save();render()}).catch(e=>{MKMSG=e.message||'Purchase failed.';render()}).finally(()=>{GBUSY=false})};
 mkCollect=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||!m.paid)return _mkCollect(id);if(m.seller!==UID)return;
- DB.collection('market').doc(id).delete().then(()=>{MKMSG=`Sold “${m.item.name}” to ${m.bname||''}: gold is already in your purse.`;log(MKMSG,'sys');render()}).catch(()=>{})};
+ MKMSG=`Sold “${m.item.name}” to ${m.bname||''}: gold is already in your purse.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
 
 </script>
 <script>// Английская версия: перевод на лету того, что приходит готовым текстом с сервера или из сохранений

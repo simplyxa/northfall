@@ -11,19 +11,14 @@ service cloud.firestore {
     // ВПИШИ СЮДА логины администраторов (как в ADMINS в index.html)
     function admin() { return signed() && request.auth.token.email in ['shtorm1@northfall.game', 'admin@northfall.game']; }
 
-    // Сохранение героя: только сам игрок (и админ)
-    // Защита от накруток: уровень не выше 60 и не прыгает, серебро не растёт скачками
-    function saneSave() {
-      let n = request.resource.data;
-      return n.get('lvl', 1) is int && n.get('lvl', 1) <= 60
-        && (resource == null
-          || (n.get('lvl', 1) <= resource.data.get('lvl', 1) + 10
-              && n.get('gold', 0) <= resource.data.get('gold', 0) + 100000));
-    }
+    // Сохранение героя: пишет ТОЛЬКО СЕРВЕР (Firebase Admin обходит правила).
+    // Раньше игрок мог писать сюда сам — и обходить серверную проверку:
+    // «копилку серебра» (доход ограничен потолком) и проверку вещей.
+    // Клиент при ошибке сервера тоже писал напрямую — теперь не пишет.
     match /saves/{id} {
       allow read: if me(id) || admin();
       allow delete: if me(id) || admin();
-      allow create, update: if admin() || (me(id) && saneSave());
+      allow create, update: if false;
     }
 
     // Кошелёк золота: читает только владелец, меняет только сервер (Netlify)
@@ -80,11 +75,14 @@ service cloud.firestore {
       }
     }
 
-    // Войны, мировой босс, территории, рынок
+    // Войны, мировой босс, территории
     match /wars/{id}   { allow read, write: if signed(); }
     match /world/{id}  { allow read, write: if signed(); }
     match /terr/{id}   { allow read, write: if signed(); }
-    match /market/{id} { allow read, write: if signed(); }
+    // Рынок: выставление, покупка и снятие лота делает сервер.
+    // Клиент больше не пишет сюда сам: иначе можно было бы поменять цену
+    // любого лота на 1 золото и купить его (gold.js берёт цену из документа).
+    match /market/{id} { allow read: if signed(); allow write: if false; }
 
     // Форум: писать могут все вошедшие, удалять только админ
     match /forum/{topic} {
