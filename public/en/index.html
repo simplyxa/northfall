@@ -696,7 +696,7 @@ const ANI=(el,k,o)=>{try{el&&el.animate&&el.animate(k,o)}catch(e){}};
 function stageFx(){if(!fight||!fight.hunt||fight.hunt.raid)return;const H=fight.hunt;if(SLH!==H){SLH=H;SLE=[];HPH=null}
  const hel=document.getElementById('sthero');if(!hel)return;
  H.sl.forEach((s,i)=>{const el=document.getElementById('sf'+i)||document.querySelectorAll('.stage .st-foe')[i],old=SLE[i];
-  const dmg=(o,p)=>{const v=o._ld||p-o.hp;o._ld=0;return v};
+  const dmg=(o,p)=>p-o.hp; // над зверем — сколько здоровья снято (не больше остатка), сила удара — в журнале
   if(old&&old!==s.e){const p=HPW.get(old);if(p!=null&&p>old.hp)fxAt(el,'fxn'+(fight.lc?' c':''),'−'+dmg(old,p),.3);fxAt(el,'fxk',null,.35);HPW.delete(old)}
   if(s.e){const p=HPW.get(s.e);if(p!=null&&s.e.hp<p){fxAt(el,'fxs',null,.35);fxAt(el,'fxn'+(fight.lc?' c':''),'−'+dmg(s.e,p),.3);ANI(el&&el.querySelector('.st-img'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280})}HPW.set(s.e,s.e.hp)}
   SLE[i]=s.e});
@@ -772,7 +772,7 @@ function act(a){
   const k=fight.ch;fight.ch=0;fight.s.r++;
   let d=(rnd(.8,1.2)*atk()-e.def*.5)*k;
   const c=Math.random()*100<crit();if(c)d*=1.8;if(fight.rage){d*=(+fight.rage>1?+fight.rage:2);fight.rage=false}if(e.tr==='armor')d*=.5;d=Math.max(1,Math.round(d));if(fight.hunt&&fb1())d=Math.max(d,e.hp);if(fight.hint&&!S.th1){S.th1=1;try{trk('h1')}catch(_){}}fight.hint=0;fx(c?'crit':'hit');fight.lc=c;fight.lunge=1;
-  e._ld=d;const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);if(c)fight.s.crit++;log(`${c?'Precise strike! ':''}Strike for ${Math.round(k*100)}%: ${d} damage.`,'hit');
+  const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);if(c)fight.s.crit++;log(`${c?'Precise strike! ':''}Strike for ${Math.round(k*100)}%: ${d} damage.`,'hit');
  }
  settle();save();render();
 }
@@ -1114,7 +1114,7 @@ function useSkill(id){if(!fight)return;const sk=skOf().find(x=>x[0]===id);if(!sk
  else if(id==='totem'){const h=Math.round(maxHp()*skV('totem')/100);S.hp=Math.min(maxHp(),S.hp+h);log(`Healing totem: +${h} health.`,'hit')}
  else if(id==='trap'){e.stun=now+skV('trap')*1000;log(`${e.name} is caught in a trap.`,'hit')}
  else if(id==='shot'){let d=Math.round(atk()*skV('shot')*rnd(.9,1.1));const c=Math.random()*100<crit();if(c){d=Math.round(d*1.8);fx('crit')}else fx('hit');if(e.tr==='armor')d=Math.round(d*.5);
-  e._ld=d;const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Aimed ':''}Shot: ${d} damage.`,'hit');settle()}
+  const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Aimed ':''}Shot: ${d} damage.`,'hit');settle()}
  save();render()}
 const skBtns=()=>`<div class="skr">${skOf().map((k,i)=>{const L=skLeft(k[0]);return`<button class="b alt sk" id="sk${i}" data-a="sk-${k[0]}" title="${k[2]}" ${L>0?'disabled':''} style="display:inline-flex;align-items:center;justify-content:center;gap:6px">${skImg(k[0],26)}<span id="skl${i}">${k[1]}${L>0?' '+Math.ceil(L/1000)+' s':''}</span></button>`}).join('')}</div>`;
 const TRAITS={poison:['Venomous','poison: damage over time'],armor:['Armored','takes half damage'],leader:['Pack leader','while alive, the others hit 30% harder'],fast:['Swift','attacks every 3 seconds']};
@@ -1996,7 +1996,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.17.2';
+const GVER='1.17.3';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2402,7 +2402,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.17.2</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.17.3</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
