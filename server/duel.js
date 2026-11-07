@@ -111,3 +111,6 @@ module.exports = function duels(getDb) {
   function onClose(c) { if (c.duels) for (const rid of c.duels) { const r = rooms.get(rid); if (r) r.subs.delete(c); } }
   return { onMsg, onClose, stats: () => [...rooms].map(([k, r]) => ({ rid: k, st: r.R && r.R.st, r: r.R && r.R.r, subs: r.subs.size })) };
 };
+
+// dRound — чистая функция раунда, её удобно тестировать отдельно
+module.exports.dRound = dRound;

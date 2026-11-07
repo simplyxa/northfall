@@ -6,7 +6,10 @@
     "web-push": "^3.6.7"
   },
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "test": "node tools/wstest.js && node tools/gametest.js",
+    "bench": "node tools/wsbench.js",
+    "build:en": "node i18n/build_en.js"
   },
   "engines": {
     "node": ">=20"
