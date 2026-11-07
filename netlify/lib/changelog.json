@@ -365,5 +365,10 @@
   "v": "1.14.2",
   "t": "Чат: каналы RU и EN полностью разделены — системные новости тоже приходят на языке канала.",
   "te": "Chat: RU and EN channels are fully separate — system news now arrive in the channel's language."
+ },
+ {
+  "v": "1.15.0",
+  "t": "Охота теперь проходит на сцене: герой слева, звери справа. Видно, как герой делает выпад, звери бросаются в ответ, а над целью всплывают цифры урона (криты — золотом).",
+  "te": "The hunt now takes place on a battle stage: your hero on the left, beasts on the right, with lunges, hit flashes and floating damage numbers (crits in gold)."
  }
 ]

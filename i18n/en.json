@@ -2473,5 +2473,6 @@
 "\" style=\"flex:1;margin:0\" onclick=\"setLang('ru')\">Русский</button><button class=\"b": "\" style=\"flex:1;margin:0\" onclick=\"setLang('ru')\">Русский</button><button class=\"b",
 "<div class=\"panel\"><h3 style=\"display:flex;align-items:center\">Общий чат": "<div class=\"panel\"><h3 style=\"display:flex;align-items:center\">General chat",
 "</h3><p style=\"margin:0;color:var(--mute);font-size:14px\">Здесь общаются все воины Севера. Будь вежлив: администрация удаляет оскорбления и спам. Сейчас в игре: <b>": "</h3><p style=\"margin:0;color:var(--mute);font-size:14px\">All warriors of the North talk here. Be polite: the administration deletes insults and spam. In the game now: <b>",
-"<button onclick=\"setLang('ru')\">🇷🇺 Русский</button><button aria-label=\"Close\" onclick=\"setLang('en',1)\">✕</button>": "<button onclick=\"setLang('ru')\">🇷🇺 Русский</button><button aria-label=\"Close\" onclick=\"setLang('en',1)\">✕</button>"
+"<button onclick=\"setLang('ru')\">🇷🇺 Русский</button><button aria-label=\"Close\" onclick=\"setLang('en',1)\">✕</button>": "<button onclick=\"setLang('ru')\">🇷🇺 Русский</button><button aria-label=\"Close\" onclick=\"setLang('en',1)\">✕</button>",
+"</span><span class=\"st-lv\">ур. ": "</span><span class=\"st-lv\">lv. "
 }
