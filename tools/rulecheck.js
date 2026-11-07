@@ -43,8 +43,8 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     if (!user) return out;
     out.login = login;
     const db = firebase.firestore();
-    const write = async (path, data) => {
-      try { await db.doc(path).set(data); return 'ЗАПИСЬ ПРОШЛА'; }
+    const write = async (path, data, merge) => {
+      try { await db.doc(path).set(data, merge ? { merge: true } : undefined); return 'ЗАПИСЬ ПРОШЛА'; }
       catch (e) { return e.code || (e.message || '').slice(0, 80); }
     };
     out.saves = await write('saves/' + login, { lvl: 1, gold: 999999, inv: [], ts: Date.now() });
@@ -83,7 +83,9 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     try { const s = await db.doc('players/' + login).get(); out.cardRating = s.exists ? (s.data().rating | 0) : 'нет'; }
     catch (e) { out.cardRating = 'ошибка: ' + e.code; }
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
-    out.players = await write('players/' + login, { name: 'check', lvl: 1 });
+    // карточка игрока: с рейтингом — запрещено, без защищённых полей — можно (так пишет клиент)
+    out.playersBad = await write('players/' + login, { name: 'check', lvl: 1, rating: 99999, win: 9999 });
+    out.playersOk = await write('players/' + login, { name: 'check', lvl: 1 }, true);
     await new Promise(r => setTimeout(r, 1500));
     try { const s = await db.doc('saves/' + login).get(); out.saveInDb = s.exists ? 'да, gold=' + (s.data().gold) : 'НЕТ'; }
     catch (e) { out.saveInDb = 'ошибка чтения: ' + e.code; }
@@ -100,7 +102,8 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
   console.log('  игрок: ' + (res.login || res.auth || 'не создан'));
   c('запись в saves запрещена (серверную проверку не обойти)', res.saves === 'permission-denied', res.saves || 'нет данных');
   c('запись в market запрещена (цену лота не подменить)', res.market === 'permission-denied', res.market || 'нет данных');
-  c('запись в players разрешена (карточка пока клиентская)', res.players === 'ЗАПИСЬ ПРОШЛА', res.players || 'нет данных');
+  c('запись рейтинга в карточку запрещена', res.playersBad === 'permission-denied', res.playersBad || 'нет данных');
+  c('запись остальных полей карточки разрешена', res.playersOk === 'ЗАПИСЬ ПРОШЛА', res.playersOk || 'нет данных');
   c('POST /api/save принят сервером', res.saveStatus === 200, 'HTTP ' + res.saveStatus);
   c('сохранение попало в базу', res.saveInDb === 'да, gold=30', res.saveInDb);
   c('клиент читает своё сохранение', res.clientRead === 'ок', res.clientRead);
