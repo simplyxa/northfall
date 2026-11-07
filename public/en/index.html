@@ -707,13 +707,16 @@ const BEASTFIG={
  'Carrion raven':'/img/fig-raven.webp','Swamp rat':'/img/fig-rat.webp','Mountain bear':'/img/fig-bear.webp',
  'Snow leopard':'/img/fig-leopard.webp','Highway robber':'/img/fig-bandit.webp','Pack leader':'/img/fig-alpha.webp',
  'Draugr':'/img/fig-draugr.webp','Young troll':'/img/fig-troll.webp'};
+// имя зверя приходит с чертой («Ядовитый ворон-падальщик») и строчными — ищем без учёта регистра
+const BFIG={};for(const k in BEASTFIG)BFIG[k.toLowerCase()]=BEASTFIG[k];
+const bfKey=n=>{n=String(n||'');const b=n.replace(/^\S+ /,'');return BFIG[b.toLowerCase()]||BFIG[n.toLowerCase()]||''};
 // точки рунных кругов на фоне (в % сцены): задний ряд мельче, передний крупнее
 const STPT=[{x:59.9,y:37.4,k:.85},{x:84.1,y:42.6,k:.85},{x:60.6,y:75,k:1},{x:84.8,y:81.5,k:1}];
 function stageHtml(H){const pa=petA(),fig=HEROFIG[S.cls];
  return `<div class="stage" style="--sbg:url(${STBG})"><div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i style="width:${S.hp/maxHp()*100}%;background:var(--moss)"></i></span><small>${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div>${pa?`<span class="st-pet" title="${esc(pa.n)}">${petImg(pa.k,30)}</span>`:''}</div>
  ${H.sl.slice(0,STPT.length).map((s,i)=>{const P=STPT[i],z=Math.round(P.y);if(!s.e)return`<div class="st-foe empty" style="left:${P.x}%;top:${P.y}%;z-index:${z}"><small>${s.at!=null?'Rustling in the bushes…':''}</small></div>`;
-  const bf=BEASTFIG[s.e.name.replace(/^\S+ /,'')]||BEASTFIG[s.e.name],im=s.e.img||mobImg(s.e.name);
+  const bf=bfKey(s.e.name),im=s.e.img||mobImg(s.e.name);
   return`<button class="st-foe${fight.e===s.e?' on':''}${bf?' fig':''}" data-tg="${i}" id="sf${i}" aria-label="Target: ${esc(s.e.name)}" title="${s.e.tr?esc(TRAITS[s.e.tr][1]):''}" style="left:${P.x}%;top:${P.y}%;--k:${P.k};z-index:${z}"><span class="st-img"${bf?'':im?` style="background-image:url(${im})"`:''}>${bf?`<img src="${bf}" alt="">`:''}</span><span class="st-hd"><span class="st-nm">${esc(s.e.name)}</span><span class="st-bar"><i style="width:${s.e.hp/s.e.max*100}%"></i></span><span class="st-atk"><i id="ma${i}" style="width:${Math.round(s.ech*100)}%"></i></span></span>${s.e.stun>fight.clk?'<span class="st-stun">💫</span>':''}</button>`}).join('')}</div>`}
 const HPW=new WeakMap();let SLE=[],HPH=null,SLH=null;
 function fxl(){let l=document.getElementById('fxl');if(!l){l=document.createElement('div');l.id='fxl';document.body.appendChild(l)}return l}
@@ -2022,7 +2025,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.1';
+const GVER='1.18.2';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2428,7 +2431,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.2</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
