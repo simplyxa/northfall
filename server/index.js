@@ -188,7 +188,35 @@ async function cron() {
 function nextQuarter() { const q = 15 * 60000; return q - (Date.now() % q) + 2000; }
 if (process.env.CRON !== 'off') (function loop() { setTimeout(() => { cron().finally(loop); }, nextQuarter()); })();
 
+// Уборка тестовых карточек.
+// tools/rulecheck.js заходит временным игроком и проверяет правила Firestore,
+// поэтому на пару секунд появляется карточка с префиксом zz_. Если тест не
+// успел её удалить (например, правила не пускали удалять), она оставалась
+// в рейтинге и в админке. Сервер подметает такие карточки сам.
+//   • по имени — при старте (раз в деплой, коллекция маленькая);
+//   • по маркеру tst — каждые 15 минут (запрос по индексу, дёшево).
+const TEST_ID = /^zz_/;
+async function sweepTestCards(full) {
+  const a = fbAdmin(); if (!a) return;
+  const db = a.firestore();
+  try {
+    if (full) {
+      const snap = await db.collection('players').get();
+      const bad = snap.docs.filter(d => TEST_ID.test(d.id));
+      for (const d of bad) await d.ref.delete();
+      if (bad.length) console.log('sweep: удалено тестовых карточек', bad.length);
+    }
+    const mark = await db.collection('players').where('tst', '==', 1).get();
+    for (const d of mark.docs) await d.ref.delete();
+    if (!mark.empty) console.log('sweep: удалено карточек с маркером', mark.size);
+  } catch (e) { console.error('sweep', e.message); }
+}
+
 // после старта новой версии — список изменений на форум (повторы функция сама отсекает)
+// уборка тестовых карточек: при старте — по имени, потом раз в 15 минут — по маркеру
+sweepTestCards(true);
+setTimeout(() => { sweepTestCards(false); setInterval(() => sweepTestCards(false), 15 * 60000).unref(); }, 20000);
+
 if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.CHANGELOG !== 'off') {
   setTimeout(() => runFn('deploy-succeeded', { httpMethod: 'POST', headers: {}, body: JSON.stringify({ payload: { context: 'production' } }) })
     .then(r => console.log('changelog', r && r.statusCode, r && r.body)).catch(e => console.error('changelog', e)), 15000);

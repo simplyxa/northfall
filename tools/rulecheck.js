@@ -85,15 +85,23 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
     // карточка игрока: с рейтингом — запрещено, без защищённых полей — можно (так пишет клиент)
     out.playersBad = await write('players/' + login, { name: 'check', lvl: 1, rating: 99999, win: 9999 });
-    out.playersOk = await write('players/' + login, { name: 'check', lvl: 1 }, true);
+    // маркер tst: по нему сервер потом подметает карточку, если тест не успел её удалить
+    out.playersOk = await write('players/' + login, { name: 'check', lvl: 1, tst: 1 }, true);
     await new Promise(r => setTimeout(r, 1500));
     try { const s = await db.doc('saves/' + login).get(); out.saveInDb = s.exists ? 'да, gold=' + (s.data().gold) : 'НЕТ'; }
     catch (e) { out.saveInDb = 'ошибка чтения: ' + e.code; }
     try { const s = await db.doc('saves/' + login).get(); out.clientRead = s.exists ? 'ок' : 'нет документа'; }
     catch (e) { out.clientRead = 'ошибка: ' + e.code; }
-    // уборка
+    // уборка: карточка и сохранение обязаны исчезнуть, иначе профиль останется в рейтинге
     try { await db.doc('saves/' + login).delete(); } catch (e) {}
-    try { await db.doc('players/' + login).delete(); } catch (e) {}
+    let cardGone = false;
+    try {
+      await db.doc('players/' + login).delete();
+      await new Promise(r => setTimeout(r, 400));
+      const left = await db.doc('players/' + login).get();
+      cardGone = !left.exists();
+    } catch (e) { out.cardDel = 'ошибка удаления: ' + e.code; }
+    out.cardGone = cardGone;
     try { await user.delete(); out.cleanup = 'аккаунт удалён'; } catch (e) { out.cleanup = 'не удалён: ' + e.code; }
     return out;
   }, { email: EMAIL, pw: PW });
@@ -111,7 +119,8 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
   c('честная заявка засчитана (1000 → 1022)', res.fix2 && res.fix2.rating === 1022, res.fix2 ? 'рейтинг сервера: ' + res.fix2.rating : 'нет данных');
   c('в сохранении лежит серверный рейтинг', res.savedRating === 1022, 'рейтинг=' + res.savedRating);
   c('в карточке игрока тот же рейтинг', res.cardRating === 1022, 'рейтинг=' + res.cardRating);
-  c('тестовый аккаунт и документы удалены', res.cleanup === 'аккаунт удалён', res.cleanup);
+  c('тестовая карточка удалена (не светится в рейтинге)', res.cardGone === true, res.cardGone === false ? ('осталась: ' + (res.cardDel || 'delete прошёл, но документ на месте')) : String(res.cardGone));
+  c('тестовый аккаунт удалён', res.cleanup === 'аккаунт удалён', res.cleanup);
   console.log(failed ? '\n  есть проблемы: ' + failed + '\n' : '\n  всё в порядке\n');
   await b.close();
   process.exit(failed ? 1 : 0);
