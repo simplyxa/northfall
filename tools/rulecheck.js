@@ -48,12 +48,21 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
       catch (e) { return e.code || (e.message || '').slice(0, 80); }
     };
     out.saves = await write('saves/' + login, { lvl: 1, gold: 999999, inv: [], ts: Date.now() });
+    // первое сохранение — обычное, задаёт линию сессий
+    try {
+      const r = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await user.getIdToken() },
+        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'probe1' }, ses: 'probe1', base: null })
+      });
+      out.saveStatus = r.status;
+    } catch (e) { out.saveStatus = 'ошибка ' + e.message; }
     // подделка рейтинга в сохранении: сервер должен её проигнорировать
     try {
       const r = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await user.getIdToken() },
-        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'p1', rating: 99999, srat: 99999 }, ses: 'p1', base: null })
+        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'probe1', rating: 99999, srat: 99999 }, ses: 'probe1', base: null })
       });
       const j = await r.json().catch(() => ({}));
       out.fix = j.fix || null;
@@ -63,7 +72,7 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
       const r = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await user.getIdToken() },
-        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'p2', rating: 1022, srat: 22, ar: { d: 22 } }, ses: 'p2', base: 'p1' })
+        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'probe1', rating: 1022, srat: 22, ar: { d: 22 } }, ses: 'probe1', base: 'probe1' })
       });
       const j = await r.json().catch(() => ({}));
       out.fix2 = j.fix || null;
@@ -75,15 +84,6 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     catch (e) { out.cardRating = 'ошибка: ' + e.code; }
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
     out.players = await write('players/' + login, { name: 'check', lvl: 1 });
-    // сквозной сценарий: сохранение через сервер игры
-    try {
-      const r = await fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await user.getIdToken() },
-        body: JSON.stringify({ s: { lvl: 1, xp: 0, gold: 30, au: 0, inv: [], eq: {}, ts: Date.now(), ses: 'probe1' }, ses: 'probe1', base: null })
-      });
-      out.saveStatus = r.status;
-    } catch (e) { out.saveStatus = 'ошибка ' + e.message; }
     await new Promise(r => setTimeout(r, 1500));
     try { const s = await db.doc('saves/' + login).get(); out.saveInDb = s.exists ? 'да, gold=' + (s.data().gold) : 'НЕТ'; }
     catch (e) { out.saveInDb = 'ошибка чтения: ' + e.code; }
