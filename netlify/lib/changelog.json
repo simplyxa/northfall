@@ -410,5 +410,10 @@
   "v": "1.18.4",
   "t": "В рейде звери теперь нарисованы так же, как на охоте — в полный рост, а не круглыми портретами. Раньше в карточках рейда оставались старые иконки.",
   "te": "In the raid the beasts are now drawn the same way as in the hunt — full-length instead of round portraits. The raid cards used to keep the old icons."
+ },
+ {
+  "v": "1.18.5",
+  "t": "Горный медведь и вожак стаи перерисованы заново: у прежних были отрезаны задняя часть тела и задние лапы — модель рисовала зверя, уходящего за кадр.",
+  "te": "The mountain bear and the pack leader have been redrawn from scratch: the old ones had their hindquarters and back legs cut off, the model drew the animal running out of frame."
  }
 ]
