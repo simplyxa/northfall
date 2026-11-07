@@ -385,5 +385,10 @@
   "v": "1.17.0",
   "t": "Арена теперь работает на билетах вместо энергии: бой стоит 1 билет, билетов максимум 10, каждый час восстанавливается один. Сколько билетов осталось — видно на арене и в меню.",
   "te": "The arena now uses tickets instead of energy: a battle costs 1 ticket, you can hold up to 10, and one is restored every hour. Your tickets are shown in the arena and in the menu."
+ },
+ {
+  "v": "1.17.2",
+  "t": "Цифры урона над зверем теперь совпадают с журналом боя: показывается сила удара, а не только остаток здоровья добитого зверя. Спасибо за подсказку!",
+  "te": "Damage numbers over beasts now match the battle log: they show the full strike, not just the health a finishing blow removed."
  }
 ]
