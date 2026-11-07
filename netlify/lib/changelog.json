@@ -395,5 +395,10 @@
   "v": "1.18.1",
   "t": "На охоте герой теперь нарисован в полный рост для всех трёх классов — берсерка, охотника и шамана. Звери тоже перерисованы в полный рост: волк, кабан, лиса-оборотень, ворон, крыса, медведь, барс, разбойник, вожак стаи, драугр и тролль.",
   "te": "In the hunt the hero is now drawn full-length for all three classes — berserker, hunter and shaman. The beasts have been redrawn in 2D as full-length figures too: wolf, boar, fox shapeshifter, raven, rat, bear, leopard, bandit, pack leader, draughr and troll."
+ },
+ {
+  "v": "1.18.2",
+  "t": "Звери на охоте теперь повёрнуты к герою: волк, кабан, лиса-оборотень, ворон, крыса, медведь, барс, разбойник, вожак, драугр и тролль смотрят влево, на воина. И починилась фигура зверя с чертой — раньше «Ядовитый ворон-падальщик» оставался круглым портретом.",
+  "te": "The hunt beasts now turn towards the hero: wolf, boar, werefox, raven, rat, bear, leopard, highwayman, pack leader, draughr and troll all face left, towards the warrior. Beasts with a trait keep their full-body figure too — a «Poisoned carrion raven» used to stay a round portrait."
  }
 ]
