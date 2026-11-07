@@ -400,5 +400,10 @@
   "v": "1.18.2",
   "t": "Звери на охоте теперь повёрнуты к герою: волк, кабан, лиса-оборотень, ворон, крыса, медведь, барс, разбойник, вожак, драугр и тролль смотрят влево, на воина. И починилась фигура зверя с чертой — раньше «Ядовитый ворон-падальщик» оставался круглым портретом.",
   "te": "The hunt beasts now turn towards the hero: wolf, boar, werefox, raven, rat, bear, leopard, highwayman, pack leader, draughr and troll all face left, towards the warrior. Beasts with a trait keep their full-body figure too — a «Poisoned carrion raven» used to stay a round portrait."
+ },
+ {
+  "v": "1.18.3",
+  "t": "Фигуры в сцене охоты больше не висят в воздухе — герой и звери стоят ногами на своих кругах. Охотник перерисован: теперь он смотрит на зверей, а не вбок. Звери уменьшены, чтобы их подписи не вылезали за верх сцены.",
+  "te": "The figures in the hunt no longer float — the hero and the beasts stand on their rune circles. The hunter has been redrawn: he now faces the beasts instead of looking sideways. The beasts are slightly smaller so their labels no longer clip off the top of the scene."
  }
 ]
