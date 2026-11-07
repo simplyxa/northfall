@@ -405,5 +405,15 @@
   "v": "1.18.3",
   "t": "Фигуры в сцене охоты больше не висят в воздухе — герой и звери стоят ногами на своих кругах. Охотник перерисован: теперь он смотрит на зверей, а не вбок. Все 11 зверей перерисованы заново — целиком, без обрезанных хвостов и крыльев. Звеи уменьшены, чтобы их подписи не вылезали за верх сцены.",
   "te": "The figures in the hunt no longer float — the hero and the beasts stand on their rune circles. The hunter has been redrawn: he now faces the beasts instead of looking sideways. All 11 beasts have been redrawn from scratch — whole, with no cropped tails or wings. The beasts are slightly smaller so their labels no longer clip off the top of the scene."
+ },
+ {
+  "v": "1.18.4",
+  "t": "В рейде звери теперь нарисованы так же, как на охоте — в полный рост, а не круглыми портретами. Раньше в карточках рейда оставались старые иконки.",
+  "te": "In the raid the beasts are now drawn the same way as in the hunt — full-length instead of round portraits. The raid cards used to keep the old icons."
+ },
+ {
+  "v": "1.18.5",
+  "t": "Горный медведь и вожак стаи перерисованы заново: у прежних были отрезаны задняя часть тела и задние лапы — модель рисовала зверя, уходящего за кадр.",
+  "te": "The mountain bear and the pack leader have been redrawn from scratch: the old ones had their hindquarters and back legs cut off, the model drew the animal running out of frame."
  }
 ]
