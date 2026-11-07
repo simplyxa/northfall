@@ -390,5 +390,10 @@
   "v": "1.18.0",
   "t": "Рейтинг, уровень, сезонные очки и билеты арены теперь считает сервер — накрутить их больше нельзя. Пункт «Лагерь» на главной теперь с многоточием, а сервер стал в двадцать раз экономнее по трафику.",
   "te": "Rating, level, season points and arena tickets are now computed by the server — they can no longer be forged. The «Camp» item on the main screen now has an ellipsis, and the server uses twenty times less traffic per player."
+ },
+ {
+  "v": "1.18.1",
+  "t": "На охоте герой теперь нарисован в полный рост для всех трёх классов — берсерка, охотника и шамана. Звери тоже перерисованы в полный рост: волк, кабан, лиса-оборотень, ворон, крыса, медведь, барс, разбойник, вожак стаи, драугр и тролль.",
+  "te": "In the hunt the hero is now drawn full-length for all three classes — berserker, hunter and shaman. The beasts have been redrawn in 2D as full-length figures too: wolf, boar, fox shapeshifter, raven, rat, bear, leopard, bandit, pack leader, draughr and troll."
  }
 ]
