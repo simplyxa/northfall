@@ -31,6 +31,9 @@ function scan(html) {
         else if (par && par.type === 'BinaryExpression' && /^[!=]==?$/.test(par.operator)) ctx = 'cmp';
         else if (par && par.type === 'SwitchCase') ctx = 'case';
         units.push({ s: S.start + node.start, e: S.start + node.end, kind: 'str', q: S.code[node.start], key: node.value, ctx });
+      } else if ((node.type === 'Property' || node.type === 'PropertyDefinition') && !node.computed && node.key && node.key.type === 'Literal' && typeof node.key.value === 'string' && CYR.test(node.key.value)) {
+        // ключи объектов вида {'Лесной волк': …} acorn-walk сам не обходит
+        units.push({ s: S.start + node.key.start, e: S.start + node.key.end, kind: 'str', q: S.code[node.key.start], key: node.key.value, ctx: 'key' });
       } else if (node.type === 'TemplateElement' && CYR.test(node.value.raw)) {
         units.push({ s: S.start + node.start, e: S.start + node.end, kind: 'tpl', key: node.value.raw, ctx: '' });
       }

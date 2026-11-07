@@ -355,5 +355,10 @@
   "v": "1.14.0",
   "t": "Появилась английская версия игры: playnorthfall.online/en/. Мир общий — англоязычные игроки в тех же кланах, рейдах и на рынке. Язык можно сменить в «Настройках», а в общем чате появились каналы RU и EN.",
   "te": "Northfall is now available in English! The world is shared with Russian-speaking players: same clans, raids and market. Switch the language in «Settings»; the general chat now has RU and EN channels."
+ },
+ {
+  "v": "1.14.1",
+  "t": "Английская версия: вернулись изображения зверей на охоте и в рейдах.",
+  "te": "Beast pictures are back on the hunt and in raids."
  }
 ]
