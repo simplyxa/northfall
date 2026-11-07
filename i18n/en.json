@@ -2491,5 +2491,6 @@
 "</span></h3><p style=\"margin:0 0 6px;font-size:15px\">Бой стоит <b>1 билет</b>. Билетов максимум 10, каждый час восстанавливается один.</p><p style=\"margin:0 0 4px\">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>": "</span></h3><p style=\"margin:0 0 6px;font-size:15px\">A battle costs <b>1 ticket</b>. You can hold up to 10 tickets, and one is restored every hour.</p><p style=\"margin:0 0 4px\">Duels only against other players' heroes: their attack, defense, health and crit. The higher the opponent's rating, the more rating you get for a win. In battle your strike charges for 5 seconds, and the enemy hits once every 5 seconds. No XP, silver or trophies are given in the arena, only rating. A defeat costs 10% of your silver and a little rating.</p></div>",
 " · следующий через ": " · next in ",
 "поединки с копиями героев · 🎟 ": "duels with hero copies · 🎟 ",
-"поединки с копиями героев · ": "duels with hero copies · "
+"поединки с копиями героев · ": "duels with hero copies · ",
+"Облако недоступно — прогресс сохранён локально и уйдёт на сервер, когда тот оживёт.": "Cloud unavailable — your progress is saved locally and will sync once the server is back."
 }
