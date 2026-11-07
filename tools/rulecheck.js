@@ -85,12 +85,16 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
     // карточка игрока: с рейтингом — запрещено, без защищённых полей — можно (так пишет клиент)
     // 1) создание карточки: сначала убираем документ, если сервер его уже завёл,
-    //    иначе это обновление, а не создание, и сломанное правило не поймать
+    //    иначе это обновление, а не создание, и сломанное правило не поймать.
+    //    Клиент шлёт свои поля (имя, аватар, снаряжение) — уровень и рейтинг
+    //    пишет сервер, поэтому их в запросе быть не должно.
     try { await db.doc('players/' + login).delete(); await new Promise(r => setTimeout(r, 400)); } catch (e) {}
-    out.playersCreate = await write('players/' + login, { name: 'check', lvl: 1, tst: 1 }, true);
+    out.playersCreate = await write('players/' + login, { name: 'check', tst: 1 }, true);
     // 2) правка чужого рейтинга — запрещена
-    out.playersBad = await write('players/' + login, { name: 'check', lvl: 1, rating: 99999, win: 9999 }, true);
-    // 3) обычная правка карточки (имя, аватар) — разрешена
+    out.playersBad = await write('players/' + login, { name: 'check', rating: 99999, win: 9999 }, true);
+    // 3) уровень игрок тоже не пишет сам — это серверное число
+    out.playersLvl = await write('players/' + login, { name: 'check', lvl: 60 }, true);
+    // 4) обычная правка карточки (имя, аватар) — разрешена
     out.playersOk = await write('players/' + login, { name: 'check2', tst: 1 }, true);
     await new Promise(r => setTimeout(r, 1500));
     try { const s = await db.doc('saves/' + login).get(); out.saveInDb = s.exists ? 'да, gold=' + (s.data().gold) : 'НЕТ'; }
@@ -117,6 +121,7 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
   c('запись в market запрещена (цену лота не подменить)', res.market === 'permission-denied', res.market || 'нет данных');
   c('создание карточки разрешено', res.playersCreate === 'ЗАПИСЬ ПРОШЛА', res.playersCreate || 'нет данных');
   c('запись рейтинга в карточку запрещена', res.playersBad === 'permission-denied', res.playersBad || 'нет данных');
+  c('запись уровня в карточку запрещена', res.playersLvl === 'permission-denied', res.playersLvl || 'нет данных');
   c('запись остальных полей карточки разрешена', res.playersOk === 'ЗАПИСЬ ПРОШЛА', res.playersOk || 'нет данных');
   c('POST /api/save принят сервером', res.saveStatus === 200, 'HTTP ' + res.saveStatus);
   c('сохранение попало в базу', res.saveInDb === 'да, gold=30', res.saveInDb);
