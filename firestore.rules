@@ -59,7 +59,9 @@ service cloud.firestore {
     // Рейтинг, сезон, счётчики побед и уровень считает сервер — клиент их не пишет.
     match /players/{id} {
       allow read: if signed();
-      allow write: if admin() || (me(id) && !request.resource.data.diff(resource.data).affectedKeys()
+      // удалить свою карточку игрок должен уметь (удаление аккаунта)
+      allow delete: if me(id) || admin();
+      allow create, update: if admin() || (me(id) && !request.resource.data.diff(resource.data).affectedKeys()
         .hasAny(['rating','srat','win','lose','sid','psid','psrat','lvl']));
     }
 
