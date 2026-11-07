@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
+const { makeLimiter } = require('./ratelimit');
 
 const ROOT = path.join(__dirname, '..');
 const PUB = path.join(ROOT, 'public');
@@ -99,13 +100,31 @@ function readBody(req) {
   });
 }
 
+// IP клиента: на Fly.io прокси ставит fly-client-ip
+function clientIp(req) {
+  const h = req.headers;
+  return String(h['fly-client-ip'] || (h['x-forwarded-for'] || '').split(',')[0] || req.socket.remoteAddress || '').trim();
+}
+// Мусорный трафик (без токена) режем по IP: он всё равно будет отклонён проверкой токена,
+// но не должен занимать сервер. Авторизованных по IP не режем — за одним CGNAT может быть
+// много игроков, их режем по uid внутри saves.js.
+const LIM_NOAUTH = makeLimiter({ cap: 20, perSec: 20 / 60 });
+function noAuthLimit(req, res) {
+  if (req.headers.authorization) return true;
+  const ip = clientIp(req) || 'unknown';
+  if (LIM_NOAUTH(ip)) return true;
+  res.writeHead(429, { 'Content-Type': 'application/json; charset=utf-8', 'Retry-After': String(LIM_NOAUTH.retryAfter(ip)) });
+  res.end(JSON.stringify({ error: 'Слишком частые запросы' }));
+  return false;
+}
+
 async function fnRoute(req, res, u, name) {
   if (name === 'push-cron' || name === 'deploy-succeeded') return notFound(res); // только изнутри сервера
   let raw;
   try { raw = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
   const headers = {};
   for (const [k, v] of Object.entries(req.headers)) headers[k.toLowerCase()] = Array.isArray(v) ? v.join(', ') : v;
-  const ip = (headers['fly-client-ip'] || (headers['x-forwarded-for'] || '').split(',')[0] || req.socket.remoteAddress || '').trim();
+  const ip = clientIp(req);
   if (ip) { headers['x-nf-client-connection-ip'] = ip; headers['client-ip'] = ip; }
   const event = {
     httpMethod: req.method, path: u.pathname, rawUrl: 'https://' + (headers.host || 'localhost') + u.pathname + u.search,
@@ -130,10 +149,12 @@ const server = http.createServer(async (req, res) => {
   if (u.pathname === '/hubz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(HUB.stats())); }
   if (u.pathname === '/api/flags') return SAVE.flags(req, res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
   if (u.pathname === '/api/op' && req.method === 'POST') {
+    if (!noAuthLimit(req, res)) return;
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
     return SAVE.op(req, res, b).catch(e => { console.error('op', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
   }
   if (u.pathname === '/api/save' && req.method === 'POST') {
+    if (!noAuthLimit(req, res)) return;
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
     return SAVE(req, res, b).catch(e => { console.error('save', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
   }
@@ -143,9 +164,10 @@ const server = http.createServer(async (req, res) => {
   sendStatic(req, res, u.pathname);
 });
 server.keepAliveTimeout = 65000;
+// firebase-admin: без ключа в окружении работаем как «без базы» (проверки/статика)
+const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
 const SAVE = require('./saves')(() => fbAdmin());
 // сокет-хаб: живые списки и «онлайн» по WebSocket (/ws)
-const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
 const HUB = require('./hub')(server, () => { const a = fbAdmin(); return a ? a.firestore() : null; }, async tok => {
   const a = fbAdmin(); if (!a) throw new Error('no firebase');
   const d = await a.auth().verifyIdToken(tok), DOM = '@northfall.game';

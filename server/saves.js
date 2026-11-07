@@ -8,6 +8,12 @@
 'use strict';
 const DOM = '@northfall.game';
 const checkHero = require('./items');
+const { makeLimiter } = require('./ratelimit');
+// Клиент шлёт сохранение раз в 5 секунд (автосейв при изменении энергии/здоровья),
+// в бою — чаще. Запас большой: обычный игрок укладывается в 12-20 сохранений в минуту.
+// Каждое сохранение — транзакция Firestore, поэтому и режем, и защищаем кошелёк.
+const LIM_SAVE = makeLimiter({ cap: 30, perSec: 50 / 60 });   // всплеск 30, восстановление 50/мин
+const LIM_OP = makeLimiter({ cap: 15, perSec: 30 / 60 });     // рынок/письма/казна: редкие, но дорогие
 // вещи: пока только отмечаем подозрительные (ITEM_CLAMP=on — урезать завышенные характеристики)
 const ITEM_CLAMP = process.env.ITEM_CLAMP === 'on';
 const MAXB = 900 * 1024;
@@ -22,6 +28,14 @@ class Fail extends Error { constructor(code, msg) { super(msg); this.code = code
 module.exports = function saves(admin) {
   const last = new Map(), recent = new Map();
 
+  // карты не растут бесконечно: чистим старые записи
+  function prune() {
+    const now = Date.now();
+    for (const [k, t] of last) if (now - t > 3600000) last.delete(k);
+    for (const [k, t] of recent) if (now - t > 600000) recent.delete(k);
+  }
+  setInterval(prune, 10 * 60000).unref();
+
   async function flag(db, uid, kind, info) {
     const now = Date.now();
     if (now - (recent.get(uid + kind) || 0) < 10 * 60000) return;
@@ -29,7 +43,7 @@ module.exports = function saves(admin) {
     console.warn('save flag', uid, kind, JSON.stringify(info));
     try { await db.collection('flags').doc(uid + '_' + now.toString(36)).set({ uid, kind, ...info, ts: now }); } catch (e) {}
   }
-  const J = (res, code, o) => { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(o)); };
+  const J = (res, code, o, hdr) => { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...(hdr || {}) }); res.end(JSON.stringify(o)); };
   async function who(req) {
     const a = admin(); if (!a) throw new Fail(503, 'not_configured');
     try {
@@ -86,6 +100,7 @@ module.exports = function saves(admin) {
   async function handle(req, res, body) {
     try {
       const { a, uid } = await who(req);
+      if (!LIM_SAVE(uid)) return J(res, 429, { error: 'Слишком частые сохранения' }, { 'Retry-After': String(LIM_SAVE.retryAfter(uid)) });
       const { s, ses, base } = readSave(body, uid);
       const db = a.firestore(), ref = db.collection('saves').doc(uid);
       let prev = null, g = null;
@@ -104,6 +119,7 @@ module.exports = function saves(admin) {
   async function op(req, res, body) {
     try {
       const { a, uid } = await who(req);
+      if (!LIM_OP(uid)) return J(res, 429, { error: 'Слишком частые операции' }, { 'Retry-After': String(LIM_OP.retryAfter(uid)) });
       const { q, s, ses, base } = readSave(body, uid);
       const o = q.op || {}, k = String(o.k || '');
       const db = a.firestore(), ref = db.collection('saves').doc(uid);

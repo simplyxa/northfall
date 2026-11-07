@@ -1,0 +1,30 @@
+# Тесты протокола сокета на каждом PR.
+# Деплой (fly.yml) запускается только при пуше в main — этот workflow на прод не влияет.
+name: Test
+on:
+  pull_request:
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+
+concurrency: test-${{ github.ref }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Установить зависимости
+        run: npm install --no-audit --no-fund
+
+      - name: Тест протокола сокета
+        run: node tools/wstest.js
+
+      - name: Бенчмарк трафика (информационно)
+        run: node tools/wsbench.js 300
