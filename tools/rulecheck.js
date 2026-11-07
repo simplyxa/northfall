@@ -84,7 +84,9 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     catch (e) { out.cardRating = 'ошибка: ' + e.code; }
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
     // карточка игрока: с рейтингом — запрещено, без защищённых полей — можно (так пишет клиент)
-    // 1) создание карточки (документа ещё нет) — клиент так и пишет в первый раз
+    // 1) создание карточки: сначала убираем документ, если сервер его уже завёл,
+    //    иначе это обновление, а не создание, и сломанное правило не поймать
+    try { await db.doc('players/' + login).delete(); await new Promise(r => setTimeout(r, 400)); } catch (e) {}
     out.playersCreate = await write('players/' + login, { name: 'check', lvl: 1, tst: 1 }, true);
     // 2) правка чужого рейтинга — запрещена
     out.playersBad = await write('players/' + login, { name: 'check', lvl: 1, rating: 99999, win: 9999 }, true);
