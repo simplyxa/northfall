@@ -28,7 +28,7 @@ const ZIP = /^(text\/|application\/(json|manifest|xml|javascript)|image\/svg)/;
 // кэш как в netlify.toml
 function cacheFor(rel) {
   if (rel.startsWith('/img/')) return 'public, max-age=31536000, immutable';
-  if (rel === '/' || rel === '/index.html' || rel === '/sw.js' || rel === '/manifest.webmanifest') return 'no-cache';
+  if (rel === '/' || rel === '/index.html' || rel === '/sw.js' || rel === '/manifest.webmanifest' || rel === '/en/' || rel === '/en/index.html' || rel === '/manifest.en.webmanifest') return 'no-cache';
   return 'public, max-age=3600';
 }
 const SEC = {
@@ -55,6 +55,7 @@ function file(rel) {
 function sendStatic(req, res, urlPath) {
   let rel = decodeURIComponent(urlPath);
   if (rel.includes('\0') || rel.includes('..')) return notFound(res);
+  if (rel === '/en') { res.writeHead(301, { ...SEC, Location: '/en/' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '') }); return res.end(); }
   if (rel.endsWith('/')) rel += 'index.html';
   let f = file(rel);
   if (!f && !path.extname(rel)) { f = file(rel + '.html') || file(rel + '/index.html'); }

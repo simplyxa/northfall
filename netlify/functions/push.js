@@ -25,12 +25,12 @@ exports.handler = async (event) => {
     if (q.a === 'sub') { // сохранить подписку и настройки
       const sub = q.sub && q.sub.endpoint && q.sub.keys ? { endpoint: String(q.sub.endpoint).slice(0, 600), keys: { p256dh: String(q.sub.keys.p256dh || '').slice(0, 200), auth: String(q.sub.keys.auth || '').slice(0, 100) } } : null;
       const off = (Array.isArray(q.off) ? q.off : []).filter(k => KINDS.includes(k));
-      await ref.set({ sub, off, ts: Date.now() }, { merge: true });
+      await ref.set({ sub, off, ts: Date.now(), lg: q.lg === 'en' ? 'en' : 'ru' }, { merge: true });
       return j(200, { ok: true });
     }
     if (q.a === 'state') { // когда энергия будет полной, уровень, день последней атаки на мирового босса
       const enAt = Math.max(0, Math.min(Date.now() + 864e5, Math.floor(+q.enAt || 0)));
-      await ref.set({ enAt, lvl: Math.max(1, Math.min(60, q.lvl | 0)), wbDay: q.wbDay | 0, name: String(q.name || uid).slice(0, 20), st: Date.now() }, { merge: true });
+      await ref.set({ enAt, lvl: Math.max(1, Math.min(60, q.lvl | 0)), wbDay: q.wbDay | 0, name: String(q.name || uid).slice(0, 20), st: Date.now(), lg: q.lg === 'en' ? 'en' : 'ru' }, { merge: true });
       return j(200, { ok: true });
     }
     if (q.a === 'msg') { // новое сообщение: не чаще раза в 10 минут от одного игрока

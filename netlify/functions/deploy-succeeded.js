@@ -33,8 +33,23 @@ exports.handler = async (event) => {
     await tref.collection('posts').doc('u' + ts.toString(36)).set({ uid: 'admin', name: NAME, text: text.slice(0, 2000), ts });
     const cnt = ((ts0.exists && ts0.data().cnt) | 0) + (ts0.exists ? 1 : 2);
     await tref.set({ last: ts, lastn: NAME, cnt }, { merge: true });
+    // английская тема обновлений: только записи с переводом (поле te)
+    const fe = fresh.filter(x => x.te);
+    let fte = '';
+    if (fe.length) {
+      const eref = db.collection('forum').doc(TID + '_en'), e0 = await eref.get();
+      const dEn = new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'Asia/Jerusalem' });
+      const vEn = fe.length > 1 ? `versions ${fe[0].v}–${fe[fe.length - 1].v}` : `version ${fe[0].v}`;
+      if (!e0.exists) {
+        await eref.set({ sec: 'news', title: 'Game updates (English)', uid: 'admin', name: 'Administration', ts, last: ts, lastn: 'Administration', cnt: 0, pinned: true, closed: true, lg: 'en' });
+        await eref.collection('posts').doc('p0000').set({ uid: 'admin', name: 'Administration', ts: ts - 1, text: 'Short notes about everything new in the game. Post ideas and bugs in «Great hall», «Help for newcomers» or via «Report a bug».' });
+      }
+      await eref.collection('posts').doc('u' + ts.toString(36)).set({ uid: 'admin', name: 'Administration', text: (`Update ${dEn} (${vEn}):\n\n` + fe.map(x => '• ' + x.te).join('\n')).slice(0, 2000), ts });
+      await eref.set({ last: ts, lastn: 'Administration', cnt: ((e0.exists && e0.data().cnt) | 0) + (e0.exists ? 1 : 2) }, { merge: true });
+      fte = TID + '_en';
+    }
     await db.collection('chat').doc('n' + ts.toString(36) + 'upd').set({ uid: 'admin', name: NAME, sys: 1, ts,
-      ft: TID,
+      ft: TID, ...(fte ? { fte } : {}),
       text: `Вышло обновление (${vs}). Что нового — на форуме в теме «Обновления игры».` });
     // копия в Discord-канал новостей (вебхук канала задаётся секретом DISCORD_WEBHOOK)
     const hook = (process.env.DISCORD_WEBHOOK || '').trim();

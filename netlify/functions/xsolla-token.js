@@ -30,7 +30,7 @@ async function main(event) {
     user: { id: { value: uid }, name: { value: String(req.name || uid).slice(0, 40) } },
     purchase: { items: [{ sku: req.sku, quantity: 1 }] },
     sandbox,
-    settings: { language: 'ru', return_url: site + '/?paid=1' },
+    settings: { language: req.lg === 'en' ? 'en' : 'ru', return_url: site + (req.lg === 'en' ? '/en/?paid=1' : '/?paid=1') },
     custom_parameters: { login: uid }
   };
   // Xsolla требует страну игрока или его IP: берём их из заголовков Netlify

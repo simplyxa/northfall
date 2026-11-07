@@ -1,5 +1,5 @@
 // Northfall service worker: быстрая загрузка и работа при плохой связи
-const V = 'nf-v4';
+const V = 'nf-v5';
 const CORE = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -19,13 +19,15 @@ self.addEventListener('fetch', e => {
   if (u.pathname.startsWith('/.netlify/') || /firestore|identitytoolkit|securetoken|xsolla/.test(u.hostname)) return;
 
   // Страница игры: сначала сеть (чтобы обновления приходили сразу), при плохой связи — из кэша
-  if (req.mode === 'navigate' || (u.origin === location.origin && (u.pathname === '/' || u.pathname === '/index.html'))) {
+  if (req.mode === 'navigate' || (u.origin === location.origin && (u.pathname === '/' || u.pathname === '/index.html' || u.pathname.startsWith('/en/')))) {
+    // русская и английская версии кэшируются отдельно
+    const key = u.pathname.startsWith('/en') ? '/en/' : '/';
     e.respondWith(new Promise(resolve => {
       let done = false;
-      const fromCache = () => caches.match('/').then(r => { if (!done && r) { done = true; resolve(r); } });
+      const fromCache = () => caches.match(key).then(r => { if (!done && r) { done = true; resolve(r); } });
       const t = setTimeout(fromCache, 7000);
-      fetch(req).then(r => { clearTimeout(t); put('/', r.clone()); if (!done) { done = true; resolve(r); } })
-        .catch(() => { clearTimeout(t); caches.match('/').then(r => { if (!done) { done = true; resolve(r || Response.error()); } }); });
+      fetch(req).then(r => { clearTimeout(t); if (!r.redirected) put(key, r.clone()); if (!done) { done = true; resolve(r); } })
+        .catch(() => { clearTimeout(t); caches.match(key).then(r => { if (!done) { done = true; resolve(r || Response.error()); } }); });
     }));
     return;
   }
