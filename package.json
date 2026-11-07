@@ -9,7 +9,8 @@
     "start": "node server/index.js",
     "test": "node tools/wstest.js && node tools/gametest.js && node tools/arenatest.js",
     "bench": "node tools/wsbench.js",
-    "build:en": "node i18n/build_en.js"
+    "build:en": "node i18n/build_en.js",
+    "release": "node tools/release.js"
   },
   "engines": {
     "node": ">=20"

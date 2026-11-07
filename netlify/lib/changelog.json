@@ -385,5 +385,10 @@
   "v": "1.17.0",
   "t": "Арена теперь работает на билетах вместо энергии: бой стоит 1 билет, билетов максимум 10, каждый час восстанавливается один. Сколько билетов осталось — видно на арене и в меню.",
   "te": "The arena now uses tickets instead of energy: a battle costs 1 ticket, you can hold up to 10, and one is restored every hour. Your tickets are shown in the arena and in the menu."
+ },
+ {
+  "v": "1.18.0",
+  "t": "Рейтинг, уровень, сезонные очки и билеты арены теперь считает сервер — накрутить их больше нельзя. Пункт «Лагерь» на главной теперь с многоточием, а сервер стал в двадцать раз экономнее по трафику.",
+  "te": "Rating, level, season points and arena tickets are now computed by the server — they can no longer be forged. The «Camp» item on the main screen now has an ellipsis, and the server uses twenty times less traffic per player."
  }
 ]
