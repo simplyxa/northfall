@@ -360,5 +360,10 @@
   "v": "1.14.1",
   "t": "Английская версия: вернулись изображения зверей на охоте и в рейдах.",
   "te": "Beast pictures are back on the hunt and in raids."
+ },
+ {
+  "v": "1.14.2",
+  "t": "Чат: каналы RU и EN полностью разделены — системные новости тоже приходят на языке канала.",
+  "te": "Chat: RU and EN channels are fully separate — system news now arrive in the channel's language."
  }
 ]

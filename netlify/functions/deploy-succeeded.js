@@ -48,9 +48,12 @@ exports.handler = async (event) => {
       await eref.set({ last: ts, lastn: 'Administration', cnt: ((e0.exists && e0.data().cnt) | 0) + (e0.exists ? 1 : 2) }, { merge: true });
       fte = TID + '_en';
     }
-    await db.collection('chat').doc('n' + ts.toString(36) + 'upd').set({ uid: 'admin', name: NAME, sys: 1, ts,
-      ft: TID, ...(fte ? { fte } : {}),
+    await db.collection('chat').doc('n' + ts.toString(36) + 'upd').set({ uid: 'admin', name: NAME, sys: 1, ts, lg: 'ru', ft: TID,
       text: `Вышло обновление (${vs}). Что нового — на форуме в теме «Обновления игры».` });
+    // то же в английский канал чата
+    const vEn2 = fresh.length > 1 ? `versions ${fresh[0].v}–${fresh[fresh.length - 1].v}` : `version ${fresh[0].v}`;
+    await db.collection('chat').doc('n' + ts.toString(36) + 'upe').set({ uid: 'admin', name: 'Administration', sys: 1, ts, lg: 'en', ft: fte || TID, ...(fte ? { fte } : {}),
+      text: fte ? `A new update is out (${vEn2}). See what's new on the forum.` : `A new update is out (${vEn2}).` });
     // копия в Discord-канал новостей (вебхук канала задаётся секретом DISCORD_WEBHOOK)
     const hook = (process.env.DISCORD_WEBHOOK || '').trim();
     if (/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(hook)) {
