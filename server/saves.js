@@ -22,6 +22,14 @@ class Fail extends Error { constructor(code, msg) { super(msg); this.code = code
 module.exports = function saves(admin) {
   const last = new Map(), recent = new Map();
 
+  // карты не растут бесконечно: чистим старые записи
+  function prune() {
+    const now = Date.now();
+    for (const [k, t] of last) if (now - t > 3600000) last.delete(k);
+    for (const [k, t] of recent) if (now - t > 600000) recent.delete(k);
+  }
+  setInterval(prune, 10 * 60000).unref();
+
   async function flag(db, uid, kind, info) {
     const now = Date.now();
     if (now - (recent.get(uid + kind) || 0) < 10 * 60000) return;

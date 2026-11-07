@@ -143,9 +143,10 @@ const server = http.createServer(async (req, res) => {
   sendStatic(req, res, u.pathname);
 });
 server.keepAliveTimeout = 65000;
+// firebase-admin: без ключа в окружении работаем как «без базы» (проверки/статика)
+const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
 const SAVE = require('./saves')(() => fbAdmin());
 // сокет-хаб: живые списки и «онлайн» по WebSocket (/ws)
-const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
 const HUB = require('./hub')(server, () => { const a = fbAdmin(); return a ? a.firestore() : null; }, async tok => {
   const a = fbAdmin(); if (!a) throw new Error('no firebase');
   const d = await a.auth().verifyIdToken(tok), DOM = '@northfall.game';

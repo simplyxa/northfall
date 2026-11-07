@@ -43,6 +43,7 @@ module.exports = function raids(getDb) {
     await r.loading; r.loading = null;
     if (!r.R || !r.R.w) { rooms.delete(rid); return null; } // только новые рейды с волнами
     const R = r.R;
+    if (!R.mem || typeof R.mem !== 'object') { rooms.delete(rid); return null; } // битый документ — не грузим
     // свежий рейд (никто ещё не продвинулся) — включаем общие волны
     if (R.sw == null && R.st === 'on' && !Object.values(R.mem).some(x => !x.bot && ((x.wv | 0) > 0 || x.bs || (x.dealt | 0) > 0))) { R.sw = 1; spawn(R, 1); L0(R, `Волна 1 из ${RWV}: бейте слуг всей группой!`); }
     return r;
@@ -100,28 +101,31 @@ module.exports = function raids(getDb) {
   setInterval(() => {
     const now = Date.now();
     for (const [rid, r] of rooms) {
-      const R = r.R; if (!R) continue;
-      if (R.st === 'on') {
-        if (R.sw && R.go && R.wv <= RWV && R.mobs) {
-          for (const b of Object.values(R.mem)) if (b.bot && !b.dead) {
-            const L = R.mobs.filter(m => m.hp > 0); if (!L.length) break;
-            const m = L[Math.floor(Math.random() * L.length)], d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2));
-            m.hp = Math.max(0, m.hp - d); r.dirty = true;
+      // одна сломанная комната не должна ронять весь сервер
+      try {
+        const R = r.R; if (!R) continue;
+        if (R.st === 'on') {
+          if (R.sw && R.go && R.wv <= RWV && R.mobs) {
+            for (const b of Object.values(R.mem)) if (b.bot && !b.dead) {
+              const L = R.mobs.filter(m => m.hp > 0); if (!L.length) break;
+              const m = L[Math.floor(Math.random() * L.length)], d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2));
+              m.hp = Math.max(0, m.hp - d); r.dirty = true;
+            }
+            if (waveDone(R)) nextWave(R);
           }
-          if (waveDone(R)) nextWave(R);
-        }
-        if (R.bon) {
-          for (const b of Object.values(R.mem)) if (b.bot && !b.dead && R.hp > 0) {
-            const d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2)); R.hp = Math.max(0, R.hp - d); b.dealt = (b.dealt | 0) + d; r.dirty = true;
+          if (R.bon) {
+            for (const b of Object.values(R.mem)) if (b.bot && !b.dead && R.hp > 0) {
+              const d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2)); R.hp = Math.max(0, R.hp - d); b.dealt = (b.dealt | 0) + d; r.dirty = true;
+            }
           }
+          const st0 = R.st; finish(R);
+          if (R.st !== st0) { cast(rid, r, r.send, true); persist(rid, r); continue; }
+          if (now - r.saved > PERSIST) persist(rid, r);
         }
-        const st0 = R.st; finish(R);
-        if (R.st !== st0) { cast(rid, r, r.send, true); persist(rid, r); continue; }
-        if (now - r.saved > PERSIST) persist(rid, r);
-      }
-      if (r.dirty) cast(rid, r, r.send, true);
-      // рейд закончился и все ушли — убираем из памяти
-      if ((R.st !== 'on' && now - r.saved > 60000) || (!r.subs.size && now - r.saved > 10 * 60000)) { if (R.st === 'on') persist(rid, r); rooms.delete(rid); }
+        if (r.dirty) cast(rid, r, r.send, true);
+        // рейд закончился и все ушли — убираем из памяти
+        if ((R.st !== 'on' && now - r.saved > 60000) || (!r.subs.size && now - r.saved > 10 * 60000)) { if (R.st === 'on') persist(rid, r); rooms.delete(rid); }
+      } catch (e) { console.error('raid tick', rid, e && e.message); }
     }
   }, TICK).unref();
 

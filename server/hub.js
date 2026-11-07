@@ -2,6 +2,10 @@
 // Сервер один раз слушает «горячие» коллекции Firestore и рассылает их состояние всем игрокам по WebSocket.
 // Раньше каждое изменение читал каждый открытый клиент; теперь читает только сервер.
 // WebSocket реализован без внешних библиотек (RFC 6455: текстовые кадры, ping/pong, close).
+//
+// Протокол версионируется. v1 (старые клиенты) получают полный снимок ленты при каждом изменении.
+// v2 получает дельту: только изменившиеся документы + список удалённых + порядок id.
+// Это в разы сокращает трафик на десятки клиентов (лента игроков — до 300 документов).
 'use strict';
 const crypto = require('crypto');
 
@@ -17,6 +21,8 @@ const FEEDS = {
 };
 const IDLE_UNSUB = 5 * 60000; // нет подписчиков 5 минут — сервер перестаёт слушать коллекцию
 const MAXMSG = 64 * 1024;
+const PROTO = 2;            // текущая версия протокола дельт
+const SNAP_MS = 120;        // склейка частых изменений (бой, рейд) в одну рассылку
 
 module.exports = function hub(server, getDb, verify) {
   const clients = new Set();
@@ -34,7 +40,7 @@ module.exports = function hub(server, getDb, verify) {
     const acc = crypto.createHash('sha1').update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
     sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ' + acc + '\r\n\r\n');
     sock.setNoDelay(true);
-    const c = { sock, buf: Buffer.alloc(0), subs: new Set(), uid: '', gid: '', alive: true, open: true, t0: Date.now() };
+    const c = { sock, buf: Buffer.alloc(0), subs: new Set(), uid: '', gid: '', alive: true, open: true, t0: Date.now(), v: 0 };
     clients.add(c);
     sock.on('data', d => onData(c, d));
     sock.on('close', () => drop(c));
@@ -92,6 +98,7 @@ module.exports = function hub(server, getDb, verify) {
     if (m.t === 'hello') {
       // вход: игрок присылает токен Firebase (сервер сам узнаёт логин), гость — свой случайный id
       c.uid = ''; c.gid = '';
+      c.v = Math.max(0, Math.min(PROTO, parseInt(m.v, 10) || 0)); // версия протокола клиента
       if (m.tok) { try { c.uid = await verify(String(m.tok)); } catch (e) { c.uid = ''; } }
       if (!c.uid && m.g) c.gid = String(m.g).replace(/[^a-z0-9]/gi, '').slice(0, 24);
       send(c, { t: 'me', uid: c.uid || null });
@@ -105,23 +112,93 @@ module.exports = function hub(server, getDb, verify) {
   }
 
   // ---------- подписки на Firestore ----------
+  // Состояние ленты: docs — полный снимок, sent — что уже разослали (id → JSON),
+  // pu/pr — накопленные изменения между рассылками, o — отправленный порядок id.
+  function newFeed() { return { subs: new Set(), docs: [], ready: false, un: null, idle: null, tm: null, first: true, full: false, pu: new Map(), pr: new Set(), sent: new Map(), o: [] }; }
+
+  function sendSnap(c, F, name) { send(c, { t: 'snap', c: name, d: F.docs }); }
+  function broadcastSnap(name, F) { const m = frame(1, Buffer.from(JSON.stringify({ t: 'snap', c: name, d: F.docs }))); for (const x of F.subs) sendRaw(x, m); }
+
+  // накопление изменений: Firestore отдаёт в docChanges только изменившиеся документы
+  function collect(F, sn) {
+    let ch = null;
+    try { ch = sn.docChanges ? sn.docChanges() : null; } catch (e) { ch = null; }
+    if (!ch || !ch.length) { F.full = true; return; }
+    for (const c of ch) {
+      const id = c.doc && c.doc.id; if (!id) continue;
+      if (c.type === 'removed') { F.pu.delete(id); F.pr.add(id); }
+      else { F.pr.delete(id); let d = null; try { d = c.doc.data(); } catch (e) {} F.pu.set(id, { id, ...plain(d) }); }
+    }
+  }
+
+  // полный пересчёт дельты (запасной путь, если docChanges недоступен или что-то разошлось)
+  function fullDiff(F) {
+    const cur = new Map(F.docs.map(d => [d.id, d]));
+    const u = [], r = [];
+    for (const [id, d] of cur) { const s = JSON.stringify(d); if (F.sent.get(id) !== s) u.push(d); }
+    for (const id of F.sent.keys()) if (!cur.has(id)) r.push(id);
+    F.sent = new Map();
+    for (const [id, d] of cur) F.sent.set(id, JSON.stringify(d));
+    return { u, r };
+  }
+
+  function flush(name, F) {
+    if (!F.subs.size) { F.pu.clear(); F.pr.clear(); F.full = false; return; }
+    let u = [], r = [];
+    if (F.full) { const d = fullDiff(F); u = d.u; r = d.r; F.full = false; }
+    else {
+      u = [...F.pu.values()]; r = [...F.pr];
+      F.pu.clear(); F.pr.clear();
+      for (const d of u) F.sent.set(d.id, JSON.stringify(d));
+      for (const id of r) F.sent.delete(id);
+      // страховка: если размеры разошлись — дельта неполная, пересчитываем целиком
+      if (F.sent.size !== F.docs.length) { const d = fullDiff(F); u = d.u; r = d.r; }
+    }
+    if (!u.length && !r.length) return;
+    const o = F.docs.map(d => d.id);
+    const ord = sameArr(F.o, o) ? null : o;
+    if (ord) F.o = o;
+    // v2 (новые клиенты): дельта — изменившиеся документы, удалённые id и порядок
+    let b2 = null;
+    for (const x of F.subs) {
+      if (x.v < 2) continue;
+      if (!b2) b2 = frame(1, Buffer.from(JSON.stringify({ t: 'upd', c: name, u, r, o: ord })));
+      sendRaw(x, b2);
+    }
+    // v1 (старые клиенты): полный снимок, как раньше
+    let b1 = null;
+    for (const x of F.subs) {
+      if (x.v >= 2) continue;
+      if (!b1) b1 = frame(1, Buffer.from(JSON.stringify({ t: 'snap', c: name, d: F.docs })));
+      sendRaw(x, b1);
+    }
+  }
+
+  function sameArr(a, b) { if (a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; }
+
   function sub(c, name) {
-    if (c.subs.has(name)) { const F = feeds[name]; if (F && F.ready) send(c, { t: 'snap', c: name, d: F.docs }); return; }
+    if (c.subs.has(name)) { const F = feeds[name]; if (F && F.ready) sendSnap(c, F, name); return; }
     c.subs.add(name);
     let F = feeds[name];
     if (!F) {
       const db = getDb(); if (!db) return send(c, { t: 'nofeed', c: name });
-      F = feeds[name] = { subs: new Set(), docs: [], ready: false, un: null, idle: null, tm: null };
+      F = feeds[name] = newFeed();
       F.un = FEEDS[name](db).onSnapshot(sn => {
         F.docs = sn.docs.map(d => ({ id: d.id, ...plain(d.data()) }));
         F.ready = true;
+        if (F.first) {
+          // первый снимок — база для дельт; его получают все, кто уже подписан
+          F.first = false;
+          for (const d of F.docs) F.sent.set(d.id, JSON.stringify(d));
+          broadcastSnap(name, F);
+        } else collect(F, sn);
         clearTimeout(F.tm); // при частых изменениях (бой, рейд) склеиваем рассылку
-        F.tm = setTimeout(() => { const msg = frame(1, Buffer.from(JSON.stringify({ t: 'snap', c: name, d: F.docs }))); for (const x of F.subs) sendRaw(x, msg); }, 120);
+        F.tm = setTimeout(() => { F.tm = null; flush(name, F); }, SNAP_MS);
       }, e => { console.error('feed', name, e.message); for (const x of F.subs) send(x, { t: 'nofeed', c: name }); });
     }
     clearTimeout(F.idle); F.idle = null;
     F.subs.add(c);
-    if (F.ready) send(c, { t: 'snap', c: name, d: F.docs });
+    if (F.ready) sendSnap(c, F, name);
   }
   function unsub(c, name) {
     c.subs.delete(name);
