@@ -84,9 +84,12 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
     catch (e) { out.cardRating = 'ошибка: ' + e.code; }
     out.market = await write('market/probe_' + Date.now().toString(36), { seller: login, price: 1, sold: false });
     // карточка игрока: с рейтингом — запрещено, без защищённых полей — можно (так пишет клиент)
-    out.playersBad = await write('players/' + login, { name: 'check', lvl: 1, rating: 99999, win: 9999 });
-    // маркер tst: по нему сервер потом подметает карточку, если тест не успел её удалить
-    out.playersOk = await write('players/' + login, { name: 'check', lvl: 1, tst: 1 }, true);
+    // 1) создание карточки (документа ещё нет) — клиент так и пишет в первый раз
+    out.playersCreate = await write('players/' + login, { name: 'check', lvl: 1, tst: 1 }, true);
+    // 2) правка чужого рейтинга — запрещена
+    out.playersBad = await write('players/' + login, { name: 'check', lvl: 1, rating: 99999, win: 9999 }, true);
+    // 3) обычная правка карточки (имя, аватар) — разрешена
+    out.playersOk = await write('players/' + login, { name: 'check2', tst: 1 }, true);
     await new Promise(r => setTimeout(r, 1500));
     try { const s = await db.doc('saves/' + login).get(); out.saveInDb = s.exists ? 'да, gold=' + (s.data().gold) : 'НЕТ'; }
     catch (e) { out.saveInDb = 'ошибка чтения: ' + e.code; }
@@ -99,7 +102,7 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
       await db.doc('players/' + login).delete();
       await new Promise(r => setTimeout(r, 400));
       const left = await db.doc('players/' + login).get();
-      cardGone = !left.exists();
+      cardGone = !left.exists;
     } catch (e) { out.cardDel = 'ошибка удаления: ' + e.code; }
     out.cardGone = cardGone;
     try { await user.delete(); out.cleanup = 'аккаунт удалён'; } catch (e) { out.cleanup = 'не удалён: ' + e.code; }
@@ -110,6 +113,7 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
   console.log('  игрок: ' + (res.login || res.auth || 'не создан'));
   c('запись в saves запрещена (серверную проверку не обойти)', res.saves === 'permission-denied', res.saves || 'нет данных');
   c('запись в market запрещена (цену лота не подменить)', res.market === 'permission-denied', res.market || 'нет данных');
+  c('создание карточки разрешено', res.playersCreate === 'ЗАПИСЬ ПРОШЛА', res.playersCreate || 'нет данных');
   c('запись рейтинга в карточку запрещена', res.playersBad === 'permission-denied', res.playersBad || 'нет данных');
   c('запись остальных полей карточки разрешена', res.playersOk === 'ЗАПИСЬ ПРОШЛА', res.playersOk || 'нет данных');
   c('POST /api/save принят сервером', res.saveStatus === 200, 'HTTP ' + res.saveStatus);
