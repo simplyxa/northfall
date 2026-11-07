@@ -55,10 +55,12 @@ service cloud.firestore {
       allow update, delete: if signed() && resource.data.uid == lg() && (request.resource == null || request.resource.data.uid == lg());
     }
 
-    // Публичная карточка игрока: читают все, пишет только владелец
+    // Публичная карточка игрока: читают все, пишет только владелец.
+    // Рейтинг, сезон, счётчики побед и уровень считает сервер — клиент их не пишет.
     match /players/{id} {
       allow read: if signed();
-      allow write: if me(id) || admin();
+      allow write: if admin() || (me(id) && !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['rating','srat','win','lose','sid','psid','psrat','lvl']));
     }
 
     // Подарки, баны, объявления: читают все, пишет только админ
