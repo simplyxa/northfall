@@ -48,7 +48,7 @@ module.exports = function apvp(getDb) {
   // ---- состояние боя для клиента ----
   function pub(R) {
     return {
-      pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: R.ech,
+      pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: R.ech ? clamp((R.clk - (R.ech - E_T * 1000)) / (E_T * 1000), 0, 1) : 0,
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
       e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit },
       s: R.s, log: R.log, sk: R.sk, res: R.res || null
@@ -235,7 +235,7 @@ module.exports = function apvp(getDb) {
     if (m.t === 'apvp') return start(c, m, send);
     if (m.t === 'apa') return act(c, m, send);
   }
-  function onClose(c) { rooms.delete(c.uid); }
+  function onClose(c) { const R = rooms.get(c.uid); if (R) rooms.delete(c.uid); }
 
   return { onMsg, onClose, stats: () => ({ rooms: rooms.size }) };
 };
