@@ -1670,12 +1670,17 @@ function startPvp(id){const p=PL.find(x=>x.id===id);if(!p||!p.stats||fight)retur
 function apvpState(m){const s=m.st;if(!s)return;
  const pushLog=()=>{if(s.log&&s.log.length>APLOG){for(let k=APLOG;k<s.log.length;k++)log(s.log[k],'sys');APLOG=s.log.length}};
  if(s.st==='on'){pushLog();fight=Object.assign(fight||{},s,{arena:true,pvp:s.pid,pn:performance.now(),s:Object.assign({r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0},s.s||{})});S.hp=s.hp;render();return}
- pushLog();const r0=S.rating,sr0=S.srat,wp0=S.wp|0,rs=s.res||{},win=s.win===1;
- if(rs.rating!=null)S.rating=rs.rating;if(rs.srt!=null)S.srat=rs.srt;
+ pushLog();const r0=Number.isFinite(+S.rating)?(+S.rating):1000,sr0=Number.isFinite(+S.srat)?(+S.srat):0,rs=s.res||{},win=s.win===1;
+ const delta=Number.isFinite(+rs.rt)?(+rs.rt):0;
+ const rating=Number.isFinite(+rs.rating)?(+rs.rating):(r0+delta);
+ const srat=Number.isFinite(+rs.srt)?(+rs.srt):sr0;
+ const dS=srat-sr0;
+ S.rating=rating;S.srat=srat;
  if(rs.atk!=null){S.atk=rs.atk;S.atkt=rs.atkt}
  const lost=rs.lost|0;
- if(win){S.win++;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${Math.max(0,rs.rt|0)}. Новый рейтинг: ${S.rating}.`,'hit');mkRep(true,null,'',r0,sr0,wp0,0)}
- else{S.lose++;S.gold=Math.max(0,(S.gold|0)-lost);S.hp=1;log(`Поражение. Рейтинг ${rs.rt|0}. Новый рейтинг: ${S.rating}.`,'dmg');mkRep(false,null,'',r0,sr0,wp0,lost)}
+ if(win){S.win++;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${delta}. Новый рейтинг: ${rating}.`,'hit')}
+ else{S.lose++;S.gold=Math.max(0,(S.gold|0)-lost);S.hp=1;log(`Поражение. Рейтинг ${delta}. Новый рейтинг: ${rating}.`,'dmg')}
+ const e=s.e||{};REP={win,bot:e.name||'Соперник',title:'',lv:e.lv|0,s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,...(s.s||{})},dR:delta,rating,dS,srat,xp:0,gold:-lost,lvUp:0,loot:'',war:0,hp:s.hp|0,mhp:s.mhp|0};
  fight=null;save();render();repModal()}
 function pvpList(){const L=PL.filter(p=>p.id!==UID&&p.stats).sort((a,b)=>Math.abs(a.rating-S.rating)-Math.abs(b.rating-S.rating)).slice(0,8);
  return`<div class="panel"><h3>Воины других игроков</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Бой с копией героя другого игрока: его атака, защита, здоровье и крит. Рейтинг зависит от разницы с его рейтингом.</p>${L.length?L.map(p=>{const diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(p.av,28,frameOf(p))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div><button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button></div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
