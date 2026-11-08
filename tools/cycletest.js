@@ -106,5 +106,21 @@ console.log('\nРейд: опыт за уровень считается по т
   T('опыт на 30 уровне больше', xpNeed(30) > xpNeed(10));
 }
 
+// ---------- статическая проверка транзакций ----------
+console.log('\nТранзакции Firestore:');
+{
+  const fs = require('fs'), path = require('path');
+  const dir = path.join(__dirname, '..', 'server');
+  const bads = [];
+  for (const f of fs.readdirSync(dir).filter(x => x.endsWith('.js'))) {
+    const src = fs.readFileSync(path.join(dir, f), 'utf8');
+    // запрос внутри транзакции запрещён: Firestore умеет в транзакции только чтение документов
+    src.split('\n').forEach((ln, i) => {
+      if (/tx\.get\([^)]*where\(/.test(ln)) bads.push(f + ':' + (i + 1) + ' — запрос внутри транзакции: ' + ln.trim().slice(0, 90));
+    });
+  }
+  T('в транзакциях нет запросов (только чтение документов)', bads.length === 0, bads.join(' | '));
+}
+
 console.log('\nИтог: ' + ok + ' прошло, ' + bad + ' провалено');
 process.exit(bad ? 1 : 0);

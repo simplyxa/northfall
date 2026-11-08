@@ -74,21 +74,6 @@ function treasury(depDocs, spent) {
   return { g: g - ((spent && spent.gold) | 0), i: i - ((spent && spent.iron) | 0) };
 }
 
-// очки войны: сервер начисляет их сам по результатам дуэлей
-async function warPoints(tx, dbx, cid, n) {
-  if (!(n > 0) || !cid) return;
-  const now = Date.now();
-  const q = await tx.get(dbx.collection('wars').where('end', '>', now).limit(30));
-  for (const d of q.docs) {
-    const W = d.data();
-    if (W.a !== cid && W.b !== cid) continue;
-    const w = Object.assign({}, W.w || {});
-    w[cid] = (w[cid] || 0) + n;
-    tx.update(d.ref, { w });
-    return;
-  }
-}
-
 module.exports = function cycle(getDb) {
   const db = () => getDb();
   const err = (c, send, rid) => send(c, { t: rid + 'e', rid });
@@ -254,6 +239,16 @@ module.exports = function cycle(getDb) {
     if (!/^[A-Za-z0-9_-]{3,40}$/.test(cid)) return err(c, send, 'war');
     const sref = dbx.collection('saves').doc(c.uid);
     let out = null;
+    // ВАЖНО: в транзакции Firestore запросы запрещены — занятость кланов
+    // проверяем заранее, до открытия транзакции.
+    let busy = false;
+    try {
+      const q = await dbx.collection('wars').where('end', '>', now).limit(30).get();
+      for (const d of q.docs) {
+        const W = d.data();
+        if (W.a === cid || W.b === cid) { busy = true; break; }
+      }
+    } catch (e) {}
     try {
       await dbx.runTransaction(async tx => {
         const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
@@ -265,11 +260,7 @@ module.exports = function cycle(getDb) {
         const M = msn.exists ? msn.data() : null;
         if (!M || M.leader !== c.uid) { out = { st: 'notlead' }; return; }
         if (my === cid) { out = { st: 'self' }; return; }
-        const q = await tx.get(dbx.collection('wars').where('end', '>', now).limit(30));
-        for (const d of q.docs) {
-          const W = d.data();
-          if (W.a === cid || W.b === cid || (W.a === my && W.b === cid) || (W.a === cid && W.b === my)) { out = { st: 'busy' }; return; }
-        }
+        if (busy) { out = { st: 'busy' }; return; }
         const id = 'w' + now.toString(36) + Math.random().toString(36).slice(2, 6);
         tx.set(dbx.collection('wars').doc(id), { a: my, b: cid, end: now + WAR_DUR, ts: now, w: {} });
         out = { st: 'ok', id, a: my, b: cid, end: now + WAR_DUR };
@@ -397,7 +388,6 @@ module.exports.cLv = cLv;
 module.exports.cNeed = cNeed;
 module.exports.cCap = cCap;
 module.exports.treasury = treasury;
-module.exports.warPoints = warPoints;
 module.exports.TER_RATE = TER_RATE;
 module.exports.WAR_WIN = WAR_WIN;
 module.exports.WAR_DRAW = WAR_DRAW;
