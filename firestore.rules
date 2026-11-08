@@ -66,8 +66,8 @@ service cloud.firestore {
       // на null падает — поэтому для создания проверяем просто список полей.
       allow create, update: if admin() || (me(id) && (
           resource == null
-            ? !request.resource.data.keys().hasAny(['rating','srat','win','lose','sid','psid','psrat','lvl'])
-            : !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rating','srat','win','lose','sid','psid','psrat','lvl'])
+            ? !request.resource.data.keys().hasAny(['rating','srat','win','lose','sid','psid','psrat','lvl','dr','dw','dn'])
+            : !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rating','srat','win','lose','sid','psid','psrat','lvl','dr','dw','dn'])
         ));
     }
 

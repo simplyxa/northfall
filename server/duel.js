@@ -42,6 +42,7 @@ function dRound(R, acts) {
 
 module.exports = function duels(getDb) {
   const rooms = new Map(); // rid → {R, acts:{uid:{r,a}}, subs:Set, busy, send}
+  const ARENA = require('./arena');
 
   function pub(r) { const acted = {}; for (const [id, x] of Object.entries(r.acts)) if (x.r === r.R.r) acted[id] = 1; return { R: r.R, acted }; }
   function cast(rid, r) { const m = { t: 'ds', rid, ...pub(r) }; for (const c of r.subs) r.send(c, m); }
@@ -72,7 +73,11 @@ module.exports = function duels(getDb) {
         }
         const need = Object.keys(D.mem).filter(id => D.mem[id].stun < D.r);
         if (Date.now() < D.dl && need.some(id => !acts[id])) { r.R = D; return; }
-        dRound(D, acts); tx.set(ref, D); r.R = D;
+        dRound(D, acts);
+        // Дневной рейтинг лайв-арены считает сервер: результат боя известен
+        // только здесь, клиенту доверять нельзя.
+        if (D.st === 'end' && !D.scored) await scoreDuel(tx, D);
+        tx.set(ref, D); r.R = D;
       });
     } catch (e) { console.error('duel resolve', rid, e.message); }
     r.busy = false; r.t = Date.now();
@@ -88,6 +93,28 @@ module.exports = function duels(getDb) {
     }
   }, 500).unref();
 
+  // Начисление дневного рейтинга обоим участникам и запись в их сохранения.
+  async function scoreDuel(tx, D) {
+    const db = getDb(), now = Date.now();
+    const ids = Object.keys(D.mem || {});
+    if (ids.length !== 2) { D.scored = 1; return; }
+    const prev = {};
+    for (const id of ids) {
+      const sn = await tx.get(db.collection('saves').doc(id));
+      prev[id] = sn.exists ? sn.data() : null;
+    }
+    const res = ARENA.scoreDuel(D.mem, D.win, prev, now);
+    if (res) {
+      for (const id of ids) {
+        const r = res[id];
+        const s = Object.assign({}, prev[id] || {}, { dr: r.dr, dn: r.dn, dw: r.dw, _ar: { d: ARENA.dayNum(now) } });
+        tx.set(db.collection('saves').doc(id), s);
+        tx.set(db.collection('players').doc(id), { dr: r.dr, dn: r.dn, dw: r.dw }, { merge: true });
+      }
+      D.res = res;
+    }
+    D.scored = 1;
+  }
   async function onMsg(c, m, send) {
     if (!c.uid || typeof m.rid !== 'string' || !/^[A-Za-z0-9_-]{4,40}$/.test(m.rid)) return;
     const rid = m.rid;

@@ -18,8 +18,11 @@ const ATH = 3600000;             // один билет в час
 const WIN_MIN = 8, WIN_MAX = 46; // границы прибавки рейтинга за победу (боты 14..46, PvP 8..40)
 const LOSE_MIN = 1, LOSE_MAX = 25; // границы списания за поражение (боты 8..20, PvP 5..25)
 const WEEK = 604800000;          // сезон — неделя
+const DAYMS = 86400000;          // сутки
 
 const season = now => Math.floor(now / WEEK);
+// сутки в игре считаются по Израилю (+2 часа) — так же, как в клиенте
+const dayNum = now => Math.floor((now + 2 * 3600000) / DAYMS);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // Состояние из прошлого сохранения. Доверяем только тому, что записали сами.
@@ -40,7 +43,12 @@ function readState(prev, now) {
   let psrat = Math.max(0, s.psrat | 0);
   if (!sid) sid = cur;
   else if (sid !== cur) { psid = sid; psrat = srt; sid = cur; srt = 0; } // новый сезон
-  return { rt, srt, sid, psid, psrat, atk, atkt };
+  // дневной рейтинг лайв-арены: тоже серверное число
+  const day = dayNum(now);
+  let dr = s.dr == null ? 1000 : Math.max(0, s.dr | 0);
+  let dn = Math.max(0, s.dn | 0), dw = Math.max(0, s.dw | 0);
+  if (s.day !== day) { dr = 1000; dn = 0; dw = 0; } // новые сутки
+  return { rt, srt, sid, psid, psrat, atk, atkt, dr, dn, dw, day };
 }
 
 // Заявка клиента: подписанная прибавка рейтинга (победа — положительная,
@@ -89,4 +97,38 @@ function clampLevel(prev, claimed) {
   return clamp(v, base, cap);
 }
 
-module.exports = { ATK, ATH, WIN_MIN, WIN_MAX, LOSE_MIN, LOSE_MAX, WEEK, season, readState, applyResult, clampWins, clampLevel, LVL_MAX, LVL_STEP };
+// Итог дуэли лайв-арены: сервер считает Эло сам.
+// sc — очки (1 победа, 0.5 ничья, 0 поражение), odr — дневной рейтинг соперника.
+function applyDuel(st, sc, odr) {
+  const r0 = st.dr;
+  const ex = 1 / (1 + Math.pow(10, ((odr == null ? 1000 : odr) - r0) / 400));
+  const dR = Math.round(32 * (sc - ex));
+  st.dr = Math.max(0, r0 + dR);
+  st.dn = (st.dn | 0) + 1;
+  if (sc === 1) st.dw = (st.dw | 0) + 1;
+  return { sc, dR, ex, dr: st.dr, dn: st.dn, dw: st.dw };
+}
+
+// Золото за победу в лайв-арене — как в клиенте: 50 + 15 за уровень
+const duelGold = lv => 50 + 15 * (Math.max(1, lv | 0));
+
+// Итог дуэли лайв-арены для обоих участников.
+// members — {uid: {lv}}, win — uid победителя или 'draw', prevs — прошлые сохранения.
+function scoreDuel(members, win, prevs, now) {
+  const ids = Object.keys(members || {});
+  if (ids.length !== 2) return null;
+  // без явного победителя или ничьей результат не засчитываем — иначе битый документ
+  // отнял бы рейтинг у обоих участников
+  if (win !== 'draw' && !ids.includes(win)) return null;
+  const st = {}, out = {};
+  for (const id of ids) st[id] = readState((prevs && prevs[id]) || null, now);
+  for (const id of ids) {
+    const oid = ids.find(x => x !== id);
+    const sc = win === 'draw' ? 0.5 : (win === id ? 1 : 0);
+    const r = applyDuel(st[id], sc, st[oid].dr);
+    out[id] = { sc, dR: r.dR, dr: r.dr, dn: r.dn, dw: r.dw, g: sc === 1 ? duelGold((members[id] && members[id].lv) || 1) : 0 };
+  }
+  return out;
+}
+
+module.exports = { ATK, ATH, WIN_MIN, WIN_MAX, LOSE_MIN, LOSE_MAX, WEEK, DAYMS, season, dayNum, readState, applyResult, applyDuel, duelGold, scoreDuel, clampWins, clampLevel, LVL_MAX, LVL_STEP };

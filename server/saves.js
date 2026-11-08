@@ -83,10 +83,14 @@ module.exports = function saves(admin) {
     const claimedRating = s.rating | 0, claimedSrat = s.srat | 0;
     s.rating = res.rt; s.srat = res.srt; s.sid = st.sid; s.psid = st.psid; s.psrat = st.psrat;
     s.atk = res.atk; s.atkt = res.atkt;
+    // дневной рейтинг лайв-арены — тоже серверное число (считается в дуэли)
+    s.dr = st.dr; s.dn = st.dn; s.dw = st.dw;
+    s._ar = { d: st.day };   // метка суток: нужна, чтобы сбросить дневной рейтинг
     if (res.rej) flag(db, uid, 'arena', { why: 'no_ticket' });
     fix = fix || {};
     fix.rating = s.rating; fix.srat = s.srat; fix.sid = s.sid; fix.psid = s.psid; fix.psrat = s.psrat;
     fix.atk = s.atk; fix.atkt = s.atkt;
+    fix.dr = s.dr; fix.dn = s.dn; fix.dw = s.dw;
     fix.ar = res.used ? 1 : 0;
     if (claimedRating !== s.rating || claimedSrat !== s.srat) fix.ar = 1;
 
@@ -136,10 +140,11 @@ module.exports = function saves(admin) {
         g = guard(prev, s, ses, base, uid, prev && prev.ts ? Date.now() - prev.ts : 5000); if (g.stale) return;
         tx.set(ref, s);
         // карточку игрока пишет сервер: рейтинг, сезон и счётчики — его данные
-        const card = { lvl: s.lvl, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, seen: Date.now() };
+        const card = { lvl: s.lvl, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, dr: s.dr, dn: s.dn, dw: s.dw, seen: Date.now() };
         const changed = !prev || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
           || card.win !== (prev.win | 0) || card.lose !== (prev.lose | 0) || card.sid !== (prev.sid | 0)
-          || card.lvl !== (prev.lvl | 0);
+          || card.lvl !== (prev.lvl | 0) || card.dr !== (prev.dr | 0) || card.dn !== (prev.dn | 0)
+          || card.dw !== (prev.dw | 0);
         if (changed) tx.set(db.collection('players').doc(uid), card, { merge: true });
       });
       if (g.stale) return J(res, 409, { stale: 1 });
