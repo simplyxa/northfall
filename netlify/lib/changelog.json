@@ -440,5 +440,10 @@
   "v": "1.18.10",
   "t": "Билеты арены теперь списываются по-настоящему: после боя игра сразу показывает, сколько осталось, — раньше старое число возвращалось при перезаходе в игру.",
   "te": "Arena tickets are now really spent: right after a fight the game shows how many are left — previously the old count came back when you re-entered the game."
+ },
+ {
+  "v": "1.18.13",
+  "t": "Лайв-арена: устранена двойная обработка обновлений боя. При работе через WebSocket отключаются лишние подписки Firestore; при потере соединения запасной канал автоматически включается снова.",
+  "te": "Live Arena: fixed duplicate processing of battle updates. Redundant Firestore listeners are disabled while WebSocket is active and automatically restored if the connection drops."
  }
 ]
