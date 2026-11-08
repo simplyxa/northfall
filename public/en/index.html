@@ -1832,7 +1832,7 @@ function expedView(){exSettle(true);const X=S.ex,R=EXREP||S.exlast;
 let CLOG=[],clogFor=null,clogUn=null;
 const pnm=id=>id===UID&&S?S.name:((PL.find(p=>p.id===id)||{}).name||id);
 function clog(t,ic,cid){cid=cid||(S&&S.clan);if(!DB||!cid)return;DB.collection('clans').doc(cid).collection('log').doc('l'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)).set({t:String(t).slice(0,200),ic:ic||'•',ts:Date.now()}).catch(()=>{})}
-function clogSub(){if(!DB||!S||!S.clan){if(clogUn)clogUn();clogUn=null;clogFor=null;CLOG=[];return}if(clogFor===S.clan)return;if(clogUn)clogUn();clogFor=S.clan;
+function clogSub(){if(!DB||!S||!S.clan||tab!=='clan'||ctab!=='log'){if(clogUn){clogUn();clogUn=null}clogFor=null;CLOG=[];return}if(clogFor===S.clan&&clogUn)return;if(clogUn)clogUn();clogFor=S.clan;
  clogUn=DB.collection('clans').doc(S.clan).collection('log').orderBy('ts','desc').limit(60).onSnapshot(sn=>{CLOG=sn.docs.map(d=>d.data());if(tab==='clan'&&ctab==='log'&&!fight)ui()},()=>{})}
 function clogView(my){const day=ts=>{const d=new Date(ts),t=new Date();return d.toDateString()===t.toDateString()?'Today':new Date(t-864e5).toDateString()===d.toDateString()?'Yesterday':d.toLocaleDateString('en-GB',{day:'numeric',month:'long'})};let last='';
  return ctabs()+`<div class="panel"><h3>Chronicle of the clan “${esc(my.name)}”</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Everything important that happens in the clan: new warriors, buildings, boss victories, level growth.</p>${CLOG.length?CLOG.map(e=>{const d=day(e.ts),h=d!==last?`<div class="cday">${d}</div>`:'';last=d;return h+`<div class="clg"><span class="cli">${esc(e.ic||'•')}</span><span>${esc(e.t)}<small>${new Date(e.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</small></span></div>`}).join(''):'<p style="margin:0">The chronicle is empty for now. Clan events will appear here.</p>'}</div>`}
@@ -2105,7 +2105,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.18';
+const GVER='1.18.19';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;

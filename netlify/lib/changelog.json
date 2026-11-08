@@ -470,5 +470,10 @@
     "v": "1.18.18",
     "t": "Вкладки рейтинга получили новые каменные иконки с бронзовыми деталями.",
     "te": "Rating tabs now feature new carved-stone icons with bronze details."
+  },
+  {
+    "v": "1.18.19",
+    "t": "Летопись клана загружается только при открытии её вкладки — меньше лишних чтений Firebase.",
+    "te": "Clan activity log now loads only when its tab is opened, reducing unnecessary Firebase reads."
   }
 ]
