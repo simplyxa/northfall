@@ -2494,5 +2494,20 @@
 "поединки с копиями героев · ": "duels with hero copies · ",
 "Облако недоступно — прогресс сохранён локально и уйдёт на сервер, когда тот оживёт.": "Cloud unavailable — your progress is saved locally and will sync once the server is back.",
 "отдых у костра…": "rest by the fire…",
-"<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">Досталось обновление</h3><p style=\"margin:0 0 12px\">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class=\"b red\" style=\"width:100%\" onclick=\"location.reload()\">Обновить игру</button></div>": "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">An update is ready</h3><p style=\"margin:0 0 12px\">A new version of the game is out. Reload to get the fresh graphics and all the fixes.</p><button class=\"b red\" style=\"width:100%\" onclick=\"location.reload()\">Update the game</button></div>"
+"<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">Досталось обновление</h3><p style=\"margin:0 0 12px\">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class=\"b red\" style=\"width:100%\" onclick=\"location.reload()\">Обновить игру</button></div>": "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">An update is ready</h3><p style=\"margin:0 0 12px\">A new version of the game is out. Reload to get the fresh graphics and all the fixes.</p><button class=\"b red\" style=\"width:100%\" onclick=\"location.reload()\">Update the game</button></div>",
+"Награда за этого босса уже получена.": "The reward for this boss has already been claimed.",
+"Слишком часто — часть добычи не засчитана.": "Too fast — part of the loot was not counted.",
+"Объявлять войну может только глава клана.": "Only the clan leader can declare war.",
+"Победа в войне: ": "War won: ",
+"Ничья в войне: ": "War draw: ",
+"Война проиграна: ": "War lost: ",
+" и ": " and ",
+" рейтинга": " rating",
+"Война ещё не закончилась.": "The war hasn't ended yet.",
+"Награда за эту войну уже получена.": "The reward for this war has already been claimed.",
+"Доля с подземелья: +": "Dungeon share: +",
+"Это может сделать только глава клана.": "Only the clan leader can do this.",
+"Это уже получено.": "This has already been claimed.",
+"Не удалось выполнить.": "Couldn't do it.",
+"Сервер не принял запрос.": "The server rejected the request."
 }

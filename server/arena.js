@@ -97,6 +97,25 @@ function clampLevel(prev, claimed) {
   return clamp(v, base, cap);
 }
 
+// Очки умений: база класса (25 очков) + 3 очка за каждый уровень.
+// Раньше их писал только клиент — можно было выписать себе сколько угодно,
+// а от них зависит атака (и потолок урона по мировому боссу).
+// Возвращает исправленные статы или null, если всё в порядке.
+function clampStats(s) {
+  const st = (s && s.st) || {};
+  const sum = ['str', 'hp', 'arm', 'reg', 'en'].reduce((a, k) => a + Math.max(0, st[k] | 0), 0);
+  const cap = 25 + 3 * (Math.max(1, (s && s.lvl) | 0) - 1);
+  if (sum <= cap) return null;
+  const out = Object.assign({}, st);
+  let over = sum - cap;
+  for (const k of ['str', 'hp', 'arm', 'reg', 'en']) {
+    if (!over) break;
+    const cut = Math.min(over, Math.max(0, out[k] | 0));
+    out[k] = (out[k] | 0) - cut; over -= cut;
+  }
+  return out;
+}
+
 // Итог дуэли лайв-арены: сервер считает Эло сам.
 // sc — очки (1 победа, 0.5 ничья, 0 поражение), odr — дневной рейтинг соперника.
 function applyDuel(st, sc, odr) {
@@ -112,6 +131,25 @@ function applyDuel(st, sc, odr) {
 // Золото за победу в лайв-арене — как в клиенте: 50 + 15 за уровень
 const duelGold = lv => 50 + 15 * (Math.max(1, lv | 0));
 
+// Основной (сезонный) рейтинг за дуэль: сервер начисляет его сам.
+// Раньше рейтинг арены приходил заявкой клиента — игрок мог заявить победу
+// без боя и получить полные +40 очков по билету.
+function duelRating(st, sc, oppRating) {
+  const diff = (oppRating == null ? 1000 : oppRating) - st.rt;
+  if (sc === 1) {
+    const w = clamp(Math.round(20 + diff / 20), WIN_MIN, 40);
+    st.rt += w; st.srt += w;
+    return w;
+  }
+  if (sc === 0) {
+    const l = clamp(12, LOSE_MIN, LOSE_MAX);
+    const r = Math.min(l, st.rt);
+    st.rt -= r; st.srt = Math.max(0, st.srt - l);
+    return -r;
+  }
+  return 0;
+}
+
 // Итог дуэли лайв-арены для обоих участников.
 // members — {uid: {lv}}, win — uid победителя или 'draw', prevs — прошлые сохранения.
 function scoreDuel(members, win, prevs, now) {
@@ -122,13 +160,23 @@ function scoreDuel(members, win, prevs, now) {
   if (win !== 'draw' && !ids.includes(win)) return null;
   const st = {}, out = {};
   for (const id of ids) st[id] = readState((prevs && prevs[id]) || null, now);
+  const rt0 = {}; for (const id of ids) rt0[id] = st[id].rt;   // рейтинг соперника — до правок
   for (const id of ids) {
     const oid = ids.find(x => x !== id);
     const sc = win === 'draw' ? 0.5 : (win === id ? 1 : 0);
     const r = applyDuel(st[id], sc, st[oid].dr);
-    out[id] = { sc, dR: r.dR, dr: r.dr, dn: r.dn, dw: r.dw, g: sc === 1 ? duelGold((members[id] && members[id].lv) || 1) : 0 };
+    // основной (сезонный) рейтинг — тоже сервер; билет за дуэль списывает сервер
+    let rt = 0, noT = 0;
+    if (st[id].atk >= 1) { rt = duelRating(st[id], sc, rt0[oid]); st[id].atk -= 1; }
+    else noT = 1;
+    out[id] = {
+      sc, dR: r.dR, dr: r.dr, dn: r.dn, dw: r.dw,
+      g: sc === 1 ? duelGold((members[id] && members[id].lv) || 1) : 0,
+      rt: st[id].rt, srt: st[id].srt, atk: st[id].atk, noT,
+      war: sc === 1 ? 10 : 0   // очки клановой войны
+    };
   }
   return out;
 }
 
-module.exports = { ATK, ATH, WIN_MIN, WIN_MAX, LOSE_MIN, LOSE_MAX, WEEK, DAYMS, season, dayNum, readState, applyResult, applyDuel, duelGold, scoreDuel, clampWins, clampLevel, LVL_MAX, LVL_STEP };
+module.exports = { ATK, ATH, WIN_MIN, WIN_MAX, LOSE_MIN, LOSE_MAX, WEEK, DAYMS, season, dayNum, readState, applyResult, applyDuel, duelGold, duelRating, scoreDuel, clampWins, clampLevel, clampStats, LVL_MAX, LVL_STEP };
