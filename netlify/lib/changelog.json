@@ -450,5 +450,10 @@
   "v": "1.18.14",
   "t": "Обычная арена: бой с копией героя больше не перерисовывает весь экран при каждом обновлении. Обновляются только элементы боя, что уменьшает задержки интерфейса.",
   "te": "Regular Arena: battles against hero clones no longer re-render the entire screen on every update. Only battle elements are refreshed, reducing interface lag."
+ },
+ {
+  "v": "1.18.15",
+  "t": "Обычная арена: полосы заряда и атаки теперь анимируются плавно на клиенте; полосы здоровья обновляются только при изменении здоровья.",
+  "te": "Regular Arena: charge and attack meters now animate smoothly on the client; health bars update only when health changes."
  }
 ]

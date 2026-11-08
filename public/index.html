@@ -923,11 +923,24 @@ function paintPvpFight(){
  if(!fight||!fight.pvp)return;
  const t=document.getElementById('myhptext'),b=document.getElementById('myhpbar'),et=document.getElementById('enemyhptext'),eb=document.getElementById('enemyhpbar');
  if(t)t.textContent=S.hp+'/'+maxHp()+' · энергия '+S.en+'/'+maxEn();
- if(b)b.innerHTML=bar(S.hp,maxHp(),'--moss');
+ if(b&&b.dataset.hp!==String(S.hp)){b.innerHTML=bar(S.hp,maxHp(),'--moss');b.dataset.hp=String(S.hp)}
  if(et)et.textContent=fight.e.hp+'/'+fight.e.max;
- if(eb)eb.innerHTML=bar(fight.e.hp,fight.e.max,'--blood');
+ if(eb&&eb.dataset.hp!==String(fight.e.hp)){eb.innerHTML=bar(fight.e.hp,fight.e.max,'--blood');eb.dataset.hp=String(fight.e.hp)}
  if(APLOGVIEW!==APLOG){const l=document.getElementById('log');if(l)l.innerHTML=logs.map(x=>'<p class="'+x[1]+'">'+esc(x[0])+'</p>').join('')||'<p>Тишина.</p>';APLOGVIEW=APLOG}
  paintFight();
+ apvpSmoothStart();
+}
+let APVPRaf=0;
+function apvpSmoothStart(){if(!APVPRaf&&fight&&fight.pvp)APVPRaf=requestAnimationFrame(apvpSmooth)}
+function apvpSmooth(){
+ if(!fight||!fight.pvp||!document.getElementById('fightpanel')){APVPRaf=0;return}
+ const dt=Math.max(0,performance.now()-(fight.pn||performance.now()));
+ const pc=Math.min(1,(fight.ch||0)+dt/5000),ec=Math.min(1,(fight.ech||0)+dt/5000);
+ const bs=document.getElementById('bs'),eb=document.getElementById('ecb'),et=document.getElementById('ect');
+ if(bs){bs.style.setProperty('--p',pc*100);bs.disabled=pc<.2;bs.classList.toggle('full',pc>=1)}
+ if(eb)eb.style.width=(ec*100)+'%';
+ if(et){const n=Math.round(ec*100)+'%';if(et.textContent!==n)et.textContent=n}
+ APVPRaf=requestAnimationFrame(apvpSmooth);
 }
 function paintFight(){
  if(!fight)return;if(fight.hunt&&!fight.hunt.raid)stageFx();const now=fight.clk,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100),g=id=>document.querySelector(id);
@@ -2091,7 +2104,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.14';
+const GVER='1.18.15';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2574,7 +2587,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.14</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.15</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
