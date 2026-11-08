@@ -106,7 +106,8 @@ Suggested initial service groups:
 
 - [x] Static inventory of major browser listeners and hub feeds.
 - [x] Inspect core server game modules and primary Netlify functions for Firestore reads, transactions, and writes.
-- [ ] Sweep remaining helper modules, scripts, and dynamically constructed paths; verify the inventory against a repository-wide search.
+- [x] Inspect remaining Netlify handlers and shared Firestore helper consumers found by repository search.
+- [ ] Sweep dynamically constructed paths and verify the inventory against a full checkout before cutover.
 - [x] Document core `/api/save` and `/api/op` transaction contracts plus privileged server routes.
 - [ ] Define stable service contracts and response shapes; do not change runtime yet.
 - [ ] Add PostgreSQL connection/config validation without connecting to a live database.
@@ -177,3 +178,30 @@ Additional save invariants:
 7. Replace collection-wide scans with bounded, indexed queries or offline jobs. In particular, the current ranking diagnostic and startup test-card scan should not be copied literally to PostgreSQL.
 
 This review is based on source code only. It did not execute routes, query Firestore, or mutate player data.
+
+
+## Remaining helper, scheduled and operational consumers
+
+The repository-wide source search also identifies the following Firestore consumers and boundaries:
+
+| Component | Access pattern | Migration treatment |
+|---|---|---|
+| `netlify/lib/fb.js` | Initializes Firebase Admin from service-account configuration | Keep as an identity/auth adapter during the first stage; remove Firestore initialization only after every data path has moved. |
+| `netlify/lib/promo.js` | Reads `admin/promo-gold` | Move promotion configuration to protected server configuration or an admin settings table. |
+| `netlify/lib/push.js` | Reads VAPID configuration from `priv/_vapid`; reads player push settings from `push/{uid}` | Move subscriptions to a push-subscriptions table; put VAPID private key in server secrets rather than a general data table. |
+| `tools/funnel.js` | Reads daily `stats` documents and a players projection for funnel/level aggregates | Treat as an offline analytics consumer; point it at an analytics view/export after migration. |
+| `tools/rulecheck.js` | Creates/uses temporary test identities and validates Firestore security rules (called out by cleanup comments in `server/index.js`) | Retire or replace Firestore-rule-specific checks with API authorization/integration tests after the API boundary is in place. |
+| `tools/wstest.js`, `tools/wsbench.js` | In-memory Firestore-compatible test doubles, not production database clients | Keep as protocol tests only if the adapter contract remains compatible; add PostgreSQL repository integration tests separately. |
+
+The repository search found eight deployed Netlify handlers importing the Firebase Admin module: `account`, `gold`, `push`, `push-cron`, `track`, `xsolla-token`, `xsolla-webhook`, and `deploy-succeeded`. All eight must be included in the eventual cutover checklist. A handler may also use Firebase Auth without using Firestore; identity verification is intentionally retained in the initial migration plan.
+
+## Audit result and known gaps
+
+- The major direct browser listeners, shared hub feeds, core game server transactions, primary save API, privileged admin routes, and eight Netlify handlers have now been inspected statically.
+- High-risk / high-volume paths identified: unbounded `raidq` hub subscription; broad admin ranking scan (up to 1,500 saves plus player lookups); full `players` scan during test-card cleanup at startup; scheduled push cohort queries; live hub feeds.
+- No exact read count or quota attribution can be inferred from source alone. The audit does not claim that any one path caused the current Firebase quota usage.
+- Search-based review is not a formal proof that no Firestore call remains. Dynamic collection names, generated code, and dependencies require a final repository-wide verification before switching off Firestore.
+
+## Next step: API contract matrix (still no runtime changes)
+
+The next design artifact should list every route/message/action with: authenticated principal, input validation, response shape, tables touched, transaction boundary, idempotency key, expected indexes, and whether it is synchronous, realtime, or scheduled. Prioritize character save, wallet, market, item mail, Xsolla webhook, raid/duel settlement, clan operations, and WebSocket feeds.
