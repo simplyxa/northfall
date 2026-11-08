@@ -2623,7 +2623,7 @@ function admView(){
  h+=`<div class="panel"><h3>Игроки (${pl.length})</h3>`+(pl.length?pl.map(p=>`<div class="row"><div>${p.av?avatar(p.av,30,frameOf(p))+' ':''}${esc(p.name)}${(ADMD[p.id]||{}).banned?' · заблокирован':''}<small>ур. ${p.lvl} · рейтинг ${p.rating}${p.clan&&cname(p.clan)?' · '+esc(cname(p.clan)):''}</small></div><button class="b ${adm.sel===p.id?'':'alt'}" data-ap="${p.id}">Выбрать</button></div>`).join(''):'<p>Игроков пока нет.</p>')+`</div>`;
  if(sel){const bn=(ADMD[sel.id]||{}).banned;h+=`<div class="panel"><h3>${esc(sel.name)}</h3><input id="ag" type="number" placeholder="Серебро (можно отрицательное)"><input id="agu" type="number" placeholder="Золото (можно отрицательное)"><input id="ax" type="number" step="1" placeholder="Изменение уровня (например 5 или -3)"><input id="an" maxlength="120" placeholder="Сообщение игроку"><button class="b" data-a="gift">Отправить подарок</button><button class="b ${bn?'alt':'red'}" data-a="ban">${bn?'Разблокировать':'Заблокировать'}</button></div>`}
  h+=bugsAdm();
- h+=`<div class="panel"><h3>Кланы (${CLN.length})</h3>`+(CLN.length?CLN.map(c=>`<div class="row"><div>${esc(c.name)}<small>Участников: ${mem(c).length}</small></div><button class="b red" data-dc="${c.id}">Удалить</button></div>`).join(''):'<p>Кланов нет.</p>')+`</div>`;
+ h+=`<div class="panel"><h3>Кланы (${CLN.length})</h3>`+(CLN.length?CLN.map(c=>`<div class="row"><div>${esc(c.name)}<small>ID: ${esc(c.id)} · Участников: ${mem(c).length}</small></div><button class="b red" data-dc="${esc(c.id)}">Удалить</button></div>`).join(''):'<p>Кланов нет.</p>')+`</div>`;
  return h}
 function admDo(a){
  if(!ADM||!DB)return;const g=ADMD.global||{},w=(id,d)=>DB.collection('admin').doc(id).set(d).then(()=>true).catch(()=>{log('Не удалось записать в базу.','sys');render();popup('Ошибка','Не удалось записать в базу. Подарок не отправлен.',true);return false});
@@ -2633,6 +2633,23 @@ function admDo(a){
  else if(adm.sel){const d=ADMD[adm.sel]||{};
   if(a==='gift'){const x={id:'g'+Date.now().toString(36),gold:+($('#ag').value)||0,au:Math.trunc(+($('#agu').value))||0,lv:Math.trunc(+($('#ax').value))||0,text:($('#an').value||'').slice(0,120)};if(!x.gold&&!x.au&&!x.lv&&!x.text){popup('Пустой подарок','Укажи серебро, изменение уровня или сообщение.',true);return}const pn=(PL.find(p=>p.id===adm.sel)||{}).name||adm.sel;w(adm.sel,{...d,gifts:[...(d.gifts||[]).slice(-9),x]}).then(ok=>{if(!ok)return;if(x.au)GOLD.adminGift(adm.sel,x.au,x.id);['ag','ax','an'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});popup('✉️ Письмо отправлено',`Игрок <b>${esc(pn)}</b> получит письмо от администрации в «Почте».<br>${[x.gold?`Серебро: <b>${x.gold>0?'+':''}${x.gold}</b>`:'',x.au?`Золото: <b>${x.au>0?'+':''}${x.au}</b>`:'',x.lv?`Уровень: <b>${x.lv>0?'+':''}${x.lv}</b>`:'',x.text?`Сообщение: «${esc(x.text)}»`:''].filter(Boolean).join('<br>')}`)})}
   else if(a==='ban')w(adm.sel,{...d,banned:!d.banned})}}
+async function adminDeleteClan(id){
+ if(!ADM||!FBA||!FBA.currentUser)return;
+ const btnId=String(id||'');if(!btnId)return;
+ try{
+  const tok=await FBA.currentUser.getIdToken();
+  const r=await fetch('/api/admin-clan',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({id:btnId})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  CLN=CLN.filter(c=>c.id!==btnId);
+  PL=PL.map(p=>p.clan===btnId?{...p,clan:''}:p);
+  plMerge();render();
+  popup('Клан удалён',`«${esc(j.name||btnId)}» удалён. Ссылки на клан очищены у игроков.`);
+ }catch(e){
+  const msg=e.message==='forbidden'?'Нет прав администратора.':e.message==='clan_not_found'?'Клан уже отсутствует.':e.message==='firebase_unavailable'?'Серверная база недоступна.':'Не удалось удалить клан. Попробуй обновить страницу.';
+  popup('Ошибка удаления',msg,true);
+ }
+}
 const IC={camp:'<path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 2 1 2 0-3 0-5 1-7z"/>',hunt:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',arena:'<path d="M5 5l14 14M19 5L5 19M5 5h4M5 5v4M19 5h-4M19 5v4"/>',clan:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 14.5c3-.5 6 1.5 6 5.5"/>',top:'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 20h8"/>',forge:'<path d="M14 4l6 6-3 3-6-6zM12 9l-8 8 3 3 8-8"/>',shop:'<circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.500 9.500q2.500-2 5 0M9.500 14.500q2.500 2 5 0"/>',bag:'<path d="M8 8a4 4 0 0 1 8 0M6 8h12v12H6zM9 14h6"/>',hero:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',admin:'<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/>'};
 const MENU=[['camp','Лагерь','Отдых у костра и восстановление сил','--gold'],['hunt','Охота','Звери и разбойники, 3 энергии','--moss'],['arena','Арена','Бои с воинами кланов за рейтинг','--blood'],['clan','Клан','Чат, участники и войны','--gold'],['top','Рейтинг','Лучшие воины и кланы сезона','--moss'],['shop','Магазин','Снаряжение и бутылки','--gold'],['forge','Кузница','Усиление снаряжения за железо','--blood'],['hero','Герой','Статы и очки умений','--moss']];
 const curOf=it=>S.eq[it.slot==='n'?'n1':it.slot];
@@ -2724,7 +2741,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.c){pick=d.c;return render()}
  if(d.rt){rtab=d.rt;return render()}
  if(d.j){const c=CLN.find(x=>x.id===d.j);if(c&&(c.kicked||[]).includes(UID)){log('Лидер закрыл тебе вход в этот клан.','sys');return render()}if(c&&mem(c).length>=cCap(c)){log(`В клане «${c.name}» нет мест: ${mem(c).length}/${cCap(c)}.`,'sys');return render()}if(c&&c.closed)return applyClan(c.id);S.cxt=0;S.clan=d.j;S.cjt=Date.now();log(`Ты вступил в клан «${cname(d.j)}».`,'sys');clog(`${S.name} вступил в клан.`,'➕');save();return render()}
- if(d.k)return kick(d.k);if(d.w)return declare(d.w);
+ if(d.dc){ask('Удалить клан без возможности восстановления? Его участники будут отвязаны от клана.',()=>adminDeleteClan(d.dc),'Удалить');return} if(d.k)return kick(d.k);if(d.w)return declare(d.w);
  if(d.t){tab=d.t;CHP=null;MLADM=false;MLTM=false;return render()}
  if(d.sc){scr=d.sc;AM='';PWMSG='';return render()}
  if(d.av)return pickAv(d.av);

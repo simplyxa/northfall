@@ -147,6 +147,41 @@ const server = http.createServer(async (req, res) => {
   if (host.startsWith('www.')) { res.writeHead(301, { Location: 'https://' + host.slice(4) + req.url }); return res.end(); }
   if (u.pathname === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
   if (u.pathname === '/hubz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(HUB.stats())); }
+  if (u.pathname === '/api/admin-clan' && req.method === 'POST') {
+    if (!noAuthLimit(req, res)) return;
+    let b; try { b = JSON.parse((await readBody(req)).toString('utf8') || '{}'); } catch (e) { res.writeHead(400); return res.end(JSON.stringify({ error: 'bad_json' })); }
+    try {
+      const a = fbAdmin(); if (!a) { res.writeHead(503); return res.end(JSON.stringify({ error: 'firebase_unavailable' })); }
+      const tok = String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const user = await a.auth().verifyIdToken(tok);
+      const email = String(user.email || '').toLowerCase();
+      const uid = email.endsWith('@northfall.game') ? email.slice(0, -'@northfall.game'.length) : '';
+      if (!['shtorm1', 'admin'].includes(uid)) { res.writeHead(403); return res.end(JSON.stringify({ error: 'forbidden' })); }
+      const id = String(b.id || '');
+      if (!/^[a-z0-9_]{3,32}$/i.test(id)) { res.writeHead(400); return res.end(JSON.stringify({ error: 'bad_clan_id' })); }
+      const db = a.firestore(), ref = db.collection('clans').doc(id), snap = await ref.get();
+      if (!snap.exists) { res.writeHead(404); return res.end(JSON.stringify({ error: 'clan_not_found' })); }
+      const clan = snap.data() || {};
+      const members = new Set([...(Array.isArray(clan.mem) ? clan.mem : []), ...(Array.isArray(clan.members) ? clan.members : []), clan.leader].filter(x => typeof x === 'string' && x));
+      for (const col of ['players', 'saves']) {
+        const qs = await db.collection(col).where('clan', '==', id).get();
+        for (let i = 0; i < qs.docs.length; i += 400) {
+          const batch = db.batch();
+          qs.docs.slice(i, i + 400).forEach(d => batch.set(d.ref, { clan: '', cjt: a.firestore.FieldValue.delete() }, { merge: true }));
+          await batch.commit();
+        }
+      }
+      await db.recursiveDelete(ref);
+      console.log('admin clan deleted', id, 'members', members.size, 'by', uid);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify({ ok: true, id, name: String(clan.name || id), members: members.size }));
+    } catch (e) {
+      console.error('admin-clan', e.message);
+      const status = e.code === 'auth/id-token-expired' || e.code === 'auth/argument-error' ? 401 : 500;
+      res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ error: status === 401 ? 'auth_required' : 'delete_failed' }));
+    }
+  }
   if (u.pathname === '/api/flags') return SAVE.flags(req, res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
   if (u.pathname === '/api/op' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
