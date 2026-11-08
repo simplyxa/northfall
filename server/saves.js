@@ -162,6 +162,7 @@ module.exports = function saves(admin) {
       await db.runTransaction(async tx => {
         const sn = await tx.get(ref); prev = sn.exists ? sn.data() : null;
         g = guard(prev, s, ses, base, uid, prev && prev.ts ? Date.now() - prev.ts : 5000); if (g.stale) return;
+        s._pubStats = 1; // однократное обновление публичной карточки после добавления рейтинга статов
         tx.set(ref, s);
         // Публичная сумма основных характеристик с учётом базовых бонусов экипировки.
         const statSum = save => {
@@ -176,7 +177,7 @@ module.exports = function saves(admin) {
         const ssum = statSum(s), prevSsum = prev ? statSum(prev) : null;
         // Карточку игрока пишет сервер: рейтинг, сезон, характеристики и счётчики — его данные.
         const card = { lvl: s.lvl, ssum, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, dr: s.dr, dn: s.dn, dw: s.dw, seen: Date.now() };
-        const changed = !prev || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
+        const changed = !prev || prev._pubStats !== 1 || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
           || card.win !== (prev.win | 0) || card.lose !== (prev.lose | 0) || card.sid !== (prev.sid | 0)
           || card.lvl !== (prev.lvl | 0) || ssum !== prevSsum || card.dr !== (prev.dr | 0) || card.dn !== (prev.dn | 0)
           || card.dw !== (prev.dw | 0);
