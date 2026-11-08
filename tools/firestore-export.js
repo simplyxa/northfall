@@ -88,6 +88,8 @@ async function main() {
           }
           count++;
           totalDocs++;
+          const subcollections = await doc.ref.listCollections();
+          for (const sub of subcollections) await exportCollection(sub);
         }
         cursor = snap.docs[snap.docs.length - 1];
         if (snap.size < PAGE_SIZE) break;
@@ -97,21 +99,7 @@ async function main() {
     }
 
     manifest.collections.push({ path: collectionPath, file: filename, documents: count });
-    // Enumerate subcollections only for documents in this collection.
-    const pageQuery = collectionRef.orderBy(admin.firestore.FieldPath.documentId()).limit(PAGE_SIZE);
-    let pageCursor = null;
-    while (true) {
-      let q = pageQuery;
-      if (pageCursor) q = q.startAfter(pageCursor);
-      const page = await q.get();
-      if (page.empty) break;
-      for (const doc of page.docs) {
-        const subcollections = await doc.ref.listCollections();
-        for (const sub of subcollections) await exportCollection(sub);
-      }
-      pageCursor = page.docs[page.docs.length - 1];
-      if (page.size < PAGE_SIZE) break;
-    }
+
   }
 
   for (const collection of await db.listCollections()) await exportCollection(collection);
