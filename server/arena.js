@@ -47,7 +47,10 @@ function readState(prev, now) {
   const day = dayNum(now);
   let dr = s.dr == null ? 1000 : Math.max(0, s.dr | 0);
   let dn = Math.max(0, s.dn | 0), dw = Math.max(0, s.dw | 0);
-  if (s.day !== day) { dr = 1000; dn = 0; dw = 0; } // новые сутки
+  // Дуэльный обработчик сохраняет метку в _ar.d; читаем её как основной источник.
+  // s.day оставлен для совместимости со старыми тестовыми/переходными сохранениями.
+  const savedDay = s._ar && Number.isFinite(+s._ar.d) ? (+s._ar.d | 0) : (s.day == null ? null : s.day | 0);
+  if (savedDay !== day) { dr = 1000; dn = 0; dw = 0; } // новые сутки
   return { rt, srt, sid, psid, psrat, atk, atkt, dr, dn, dw, day };
 }
 
