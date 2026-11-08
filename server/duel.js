@@ -122,7 +122,7 @@ module.exports = function duels(getDb) {
         const r = res[id];
         const s = Object.assign({}, prev[id] || {}, {
           dr: r.dr, dn: r.dn, dw: r.dw,
-          rating: r.rt, srat: r.srt, atk: r.atk,          // рейтинг и билет — сервер
+          rating: r.rt, srat: r.srt, atk: r.atk, atkt: r.atkt,   // рейтинг и билет — сервер
           _ar: { d: ARENA.dayNum(now) }
         });
         if (r.war) s.wp = (s.wp | 0) + r.war;              // очки клановой войны
