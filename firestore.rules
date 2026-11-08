@@ -77,18 +77,24 @@ service cloud.firestore {
       allow write: if admin();
     }
 
-    // Кланы и всё внутри них (чат, казна, летопись, подземелье)
+    // Кланы: клиент меняет только состав, заявки и постройки не трогает.
+    // Опыт клана, недельное задание, постройки и казна — серверные.
     match /clans/{clan} {
-      allow read, write: if signed();
-      match /{sub}/{doc} {
-        allow read, write: if signed();
-      }
+      allow read: if signed();
+      allow create: if signed() && !request.resource.data.keys().hasAny(['xp', 'wq', 'b', 'spent']);
+      allow update: if signed() && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['xp', 'wq', 'b', 'spent']);
+      // подколлекции перечислены явно: общее правило «всё остальное» перекрыло бы запрет
+      match /chat/{doc} { allow read, write: if signed(); }   // чат клана
+      match /log/{doc}  { allow read, write: if signed(); }   // летопись клана
+      match /dun/{doc}  { allow read, write: if signed(); }   // подземелье клана
+      // казна клана: вклады, задание, доля с подземелья — пишет сервер
+      match /dep/{doc}  { allow read: if signed(); allow write: if false; }
     }
 
-    // Войны, мировой босс, территории
-    match /wars/{id}   { allow read, write: if signed(); }
-    match /world/{id}  { allow read, write: if signed(); }
-    match /terr/{id}   { allow read, write: if signed(); }
+    // Войны, мировой босс, территории: жизненный цикл ведёт сервер
+    match /wars/{id}   { allow read: if signed(); allow write: if false; }
+    match /world/{id}  { allow read: if signed(); allow write: if false; }
+    match /terr/{id}   { allow read: if signed(); allow write: if false; }
     // Рынок: выставление, покупка и снятие лота делает сервер.
     // Клиент больше не пишет сюда сам: иначе можно было бы поменять цену
     // любого лота на 1 золото и купить его (gold.js берёт цену из документа).

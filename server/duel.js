@@ -43,6 +43,7 @@ function dRound(R, acts) {
 module.exports = function duels(getDb) {
   const rooms = new Map(); // rid → {R, acts:{uid:{r,a}}, subs:Set, busy, send}
   const ARENA = require('./arena');
+  const CYCLE = require('./cycle');
 
   function pub(r) { const acted = {}; for (const [id, x] of Object.entries(r.acts)) if (x.r === r.R.r) acted[id] = 1; return { R: r.R, acted }; }
   function cast(rid, r) { const m = { t: 'ds', rid, ...pub(r) }; for (const c of r.subs) r.send(c, m); }
@@ -107,9 +108,19 @@ module.exports = function duels(getDb) {
     if (res) {
       for (const id of ids) {
         const r = res[id];
-        const s = Object.assign({}, prev[id] || {}, { dr: r.dr, dn: r.dn, dw: r.dw, _ar: { d: ARENA.dayNum(now) } });
+        const s = Object.assign({}, prev[id] || {}, {
+          dr: r.dr, dn: r.dn, dw: r.dw,
+          rating: r.rt, srat: r.srt, atk: r.atk,          // рейтинг и билет — сервер
+          _ar: { d: ARENA.dayNum(now) }
+        });
+        if (r.war) s.wp = (s.wp | 0) + r.war;              // очки клановой войны
         tx.set(db.collection('saves').doc(id), s);
-        tx.set(db.collection('players').doc(id), { dr: r.dr, dn: r.dn, dw: r.dw }, { merge: true });
+        tx.set(db.collection('players').doc(id), {
+          dr: r.dr, dn: r.dn, dw: r.dw, rating: r.rt, srat: r.srat,
+          ...(r.war ? { wp: ((prev[id] && prev[id].wp) | 0) + r.war } : {})
+        }, { merge: true });
+        // очки войны идут в документ войны — их тоже считает сервер
+        if (r.war) await CYCLE.warPoints(tx, db, (prev[id] && prev[id].clan) || '', r.war);
       }
       D.res = res;
     }

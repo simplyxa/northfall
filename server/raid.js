@@ -10,6 +10,8 @@ const PERSIST = 30000, TICK = 1000, CAST = 250;
 const RWV = 3, RWN = 4, RLV = [10, 20, 30, 45, 60];
 const RMOB = [['Лесной волк', 'Дикий кабан', 'Вожак стаи'], ['Драугр', 'Болотная крыса', 'Разбойник с тракта'], ['Тролль-подросток', 'Снежный барс', 'Горный медведь'], ['Снежный барс', 'Драугр', 'Тролль-подросток'], ['Драугр', 'Тролль-подросток', 'Вожак стаи']];
 const humans = R => Object.values(R.mem).filter(x => !x.bot);
+// опыт до следующего уровня — та же формула, что в игре
+const xpNeed = L => { const m = L <= 10 ? .3 : Math.min(1, .3 + .07 * (L - 10)); return Math.round((20 * L * L + .8 * L * L * L) * m); };
 function spawn(R, n) {
   R.mobs = [];
   if (n > RWV) { R.wv = RWV + 1; if (!R.bon) R.bon = Date.now(); for (const m of Object.values(R.mem)) m.wv = RWV; return; }
@@ -70,6 +72,30 @@ module.exports = function raids(getDb) {
         if (D.st !== 'on' && R.st === 'on') R.st = D.st;           // кто-то без сокета уже закончил рейд
         if (D.hp <= 0 && D.st === 'on') D.st = 'win';
         D.log = R.log;
+        // награда за рейд: сервер сам решил, что босс повержен (finish()).
+        // Клиент больше не начисляет награду сам — иначе можно было бы записать
+        // в документ рейда st:'win' и забрать добычу.
+        if (R.st === 'win' && !D.awarded) {
+          D.awarded = 1;
+          const t = R.b | 0;
+          const hum = Object.values(R.mem).filter(x => !x.bot).length;
+          const mf = hum < 5 ? .7 : 1;
+          const g = Math.round([150, 400, 900, 1800, 3500][t] * mf);
+          const ir = Math.round([20, 40, 70, 110, 160][t] * mf);
+          const du = Math.round([3, 6, 10, 15, 25][t] * mf);
+          for (const [id, x] of Object.entries(R.mem)) {
+            if (x.bot) continue;
+            const sref = db.collection('saves').doc(id);
+            const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
+            if (!S) continue;
+            const xp = Math.round(xpNeed(S.lvl | 0) * [.25, .25, .3, .3, .35][t] * mf);
+            const aw = Object.assign({}, S._aw || {}, {
+              g: (S._aw && S._aw.g || 0) + g, i: (S._aw && S._aw.i || 0) + ir,
+              d: (S._aw && S._aw.d || 0) + du, x: (S._aw && S._aw.x || 0) + xp
+            });
+            tx.set(sref, Object.assign({}, S, { _aw: aw }));
+          }
+        }
         tx.set(ref, D);
         R.hp = D.hp; R.st = D.st;
         for (const [id, x] of Object.entries(D.mem)) if (R.mem[id]) Object.assign(R.mem[id], { dealt: x.dealt, wv: x.wv, bs: x.bs, dead: x.dead });

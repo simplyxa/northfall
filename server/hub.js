@@ -28,6 +28,7 @@ module.exports = function hub(server, getDb, verify) {
   const clients = new Set();
   const RAID = require('./raid')(getDb);
   const DUEL = require('./duel')(getDb);
+  const CYCLE = require('./cycle')(getDb);
   const feeds = {}; // name → {un, docs, subs:Set, idle, ready}
 
   // ---------- WebSocket ----------
@@ -109,6 +110,8 @@ module.exports = function hub(server, getDb, verify) {
     if (m.t === 'unsub' && Array.isArray(m.c)) { for (const f of m.c) unsub(c, f); return; }
     if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm' || m.t === 'rh') return RAID.onMsg(c, m, send);
     if (m.t === 'dj' || m.t === 'da') return DUEL.onMsg(c, m, send);
+    // мировой цикл: босс, охота, территории, войны, клан
+    if (m.t === 'wb' || m.t === 'wbcl' || m.t === 'hunt' || m.t === 'war' || m.t === 'warc' || m.t === 'clan') return CYCLE.onMsg(c, m, send);
   }
 
   // ---------- подписки на Firestore ----------
@@ -219,7 +222,7 @@ module.exports = function hub(server, getDb, verify) {
     }, now ? 300 : 1500);
   }
 
-  return { stats: () => ({ raids: RAID.stats(), duels: DUEL.stats(), clients: clients.size, feeds: Object.fromEntries(Object.entries(feeds).map(([k, F]) => [k, { subs: F.subs.size, docs: F.docs.length }])) }) };
+  return { stats: () => ({ raids: RAID.stats(), duels: DUEL.stats(), cycle: CYCLE.stats(), clients: clients.size, feeds: Object.fromEntries(Object.entries(feeds).map(([k, F]) => [k, { subs: F.subs.size, docs: F.docs.length }])) }) };
 };
 
 // данные Firestore → обычный JSON (метки времени → миллисекунды)

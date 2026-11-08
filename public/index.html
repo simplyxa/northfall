@@ -361,6 +361,7 @@ function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSo
   else if(m.t==='ds'){if(typeof dHubState==='function')dHubState(m)}
   else if(m.t==='dno'){if(typeof DHUB!=='undefined'&&DHUB===m.rid)DHUB=null}
   else if(m.t==='rno'){if(typeof RHUB!=='undefined'&&RHUB===m.rid)RHUB=null}
+  else if(m.t==='wbs'||m.t==='wbc'||m.t==='hunts'||m.t==='wars'||m.t==='warc'||m.t==='clans'||m.t==='wbe'||m.t==='hunte'||m.t==='ware'||m.t==='clane'){if(typeof cycState==='function')cycState(m)}
   else if(m.t==='onl'){HUB.onl=new Set(m.u||[]);HUB.g=m.g|0;if(typeof GONL!=='undefined')GONL=HUB.g;if(typeof ui==='function')ui()}};
  ws.onclose=fail;ws.onerror=()=>{try{ws.close()}catch(x){}}}
 // подписка на живой список: через хаб, а если его нет — напрямую на запрос Firestore q
@@ -398,6 +399,7 @@ function srvFix(f){if(!f||!S)return;let ch=false;
  if(f.psrat!=null&&(S.psrat|0)!==f.psrat){S.psrat=f.psrat;ch=true}
  if(f.atk!=null&&(S.atk|0)!==f.atk){S.atk=f.atk;ch=true}
  if(f.dr!=null&&(S.dr|0)!==f.dr){S.dr=f.dr;ch=true}
+ if(f.aw){const A=f.aw;if(A.g)S.gold+=A.g|0;if(A.i)S.iron=(S.iron|0)+(A.i|0);if(A.d)S.dust=(S.dust|0)+(A.d|0);if(A.x){S.xp=(S.xp|0)+(A.x|0);if(typeof lvUp==='function')lvUp()}ch=true}
  if(f.dw!=null&&(S.dw|0)!==f.dw){S.dw=f.dw;ch=true}
  if(f.dn!=null&&(S.dn|0)!==f.dn){S.dn=f.dn;ch=true}
  if(f.atkt!=null&&S.atkt!==f.atkt){S.atkt=f.atkt;ch=true}
@@ -1049,9 +1051,9 @@ const warScore=(w,side)=>PL.filter(p=>p.war===w.id&&p.clan===side).reduce((a,p)=
 const sScore=(p,s)=>p.sid===s?p.srat:(p.psid===s?p.psrat:null);
 function rollSeason(){const c=curS();if(S.sid==null){S.sid=c;S.srat=0;S.psid=0;S.psrat=0;S.sclaim=c}else if(S.sid!==c){S.psid=S.sid;S.psrat=S.srat;S.sid=c;S.srat=0}}
 function arenaRes(w){rollSeason();const gw=(fight&&fight.rw)||22,gl=(fight&&fight.rl)||12;
- if(w){S.rating+=gw;S.srat+=gw;S.ar={d:gw};log(`Рейтинг +${gw} (общий и сезонный).`,'sys');
+ if(w){S.rating+=gw;S.srat+=gw;log(`Рейтинг +${gw} (общий и сезонный).`,'sys');
   const aw=actWar();if(aw){if(S.war!==aw.id){S.war=aw.id;S.wp=0}S.wp+=10;log('Очки клановой войны +10.','sys')}}
- else{const r=Math.min(gl,S.rating);S.rating-=r;S.srat=Math.max(0,S.srat-gl);S.ar={d:-gl};log(`Рейтинг −${r}.`,'sys')}}
+ else{const r=Math.min(gl,S.rating);S.rating-=r;S.srat=Math.max(0,S.srat-gl);log(`Рейтинг −${r}.`,'sys')}}
 function prow(p,i,k,lead,val,ex){return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer" title="Профиль">${i!=null?(i+1)+'. ':''}${p.av?avatar(p.av,28,frameOf(p))+' ':''}${esc(p.name)}${p.id===UID?' (ты)':''}${p.id===lead?' · лидер':''}${titleOf(p)?` <span class="ptl" style="display:inline">«${esc(titleOf(p))}»</span>`:''}<small>${CL[p.cls]?CL[p.cls].n+', ':''}ур. ${p.lvl} · побед ${p.win|0}${p.clan&&cname(p.clan)?' · клан '+esc(cname(p.clan)):''}${ex||''}</small></div><span><span class="g">${val!=null?val:p.rating}</span>${k?` <button class="b alt" data-k="${p.id}">Исключить</button>`:''}</span></div>`}
 function statSum(){const E=EQ(),GB={str:E.atk/2,hp:E.hp/8,arm:E.def,reg:E.reg,en:E.en};return Object.keys(ST).reduce((t,k)=>t+Math.round(S.st[k]+GB[k]),0)}
 
@@ -1213,12 +1215,18 @@ function startWB(){const B=WB['b'+DAY()];if(!B||B.killed||fight||!DB||S.lvl<WBLV
  S.wbDay=DAY();fight={e,wb:{day:B.day},chs:X.chs||5,ch:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
  log(`Мировой босс: ${e.name}!`,'sys');tab='boss';save();render()}
 function wbEnd(why){const d=fight.s.dealt,D=fight.wb;fight=null;if(S.hp<=0)S.hp=1;WREP={dealt:d,why};log(`Мировой босс: нанесено ${d} урона.`,'sys');
- if(!DB||d<=0)return;const ref=DB.collection('world').doc('b'+D.day);
- ref.get().then(sn=>{if(!sn.exists)return;const B=JSON.parse(JSON.stringify(sn.data()));if(B.killed)return;B.dmg=B.dmg||{};B.nm=B.nm||{};B.dmg[UID]=(B.dmg[UID]|0)+d;B.nm[UID]=S.name;B.hp=Math.max(0,B.hp-d);if(B.hp<=0){B.killed=true;B.kt=Date.now();WREP.kill=true;news(`${S.name} нанёс последний удар — ${wbName(B.day)} пал!`);log(`${wbName(B.day)} повержен! Забери награду.`,'hit')}return ref.set(B)}).catch(()=>log('Не удалось записать урон по боссу.','sys')).then(()=>{if(!fight)render()})}
-function wbClaim(k){const B=WB[k];S.wbcl=S.wbcl||[];if(!B||!B.killed||S.wbcl.includes(k))return;const my=(B.dmg||{})[UID]|0;if(my<=0)return;const tot=Object.values(B.dmg).reduce((a,b)=>a+(b|0),0)||1,sh=my/tot;
- const g=Math.round(300+3000*sh+S.lvl*10),ir=Math.round(30+200*sh),rk=rndRune(sh>=.1?3:2);S.gold+=g;S.iron=(S.iron|0)+ir;addRune(rk);let it=null;
+ // урон по боссу засчитывает сервер: он видит атаку героя и ограничивает вклад
+ if(!d)return;hubSend({t:'wb',d})}
+function wbClaim(k){const B=WB[k];S.wbcl=S.wbcl||[];if(!B||!B.killed||S.wbcl.includes(k))return;const my=(B.dmg||{})[UID]|0;if(my<=0)return;
+ // долю урона и награду считает сервер — ответ придёт в cycState
+ hubSend({t:'wbcl',k})}
+// трофей за босса: руна и вещь остаются на клиенте, числа — от сервера
+function wbPrize(m){
+ const sh=(m.sh||0)/100,rk=rndRune(sh>=.1?3:2);S.gold+=m.g|0;S.iron=(S.iron|0)+(m.ir|0);S.dust=(S.dust|0)+(m.dust|0);addRune(rk);let it=null;
  if(Math.random()<.3+.5*sh){const ks=Object.keys(SL),myth=S.lvl>=30&&Math.random()<.15+.5*sh;it=myth?gen(ks[Math.floor(Math.random()*ks.length)],Math.max(30,S.lvl),4,null,4):gen(ks[Math.floor(Math.random()*ks.length)],Math.max(1,S.lvl),Math.min(3,2+(sh>=.2?1:0)));it.pb=0;it.boss=1;if(!autoDis(it)){if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}}}
- S.wbcl.push(k);S.wbcl=S.wbcl.slice(-10);S.dust=(S.dust|0)+5;GOLD.boss('wb',k,BAU.wb);WCL={g,ir,rk,it,au:BAU.wb,sh:Math.round(sh*100)};log(`Награда за мирового босса: +${g} серебра, +${ir} железа, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save();render()}
+ const k=m.k;S.wbcl=S.wbcl||[];if(!S.wbcl.includes(k)){S.wbcl.push(k);S.wbcl=S.wbcl.slice(-10)}
+ GOLD.boss('wb',k,BAU.wb);WCL={g:m.g|0,ir:m.ir|0,rk,it,au:BAU.wb,sh:m.sh|0};
+ log(`Награда за мирового босса: +${m.g|0} серебра, +${m.ir|0} железа, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save();render()}
 function bossView(){if(!DB)return'<div class="panel"><p>Мировой босс доступен только с подключённой базой данных.</p></div>';if(S.lvl<WBLV)return`<div class="panel" style="border-left:4px solid var(--blood)"><h3>Мировой босс</h3><p style="margin:0 0 6px">Один босс на весь Север, новый каждый день. Он слишком силён для молодого воина.</p><p style="margin:0;font-weight:700">Откроется с ${WBLV} уровня — тебе осталось ${WBLV-S.lvl} ур.</p></div>`;const k='b'+DAY(),B=WB[k];if(!B)return'<div class="panel"><p>Босс пробуждается…</p></div>';
  const top=Object.entries(B.dmg||{}).sort((a,b)=>b[1]-a[1]).slice(0,10),L=wbLeft(),mine=(B.dmg||{})[UID]|0;
  const rew=Object.keys(WB).filter(x=>WB[x].killed&&((WB[x].dmg||{})[UID]|0)>0&&!(S.wbcl||[]).includes(x));
@@ -1414,8 +1422,9 @@ function raidFinish(){const R=RAID;if(!R||R.st==='on'||!RAIDID||!S)return;S.rdon
  if(R.st!=='win'){RRES={win:0};log(`Рейд «${RAIDS[t].n}»: поражение.`,'sys');save();return}
  S.cnt=S.cnt||{};S.cnt.rb=(S.cnt.rb|0)+1;
  S.rcd=S.rcd||{};S.rcd[t]=Date.now()+RAIDS[t].cd*3600000;
- const hum=Object.values(R.mem).filter(x=>!x.bot).length,mf=hum<RSIZE?.7:1;const g=Math.round([150,400,900,1800,3500][t]*mf),ir=Math.round([20,40,70,110,160][t]*mf),du=Math.round([3,6,10,15,25][t]*mf),xp=Math.round(need()*[.25,.25,.3,.3,.35][t]*mf),rk=rndRune(t+1);
- S.gold+=g;S.iron=(S.iron|0)+ir;S.dust=(S.dust|0)+du;addRune(rk);S.xp+=xp;lvUp();let it=null;const ks=Object.keys(SL),sl=ks[Math.floor(Math.random()*ks.length)];
+ // серебро, железо, пыль и опыт начисляет сервер (он же решил, что рейд выигран)
+ const hum=Object.values(R.mem).filter(x=>!x.bot).length,mf=hum<RSIZE?.7:1;const g=Math.round([150,400,900,1800,3500][t]*mf),ir=Math.round([20,40,70,110,160][t]*mf),du=Math.round([3,6,10,15,25][t]*mf),rk=rndRune(t+1);
+ addRune(rk);let it=null;const ks=Object.keys(SL),sl=ks[Math.floor(Math.random()*ks.length)];
  if(t===4&&Math.random()<.1)it=gen(sl,30,4,null,5);else if(Math.random()<[.5,.55,.6,.6,.6][t])it=gen(sl,SETLV[t],t,null,t);
  if(it){it.pb=0;it.boss=1}if(it&&!autoDis(it)){if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}}
  const au=hum>=3?BAU['r'+t]|0:0;if(au)GOLD.boss('raid',RAIDID,au);RRES={win:1,g,ir,xp,rk,it,au,du};{const H=Object.entries(R.mem).filter(([k,x])=>!x.bot).sort((a,b)=>a[1].o-b[1].o);if(H[0]&&H[0][0]===UID)news(`Группа ${H.map(x=>x[1].n).join(', ')} одолела ${RAIDS[t].n}!`)}if(it&&it.rar>=4)news(`${S.name} получил в рейде ${it.tr===5?'вещь Одина':'мифическую вещь'} «${it.name}»!`);SILFX={v:g,t:Date.now()};log(`Рейд «${RAIDS[t].n}» пройден: +${g} серебра, +${ir} железа, +${xp} опыта, ${rName(rk)}${it?`, «${it.name}»`:''}.`,'sys');save()}
@@ -1513,6 +1522,8 @@ function duelFinish(){const R=DUEL;if(!R||R.st==='on'||!DUELID||!S)return;S.ddon
  const r0=S.dr==null?1000:S.dr,ex=1/(1+Math.pow(10,((o.dr|0||1000)-r0)/400)),dR=rs?rs.dR:Math.round(32*(sc-ex)),k0=rankOf2(meP());
  S.dr=rs?rs.dr:Math.max(0,r0+dR);S.dn=rs?rs.dn:(S.dn|0)+1;
  let g=0;if(sc===1){g=rs?rs.g:dGold(S.lvl);S.gold+=g;S.dw=rs?rs.dw:(S.dw|0)+1;SILFX={v:g,t:Date.now()}}const k1=rankOf2(meP());
+ // основной рейтинг и билет посчитал сервер по итогам дуэли
+ if(rs&&rs.rt!=null){S.rating=rs.rt;S.srat=rs.srt}
  DRES={sc,dR,g,o:o.n,up:k1[0]>k0[0]?k1[1]:''};log(`Дуэль с ${o.n}: ${sc===1?'победа':sc?'ничья':'поражение'}, рейтинг ${dR>=0?'+':''}${dR}${g?`, +${g} серебра`:''}.`,'sys');
  if(DRES.up)news(`${S.name} получил ранг «${k1[1]}» на лайв-арене!`);save();if(typeof saveNow==='function')saveNow()}
 function duelView(){if(!DB||!UID)return'<div class="panel"><p>Лайв-арена доступна только с аккаунтом.</p></div>';raidSub();
@@ -1703,15 +1714,17 @@ function applyClan(cid){const c=CLN.find(x=>x.id===cid);if(!c)return;if((c.req||
 function reqDo(id,ok){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;const o={req:(c.req||[]).filter(r=>r.id!==id)};if(ok){if(mem(c).length>=cCap(c)){log('В клане нет мест.','sys');return render()}o.acc=[...(c.acc||[]).filter(x=>x!==id),id]}cUpd(c,o)}
 function accCheck(){if(!S||S.clan||!DB)return;const c=CLN.find(x=>(x.acc||[]).includes(UID));if(!c)return;S.cxt=0;S.cxq=0;S.clan=c.id;S.cjt=Date.now();cUpd(c,{acc:(c.acc||[]).filter(x=>x!==UID)});log(`Тебя приняли в клан «${c.name}».`,'hit');clog(`${S.name} принят в клан.`,'➕',c.id);save()}
 const WQT=c=>20000*cLv(c).L,WQR=c=>1500*cLv(c).L;
-function wqClaim(){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;const w=c.wq||{};if(w.wk!==curS()||(w.xp|0)<WQT(c)||w.done)return;const g=WQR(c);
- cUpd(c,{wq:{...w,done:true}}).then(()=>{const ref=DB.collection('clans').doc(c.id).collection('dep').doc('quest');return ref.get().then(sn=>{const o=sn.exists?sn.data():{};return ref.set({name:'Задания клана',gold:(o.gold|0)+g,iron:(o.iron|0)+Math.round(g/20)})})}).then(()=>{log(`Задание недели выполнено: +${g} серебра и +${Math.round(g/20)} железа в казну клана.`,'hit');clog(`Задание недели выполнено: в казну ${g} серебра.`,'🏆');render()})}
+function wqClaim(){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;
+ // прогресс задания и вклад в казну считает сервер
+ hubSend({t:'clan',k:'quest'})}
 let TER={},terUn=null;const TERN={easy:'Опушка',mid:'Глухой лес',hard:'Чаща'},TERB=.15;
 function terSub(){if(!DB||terUn)return;terUn=HS('terr',DB.collection('terr').limit(10),sn=>{TER={};sn.docs.forEach(d=>{TER[d.id]=JSON.parse(JSON.stringify(d.data()))});if(['hunt','clan'].includes(tab)&&!fight)ui()},()=>{})}
 const terOwner=k=>{const t=TER[k];if(!t)return null;if(t.wk===curS())return t.owner?{id:t.owner,name:t.oname}:null;const e=Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1])[0];return e?{id:e[0],name:(t.names||{})[e[0]]||cname(e[0])}:null};
-function terFlush(){if(!S||fight||!DB||!S.clan||!S.tq)return;const q=S.tq;S.tq=null;save();const cid=S.clan,cn=cname(cid);
- for(const k in q){const n=q[k];if(!(n>0))continue;const ref=DB.collection('terr').doc(k);ref.get().then(sn=>{let t=sn.exists?JSON.parse(JSON.stringify(sn.data())):{wk:curS(),pts:{},names:{}};
-  if(t.wk!==curS()){const e=Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1])[0];t={wk:curS(),pts:{},names:{},owner:e?e[0]:null,oname:e?(t.names||{})[e[0]]||'':''}}
-  t.pts=t.pts||{};t.names=t.names||{};t.pts[cid]=(t.pts[cid]|0)+n;t.names[cid]=cn;return ref.set(t)}).catch(()=>{})}}
+// охота: пойманные звери и набежавший урон. Очки на территории, опыт клана и
+// недельное задание начисляет сервер — и ограничивает частоту, чтобы нельзя
+// было набить очки десятками записей.
+function huntFlush(){if(!S||fight||!DB||!S.clan)return;const q=S.tq||{},d=S.cxq|0;
+ if(!((q.easy|0)>0||(q.mid|0)>0||(q.hard|0)>0||d>0))return;S.tq=null;S.cxq=0;save();hubSend({t:'hunt',q,d})}
 function terView(){return`<div class="panel"><h3>Территории Севера</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Каждый убитый на охоте зверь приносит твоему клану очко в этой местности. Клан с наибольшим числом очков за неделю владеет территорией всю следующую неделю: его воины получают +${Math.round(TERB*100)}% опыта и серебра на охоте там.</p>`+
  Object.keys(TERN).map(k=>{const t=TER[k],o=terOwner(k),pts=t&&t.wk===curS()?Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1]).slice(0,3):[];return`<div class="row"><div><b>${TERN[k]}</b><small>Владеет: ${o?`<b style="color:var(--gold)">«${esc(o.name)}»</b>`:'никто'}${pts.length?' · эта неделя: '+pts.map(([id,v])=>`${esc((t.names||{})[id]||cname(id))} ${v}`).join(', '):''}</small></div></div>`}).join('')+`</div>`}
 
@@ -2035,7 +2048,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.8';
+const GVER='1.18.9';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2116,6 +2129,45 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DIP=e;try{u
 window.addEventListener('appinstalled',()=>{DIP=null;try{log('Northfall установлен на устройство!','hit');ui()}catch(_){}});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{}));
 
+// ===== Ответы сервера по мировому циклу: босс, охота, территории, войны, клан =====
+// Сервер сам считает урон по боссу, доли в награде, очки на территории,
+// итоги войн и расход казны. Клиент только показывает, что пришло.
+function cycState(m){
+ const t=m.t;
+ if(t==='wbs'){
+  if(m.st==='ok'&&m.kill){WREP=WREP||{};WREP.kill=true;const n=wbName(DAY());news(`${S.name} нанёс последний удар — ${n} пал!`);log(`${n} повержен! Забери награду.`,'hit')}
+  if(!fight)render();return}
+ if(t==='wbc'){
+  if(m.st==='ok')wbPrize(m);
+  else if(m.st==='done'){log('Награда за этого босса уже получена.','sys');render()}
+  return}
+ if(t==='hunts'){
+  if(m.st==='ok'){const dd=m.dmg|0;if(dd>0)S.cxt=(S.cxt|0)+Math.floor(dd/CXK);if(!fight)render()}
+  else if(m.st==='rate'){log('Слишком часто — часть добычи не засчитана.','sys')}
+  return}
+ if(t==='wars'){
+  if(m.st==='ok'){log(`Война объявлена клану «${cname(m.b)}». Она продлится 24 часа.`,'sys');clog(`${S.name} объявил войну клану «${cname(m.b)}».`,'🔥')}
+  else if(m.st==='busy')log('Этот клан уже воюет.','sys');
+  else if(m.st==='notlead')log('Объявлять войну может только глава клана.','sys');
+  else log('Не удалось объявить войну.','sys');
+  render();return}
+ if(t==='warc'){
+  if(m.st==='ok'){const w=m.win?'Победа в войне: ':(m.draw?'Ничья в войне: ':'Война проиграна: ');log(w+(m.g|0)+' серебра'+(m.rt?' и '+(m.rt|0)+' рейтинга':'')+'.','sys');S.wclaim=S.wclaim||[];if(!S.wclaim.includes(m.id))S.wclaim.push(m.id)}
+  else if(m.st==='early')log('Война ещё не закончилась.','sys');
+  else if(m.st==='done')log('Награда за эту войну уже получена.','sys');
+  render();return}
+ if(t==='clans'){
+  if(m.st==='ok'){
+   if(m.k==='quest'){log(`Задание недели выполнено: +${m.g} серебра и +${m.i} железа в казну клана.`,'hit');clog(`Задание недели выполнено: в казну ${m.g} серебра.`,'🏆')}
+   else if(m.k==='dungeon')log(`Доля с подземелья: +${m.i} железа в казну клана.`,'sys');
+   else if(m.k==='build'){const nm=(BLD[m.b]||[''])[0];log(`Построено: ${nm}, ур. ${m.lv}.`,'sys');clog(`${S.name} улучшил постройку «${nm}» до ${m.lv} уровня.`,'🏛')}
+  } else if(m.st==='nomoney')log('В казне не хватает средств.','sys');
+  else if(m.st==='notlead')log('Это может сделать только глава клана.','sys');
+  else if(m.st==='done')log('Это уже получено.','sys');
+  else log('Не удалось выполнить.','sys');
+  render();return}
+ if(t==='wbe'||t==='hunte'||t==='ware'||t==='clane'){log('Сервер не принял запрос.','sys');render();return}
+}
 // ===== Проверка версии: игра сама предлагает обновиться, когда вышел новый ре =====
 // Особенно важно для установленного приложения (иконка на главном экране): там своя
 // копия service worker и старый кэш картинок, и без подсказки игрок сидит на старой версии.
@@ -2240,8 +2292,7 @@ const BLD={bar:['Казармы','+3% к атаке за уровень'],wall:[
 const bcost=n=>({g:150*(n+1)*(n+1),i:20*(n+1)});
 const kf=n=>{n=Math.round(n||0);const a=Math.abs(n),u=[[1e12,'T'],[1e9,'G'],[1e6,'м'],[1e3,'к']];for(const [v,l] of u)if(a>=v){const x=n/v;return(x>=100?Math.floor(x):Math.floor(x*10)/10).toString().replace('.',',')+l}return String(n)};
 const CMAXL=10,CXK=10,cxOf=d=>Math.max(1,Math.round(d/CXK)),cNeed=L=>Math.round(22500*Math.pow(L,1.7)),cLv=c=>{let L=1,x=Math.max(0,(c&&c.xp)|0);while(L<CMAXL&&x>=cNeed(L)){x-=cNeed(L);L++}return{L,cur:x,need:L<CMAXL?cNeed(L):0}},cCap=c=>5+3*(cLv(c).L-1);
-function cxFlush(){if(!S||fight||!(S.cxq>0)||!DB||!S.clan)return;const n=S.cxq,cid=S.clan;S.cxq=0;S.cxt=(S.cxt|0)+n;save();
- const ref=DB.collection('clans').doc(cid);ref.get().then(sn=>{if(!sn.exists)return;const d=sn.data(),L0=cLv(d).L,nx=(d.xp|0)+n,w=d.wq&&d.wq.wk===curS()?d.wq:{wk:curS(),xp:0};return ref.update({xp:nx,wq:{...w,xp:(w.xp|0)+n}}).then(()=>{const L1=cLv({xp:nx}).L;if(L1>L0){log(`Клан достиг ${L1} уровня!`,'hit');clog(`Клан достиг ${L1} уровня! Мест в клане: ${5+3*(L1-1)}.`,'⭐',cid)}})}).catch(()=>{S.cxq=(S.cxq|0)+n;S.cxt-=n})}
+function cxFlush(){huntFlush()}
 const treas=my=>{const t={gold:0,iron:0};DEP.forEach(d=>{t.gold+=d.gold|0;t.iron+=d.iron|0});t.gold-=(my.spent||{}).gold|0;t.iron-=(my.spent||{}).iron|0;return t};
 const CTI=["/img/06a594f425b0f8.webp", "/img/e355cd8a8a1357.webp", "/img/d008ee66c51018.webp", "/img/c20eeac237543e.webp", "/img/6e6aa04c537bb2.webp"];
 const ctabs=()=>`<div class="htab" style="grid-template-columns:repeat(5,1fr)">${[['main','Клан'],['log','Летопись'],['dun','Подземелье'],['vault','Казна'],['build','Постройки']].map((x,i)=>`<button class="${ctab===x[0]?'on':''}" data-ct="${x[0]}" style="padding:6px 2px;min-height:0"><img src="${CTI[i]}" alt="" width="40" height="40" style="display:block"><small style="font-size:11px">${x[1]}</small></button>`).join('')}</div>`;
@@ -2263,7 +2314,8 @@ function build(k){
  const my=CLN.find(c=>c.id===S.clan);if(!canMng(my)||!BLD[k])return;
  const l=(my.b||{})[k]|0;if(l>=5)return;if(l+1>cLv(my).L){log(`Сначала подними уровень клана до ${l+1}.`,'sys');return render()}const c=bcost(l),t=treas(my);
  if(t.gold<c.g||t.iron<c.i){log('В казне не хватает средств.','sys');return render()}
- DB.collection('clans').doc(my.id).update({b:{...(my.b||{}),[k]:l+1},spent:{gold:((my.spent||{}).gold|0)+c.g,iron:((my.spent||{}).iron|0)+c.i}}).then(()=>{log(`Построено: ${BLD[k][0]}, ур. ${l+1}.`,'sys');clog(`${S.name} улучшил постройку «${BLD[k][0]}» до ${l+1} уровня.`,'🏛');render()}).catch(()=>{log('Не удалось улучшить постройку.','sys');render()})}
+ // казну и постройку пишет сервер: иначе можно было бы «потратить» серебро дважды
+ hubSend({t:'clan',k:'build',b:k})}
 
 let DUN=null,dunFor=null,dunUn=null,DREP=null,DCL=null;const DUNT=45000,DTAX=.3,DCD=8*3600000,dLeft=()=>Math.max(0,Math.min(DCD,(+S.dnext||0)-Date.now())),hm=ms=>{const m=Math.ceil(ms/60000);return(m>=60?Math.floor(m/60)+' ч ':'')+(m%60)+' мин'};
 const HOMEIMG='/img/6edbc47a5e2398.webp';
@@ -2300,7 +2352,7 @@ function dunClaim(key){
  if(!DUN)return;const k=(DUN.kills||[]).find(x=>DUN.wk+'-'+x.f===key);S.dcl=S.dcl||[];if(!k||S.dcl.includes(key))return;
  const my=k.dmg[UID]|0;if(my<=0)return;const tot=Object.values(k.dmg).reduce((a,b)=>a+(b|0),0)||1,sh=my/tot,f=k.f;
  const G=Math.round(60*f+250*f*sh),tg=Math.round(G*DTAX),g=G-tg,ir=4*f+Math.round(10*f*sh);S.gold+=g;
- if(tg>0&&DB&&S.clan){const ref=DB.collection('clans').doc(S.clan).collection('dep').doc('dungeon');ref.get().then(sn=>{const o=sn.exists?sn.data():{};return ref.set({name:'Подземелье клана',gold:(o.gold|0)+tg,iron:o.iron|0})}).catch(()=>log('Не удалось отправить долю в казну клана.','sys'))}S.iron=(S.iron|0)+ir;S.dcl.push(key);S.dcl=S.dcl.slice(-30);
+ if(tg>0&&S.clan)hubSend({t:'clan',k:'dungeon',n:tg});S.iron=(S.iron|0)+ir;S.dcl.push(key);S.dcl=S.dcl.slice(-30);
  let it='',IT=null,ig=0;if(Math.random()<.15+.15*sh){const ks=Object.keys(SL),x=gen(ks[Math.floor(Math.random()*ks.length)],Math.max(1,S.lvl),Math.min(3,1+Math.floor(f/3)));x.pb=0;x.boss=1;IT=x;if((ig=autoDis(x))){it=`, трофей «${x.name}» разобран: +${ig} жел.`}else if(S.inv.length<INV_MAX){S.inv.push(x);it=`, трофей «${x.name}»`}else{ig=dis(x);S.iron+=ig;it=`, трофей разобран на ${ig} жел.`}}
  const rg=f<4?1:f<8?2:3,rn=[];for(let i=0;i<1+(sh>=.5?1:0);i++){const rk=rndRune(rg);addRune(rk);rn.push(rk)}
  DCL={f,g,tg,ir,sh:Math.round(sh*100),it:IT,ig,rn};
@@ -2329,9 +2381,11 @@ function leaveClan(){const my=CLN.find(c=>c.id===S.clan);
  clog(`${S.name} покинул клан.`,'➖');S.clan='';S.cxq=0;S.cxt=0;log('Ты покинул клан.','sys');save();render()}
 function declare(cid){const my=CLN.find(c=>c.id===S.clan);if(!my||my.leader!==UID||actWar())return;
  if(WARS.some(w=>w.end>Date.now()&&(w.a===cid||w.b===cid))){log('Этот клан уже воюет.','sys');return render()}
- DB.collection('wars').doc('w'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)).set({a:my.id,b:cid,end:Date.now()+864e5}).then(()=>{log(`Война объявлена клану «${cname(cid)}». Она продлится 24 часа.`,'sys');clog(`${S.name} объявил войну клану «${cname(cid)}».`,'🔥')}).catch(()=>log('Не удалось объявить войну.','sys')).then(render)}
+ // документ войны создаёт сервер: иначе войну можно было бы объявить кому угодно
+ hubSend({t:'war',cid})}
 function claimWar(){const w=lastWar();if(!w||S.wclaim.includes(w.id))return;const o=w.a===S.clan?w.b:w.a,x=warScore(w,S.clan),y=warScore(w,o);
- S.wclaim.push(w.id);if(x>y){S.gold+=200;S.rating+=40;log('Победа в войне: +200 серебра, +40 рейтинга.','sys')}else if(x===y){S.gold+=80;log('Ничья в войне: +80 серебра.','sys')}else{S.gold+=40;log('Война проиграна: +40 серебра за участие.','sys')}save();render()}
+ // очки сторон и награду считает сервер
+ hubSend({t:'warc',id:w.id})}
 function claimSeason(){const ps=S.psid,sc=PL.map(p=>({id:p.id,v:sScore(p,ps)})).filter(x=>x.v>0).sort((x,y)=>y.v-x.v),i=sc.findIndex(x=>x.id===UID);
  if(i<0){log('Твои очки прошлого сезона ещё не загрузились. Попробуй через минуту.','sys');return render()}
  const g=i===0?500:i<3?300:i<10?150:50;S.gold+=g;S.sclaim=ps;log(`Награда сезона: место ${i+1}, +${g} серебра.`,'sys');save();render()}
@@ -2461,7 +2515,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.9</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -2633,7 +2687,7 @@ let CHK='';function chatScroll(){const k=tab==='gchat'||tab==='dm'?tab+'|'+(tab=
 function render(){
  socMaybe();hubHello();setTimeout(chatScroll,0);
  setTimeout(nbPopCheck,60);
- IREG=[];paySub();walletSub();admSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();cxFlush();terFlush();exBoss();
+ IREG=[];paySub();walletSub();admSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();huntFlush();exBoss();
  const keep={};['gto','gtx','mlto','nnick','lg','pw','pw2','em','mymail','pwold','pwnew','pwnew2','nm','ftt','ftb','fpb','dmt','gct'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
  document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!fight&&!BAN);
  if(!S){if(!TAPON){TAPON=true;const f=()=>{if(TAPSENT||S)return;TAPSENT=true;try{trk('tap')}catch(e){}};document.addEventListener('pointerdown',f,{capture:true,passive:true});document.addEventListener('touchstart',f,{capture:true,passive:true})}if(!SCRSENT){SCRSENT=true;setTimeout(()=>{try{trk('scr')}catch(e){}},300)}$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}

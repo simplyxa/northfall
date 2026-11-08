@@ -430,5 +430,10 @@
   "v": "1.18.8",
   "t": "Охота у всех игроков теперь показывает новую графику: у картинок поменялись имена, поэтому браузер больше не отдаёт старую версию из кэша. Если графика всё ещё старая — просто обновите страницу.",
   "te": "The hunt now shows the new graphics for everyone: the images were renamed, so the browser no longer serves the old version from its cache. If it still looks old, just reload the page."
+ },
+ {
+  "v": "1.18.9",
+  "t": "Мировой цикл теперь ведёт сервер: урон по мировому боссу, очки на территориях, войны, казна и постройки клана считаются на сервере — накрутить их больше нельзя. Рейтинг арены, билет и очки войны начисляются по итогам дуэли, а очки умений сервер урезает до честного предела.",
+  "te": "The world cycle is now run by the server: damage to the world boss, territory points, wars, the clan treasury and its buildings are all counted server-side, so they can no longer be inflated. The arena rating, its ticket and the war points are granted from the duel result, and stat points are capped to a fair limit."
  }
 ]
