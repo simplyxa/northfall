@@ -245,6 +245,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({error:status===401?'auth_required':'recovery_failed'}));
     }
   }
+  if (u.pathname === '/api/admin/tickets' && req.method === 'POST') return SAVE.tickets(req, res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
   if (u.pathname === '/api/flags') return SAVE.flags(req, res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
   if (u.pathname === '/api/op' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
