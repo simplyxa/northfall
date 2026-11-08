@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" width="600" height="100">
+<defs>
+ <linearGradient id="stone" x2="0.8" y2="1"><stop stop-color="#9da3a0"/><stop offset=".45" stop-color="#505b5d"/><stop offset="1" stop-color="#20292d"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#f2d69a"/><stop offset=".48" stop-color="#b88a48"/><stop offset="1" stop-color="#654526"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="2" result="b"/><feOffset dy="2" result="o"/><feComponentTransfer><feFuncA type="linear" slope=".7"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <g id="med"><path d="M50 5 91 29 91 72 50 96 9 72 9 29Z" fill="url(#stone)" stroke="#172024" stroke-width="5"/><path d="M50 10 86 31 86 69 50 90 14 69 14 31Z" fill="none" stroke="#b0aaa0" stroke-width="2"/><path d="M50 15 80 33 80 66 50 84 20 66 20 33Z" fill="none" stroke="#313a3d" stroke-width="3"/></g>
+</defs>
+<g filter="url(#shadow)" stroke-linejoin="round">
+ <g transform="translate(0 0)"><use href="#med"/><path d="M25 57 29 31 43 43 50 20 58 43 72 31 76 57 68 69 32 69Z" fill="url(#gold)" stroke="#292d2c" stroke-width="4"/><path d="M31 59H69M43 43 50 51 58 43" fill="none" stroke="#f2d69a" stroke-width="3"/></g>
+ <g transform="translate(100 0)"><use href="#med"/><path d="M25 34Q12 18 22 15Q34 12 40 31L50 22 60 31Q66 12 78 15Q88 18 75 34L71 69 50 82 29 69Z" fill="url(#stone)" stroke="#1a2225" stroke-width="4"/><path d="M34 40 50 29 66 40 62 69 50 76 38 69Z" fill="url(#gold)" stroke="#292d2c" stroke-width="3"/><path d="M50 30V76M39 51H61" stroke="#333b3d" stroke-width="3"/></g>
+ <g transform="translate(200 0)"><use href="#med"/><path d="M32 18H68V80H32Z" fill="#713b2e" stroke="#201f1d" stroke-width="4"/><path d="M50 19V79" stroke="#b88a48" stroke-width="3"/><path d="M34 44 66 66M66 44 34 66" stroke="url(#gold)" stroke-width="7"/><path d="M27 17H73" stroke="url(#gold)" stroke-width="7"/><path d="M32 77 42 71 50 82 58 71 68 77" fill="url(#gold)" stroke="#292d2c" stroke-width="3"/></g>
+ <g transform="translate(300 0)"><use href="#med"/><path d="M30 69 50 27 70 69Z" fill="url(#gold)" stroke="#292d2c" stroke-width="4"/><path d="M37 65 50 42 63 65M50 42V74" fill="none" stroke="#f1d49a" stroke-width="3"/></g>
+ <g transform="translate(400 0)"><use href="#med"/><path d="M29 65Q25 48 39 41L47 25Q53 20 56 30L51 43Q68 39 73 52Q77 66 62 73L44 79Z" fill="url(#stone)" stroke="#20282b" stroke-width="4"/><path d="M39 58Q48 49 59 54M42 67Q54 59 65 64" fill="none" stroke="#d0b27a" stroke-width="3"/></g>
+ <g transform="translate(500 0)"><use href="#med"/><path d="M27 28 73 72M73 28 27 72" stroke="url(#gold)" stroke-width="9"/><path d="M24 20 32 28M68 72 76 80M76 20 68 28M32 72 24 80" stroke="#d8c49b" stroke-width="5"/><path d="M50 17V83" stroke="#5a3d25" stroke-width="2"/></g>
+</g></svg>
