@@ -193,6 +193,27 @@ const server = http.createServer(async (req, res) => {
       if (!['shtorm1', 'admin'].includes(adminId)) { res.writeHead(403); return res.end(JSON.stringify({ error: 'forbidden' })); }
       const db = a.firestore();
       if (req.method === 'GET') {
+        const ids = String(u.searchParams.get('ids') || '').split(',').map(x => x.trim()).filter(Boolean);
+        if (ids.length) {
+          if (ids.length > 5 || ids.some(id => !/^[a-z0-9_]{2,32}$/i.test(id))) { res.writeHead(400); return res.end(JSON.stringify({error:'bad_ids'})); }
+          const found = [];
+          for (const id of ids) {
+            const [ss, ps] = await Promise.all([db.collection('saves').doc(id).get(), db.collection('players').doc(id).get()]);
+            const sv = ss.exists ? ss.data() || {} : null, pv = ps.exists ? ps.data() || {} : null;
+            found.push({id, saveExists:!!sv, playerExists:!!pv, saveName:sv&&String(sv.name||''), playerName:pv&&String(pv.name||''), saveDr:sv?(sv.dr==null?1000:sv.dr|0):null, playerDr:pv?(pv.dr==null?1000:pv.dr|0):null, saveDn:sv?(sv.dn|0):null, playerDn:pv?(pv.dn|0):null, saveDw:sv?(sv.dw|0):null, playerDw:pv?(pv.dw|0):null});
+          }
+          // Также ищем сохранения по точному игровому имени, чтобы не предполагать ID из имени.
+          const names = ['admin','Lanky'];
+          for (const name of names) {
+            const qs = await db.collection('saves').where('name','==',name).limit(5).get();
+            for (const d of qs.docs) if (!found.some(x=>x.id===d.id)) {
+              const sv=d.data()||{}, ps=await db.collection('players').doc(d.id).get(), pv=ps.exists?ps.data()||{}:null;
+              found.push({id:d.id,saveExists:true,playerExists:!!pv,saveName:String(sv.name||''),playerName:pv&&String(pv.name||''),saveDr:sv.dr==null?1000:sv.dr|0,playerDr:pv?(pv.dr==null?1000:pv.dr|0):null,saveDn:sv.dn|0,playerDn:pv?(pv.dn|0):null,saveDw:sv.dw|0,playerDw:pv?(pv.dw|0):null});
+            }
+          }
+          res.writeHead(200, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+          return res.end(JSON.stringify({ok:true,found}));
+        }
         const ss = await db.collection('saves').limit(1500).get(), candidates = [];
         for (let i = 0; i < ss.docs.length; i += 100) {
           const group = ss.docs.slice(i, i + 100);
