@@ -1,5 +1,5 @@
 // Northfall service worker: быстрая загрузка и работа при плохой связи
-const V = 'nf-v6';
+const V = 'nf-v7';
 const CORE = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
