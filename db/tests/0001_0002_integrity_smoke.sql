@@ -17,8 +17,8 @@ VALUES ('test-user-a','test-credit',100,'smoke-test-wallet-a');
 INSERT INTO reward_claims(firebase_uid, reward_type, source_id)
 VALUES ('test-user-a','smoke','once-only');
 
-INSERT INTO clans(id, name, normalized_name, leader_uid)
-VALUES ('smoke-clan','Smoke Clan','smoke clan','test-user-a');
+INSERT INTO clans(id, name, leader_uid)
+VALUES ('smoke-clan','Smoke Clan','test-user-a');
 INSERT INTO clan_members(clan_id, firebase_uid, role)
 VALUES ('smoke-clan','test-user-a','leader'), ('smoke-clan','test-user-b','member');
 
