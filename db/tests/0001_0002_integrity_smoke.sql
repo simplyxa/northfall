@@ -74,6 +74,14 @@ BEGIN
   EXCEPTION WHEN unique_violation THEN NULL;
   END;
 
+  -- A clan leader cannot be removed from membership while still leading.
+  SET CONSTRAINTS fk_clans_leader_membership IMMEDIATE;
+  BEGIN
+    DELETE FROM clan_members WHERE clan_id = 'smoke-clan' AND firebase_uid = 'test-user-a';
+    RAISE EXCEPTION 'expected clan leader membership deletion to fail';
+  EXCEPTION WHEN foreign_key_violation THEN NULL;
+  END;
+
   -- Negative wallet balance must be rejected.
   BEGIN
     UPDATE wallets SET premium_gold = -1 WHERE firebase_uid = 'test-user-a';
