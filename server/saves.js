@@ -58,6 +58,22 @@ module.exports = function saves(admin) {
   function guard(prev, s, ses, base, uid, dt) {
     if (prev && prev.ses && prev.ses !== ses && prev.ses !== base) return { stale: true };
     s.ses = ses; s.acc = uid; delete s._eb;
+    // ---- отложенные награды: сервер начислил, игрок забирает при этом сохранении ----
+    // (мировой босс, война, рейд). Начислить их второй раз нельзя: поле живёт в
+    // сохранении сервера и исчезает вместе с начислением.
+    const aw = prev && prev._aw ? prev._aw : null;
+    let award = null;
+    if (aw) {
+      const ag = Math.max(0, aw.g | 0), ai = Math.max(0, aw.i | 0), ad = Math.max(0, aw.d | 0), art = Math.max(0, aw.rt | 0), ax = Math.max(0, aw.x | 0);
+      if (ag) s.gold = (+s.gold || 0) + ag;
+      if (ai) s.iron = (+s.iron || 0) + ai;
+      if (ad) s.dust = (+s.dust || 0) + ad;
+      if (ax) s.xp = (+s.xp || 0) + ax;
+      award = { g: ag, i: ai, d: ad, rt: art, x: ax };
+      delete s._aw;
+      // награда не должна съедать «копилку» серебра: считаем её уже полученной
+      if (prev) prev = Object.assign({}, prev, { gold: (+prev.gold || 0) + ag });
+    }
     const now = Date.now(), lv = Math.max(1, s.lvl | 0), rate = silverRate(lv), cap = rate * 7200 + 50000;
     const eb = prev && prev._eb ? prev._eb : { b: cap, t: now };
     let bud = Math.min(cap, (+eb.b || 0) + Math.max(0, now - (+eb.t || now)) / 1000 * rate);
@@ -78,21 +94,6 @@ module.exports = function saves(admin) {
     const lvl = ARENA.clampLevel(prev, s.lvl);
     if (lvl !== (s.lvl | 0)) { fix = fix || {}; fix.lvl = lvl; }
     s.lvl = lvl;
-
-    // ---- отложенные награды: сервер начислил, игрок забирает при этом сохранении ----
-    // (мировой босс, война). Начислить их второй раз нельзя: поле живёт в
-    // сохранении сервера и исчезает вместе с начислением.
-    const aw = prev && prev._aw ? prev._aw : null;
-    let award = null;
-    if (aw) {
-      const ag = Math.max(0, aw.g | 0), ai = Math.max(0, aw.i | 0), ad = Math.max(0, aw.d | 0), art = Math.max(0, aw.rt | 0), ax = Math.max(0, aw.x | 0);
-      if (ag) s.gold = (+s.gold || 0) + ag;
-      if (ai) s.iron = (+s.iron || 0) + ai;
-      if (ad) s.dust = (+s.dust || 0) + ad;
-      if (ax) s.xp = (+s.xp || 0) + ax;
-      award = { g: ag, i: ai, d: ad, rt: art, x: ax };
-      delete s._aw;
-    }
 
     // ---- рейтинг, сезон, билеты арены: считает сервер, не клиент ----
     const st = ARENA.readState(prev, now);
