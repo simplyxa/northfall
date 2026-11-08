@@ -186,7 +186,7 @@ const server = http.createServer(async (req, res) => {
     if (!noAuthLimit(req, res)) return;
     try {
       const a = fbAdmin(); if (!a) { res.writeHead(503); return res.end(JSON.stringify({ error: 'firebase_unavailable' })); }
-      const tok = String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const tok = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
       const user = await a.auth().verifyIdToken(tok);
       const email = String(user.email || '').toLowerCase();
       const adminId = email.endsWith('@northfall.game') ? email.slice(0, -'@northfall.game'.length) : '';
