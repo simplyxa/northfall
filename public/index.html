@@ -2628,9 +2628,9 @@ function admView(){
  return h}
 let LRD=null,LRBUSY=false;
 function liveRankingRecovery(){
- return `<div class="panel"><div class="top"><h3>Восстановление Live Arena</h3><button class="b alt" data-lr-check style="margin:0" ${LRBUSY?'disabled':''}>Проверить</button></div>
- <p style="margin:0 0 8px;color:var(--mute);font-size:14px">Сверяет карточки игроков с серверными сохранениями. Восстанавливает только рейтинг и карточку выбранного героя.</p>
- ${LRD===null?'<p style="margin:0;color:var(--mute)">Нажми «Проверить», чтобы найти пропавшие записи.</p>':LRD.length?LRD.map(x=>`<div class="row"><div><b>${esc(x.name)}</b><small>ID: ${esc(x.id)} · ур. ${x.lvl} · Live Arena: ${x.dr} · ${x.dw}/${x.dn} побед</small><small>${esc(x.reason)}</small></div><button class="b" data-lr-restore="${esc(x.id)}" style="margin:0">Восстановить</button></div>`).join(''):'<p style="margin:0">Расхождений не найдено.</p>'}
+ return `<div class="panel"><div class="top"><h3>Диагностика Live Arena</h3><button class="b alt" data-lr-check style="margin:0" ${LRBUSY?'disabled':''}>Проверить</button></div>
+ <p style="margin:0 0 8px;color:var(--mute);font-size:14px">Сверка серверных карточек и сохранений. Изменение рейтинга временно отключено до проверки переноса старых результатов.</p>
+ ${LRD===null?'<p style="margin:0;color:var(--mute)">Нажми «Проверить», чтобы увидеть данные аккаунтов.</p>':LRD.length?LRD.map(x=>`<div class="row"><div><b>${esc(x.name)}</b><small>ID: ${esc(x.id)} · Live Arena: ${x.dr} · ${x.dw}/${x.dn} побед</small><small>${esc(x.reason)}</small></div></div>`).join(''):'<p style="margin:0">Данные не найдены.</p>'}
  </div>`;
 }
 async function liveRankingCheck(){
@@ -2644,12 +2644,8 @@ async function liveRankingCheck(){
  finally{LRBUSY=false;render()}
 }
 
-async function liveRankingRestore(id){
- if(!ADM||!FBA||!FBA.currentUser||!id)return;
- try{const tok=await FBA.currentUser.getIdToken();const r=await fetch('/api/admin-live-ranking',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({id})});const j=await r.json();if(!r.ok)throw new Error(j.error||'restore_failed');LRD=(LRD||[]).filter(x=>x.id!==id);PLF[id]=0;plFetch(id);popup('Игрок восстановлен',`${esc(j.name)}: рейтинг Live Arena ${j.dr}, побед ${j.dw} из ${j.dn}.`);render();}
- catch(e){popup('Ошибка восстановления','Не удалось восстановить карточку. Сохранение не изменено.',true)}
-}
-document.addEventListener('click',e=>{const c=e.target.closest('[data-lr-check]');if(c){e.preventDefault();liveRankingCheck();return}const b=e.target.closest('[data-lr-restore]');if(b){e.preventDefault();ask('Восстановить карточку и рейтинги этого героя из его серверного сохранения?',()=>liveRankingRestore(b.dataset.lrRestore),'Восстановить');}});
+
+document.addEventListener('click',e=>{const c=e.target.closest('[data-lr-check]');if(c){e.preventDefault();liveRankingCheck();return}});
 function admDo(a){
  if(!ADM||!DB)return;const g=ADMD.global||{},w=(id,d)=>DB.collection('admin').doc(id).set(d).then(()=>true).catch(()=>{log('Не удалось записать в базу.','sys');render();popup('Ошибка','Не удалось записать в базу. Подарок не отправлен.',true);return false});
  if(a==='annset')w('global',{...g,msg:($('#am').value||'').slice(0,200),ts:Date.now()});
