@@ -2635,10 +2635,15 @@ function liveRankingRecovery(){
 }
 async function liveRankingCheck(){
  if(!ADM||!FBA||!FBA.currentUser||LRBUSY)return;LRBUSY=true;render();
- try{const tok=await FBA.currentUser.getIdToken();const r=await fetch('/api/admin-live-ranking',{headers:{Authorization:'Bearer '+tok}});const j=await r.json();if(!r.ok)throw new Error(j.error||'check_failed');LRD=j.candidates||[];}
- catch(e){popup('Ошибка проверки','Не удалось проверить сохранения игроков.',true)}
+ try{
+  const tok=await FBA.currentUser.getIdToken();
+  const r=await fetch('/api/admin-live-ranking?ids=admin,Lanky',{headers:{Authorization:'Bearer '+tok}});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||'check_failed');
+  LRD=(j.found||[]).map(x=>({id:x.id,name:x.saveName||x.playerName||x.id,lvl:0,dr:x.saveDr, dn:x.saveDn,dw:x.saveDw,reason:!x.saveExists?'Нет сохранения':!x.playerExists?'Нет карточки игрока':x.saveDr!==x.playerDr||x.saveDn!==x.playerDn||x.saveDw!==x.playerDw?'Рейтинг отличается от сохранения':'Данные совпадают',missing:!x.playerExists,exact:true}));
+ }catch(e){popup('Ошибка проверки','Не удалось проверить аккаунты admin и Lanky.',true)}
  finally{LRBUSY=false;render()}
 }
+
 async function liveRankingRestore(id){
  if(!ADM||!FBA||!FBA.currentUser||!id)return;
  try{const tok=await FBA.currentUser.getIdToken();const r=await fetch('/api/admin-live-ranking',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({id})});const j=await r.json();if(!r.ok)throw new Error(j.error||'restore_failed');LRD=(LRD||[]).filter(x=>x.id!==id);PLF[id]=0;plFetch(id);popup('Игрок восстановлен',`${esc(j.name)}: рейтинг Live Arena ${j.dr}, побед ${j.dw} из ${j.dn}.`);render();}
