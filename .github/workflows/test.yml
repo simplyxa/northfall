@@ -23,8 +23,8 @@ jobs:
       - name: Установить зависимости
         run: npm install --no-audit --no-fund
 
-      - name: Тест протокола сокета
-        run: node tools/wstest.js
+      - name: Полный набор тестов
+        run: npm test
 
       - name: Бенчмарк трафика (информационно)
         run: node tools/wsbench.js 300
