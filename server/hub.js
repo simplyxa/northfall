@@ -31,6 +31,15 @@ module.exports = function hub(server, getDb, verify) {
   const CYCLE = require('./cycle')(getDb);
   const APVP = require('./apvp')(getDb);
   const feeds = {}; // name → {un, docs, subs:Set, idle, ready}
+  // Оценка тарифицируемых чтений живых подписок Firestore с момента запуска процесса.
+  // Первый снимок тарифицируется по числу документов; далее — added/modified, без removed.
+  const readStats = { since: Date.now(), total: 0, byCollection: {} };
+  function countReads(name, n, initial) {
+    n = Math.max(0, n | 0); if (!n) return;
+    readStats.total += n;
+    const x = readStats.byCollection[name] || (readStats.byCollection[name] = { total: 0, initial: 0, updates: 0, lastAt: 0 });
+    x.total += n; x[initial ? 'initial' : 'updates'] += n; x.lastAt = Date.now();
+  }
 
   // ---------- WebSocket ----------
   server.on('upgrade', (req, sock) => {
@@ -190,6 +199,14 @@ module.exports = function hub(server, getDb, verify) {
       const db = getDb(); if (!db) return send(c, { t: 'nofeed', c: name });
       F = feeds[name] = newFeed();
       F.un = FEEDS[name](db).onSnapshot(sn => {
+        // Считаем документы, за которые Firestore обычно выставляет read:
+        // initial snapshot — все документы; последующие — added/modified (removed не тарифицируется).
+        if (F.first) countReads(name, sn.size == null ? sn.docs.length : sn.size, true);
+        else {
+          let changes;
+          try { changes = sn.docChanges ? sn.docChanges() : null; } catch (e) { changes = null; }
+          countReads(name, changes ? changes.filter(x => x.type !== 'removed').length : sn.docs.length, false);
+        }
         F.docs = sn.docs.map(d => ({ id: d.id, ...plain(d.data()) }));
         F.ready = true;
         if (F.first) {
@@ -225,7 +242,7 @@ module.exports = function hub(server, getDb, verify) {
     }, now ? 300 : 1500);
   }
 
-  return { stats: () => ({ raids: RAID.stats(), duels: DUEL.stats(), cycle: CYCLE.stats(), apvp: APVP.stats(), clients: clients.size, feeds: Object.fromEntries(Object.entries(feeds).map(([k, F]) => [k, { subs: F.subs.size, docs: F.docs.length }])) }) };
+  return { stats: () => ({ raids: RAID.stats(), duels: DUEL.stats(), cycle: CYCLE.stats(), apvp: APVP.stats(), clients: clients.size, feeds: Object.fromEntries(Object.entries(feeds).map(([k, F]) => [k, { subs: F.subs.size, docs: F.docs.length }])), firestoreReads: { since: readStats.since, total: readStats.total, byCollection: readStats.byCollection } }) };
 };
 
 // данные Firestore → обычный JSON (метки времени → миллисекунды)
