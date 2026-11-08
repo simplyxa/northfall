@@ -126,5 +126,90 @@ console.log('\nNorthfall — тесты серверной логики арен
   ok('новый игрок: уровень до 60 (как в старых правилах)', A.clampLevel(null, 10) === 10 && A.clampLevel(null, 90) === 60);
 }
 
+// ---------- дневной рейтинг лайв-арены ----------
+{
+  const now = 1700000000000;
+  const st = A.readState({ rating: 1200, srat: 40, sid: A.season(now), atk: 5, atkt: now, dr: 1400, dn: 3, dw: 2, day: A.dayNum(now) }, now);
+  ok('дневной рейтинг читается из сохранения', st.dr === 1400 && st.dn === 3 && st.dw === 2, `dr=${st.dr} dn=${st.dn} dw=${st.dw}`);
+}
+{
+  // новые сутки — дневной рейтинг обнуляется
+  const now = 1700000000000;
+  const y = now - 90000000; // вчера
+  const st = A.readState({ rating: 1200, sid: A.season(now), dr: 1500, dn: 7, dw: 4, day: A.dayNum(y) }, now);
+  ok('новые сутки: дневной рейтинг сброшен на 1000', st.dr === 1000, 'dr=' + st.dr);
+  ok('новые сутки: счётчики боёв обнулены', st.dn === 0 && st.dw === 0, `dn=${st.dn} dw=${st.dw}`);
+  ok('новые сутки: общий рейтинг не тронут', st.rt === 1200, 'rt=' + st.rt);
+}
+{
+  const now = 1700000000000;
+  const st = A.readState({ sid: A.season(now), day: A.dayNum(now) }, now);
+  const r = A.applyDuel(st, 1, 1000);
+  ok('победа: дневный рейтинг вырос', r.dr > 1000, 'dr=' + r.dr);
+  ok('победа: счётчик боёв +1', r.dn === 1);
+  ok('победа: счётчик побед +1', r.dw === 1);
+  ok('победа: дельта положительна', r.dR > 0, 'dR=' + r.dR);
+}
+{
+  const now = 1700000000000;
+  const st = A.readState({ sid: A.season(now), day: A.dayNum(now), dr: 1000 }, now);
+  const r = A.applyDuel(st, 0, 1000);
+  ok('поражение: дневный рейтинг упал', r.dr < 1000, 'dr=' + r.dr);
+  ok('поражение: побед не засчитано', r.dw === 0);
+  ok('поражение: боёв +1', r.dn === 1);
+}
+{
+  const now = 1700000000000;
+  const st = A.readState({ sid: A.season(now), day: A.dayNum(now), dr: 1000 }, now);
+  const r = A.applyDuel(st, 0.5, 1000);
+  ok('ничья: рейтинг не меняется при равных соперниках', r.dr === 1000, 'dr=' + r.dr);
+}
+{
+  const now = 1700000000000;
+  const st = A.readState({ sid: A.season(now), day: A.dayNum(now), dr: 1000 }, now);
+  const r = A.applyDuel(st, 0, 500);
+  ok('слабый соперник: поражение больнее', r.dR < -20, 'dR=' + r.dR);
+  const st2 = A.readState({ sid: A.season(now), day: A.dayNum(now), dr: 1000 }, now);
+  const r2 = A.applyDuel(st2, 0, 3000);
+  ok('сильный соперник: поражение почти ничего не стоит (Эло)', r2.dR === 0, 'dR=' + r2.dR);
+}
+{
+  const now = 1700000000000;
+  const st = A.readState({ sid: A.season(now), day: A.dayNum(now), dr: 5 }, now);
+  const r = A.applyDuel(st, 0, 2000);
+  ok('дневной рейтинг не уходит в минус', r.dr >= 0, 'dr=' + r.dr);
+}
+{
+  ok('золото за победу: 50 + 15 за уровень', A.duelGold(1) === 65 && A.duelGold(30) === 500, `lvl1=${A.duelGold(1)} lvl30=${A.duelGold(30)}`);
+}
+{
+  // сутки считаются по Израилю (+2 часа), как в клиенте
+  ok('сутки по Израилю (+2ч)', A.dayNum(1700000000000) === Math.floor((1700000000000 + 2*3600000)/86400000));
+}
+
+// ---------- подсчёт дуэли целиком ----------
+{
+  const now = 1700000000000;
+  const members = { u1: { lv: 30 }, u2: { lv: 10 } };
+  const prevs = {
+    u1: { rating: 1000, srat: 0, sid: A.season(now), atk: 10, atkt: now, dr: 1000, dn: 0, dw: 0, day: A.dayNum(now) },
+    u2: { rating: 1000, srat: 0, sid: A.season(now), atk: 10, atkt: now, dr: 1000, dn: 0, dw: 0, day: A.dayNum(now) }
+  };
+  const res = A.scoreDuel(members, 'u1', prevs, now);
+  ok('дуэль: победителю очки 1', res && res.u1.sc === 1);
+  ok('дуэль: проигравшему очки 0', res && res.u2.sc === 0);
+  ok('дуэль: победитель получает золото', res && res.u1.g === 500, 'g=' + (res && res.u1.g));
+  ok('дуэль: проигравший золота не получает', res && res.u2.g === 0);
+  ok('дуэль: дневной рейтинг победителя вырос', res && res.u1.dr > 1000, 'dr=' + (res && res.u1.dr));
+  ok('дуэль: дневной рейтинг проигравшего упал', res && res.u2.dr < 1000, 'dr=' + (res && res.u2.dr));
+  ok('дуэль: счётчик боёв у обоих +1', res && res.u1.dn === 1 && res.u2.dn === 1);
+  ok('дуэль: победы засчитаны только победителю', res && res.u1.dw === 1 && res.u2.dw === 0);
+  const draw = A.scoreDuel(members, 'draw', prevs, now);
+  ok('дуэль-ничья: у обоих по 0.5', draw && draw.u1.sc === 0.5 && draw.u2.sc === 0.5);
+  ok('дуэль-ничья: золота никому', draw && draw.u1.g === 0 && draw.u2.g === 0);
+  ok('дуэль: не трое участников — результата нет', A.scoreDuel({ a: {}, b: {}, c: {} }, 'a', prevs, now) === null);
+  ok('дуэль: без победителя — результата нет', A.scoreDuel(members, null, prevs, now) === null);
+}
+
 console.log('\n  пройдено: ' + passed + ', провалено: ' + failed + '\n');
 process.exit(failed ? 1 : 0);

@@ -1502,9 +1502,12 @@ function dRound(R,acts){const ids=Object.keys(R.mem).sort((a,b)=>R.mem[a].o-R.me
  R.log=[...L.reverse(),...(R.log||[])].slice(0,40)}
 const dGold=lv=>50+15*lv;
 function duelFinish(){const R=DUEL;if(!R||R.st==='on'||!DUELID||!S)return;S.ddone=S.ddone||[];if(S.ddone.includes(DUELID))return;const me=R.mem[UID];if(!me)return;
- S.ddone=[...S.ddone,DUELID].slice(-30);const oid=Object.keys(R.mem).find(x=>x!==UID),o=R.mem[oid],sc=R.win==='draw'?.5:R.win===UID?1:0;
- const r0=S.dr==null?1000:S.dr,ex=1/(1+Math.pow(10,((o.dr|0||1000)-r0)/400)),dR=Math.round(32*(sc-ex)),k0=rankOf2(meP());S.dr=Math.max(0,r0+dR);S.dn=(S.dn|0)+1;
- let g=0;if(sc===1){g=dGold(S.lvl);S.gold+=g;S.dw=(S.dw|0)+1;SILFX={v:g,t:Date.now()}}const k1=rankOf2(meP());
+ S.ddone=[...S.ddone,DUELID].slice(-30);const oid=Object.keys(R.mem).find(x=>x!==UID),o=R.mem[oid],rs=R.res&&R.res[UID]?R.res[UID]:null;
+ // рейтинг, счётчики и награду посчитал сервер (rs); клиент только показывает
+ const sc=rs?rs.sc:(R.win==='draw'?.5:R.win===UID?1:0);
+ const r0=S.dr==null?1000:S.dr,ex=1/(1+Math.pow(10,((o.dr|0||1000)-r0)/400)),dR=rs?rs.dR:Math.round(32*(sc-ex)),k0=rankOf2(meP());
+ S.dr=rs?rs.dr:Math.max(0,r0+dR);S.dn=rs?rs.dn:(S.dn|0)+1;
+ let g=0;if(sc===1){g=rs?rs.g:dGold(S.lvl);S.gold+=g;S.dw=rs?rs.dw:(S.dw|0)+1;SILFX={v:g,t:Date.now()}}const k1=rankOf2(meP());
  DRES={sc,dR,g,o:o.n,up:k1[0]>k0[0]?k1[1]:''};log(`Duel with ${o.n}: ${sc===1?'victory':sc?'draw':'defeat'}, rating ${dR>=0?'+':''}${dR}${g?`, +${g} silver`:''}.`,'sys');
  if(DRES.up)news(`${S.name} earned the rank “${k1[1]}” in the live arena!`);save();if(typeof saveNow==='function')saveNow()}
 function duelView(){if(!DB||!UID)return'<div class="panel"><p>The live arena is only available with an account.</p></div>';raidSub();
@@ -2027,7 +2030,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.5';
+const GVER='1.18.6';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2433,7 +2436,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.5</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.6</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
