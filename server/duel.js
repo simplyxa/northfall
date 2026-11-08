@@ -62,6 +62,10 @@ module.exports = function duels(getDb) {
   async function resolve(rid, r) {
     if (r.busy || !r.R || r.R.st !== 'on') return; r.busy = true;
     const db = getDb(), ref = db.collection('raids').doc(rid);
+    // ВАЖНО: в транзакции Firestore запросы запрещены (только чтение документов).
+    // Поэтому активные войны ищем заранее, до открытия транзакции.
+    let warDocs = [];
+    try { warDocs = (await db.collection('wars').where('end', '>', Date.now()).limit(30)).docs; } catch (e) {}
     try {
       await db.runTransaction(async tx => {
         const sn = await tx.get(ref); if (!sn.exists) return;
@@ -77,7 +81,7 @@ module.exports = function duels(getDb) {
         dRound(D, acts);
         // Дневной рейтинг лайв-арены считает сервер: результат боя известен
         // только здесь, клиенту доверять нельзя.
-        if (D.st === 'end' && !D.scored) await scoreDuel(tx, D);
+        if (D.st === 'end' && !D.scored) await scoreDuel(tx, D, warDocs);
         tx.set(ref, D); r.R = D;
       });
     } catch (e) { console.error('duel resolve', rid, e.message); }
@@ -95,7 +99,7 @@ module.exports = function duels(getDb) {
   }, 500).unref();
 
   // Начисление дневного рейтинга обоим участникам и запись в их сохранения.
-  async function scoreDuel(tx, D) {
+  async function scoreDuel(tx, D, warDocs) {
     const db = getDb(), now = Date.now();
     const ids = Object.keys(D.mem || {});
     if (ids.length !== 2) { D.scored = 1; return; }
@@ -104,14 +108,13 @@ module.exports = function duels(getDb) {
       const sn = await tx.get(db.collection('saves').doc(id));
       prev[id] = sn.exists ? sn.data() : null;
     }
-    // ВАЖНО: в транзакции Firestore все чтения идут ДО всех записей.
-    // Поэтому читаем активные войны заранее, до записи в сохранения.
-    const wars = await tx.get(db.collection('wars').where('end', '>', now).limit(30));
+    // ВАЖНО: в транзакции все чтения идут ДО всех записей, а запросов в ней быть
+    // не может — документы войн передали заранее (см. resolve).
     const warFor = {};
     for (const id of ids) {
       const cid = (prev[id] && prev[id].clan) || '';
       if (!cid) continue;
-      for (const d of wars.docs) {
+      for (const d of (warDocs || [])) {
         const W = d.data();
         if (W.a === cid || W.b === cid) { warFor[id] = { ref: d.ref, W, cid }; break; }
       }
