@@ -1,6 +1,5 @@
 'use strict';
 const assert = require('assert');
-const api = require('../public/js/regular-arena');
 let clock = 0, next = 1;
 const frames = new Map();
 global.window = {
@@ -8,9 +7,11 @@ global.window = {
   requestAnimationFrame(fn) { const id = next++; frames.set(id, fn); return id; },
   cancelAnimationFrame(id) { frames.delete(id); }
 };
+const api = require('../public/js/regular-arena');
 function node() {
   return {
-    textContent: '', disabled: false, style: { transform: '', values: {}, setProperty(k,v){this.values[k]=v;} },
+    textContent: '', disabled: false,
+    style: { transform: '', values: {}, setProperty(k,v){this.values[k]=v;} },
     classList: { values: new Set(), toggle(k,v){if(v)this.values.add(k);else this.values.delete(k);} }
   };
 }
