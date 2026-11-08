@@ -3,6 +3,14 @@
 -- Requires 0001_initial_hybrid_schema.sql.
 BEGIN;
 
+-- A clan leader must also be an actual member. Deferred to allow creating
+-- the clan and its first membership row in the same transaction.
+ALTER TABLE clans
+  ADD CONSTRAINT fk_clans_leader_membership
+  FOREIGN KEY (id, leader_uid)
+  REFERENCES clan_members(clan_id, firebase_uid)
+  DEFERRABLE INITIALLY DEFERRED;
+
 CREATE TABLE IF NOT EXISTS account_private (
   firebase_uid TEXT PRIMARY KEY REFERENCES users(firebase_uid) ON DELETE CASCADE,
   settings JSONB NOT NULL DEFAULT '{}'::jsonb,
