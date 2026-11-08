@@ -187,6 +187,17 @@ console.log('\nNorthfall — тесты серверной логики арен
   ok('сутки по Израилю (+2ч)', A.dayNum(1700000000000) === Math.floor((1700000000000 + 2*3600000)/86400000));
 }
 
+// ---------- метка дня из реального серверного сохранения (_ar.d) ----------
+{
+  const now = 1700000000000, day = A.dayNum(now);
+  const st = A.readState({ rating:1000, sid:A.season(now), atk:10, atkt:now, dr:1375, dn:6, dw:4, _ar:{d:day} }, now);
+  ok('сохраняет рейтинг лайв-арены из _ar.d', st.dr===1375 && st.dn===6 && st.dw===4, JSON.stringify({dr:st.dr,dn:st.dn,dw:st.dw}));
+}
+{
+  const now = 1700000000000, day = A.dayNum(now);
+  const st = A.readState({ sid:A.season(now), dr:1375, dn:6, dw:4, _ar:{d:day-1} }, now);
+  ok('сбрасывает рейтинг при предыдущем _ar.d', st.dr===1000 && st.dn===0 && st.dw===0);
+}
 // ---------- подсчёт дуэли целиком ----------
 {
   const now = 1700000000000;
