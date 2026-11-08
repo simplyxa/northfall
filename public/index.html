@@ -816,7 +816,7 @@ function act(a){
   const c=Math.random()*100<crit();if(c)d*=1.8;if(fight.rage){d*=(+fight.rage>1?+fight.rage:2);fight.rage=false}if(e.tr==='armor')d*=.5;d=Math.max(1,Math.round(d));if(fight.hunt&&fb1())d=Math.max(d,e.hp);if(fight.hint&&!S.th1){S.th1=1;try{trk('h1')}catch(_){}}fight.hint=0;fx(c?'crit':'hit');fight.lc=c;fight.lunge=1;
   const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);if(c)fight.s.crit++;log(`${c?'Меткий удар! ':''}Удар на ${Math.round(k*100)}%: ${d} урона.`,'hit');
  }
- settle();save();render();
+ settle();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render();
 }
 function fightTick(){
  if(!fight)return;if(fight.arena&&fight.pvp)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&!fight.hunt.raid&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
@@ -824,7 +824,7 @@ function fightTick(){
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
  if(fight.wb&&fight.clk>=WBT){wbEnd('time');save();return render()}
- if(fight.ech>=1){fight.ech=0;enemyTurn();settle();save();return render()}
+ if(fight.ech>=1){fight.ech=0;enemyTurn();settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}
  if(petTick(dt)){settle();save();return render()}
  paintFight();
 }
@@ -905,12 +905,18 @@ function head(){
 function fightView(){
  if(fight.hunt)return huntView();
  const e=fight.e,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100);
- return`<div class="panel"><h3>${esc(e.name)} · ур. ${e.lv}</h3>${e.title?`<p style="margin:0 0 6px;color:var(--mute);font-size:15px">${esc(e.title)}</p>`:''}
+ return`<div class="panel" id="fightpanel"><h3>${esc(e.name)} · ур. ${e.lv}</h3>${e.title?`<p style="margin:0 0 6px;color:var(--mute);font-size:15px">${esc(e.title)}</p>`:''}
  ${fight.dun?`<p style="margin:0 0 6px;color:var(--myth);font-weight:700">До конца спуска: <span id="dtm">${Math.ceil((DUNT-fight.clk)/1000)}</span> с</p>`:''}${fight.wb?`<div style="display:flex;justify-content:center;margin:0 0 6px">${wbIc(fight.wb.day,96)}</div>`:''}${fight.wb?`<p style="margin:0 0 6px;color:var(--blood);font-weight:700">До конца атаки: <span id="wtm">${Math.ceil((WBT-fight.clk)/1000)}</span> с</p>`:''}<div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
  <div class="lbl"><span>Здоровье врага</span><span>${e.hp}/${e.max}</span></div>${bar(e.hp,e.max,'--blood')}
  <div class="lbl"><span>Атака врага (раз в ${String(e.spd||5).replace('.',',')} с)</span><span id="ect">${ec}%</span></div><div class="bar"><i id="ecb" style="width:${ec}%;background:var(--blood)"></i></div>
  <button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2?'disabled':''}>Удар</button>
  ${skBtns()}<div class="frow">${bgBtn()}${['b'].map(k=>{const L=bleft();return`<button class="b alt fcd" id="bp${k}" data-a="pot-${k}" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt[k]<1||L>0?'disabled':''}>${L>0?POT[k].sh+' '+Math.ceil(L/1000)+' с':POT[k].sh+' ('+S.pt[k]+')'}</button>`}).join('')}<button class="b alt" data-a="flee">Бежать</button></div></div>`;
+}
+function fightRefresh(){
+ if(!fight||fight.hunt||fight.pvp)return render();
+ const p=document.getElementById('fightpanel');if(p)p.outerHTML=fightView();
+ const l=document.getElementById('log');if(l)l.innerHTML=logs.map(x=>`<p class="${x[1]}">${esc(x[0])}</p>`).join('')||'<p>Тишина.</p>';
+ paintFight();
 }
 function bgBtn(){const now=fight.clk,act=now<fight.guardUntil,cd=now<fight.gcd,p=act?Math.round((fight.guardUntil-now)/3000*100):cd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100;return`<button class="b alt fcd${act?' act':''}" id="bg" data-a="guard" style="--p:${p}" ${cd?'disabled':''}>${act?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':cd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок'}</button>`}
 function paintFight(){
