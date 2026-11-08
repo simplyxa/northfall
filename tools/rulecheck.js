@@ -67,7 +67,8 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
       const j = await r.json().catch(() => ({}));
       out.fix = j.fix || null;
     } catch (e) { out.fix = 'ошибка ' + e.message; }
-    // а теперь честная заявка на победу: +22 к рейтингу
+    // а теперь заявка клиента на победу на арене: сервер её больше не принимает
+    // (рейтинг арены считает сервер по итогам дуэли) — рейтинг обязан остаться 1000
     try {
       const r = await fetch('/api/save', {
         method: 'POST',
@@ -127,9 +128,10 @@ const c = (k, pass, note) => { if (!pass) failed++; console.log('  ' + (pass ? '
   c('сохранение попало в базу', res.saveInDb === 'да, gold=30', res.saveInDb);
   c('клиент читает своё сохранение', res.clientRead === 'ок', res.clientRead);
   c('подделка рейтинга проигнорирована (сервер оставил 1000)', res.fix && res.fix.rating === 1000, res.fix ? 'рейтинг сервера: ' + res.fix.rating : 'нет данных');
-  c('честная заявка засчитана (1000 → 1022)', res.fix2 && res.fix2.rating === 1022, res.fix2 ? 'рейтинг сервера: ' + res.fix2.rating : 'нет данных');
-  c('в сохранении лежит серверный рейтинг', res.savedRating === 1022, 'рейтинг=' + res.savedRating);
-  c('в карточке игрока тот же рейтинг', res.cardRating === 1022, 'рейтинг=' + res.cardRating);
+  // рейтинг арены начисляет сервер по итогам дуэли, а не заявкой клиента
+  c('заявка клиента о победе отброшена (рейтинг не вырос)', res.fix2 && res.fix2.rating === 1000, res.fix2 ? 'рейтинг сервера: ' + res.fix2.rating : 'нет данных');
+  c('в сохранении серверный рейтинг', res.savedRating === 1000, 'рейтинг=' + res.savedRating);
+  c('в карточке игрока тот же рейтинг', res.cardRating === 1000, 'рейтинг=' + res.cardRating);
   c('тестовая карточка удалена (не светится в рейтинге)', res.cardGone === true, res.cardGone === false ? ('осталась: ' + (res.cardDel || 'delete прошёл, но документ на месте')) : String(res.cardGone));
   c('тестовый аккаунт удалён', res.cleanup === 'аккаунт удалён', res.cleanup);
   console.log(failed ? '\n  есть проблемы: ' + failed + '\n' : '\n  всё в порядке\n');
