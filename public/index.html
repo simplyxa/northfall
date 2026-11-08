@@ -2053,8 +2053,9 @@ function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
 // ===== Подвал сайта, общий чат, онлайн, об игре =====
 // ✦ пыль в воздухе (фон)
 function snowOn(){try{return localStorage.getItem('nf_snow')!=='0'}catch(e){return true}}
-function snowSet(v){try{localStorage.setItem('nf_snow',v?'1':'0')}catch(e){}snowRun()}
+function snowSet(v){try{localStorage.setItem('nf_snow',v?'1':'0')}catch(e){}if(v)snowRun();else snowPause()}
 let SNC=null,SNF=[],SNL=0;
+function snowPause(){if(SNC){SNC.remove();SNC=null}SNF=[];}
 function snowRun(){
  let rm=false;try{rm=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
  if(!snowOn()||rm){if(SNC){SNC.remove();SNC=null}return}
@@ -2064,7 +2065,7 @@ function snowRun(){
  const fit=()=>{const d=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;SNC.width=W*d;SNC.height=H*d;cx.setTransform(d,0,0,d,0,0);
   const n=Math.round(Math.min(80,Math.max(28,W*H/15000)));while(SNF.length<n)SNF.push(fl());SNF.length=n};
  fit();addEventListener('resize',fit);
- const tick=t=>{if(!SNC)return;requestAnimationFrame(tick);if(document.hidden)return;if(t-SNL<33)return;const dt=Math.min(.1,(t-SNL)/1000);SNL=t;
+ const tick=t=>{if(!SNC||fight)return;requestAnimationFrame(tick);if(document.hidden)return;if(t-SNL<33)return;const dt=Math.min(.1,(t-SNL)/1000);SNL=t;
   let lt=false;try{const m=getComputedStyle(document.body).backgroundColor.match(/\d+/g);lt=m&&(+m[0]+ +m[1]+ +m[2])>450}catch(e){}
   cx.clearRect(0,0,W,H);
   for(const f of SNF){f.p+=f.w*dt;f.t+=dt*(.6+f.w);f.x+=(f.vx+Math.sin(f.p)*4)*dt;f.y+=(f.vy+Math.cos(f.p*.7)*3)*dt;
@@ -2763,6 +2764,7 @@ function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главна
 // при открытии чата — сразу к последним сообщениям (внизу)
 let CHK='';function chatScroll(){const k=tab==='gchat'||tab==='dm'?tab+'|'+(tab==='dm'?DMW:''):'';if(k===CHK)return;CHK=k;if(!k)return;const go=()=>{const el=document.getElementById(tab==='dm'?'dmbox':'gcbox');if(el)el.scrollTop=el.scrollHeight};go();setTimeout(go,120);setTimeout(go,600)}
 function render(){
+ if(fight)snowPause();else snowRun();
  socMaybe();hubHello();setTimeout(chatScroll,0);
  setTimeout(nbPopCheck,60);
  IREG=[];paySub();walletSub();admSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();huntFlush();exBoss();
