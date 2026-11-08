@@ -1,5 +1,5 @@
 // Northfall service worker: быстрая загрузка и работа при плохой связи
-const V = 'nf-v5';
+const V = 'nf-v6';
 const CORE = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -17,6 +17,8 @@ self.addEventListener('fetch', e => {
   const u = new URL(req.url);
   // Сервер игры, база и вход — всегда напрямую
   if (u.pathname.startsWith('/.netlify/') || /firestore|identitytoolkit|securetoken|xsolla/.test(u.hostname)) return;
+  // версию игры всегда берём из сети — по ней игра предлагает обновление
+  if (u.pathname === '/version.json') return;
 
   // Страница игры: сначала сеть (чтобы обновления приходили сразу), при плохой связи — из кэша
   if (req.mode === 'navigate' || (u.origin === location.origin && (u.pathname === '/' || u.pathname === '/index.html' || u.pathname.startsWith('/en/')))) {

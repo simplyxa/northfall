@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "test": "node tools/wstest.js && node tools/gametest.js && node tools/arenatest.js",
+    "test": "node tools/assetcheck.js && node tools/wstest.js && node tools/gametest.js && node tools/arenatest.js",
     "bench": "node tools/wsbench.js",
     "build:en": "node i18n/build_en.js",
     "release": "node tools/release.js"

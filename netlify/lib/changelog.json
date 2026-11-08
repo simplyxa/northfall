@@ -425,5 +425,10 @@
   "v": "1.18.7",
   "t": "Дневной рейтинг лайв-арены теперь считает сервер: он сам ведёт бой и знает победителя, поэтому поднять рейтинг в таблице «за период» больше нельзя.",
   "te": "The live arena daily rating is now computed by the server: it runs the fight and knows the winner, so the per-period rating table can no longer be inflated."
+ },
+ {
+  "v": "1.18.8",
+  "t": "Охота у всех игроков теперь показывает новую графику: у картинок поменялись имена, поэтому браузер больше не отдаёт старую версию из кэша. Если графика всё ещё старая — просто обновите страницу.",
+  "te": "The hunt now shows the new graphics for everyone: the images were renamed, so the browser no longer serves the old version from its cache. If it still looks old, just reload the page."
  }
 ]
