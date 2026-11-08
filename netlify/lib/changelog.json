@@ -415,5 +415,10 @@
   "v": "1.18.5",
   "t": "Горный медведь и вожак стаи перерисованы заново: у прежних были отрезаны задняя часть тела и задние лапы — модель рисовала зверя, уходящего за кадр.",
   "te": "The mountain bear and the pack leader have been redrawn from scratch: the old ones had their hindquarters and back legs cut off, the model drew the animal running out of frame."
+ },
+ {
+  "v": "1.18.6",
+  "t": "Охота: все звери и герои перерисованы в едином стиле и больше не обрезаны. Звери теперь одного размера, стоят ногами на своих кругах и смотрят на героя. В рейде снова круглые портреты — полные фигуры в маленьких карточках оказались неудобны.",
+  "te": "The hunt: every beast and hero has been redrawn in one consistent style and no longer appears cut off. The beasts are now the same size, stand on their circles and face the hero. The raid is back to round portraits — full-length figures turned out to be awkward in the small cards."
  }
 ]
