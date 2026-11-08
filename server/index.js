@@ -152,7 +152,7 @@ const server = http.createServer(async (req, res) => {
     let b; try { b = JSON.parse((await readBody(req)).toString('utf8') || '{}'); } catch (e) { res.writeHead(400); return res.end(JSON.stringify({ error: 'bad_json' })); }
     try {
       const a = fbAdmin(); if (!a) { res.writeHead(503); return res.end(JSON.stringify({ error: 'firebase_unavailable' })); }
-      const tok = String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const tok = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
       const user = await a.auth().verifyIdToken(tok);
       const email = String(user.email || '').toLowerCase();
       const uid = email.endsWith('@northfall.game') ? email.slice(0, -'@northfall.game'.length) : '';
