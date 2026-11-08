@@ -226,7 +226,7 @@ module.exports = function apvp(getDb) {
 
   // ---- тик боя ----
   function tick(R, c, send) {
-    if (!R || R.st !== 'on') return;
+    if (!R || R.st !== 'on' || rooms.get(R.uid) !== R || !c.open) return;
     const now = Date.now();
     R.clk = now - R.t0;
     R.ch = Math.min(1, R.ch + TICK / 1000 / CH_T);
@@ -243,7 +243,7 @@ module.exports = function apvp(getDb) {
     if (m.t === 'apvp') return start(c, m, send);
     if (m.t === 'apa') return act(c, m, send);
   }
-  function onClose(c) { const R = rooms.get(c.uid); if (R) rooms.delete(c.uid); }
+  function onClose(c) { const R = rooms.get(c.uid); if (R) { R.st = 'closed'; rooms.delete(c.uid); } }
 
   return { onMsg, onClose, stats: () => ({ rooms: rooms.size }) };
 };
