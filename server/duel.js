@@ -132,7 +132,7 @@ module.exports = function duels(getDb) {
         if (r.war) s.wp = (s.wp | 0) + r.war;              // очки клановой войны
         tx.set(db.collection('saves').doc(id), s);
         tx.set(db.collection('players').doc(id), {
-          dr: r.dr, dn: r.dn, dw: r.dw, rating: r.rt, srat: r.srat,
+          dr: r.dr, dn: r.dn, dw: r.dw, rating: r.rt, srat: r.srt,
           ...(r.war ? { wp: ((prev[id] && prev[id].wp) | 0) + r.war } : {})
         }, { merge: true });
         // очки войны идут в документ войны — их тоже считает сервер
