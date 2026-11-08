@@ -702,7 +702,7 @@ function huntTick(dt){const H=fight.hunt;let ch=false;if(H.raid&&rRunTick())retu
 // звер бьёт — его карточка коротко «вздрагивает»
 function mobPulse(){const L=fight&&fight.hits;if(!L||!L.length)return;fight.hits=[];setTimeout(()=>L.forEach(i=>{const st=document.getElementById('sf'+i);if(st){ANI(st.querySelector('.st-img'),[{transform:'translateX(0) scale(1)'},{transform:'translateX(-30px) scale(1.12)',filter:'brightness(1.3)'},{transform:'translateX(0) scale(1)'}],{duration:300,easing:'ease-out'});return}const el=document.querySelector('.mob[data-tg="'+i+'"]');if(el&&el.animate)try{el.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.045)',filter:'brightness(1.25)'},{transform:'scale(1)',filter:'brightness(1)'}],{duration:280,easing:'ease-out'})}catch(e){}}),0)}
 // ===== Сцена боя на охоте: герой слева, звери справа, удары и цифры урона =====
-const HEROFIG={berserk:'/img/e56e9f8cb46734.webp',hunter:'/img/fig-hunter.webp',shaman:'/img/fig-shaman.webp'}; // герой в полный рост по классам; нет рисунка — аватар
+const HEROFIG={berserk:'/img/e56e9f8cb46734.webp',hunter:'/img/53adc18bd63209.webp',shaman:'/img/a248194019663f.webp'}; // герой в полный рост по классам; нет рисунка — аватар
 const STBG='/img/d71bd6cfc986ff.webp';
 // Высота фигуры зверя в % от высоты сцены: чтобы все стояли соразмерно друг другу,
 // а медведь с кабаном были шире и крупнее крысы с вороном.
@@ -710,10 +710,10 @@ const BEASTH={'Горный медведь':26,'Вожак стаи':27,'Сне�
  'Болотная крыса':17,'Ворон-падальщик':17,'Лиса-оборотень':26,'Разбойник с тракта':26,'Драугр':27,'Тролль-подросток':26};
 const BEASTFIG={
  // звери в полный рост (вырезанные), по названию; нет — круглый портрет
- 'Лесной волк':'/img/fig-wolf.webp','Дикий кабан':'/img/fig-boar.webp','Лиса-оборотень':'/img/fig-fox.webp',
- 'Ворон-падальщик':'/img/fig-raven.webp','Болотная крыса':'/img/fig-rat.webp','Горный медведь':'/img/fig-bear.webp',
- 'Снежный барс':'/img/fig-leopard.webp','Разбойник с тракта':'/img/fig-bandit.webp','Вожак стаи':'/img/fig-alpha.webp',
- 'Драугр':'/img/fig-draugr.webp','Тролль-подросток':'/img/fig-troll.webp'};
+ 'Лесной волк':'/img/cbda99f3ca8fa9.webp','Дикий кабан':'/img/acb01258325bed.webp','Лиса-оборотень':'/img/a121f10324ecd0.webp',
+ 'Ворон-падальщик':'/img/2191747a2f93e9.webp','Болотная крыса':'/img/33078472e14153.webp','Горный медведь':'/img/a5f0729883f98c.webp',
+ 'Снежный барс':'/img/b18dacb59a69aa.webp','Разбойник с тракта':'/img/c70c1b6bdc447d.webp','Вожак стаи':'/img/52085b66f507a5.webp',
+ 'Драугр':'/img/64a99010047e2f.webp','Тролль-подросток':'/img/4be57e979b3791.webp'};
 // имя зверя приходит с чертой («Ядовитый ворон-падальщик») и строчными — ищем без учёта регистра
 const BFIG={};for(const k in BEASTFIG)BFIG[k.toLowerCase()]=BEASTFIG[k];
 const bfKey=n=>{n=String(n||'');const b=n.replace(/^\S+ /,'');return BFIG[b.toLowerCase()]||BFIG[n.toLowerCase()]||''};
@@ -2035,7 +2035,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.7';
+const GVER='1.18.8';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2114,7 +2114,7 @@ const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platfo
  document.addEventListener('touchmove',e=>{if(e.touches.length>1||(e.scale&&e.scale!==1))e.preventDefault()},{passive:false});}catch(e){}})();
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DIP=e;try{ui()}catch(_){}});
 window.addEventListener('appinstalled',()=>{DIP=null;try{log('Northfall установлен на устройство!','hit');ui()}catch(_){}});
-if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{}));
 
 // ===== Задание: игра на экране «Домой» =====
 const PWAQ={g:1000,au:5,b:3};
@@ -2441,7 +2441,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.7</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

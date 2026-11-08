@@ -23,6 +23,13 @@ if (!ver || !ru || !en) {
 }
 if (!/^\d+\.\d+\.\d+$/.test(ver)) { console.error('Версия должна быть вида 1.18.1'); process.exit(2); }
 
+// 0. Проверка имён картинок: они кэшируются на год (immutable), поэтому имя
+//    обязано быть хешем содержимого — иначе игроки останутся со старой графикой.
+{
+  const r = cp.spawnSync(process.execPath, [path.join(ROOT, 'tools', 'assetcheck.js')], { stdio: 'inherit' });
+  if (r.status !== 0) { console.error('Проверка картинок не пройдена — выпуск остановлен.'); process.exit(2); }
+}
+
 // 1. changelog
 const CL = path.join(ROOT, 'netlify', 'lib', 'changelog.json');
 const log = JSON.parse(fs.readFileSync(CL, 'utf8'));
