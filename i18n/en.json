@@ -2509,5 +2509,10 @@
 "Это может сделать только глава клана.": "Only the clan leader can do this.",
 "Это уже получено.": "This has already been claimed.",
 "Не удалось выполнить.": "Couldn't do it.",
-"Сервер не принял запрос.": "The server rejected the request."
+"Сервер не принял запрос.": "The server rejected the request.",
+"Сервер не начал бой: ": "The server did not start the fight: ",
+"неизвестно": "unknown",
+"Вызов: ": "Challenge: ",
+"Победа! Рейтинг +": "Victory! Rating +",
+"Поражение. Рейтинг ": "Defeat. Rating "
 }
