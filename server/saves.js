@@ -254,6 +254,28 @@ module.exports = function saves(admin) {
     } catch (e) { if (e instanceof Fail) return J(res, e.code, { error: e.message }); return J(res, 500, { error: 'db' }); }
   }
 
+
+
+  // ---------- /api/admin/tickets: пополнить билеты текущему администратору ----------
+  async function tickets(req, res) {
+    try {
+      const { a, uid } = await who(req);
+      if (!ADMINS.includes(uid)) return J(res, 403, { error: 'Нет доступа' });
+      const db = a.firestore(), ref = db.collection('saves').doc(uid), now = Date.now();
+      let result = null;
+      await db.runTransaction(async tx => {
+        const sn = await tx.get(ref);
+        if (!sn.exists) throw new Fail(404, 'Сохранение персонажа не найдено');
+        const st = ARENA.readState(sn.data(), now);
+        st.atk = ARENA.ATK; st.atkt = now;
+        tx.update(ref, { atk: st.atk, atkt: st.atkt });
+        result = { atk: st.atk, atkt: st.atkt };
+      });
+      return J(res, 200, { ok: 1, ...result });
+    } catch (e) { if (e instanceof Fail) return J(res, e.code, { error: e.message }); console.error('admin tickets', e); return J(res, 500, { error: 'db' }); }
+  }
+
+  handle.tickets = tickets;
   handle.op = op; handle.flags = flags;
   return handle;
 };
