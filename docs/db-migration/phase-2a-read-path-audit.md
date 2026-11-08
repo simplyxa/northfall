@@ -107,6 +107,7 @@ Suggested initial service groups:
 - [x] Static inventory of major browser listeners and hub feeds.
 - [x] Inspect core server game modules and primary Netlify functions for Firestore reads, transactions, and writes.
 - [ ] Sweep remaining helper modules, scripts, and dynamically constructed paths; verify the inventory against a repository-wide search.
+- [x] Document core `/api/save` and `/api/op` transaction contracts plus privileged server routes.
 - [ ] Define stable service contracts and response shapes; do not change runtime yet.
 - [ ] Add PostgreSQL connection/config validation without connecting to a live database.
 - [ ] Implement and test one read-only domain (rankings or public profiles) against a local/test PostgreSQL instance.
@@ -129,3 +130,50 @@ Suggested initial service groups:
 - Do not deploy a partially migrated service.
 - Keep Firebase Auth initially; this audit concerns Firestore data access, not identity migration.
 - The maintenance window is for the final cutover only, after staging and reconciliation are ready.
+
+
+## Detailed API and transaction audit: `server/index.js` and `server/saves.js`
+
+Static inspection of these two modules confirms the main migration boundary and several operations with strict atomicity requirements.
+
+### `server/saves.js`: player save and operations API
+
+| Route / action | Reads | Writes | Required PostgreSQL behavior |
+|---|---|---|---|
+| `POST /api/save` | Current `saves/{uid}` inside transaction | Full character save; conditional public `players/{uid}` projection | Compare-and-save with stale-save guard; save and public projection in one transaction. Preserve server-calculated stat sum and server-owned projection fields. |
+| `POST /api/op` — `mklist` | Character save | Remove item from inventory; create market lot | Inventory removal and lot creation must be atomic. |
+| `/api/op` — `mkcancel` | Character save + market lot | Return item to inventory; delete lot | Ownership/status check and both changes in one transaction. |
+| `/api/op` — `give` | Character save, recipient save, sender wallet | Remove item; debit 1 gold; append wallet ledger; create item message | Item transfer, fee debit, ledger and message must commit together. |
+| `/api/op` — `take` | Character save + item message | Add item to inventory; mark message claimed | One-time claim; concurrent claims cannot duplicate the item. |
+| `/api/op` — `donate` | Character save + clan member deposit | Debit silver or iron; update member deposit and character save | Resource debit and clan contribution must be atomic. |
+| `GET /api/flags` | Latest 50 fraud/validation flags ordered by timestamp | None | Admin-only query; bounded and indexed. |
+| `/api/admin/tickets` | Admin character save | Updates arena ticket count/timestamp | Admin authorization and transactionally consistent ticket state. |
+
+Additional save invariants:
+- `who()` authenticates the caller before any operation; the client-provided save account must match the authenticated UID.
+- `readSave()` validates payload size, JSON, inventory array, session token, and account ownership.
+- `guard()` is the stale-save and anti-tamper boundary. It must be ported and tested before changing the persistence backend.
+- Inventory capacity, item transfer restrictions, item UID regeneration, and protected-item checks are business rules, not database details.
+- Anti-cheat flags are best-effort side effects today. Their failure must not roll back a valid character save; decide whether to retain this behavior or move to an outbox.
+
+### `server/index.js`: privileged and maintenance routes
+
+| Route / job | Reads | Writes | Migration notes |
+|---|---|---|---|
+| `POST /api/admin-clan` | Clan; all matching player and save records for the clan | Clears clan fields from player/save documents in batches; recursively deletes clan and subcollections | Destructive admin operation. Replace with a carefully scoped SQL transaction or staged deletion job; preserve audit log and explicit admin authorization. |
+| `GET /api/admin-live-ranking?ids=...` | Selected saves and player projections; also exact-name save queries | None | Diagnostic/admin-only; avoid making it a public API. |
+| `GET /api/admin-live-ranking` | Up to 1,500 saves, then matching player docs in batches | None | Expensive full diagnostic scan. Replace with indexed consistency checks or an offline admin job, not a normal request. |
+| Test-card cleanup on startup / periodic schedule | Full players collection at startup; indexed `tst == 1` query periodically | Deletes matching test player cards | Operational cleanup. Replace with explicit test-account tagging/expiry and bounded deletion; full collection scan is unsuitable for a high-read-cost store. |
+| `/hubz` | In-memory hub counters only | None | Does not itself query Firestore. |
+
+### API contract requirements before implementation
+
+1. Keep route paths, HTTP methods, authentication rules, status codes, and response JSON stable while replacing the repository layer.
+2. Make the authenticated UID the sole authority for the character being modified; never accept a target UID from an untrusted save payload.
+3. Preserve the stale-save conflict response (`409 { stale: 1 }`) so older tabs/PWA sessions cannot overwrite newer character state.
+4. Treat `/api/op` actions as named domain commands, not generic arbitrary document mutations.
+5. Implement SQL transactions and concurrency controls for each multi-record action. For market and item claims, add explicit unique/idempotency constraints where needed.
+6. Separate admin diagnostics and destructive maintenance jobs from player-facing request paths; add audit records for destructive actions.
+7. Replace collection-wide scans with bounded, indexed queries or offline jobs. In particular, the current ranking diagnostic and startup test-card scan should not be copied literally to PostgreSQL.
+
+This review is based on source code only. It did not execute routes, query Firestore, or mutate player data.
