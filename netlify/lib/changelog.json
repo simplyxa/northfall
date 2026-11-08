@@ -475,5 +475,10 @@
     "v": "1.18.19",
     "t": "Летопись клана загружается только при открытии её вкладки — меньше лишних чтений Firebase.",
     "te": "Clan activity log now loads only when its tab is opened, reducing unnecessary Firebase reads."
+  },
+  {
+    "v": "1.18.20",
+    "t": "Форум теперь загружает последние 20 комментариев, а старые — по запросу. Снижено количество лишних чтений Firebase.",
+    "te": "The forum now loads the latest 20 comments first and older comments on demand, reducing unnecessary Firebase reads."
   }
 ]
