@@ -27,6 +27,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 module.exports = function apvp(getDb) {
   const rooms = new Map();   // uid → R
+  const starting = new Set(); // защита от двойного вызова до завершения транзакции
   const D = () => getDb();
 
   // ---- характеристики по сохранению ----
@@ -56,7 +57,7 @@ module.exports = function apvp(getDb) {
   }
 
   // ---- старт боя: билет списывает сервер ----
-  async function start(c, m, send) {
+  async function startInner(c, m, send) {
     const db = D(); if (!db || !c.uid) return;
     const oid = String(m.id || '');
     if (!/^[A-Za-z0-9_~-]{2,40}$/.test(oid)) return send(c, { t: 'ape', rid: 'ap', why: 'noopp' });
@@ -97,6 +98,13 @@ module.exports = function apvp(getDb) {
     rooms.set(c.uid, R);
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
     tick(R, c, send);
+  }
+
+  async function start(c, m, send) {
+    if (!c.uid || rooms.has(c.uid) || starting.has(c.uid)) return;
+    starting.add(c.uid);
+    try { await startInner(c, m, send); }
+    finally { starting.delete(c.uid); }
   }
 
   // ---- ход игрока ----
@@ -209,7 +217,7 @@ module.exports = function apvp(getDb) {
         tx.set(db.collection('players').doc(R.uid), {
           rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose
         }, { merge: true });
-        R.res = { rt, lost, win, atk: st.atk, atkt: st.atkt };
+        R.res = { rt, rating: st.rt, srt: st.srt, lost, win, atk: st.atk, atkt: st.atkt };
       });
     } catch (e) { console.error('apvp end', e.message); }
     rooms.delete(R.uid);
