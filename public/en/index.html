@@ -823,11 +823,11 @@ function act(a){
 function fightTick(){
  if(!fight)return;if(fight.arena&&fight.pvp)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&!fight.hunt.raid&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
  fight.ch=Math.min(1,fight.ch+dt/(fight.chs||5));if(fight.hunt)return huntTick(dt);if(!(fight.e&&fight.e.stun>fight.clk))fight.ech+=dt/((fight.e&&fight.e.spd)||5);
- if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return render()}}}
+ if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
  if(fight.wb&&fight.clk>=WBT){wbEnd('time');save();return render()}
  if(fight.ech>=1){fight.ech=0;enemyTurn();settle();save();return render()}
- if(petTick(dt)){settle();save();return render()}
+ if(petTick(dt)){settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}
  paintFight();
 }
 
@@ -1159,7 +1159,7 @@ function useSkill(id){if(!fight)return;const sk=skOf().find(x=>x[0]===id);if(!sk
  else if(id==='trap'){e.stun=now+skV('trap')*1000;log(`${e.name} is caught in a trap.`,'hit')}
  else if(id==='shot'){let d=Math.round(atk()*skV('shot')*rnd(.9,1.1));const c=Math.random()*100<crit();if(c){d=Math.round(d*1.8);fx('crit')}else fx('hit');if(e.tr==='armor')d=Math.round(d*.5);
   const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Aimed ':''}Shot: ${d} damage.`,'hit');settle()}
- save();render()}
+ save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render()}
 const skBtns=()=>`<div class="skr">${skOf().map((k,i)=>{const L=skLeft(k[0]);return`<button class="b alt sk" id="sk${i}" data-a="sk-${k[0]}" title="${k[2]}" ${L>0?'disabled':''} style="display:inline-flex;align-items:center;justify-content:center;gap:6px">${skImg(k[0],26)}<span id="skl${i}">${k[1]}${L>0?' '+Math.ceil(L/1000)+' s':''}</span></button>`}).join('')}</div>`;
 const TRAITS={poison:['Venomous','poison: damage over time'],armor:['Armored','takes half damage'],leader:['Pack leader','while alive, the others hit 30% harder'],fast:['Swift','attacks every 3 seconds']};
 function setBonus(){const c={};for(const it of Object.values(S.eq||{}))if(it&&it.tr!=null&&!broken(it))c[it.tr]=(c[it.tr]|0)+1;let best=null;for(const t in c){const n=c[t],pct=n>=10?.25:n>=5?.12:n>=3?.05:0;if(pct&&(!best||pct>best.pct||(pct===best.pct&&n>best.n)))best={t:+t,n,pct}}return best}
