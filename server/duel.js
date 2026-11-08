@@ -42,6 +42,7 @@ function dRound(R, acts) {
 
 module.exports = function duels(getDb) {
   const rooms = new Map(); // rid → {R, acts:{uid:{r,a}}, subs:Set, busy, send}
+  let LAST_ERR = '';        // последняя ошибка раунда — видна в /hubz
   const ARENA = require('./arena');
   const CYCLE = require('./cycle');
 
@@ -84,7 +85,7 @@ module.exports = function duels(getDb) {
         if (D.st === 'end' && !D.scored) await scoreDuel(tx, D, warDocs);
         tx.set(ref, D); r.R = D;
       });
-    } catch (e) { console.error('duel resolve', rid, e.message); }
+    } catch (e) { LAST_ERR = rid + ': ' + (e && e.message || e); console.error('duel resolve', rid, e.message); }
     r.busy = false; r.t = Date.now();
     cast(rid, r);
   }
@@ -167,7 +168,7 @@ module.exports = function duels(getDb) {
     }
   }
   function onClose(c) { if (c.duels) for (const rid of c.duels) { const r = rooms.get(rid); if (r) r.subs.delete(c); } }
-  return { onMsg, onClose, stats: () => [...rooms].map(([k, r]) => ({ rid: k, st: r.R && r.R.st, r: r.R && r.R.r, subs: r.subs.size })) };
+  return { onMsg, onClose, stats: () => ({ rooms: [...rooms].map(([k, r]) => ({ rid: k, st: r.R && r.R.st, r: r.R && r.R.r, subs: r.subs.size, acts: Object.keys(r.acts || {}).length })), err: LAST_ERR }) };
 };
 
 // dRound — чистая функция раунда, её удобно тестировать отдельно
