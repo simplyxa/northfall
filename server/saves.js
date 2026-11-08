@@ -162,12 +162,24 @@ module.exports = function saves(admin) {
       await db.runTransaction(async tx => {
         const sn = await tx.get(ref); prev = sn.exists ? sn.data() : null;
         g = guard(prev, s, ses, base, uid, prev && prev.ts ? Date.now() - prev.ts : 5000); if (g.stale) return;
+        s._pubStats = 1; // однократное обновление публичной карточки после добавления рейтинга статов
         tx.set(ref, s);
-        // карточку игрока пишет сервер: рейтинг, сезон и счётчики — его данные
-        const card = { lvl: s.lvl, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, dr: s.dr, dn: s.dn, dw: s.dw, seen: Date.now() };
-        const changed = !prev || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
+        // Публичная сумма основных характеристик с учётом базовых бонусов экипировки.
+        const statSum = save => {
+          const st = save.st || {}, gear = { atk: 0, def: 0, hp: 0, reg: 0, en: 0 };
+          for (const it of Object.values(save.eq || {})) {
+            if (!it || !it.b) continue;
+            for (const k of Object.keys(gear)) gear[k] += Number(it.b[k]) || 0;
+          }
+          const bonus = { str: gear.atk / 2, hp: gear.hp / 8, arm: gear.def, reg: gear.reg, en: gear.en };
+          return ['str', 'hp', 'arm', 'reg', 'en'].reduce((n, k) => n + Math.round((Number(st[k]) || 0) + bonus[k]), 0);
+        };
+        const ssum = statSum(s), prevSsum = prev ? statSum(prev) : null;
+        // Карточку игрока пишет сервер: рейтинг, сезон, характеристики и счётчики — его данные.
+        const card = { lvl: s.lvl, ssum, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, dr: s.dr, dn: s.dn, dw: s.dw, seen: Date.now() };
+        const changed = !prev || prev._pubStats !== 1 || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
           || card.win !== (prev.win | 0) || card.lose !== (prev.lose | 0) || card.sid !== (prev.sid | 0)
-          || card.lvl !== (prev.lvl | 0) || card.dr !== (prev.dr | 0) || card.dn !== (prev.dn | 0)
+          || card.lvl !== (prev.lvl | 0) || ssum !== prevSsum || card.dr !== (prev.dr | 0) || card.dn !== (prev.dn | 0)
           || card.dw !== (prev.dw | 0);
         if (changed) tx.set(db.collection('players').doc(uid), card, { merge: true });
       });
