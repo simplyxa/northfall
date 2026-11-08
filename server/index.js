@@ -182,6 +182,65 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ error: status === 401 ? 'auth_required' : 'delete_failed' }));
     }
   }
+  if (u.pathname === '/api/admin-live-ranking' && (req.method === 'GET' || req.method === 'POST')) {
+    if (!noAuthLimit(req, res)) return;
+    try {
+      const a = fbAdmin(); if (!a) { res.writeHead(503); return res.end(JSON.stringify({ error: 'firebase_unavailable' })); }
+      const tok = String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const user = await a.auth().verifyIdToken(tok);
+      const email = String(user.email || '').toLowerCase();
+      const adminId = email.endsWith('@northfall.game') ? email.slice(0, -'@northfall.game'.length) : '';
+      if (!['shtorm1', 'admin'].includes(adminId)) { res.writeHead(403); return res.end(JSON.stringify({ error: 'forbidden' })); }
+      const db = a.firestore();
+      if (req.method === 'GET') {
+        const ss = await db.collection('saves').limit(1500).get(), candidates = [];
+        for (let i = 0; i < ss.docs.length; i += 100) {
+          const group = ss.docs.slice(i, i + 100);
+          const ps = await db.getAll(...group.map(d => db.collection('players').doc(d.id)));
+          for (let j = 0; j < group.length; j++) {
+            const sv = group[j].data() || {}, pv = ps[j].exists ? ps[j].data() || {} : null;
+            if (!sv.name || !Number.isFinite(+sv.lvl)) continue;
+            const keys = ['rating','srat','dr','dn','dw'];
+            const missing = !pv;
+            const changed = pv && keys.some(k => (pv[k] == null ? 0 : +pv[k]) !== (sv[k] == null ? 0 : +sv[k]));
+            if (missing || changed) candidates.push({
+              id: group[j].id, name: String(sv.name).slice(0,40), lvl: sv.lvl|0,
+              missing, rating: sv.rating|0, dr: sv.dr==null?1000:sv.dr|0, dn: sv.dn|0, dw: sv.dw|0,
+              reason: missing ? 'Карточка отсутствует' : 'Рейтинг отличается от сохранения'
+            });
+          }
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(JSON.stringify({ ok:true, scanned:ss.size, candidates }));
+      }
+      let b; try { b = JSON.parse((await readBody(req)).toString('utf8') || '{}'); } catch (e) { res.writeHead(400); return res.end(JSON.stringify({ error:'bad_json' })); }
+      const id = String(b.id || '');
+      if (!/^[a-z0-9_]{3,32}$/i.test(id)) { res.writeHead(400); return res.end(JSON.stringify({ error:'bad_player_id' })); }
+      const sr = db.collection('saves').doc(id), pr = db.collection('players').doc(id);
+      const sn = await sr.get(); if (!sn.exists) { res.writeHead(404); return res.end(JSON.stringify({ error:'save_not_found' })); }
+      const sv = sn.data() || {};
+      if (!sv.name || !Number.isFinite(+sv.lvl) || !sv.inv || !Array.isArray(sv.inv)) { res.writeHead(409); return res.end(JSON.stringify({ error:'save_not_eligible' })); }
+      const card = {
+        name:sv.name, cls:sv.cls||'', lvl:sv.lvl|0, rating:sv.rating|0, srat:sv.srat|0,
+        sid:sv.sid|0, psid:sv.psid|0, psrat:sv.psrat|0, win:sv.win|0, lose:sv.lose|0,
+        dr:sv.dr==null?1000:sv.dr|0, dn:sv.dn|0, dw:sv.dw|0,
+        clan:sv.clan||'', war:sv.war||'', wp:sv.wp|0, av:sv.av||{s:0,c:0},
+        title:sv.title||'', ssum:sv.ssum|0, seen:sv.ts||Date.now(),
+        eq:sv.eq||{}, stats:sv.stats||{}, ex:sv.ex&&sv.ex.end?+sv.ex.end:0,
+        cxt:sv.cxt|0, reg:sv.reg||0, rd:sv.rd==null?null:sv.rd, old:sv.old?1:0,
+        src:sv.src||'', act:Array.isArray(sv.act)?sv.act.slice(-40):[],
+        app:sv.app?1:0, appEver:sv.appEver?1:0, cnt:sv.cnt||{}, xpt:sv.xpt|0, cjt:sv.cjt|0
+      };
+      await pr.set(card, { merge:true });
+      res.writeHead(200, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' });
+      return res.end(JSON.stringify({ok:true,id,name:sv.name,dr:card.dr,dn:card.dn,dw:card.dw,rating:card.rating}));
+    } catch (e) {
+      console.error('admin-live-ranking', e.message);
+      const status = e.code === 'auth/id-token-expired' || e.code === 'auth/argument-error' ? 401 : 500;
+      res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({error:status===401?'auth_required':'recovery_failed'}));
+    }
+  }
   if (u.pathname === '/api/flags') return SAVE.flags(req, res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
   if (u.pathname === '/api/op' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
