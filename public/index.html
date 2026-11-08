@@ -2116,6 +2116,26 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DIP=e;try{u
 window.addEventListener('appinstalled',()=>{DIP=null;try{log('Northfall установлен на устройство!','hit');ui()}catch(_){}});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{}));
 
+// ===== Проверка версии: игра сама предлагает обновиться, когда вышел новый ре =====
+// Особенно важно для установленного приложения (иконка на главном экране): там своя
+// копия service worker и старый кэш картинок, и без подсказки игрок сидит на старой версии.
+const vnum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
+function vNewer(a,b){const x=vnum(a),y=vnum(b);for(let i=0;i<3;i++){if(x[i]!==y[i])return x[i]>y[i]}return false}
+let VCKV='';
+function verChk(){
+  try{fetch('/version.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
+    if(j&&j.v&&vNewer(j.v,GVER)&&j.v!==VCKV){VCKV=j.v;updShow()}
+  }).catch(()=>{})}catch(e){}
+}
+function updShow(){
+  if(document.getElementById('updm'))return;
+  if(typeof fight!=='undefined'&&fight){setTimeout(updShow,4000);return} // не мешаем бою
+  const d=document.createElement('div');d.className='modal';d.id='updm';d.style.zIndex=210;
+  d.innerHTML=`<div class="mbox" style="text-align:center"><h3 style="margin:0 0 8px">Досталось обновление</h3><p style="margin:0 0 12px">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class="b red" style="width:100%" onclick="location.reload()">Обновить игру</button></div>`;
+  document.body.appendChild(d);
+}
+setTimeout(verChk,2000);setInterval(verChk,60000);
+
 // ===== Задание: игра на экране «Домой» =====
 const PWAQ={g:1000,au:5,b:3};
 function pwaClaim(){if(!S||S.pwaq||!isApp())return;if(UID&&!GUEST&&SG!==true)return popup('Минутку','Связь с казной ещё не установлена. Попробуй через несколько секунд.');S.pwaq=1;S.gold+=PWAQ.g;S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+PWAQ.b;SILFX={v:PWAQ.g,t:Date.now()};

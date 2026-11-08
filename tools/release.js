@@ -51,6 +51,10 @@ else {
   console.log('клиент: версия ' + m[1] + ' → ' + ver);
 }
 
+// 2b. файл версии для проверки обновлений (игра сравнивает его со своей версией)
+fs.writeFileSync(path.join(ROOT, 'public', 'version.json'), JSON.stringify({ v: ver }) + '\n');
+console.log('version.json: ' + ver);
+
 // 3. английская версия
 const r = cp.spawnSync(process.execPath, [path.join(ROOT, 'i18n', 'build_en.js')], { stdio: 'inherit' });
 if (r.status !== 0) { console.error('сборка EN не удалась'); process.exit(1); }

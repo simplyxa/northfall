@@ -29,7 +29,7 @@ const ZIP = /^(text\/|application\/(json|manifest|xml|javascript)|image\/svg)/;
 // кэш как в netlify.toml
 function cacheFor(rel) {
   if (rel.startsWith('/img/')) return 'public, max-age=31536000, immutable';
-  if (rel === '/' || rel === '/index.html' || rel === '/sw.js' || rel === '/manifest.webmanifest' || rel === '/en/' || rel === '/en/index.html' || rel === '/manifest.en.webmanifest') return 'no-cache';
+  if (rel === '/' || rel === '/index.html' || rel === '/sw.js' || rel === '/manifest.webmanifest' || rel === '/en/' || rel === '/en/index.html' || rel === '/manifest.en.webmanifest' || rel === '/version.json') return 'no-cache';
   return 'public, max-age=3600';
 }
 const SEC = {

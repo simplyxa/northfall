@@ -17,6 +17,8 @@ self.addEventListener('fetch', e => {
   const u = new URL(req.url);
   // Сервер игры, база и вход — всегда напрямую
   if (u.pathname.startsWith('/.netlify/') || /firestore|identitytoolkit|securetoken|xsolla/.test(u.hostname)) return;
+  // версию игры всегда берём из сети — по ней игра предлагает обновление
+  if (u.pathname === '/version.json') return;
 
   // Страница игры: сначала сеть (чтобы обновления приходили сразу), при плохой связи — из кэша
   if (req.mode === 'navigate' || (u.origin === location.origin && (u.pathname === '/' || u.pathname === '/index.html' || u.pathname.startsWith('/en/')))) {

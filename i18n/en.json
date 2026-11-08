@@ -2493,5 +2493,6 @@
 "поединки с копиями героев · 🎟 ": "duels with hero copies · 🎟 ",
 "поединки с копиями героев · ": "duels with hero copies · ",
 "Облако недоступно — прогресс сохранён локально и уйдёт на сервер, когда тот оживёт.": "Cloud unavailable — your progress is saved locally and will sync once the server is back.",
-"отдых у костра…": "rest by the fire…"
+"отдых у костра…": "rest by the fire…",
+"<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">Досталось обновление</h3><p style=\"margin:0 0 12px\">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class=\"b red\" style=\"width:100%\" onclick=\"location.reload()\">Обновить игру</button></div>": "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">An update is ready</h3><p style=\"margin:0 0 12px\">A new version of the game is out. Reload to get the fresh graphics and all the fixes.</p><button class=\"b red\" style=\"width:100%\" onclick=\"location.reload()\">Update the game</button></div>"
 }
