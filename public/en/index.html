@@ -399,6 +399,9 @@ function srvFix(f){if(!f||!S)return;let ch=false;
  if(f.psid!=null&&(S.psid|0)!==f.psid){S.psid=f.psid;ch=true}
  if(f.psrat!=null&&(S.psrat|0)!==f.psrat){S.psrat=f.psrat;ch=true}
  if(f.atk!=null&&(S.atk|0)!==f.atk){S.atk=f.atk;ch=true}
+ if(f.dr!=null&&(S.dr|0)!==f.dr){S.dr=f.dr;ch=true}
+ if(f.dw!=null&&(S.dw|0)!==f.dw){S.dw=f.dw;ch=true}
+ if(f.dn!=null&&(S.dn|0)!==f.dn){S.dn=f.dn;ch=true}
  if(f.atkt!=null&&S.atkt!==f.atkt){S.atkt=f.atkt;ch=true}
  if(f.lvl!=null&&(S.lvl|0)!==f.lvl){S.lvl=f.lvl;ch=true}
  if(f.ar)delete S.ar;
