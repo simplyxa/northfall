@@ -749,7 +749,7 @@ function stageFx(){if(!fight||!fight.hunt||fight.hunt.raid)return;const H=fight.
  fight.lc=0}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);if(!H.raid)queueMicrotask(stageFx);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Quest “${NQ.h}”</span><span><b>killed ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
  return nq+`<div class="panel">${H.raid?rHead():`<h3>Hunt · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Killed: <b>${H.kills}</b> · XP +${H.xp} · silver +${H.gold}${H.loot.length?` · trophies ${H.loot.length}`:''}.${S.lvl<3?'</p>':` Entry is free, but every strike and every new beast costs 1 energy. ${nbOn()?'While you follow the “Newcomer\'s Path”, energy regenerates as usual during the hunt.':'Energy regenerates slower during the hunt:'} +${(enPSH()*60).toFixed(1).replace('.',',')} per minute (outside the hunt +${(enPS()*60).toFixed(1).replace('.',',')}).</p>`}
- `}${H.raid?`<div class="lbl"><span>Your health</span><span>${S.hp}/${maxHp()} · energy ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} lv. ${petA().lvl} fights alongside</p>`:''}
+ `}${H.raid?`<div class="lbl"><span>Your health</span><span id="myhptext">${S.hp}/${maxHp()} · energy ${S.en}/${maxEn()}</span></div><div id="myhpbar">${bar(S.hp,maxHp(),'--moss')}</div>${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} lv. ${petA().lvl} fights alongside</p>`:''}
  <div class="mobs">${H.sl.map((s,i)=>s.e?`<button class="mob ${fight.e===s.e?'on':''}${s.e.img||mobImg(s.e.name)?' mbg':''}${s.e.rbp?' mboss':''}" data-tg="${i}" aria-label="Target: ${esc(s.e.name)}"${s.e.img||mobImg(s.e.name)?` style="background-image:linear-gradient(90deg,rgba(10,12,14,.9) 0%,rgba(10,12,14,.6) 50%,rgba(10,12,14,.15) 100%),url(${s.e.img||mobImg(s.e.name)})"`:''}><b>${esc(s.e.name)}</b><small>lv. ${s.e.lv} · ${s.e.hp}/${s.e.max}${s.e.stun>fight.clk?' · stunned':''}</small><small class="mtr" style="color:var(--blood)" title="${s.e.tr?TRAITS[s.e.tr][1]:''}">${s.e.tr?TRAITS[s.e.tr][1]:'&nbsp;'}</small><span class="mb"><i style="width:${s.e.hp/s.e.max*100}%;background:var(--blood)"></i></span></button>`:`<div class="mob empty"><small>${s.at!=null?'Rustling in the bushes…':'Empty'}</small></div>`).join('')}</div>`:stageHtml(H)}
  ${H.raid?rGroup():`<p style="margin:2px 0 8px;color:var(--mute);font-size:13px">${S.lvl<3?'Tap a beast — and the hero will strike it.':'Tap a beast to choose a target.'}</p>`}
  ${ahOk()||S.lvl<AHLV?'':`<p style="margin:0 0 6px;font-size:13px;color:var(--mute)">Auto-strike unlocks at level ${AHLV}.</p>`}${fight.hint?'<div class="sthint">👇 Press “Strike”!</div>':''}<div class="srow"><button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Strike${fight.e?' · '+esc(fight.e.name):''}</button>${ahOk()?`<button class="sq ${S.ahunt?'on':''}" data-ah="1" title="Auto-strike" aria-label="Auto-strike ${S.ahunt?'on':'off'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg></button><button class="sq ${S.hx2?'on':''}" ${H.raid?'hidden':''} data-hx2="1" title="Speed x2" aria-label="Speed x2 ${S.hx2?'on':'off'}"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 6l8 6-8 6z"/><path d="M12 6l8 6-8 6z"/></svg></button>`:''}</div>
@@ -907,14 +907,24 @@ function head(){
 function fightView(){
  if(fight.hunt)return huntView();
  const e=fight.e,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100);
- return`<div class="panel"><h3>${esc(e.name)} · lv. ${e.lv}</h3>${e.title?`<p style="margin:0 0 6px;color:var(--mute);font-size:15px">${esc(e.title)}</p>`:''}
+ return`<div class="panel" id="fightpanel"><h3>${esc(e.name)} · lv. ${e.lv}</h3>${e.title?`<p style="margin:0 0 6px;color:var(--mute);font-size:15px">${esc(e.title)}</p>`:''}
  ${fight.dun?`<p style="margin:0 0 6px;color:var(--myth);font-weight:700">Descent ends in: <span id="dtm">${Math.ceil((DUNT-fight.clk)/1000)}</span> s</p>`:''}${fight.wb?`<div style="display:flex;justify-content:center;margin:0 0 6px">${wbIc(fight.wb.day,96)}</div>`:''}${fight.wb?`<p style="margin:0 0 6px;color:var(--blood);font-weight:700">Attack ends in: <span id="wtm">${Math.ceil((WBT-fight.clk)/1000)}</span> s</p>`:''}<div class="lbl"><span>Your health</span><span>${S.hp}/${maxHp()} · energy ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} lv. ${petA().lvl} fights alongside</p>`:''}
- <div class="lbl"><span>Enemy health</span><span>${e.hp}/${e.max}</span></div>${bar(e.hp,e.max,'--blood')}
+ <div class="lbl"><span>Enemy health</span><span id="enemyhptext">${e.hp}/${e.max}</span></div><div id="enemyhpbar">${bar(e.hp,e.max,'--blood')}</div>
  <div class="lbl"><span>Enemy attack (every ${String(e.spd||5).replace('.',',')} s)</span><span id="ect">${ec}%</span></div><div class="bar"><i id="ecb" style="width:${ec}%;background:var(--blood)"></i></div>
  <button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2?'disabled':''}>Strike</button>
  ${skBtns()}<div class="frow">${bgBtn()}${['b'].map(k=>{const L=bleft();return`<button class="b alt fcd" id="bp${k}" data-a="pot-${k}" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt[k]<1||L>0?'disabled':''}>${L>0?POT[k].sh+' '+Math.ceil(L/1000)+' s':POT[k].sh+' ('+S.pt[k]+')'}</button>`}).join('')}<button class="b alt" data-a="flee">Flee</button></div></div>`;
 }
 function bgBtn(){const now=fight.clk,act=now<fight.guardUntil,cd=now<fight.gcd,p=act?Math.round((fight.guardUntil-now)/3000*100):cd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100;return`<button class="b alt fcd${act?' act':''}" id="bg" data-a="guard" style="--p:${p}" ${cd?'disabled':''}>${act?'Shield '+Math.ceil((fight.guardUntil-now)/1000)+' s':cd?'Block '+Math.ceil((fight.gcd-now)/1000)+' s':'Block'}</button>`}
+function paintPvpFight(){
+ if(!fight||!fight.pvp)return;
+ const t=document.getElementById('myhptext'),b=document.getElementById('myhpbar'),et=document.getElementById('enemyhptext'),eb=document.getElementById('enemyhpbar');
+ if(t)t.textContent=S.hp+'/'+maxHp()+' · energy '+S.en+'/'+maxEn();
+ if(b)b.innerHTML=bar(S.hp,maxHp(),'--moss');
+ if(et)et.textContent=fight.e.hp+'/'+fight.e.max;
+ if(eb)eb.innerHTML=bar(fight.e.hp,fight.e.max,'--blood');
+ if(APLOGVIEW!==APLOG){const l=document.getElementById('log');if(l)l.innerHTML=logs.map(x=>'<p class="'+x[1]+'">'+esc(x[0])+'</p>').join('')||'<p>Quiet.</p>';APLOGVIEW=APLOG}
+ paintFight();
+}
 function paintFight(){
  if(!fight)return;if(fight.hunt&&!fight.hunt.raid)stageFx();const now=fight.clk,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100),g=id=>document.querySelector(id);
  const set=(id,fn)=>{const x=g(id);if(x)fn(x)};skOf().forEach((k,i)=>set('#sk'+i,x=>{const L=skLeft(k[0]);const l=g('#skl'+i);if(l)l.textContent=k[1]+(L>0?' '+Math.ceil(L/1000)+' s':'');x.disabled=L>0}));if(fight.hunt)fight.hunt.sl.forEach((s,i)=>{if(s.e)set('#ma'+i,x=>x.style.width=Math.round(s.ech*100)+'%')});if(fight.dun)set('#dtm',x=>x.textContent=Math.max(0,Math.ceil((DUNT-fight.clk)/1000)));if(fight.wb)set('#wtm',x=>x.textContent=Math.max(0,Math.ceil((WBT-fight.clk)/1000)));
@@ -1450,7 +1460,7 @@ const frameOf=p=>{if(dnOf(p)<=0)return'';const k=rankOf2(p);return'fr:'+DRANK.in
 const meP=()=>({dr:S.dr==null?1000:S.dr,dn:S.dn|0});
 const DSK={berserk:['Rage','strike ×1.6, a shield won\'t save you'],hunter:['Aimed shot','strike ×1.3 and always a crit'],shaman:['Healing of the spirits','+25% health and a weak strike']};
 const ddLeft=()=>{const d=DAY(),x=S.dd||{};return x.d===d?Math.max(0,DDAY-(x.n|0)):DDAY};
-let DUEL=null,DUELID=null,DUU=null,DUU2=null,DACT={},DRES=null,DBUSY=false,DQT=0,APLOG=0;
+let DUEL=null,DUELID=null,DUU=null,DUU2=null,DACT={},DRES=null,DBUSY=false,DQT=0,APLOG=0,APLOGVIEW=0;
 const dq=()=>RQ.duel||{m:[]},dqLive=()=>((dq().m)||[]).filter(x=>Date.now()-(+x.ts||0)<DSTALE),inDQ=()=>dqLive().some(x=>x.id===UID);
 const dMe=()=>({id:UID,n:S.name,lv:S.lvl,cls:S.cls,av:S.av||{s:0},dr:meP().dr,dn:meP().dn,ts:Date.now(),s:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}});
 // здоровье в дуэли масштабируется одним множителем для обоих, чтобы бой длился ~8 ходов при равных силах
@@ -1673,10 +1683,10 @@ const arTkTxt=()=>{const t=arTk(),n=arNext();return`${tkIc(22)}${t}/${ATK}${n?` 
 function startPvp(id){const p=PL.find(x=>x.id===id);if(!p||!p.stats||fight)return;if(arTk()<1){log('No arena tickets: a new one arrives in '+Math.ceil(arNext()/60000)+' min.','sys');return render()}
  if(S.hp<=0){log('You are wounded. Rest by the campfire.','sys');return render()}
  // бой с копией ведёт сервер: он считает урон, исход, рейтинг и списывает билет
- fixNum();HREP=null;REP=null;APLOG=0;hubSend({t:'apvp',id:p.id});log(`Challenge: ${p.name}!`,'sys');render()}
+ fixNum();HREP=null;REP=null;APLOG=0;APLOGVIEW=0;hubSend({t:'apvp',id:p.id});log(`Challenge: ${p.name}!`,'sys');render()}
 function apvpState(m){const s=m.st;if(!s)return;
  const pushLog=()=>{if(s.log&&s.log.length>APLOG){for(let k=APLOG;k<s.log.length;k++)log(s.log[k],'sys');APLOG=s.log.length}};
- if(s.st==='on'){pushLog();fight=Object.assign(fight||{},s,{arena:true,pvp:s.pid,pn:performance.now(),s:Object.assign({r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0},s.s||{})});S.hp=s.hp;render();return}
+ if(s.st==='on'){pushLog();fight=Object.assign(fight||{},s,{arena:true,pvp:s.pid,pn:performance.now(),s:Object.assign({r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0},s.s||{})});S.hp=s.hp;if(document.getElementById('fightpanel'))paintPvpFight();else render();return}
  pushLog();const r0=S.rating,sr0=S.srat,wp0=S.wp|0,rs=s.res||{},win=s.win===1;
  if(rs.rt!=null){S.rating=rs.rt;S.srat=rs.srt}
  if(rs.atk!=null){S.atk=rs.atk;S.atkt=rs.atkt}
@@ -2072,7 +2082,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.13';
+const GVER='1.18.14';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2555,7 +2565,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.13</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.14</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

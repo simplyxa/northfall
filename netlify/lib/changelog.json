@@ -445,5 +445,10 @@
   "v": "1.18.13",
   "t": "Лайв-арена: устранена двойная обработка обновлений боя. При работе через WebSocket отключаются лишние подписки Firestore; при потере соединения запасной канал автоматически включается снова.",
   "te": "Live Arena: fixed duplicate processing of battle updates. Redundant Firestore listeners are disabled while WebSocket is active and automatically restored if the connection drops."
+ },
+ {
+  "v": "1.18.14",
+  "t": "Обычная арена: бой с копией героя больше не перерисовывает весь экран при каждом обновлении. Обновляются только элементы боя, что уменьшает задержки интерфейса.",
+  "te": "Regular Arena: battles against hero clones no longer re-render the entire screen on every update. Only battle elements are refreshed, reducing interface lag."
  }
 ]
