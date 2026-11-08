@@ -104,13 +104,25 @@ module.exports = function duels(getDb) {
       const sn = await tx.get(db.collection('saves').doc(id));
       prev[id] = sn.exists ? sn.data() : null;
     }
+    // ВАЖНО: в транзакции Firestore все чтения идут ДО всех записей.
+    // Поэтому читаем активные войны заранее, до записи в сохранения.
+    const wars = await tx.get(db.collection('wars').where('end', '>', now).limit(30));
+    const warFor = {};
+    for (const id of ids) {
+      const cid = (prev[id] && prev[id].clan) || '';
+      if (!cid) continue;
+      for (const d of wars.docs) {
+        const W = d.data();
+        if (W.a === cid || W.b === cid) { warFor[id] = { ref: d.ref, W, cid }; break; }
+      }
+    }
     const res = ARENA.scoreDuel(D.mem, D.win, prev, now);
     if (res) {
       for (const id of ids) {
         const r = res[id];
         const s = Object.assign({}, prev[id] || {}, {
           dr: r.dr, dn: r.dn, dw: r.dw,
-          rating: r.rt, srat: r.srt, atk: r.atk,          // рейтинг и билет — сервер
+          rating: r.rt, srat: r.srt, atk: r.atk, atkt: r.atkt,   // рейтинг и билет — сервер
           _ar: { d: ARENA.dayNum(now) }
         });
         if (r.war) s.wp = (s.wp | 0) + r.war;              // очки клановой войны
@@ -120,7 +132,12 @@ module.exports = function duels(getDb) {
           ...(r.war ? { wp: ((prev[id] && prev[id].wp) | 0) + r.war } : {})
         }, { merge: true });
         // очки войны идут в документ войны — их тоже считает сервер
-        if (r.war) await CYCLE.warPoints(tx, db, (prev[id] && prev[id].clan) || '', r.war);
+        const wf = warFor[id];
+        if (r.war && wf) {
+          const w = Object.assign({}, wf.W.w || {});
+          w[wf.cid] = (w[wf.cid] || 0) + r.war;
+          tx.update(wf.ref, { w });
+        }
       }
       D.res = res;
     }

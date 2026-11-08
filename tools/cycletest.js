@@ -64,6 +64,10 @@ console.log('\nДуэль: сервер начисляет рейтинг, би�
   T('очки войны у победителя', res.a.war === 10 && res.b.war === 0);
   // без явного победителя результат не засчитывается
   T('битый документ не засчитан', ARENA.scoreDuel({ a: { lv: 1 }, b: { lv: 1 } }, 'xyz', prevs, now) === null);
+  // билет списывается, а время начисления обновляется — иначе билеты вернутся
+  T('дуэль отдаёт обновлённое время начисления', res.a.atkt > 0);
+  const after = ARENA.readState({ rating: res.a.rt, srat: res.a.srat, atk: res.a.atk, atkt: res.a.atkt, dr: res.a.dr, dn: res.a.dn, dw: res.a.dw, day: ARENA.dayNum(now) }, now + 60000);
+  T('билет не начислился повторно', after.atk === res.a.atk, after.atk + ' vs ' + res.a.atk);
 }
 
 // ---------- мировой босс ----------

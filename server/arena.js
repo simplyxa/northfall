@@ -172,7 +172,7 @@ function scoreDuel(members, win, prevs, now) {
     out[id] = {
       sc, dR: r.dR, dr: r.dr, dn: r.dn, dw: r.dw,
       g: sc === 1 ? duelGold((members[id] && members[id].lv) || 1) : 0,
-      rt: st[id].rt, srt: st[id].srt, atk: st[id].atk, noT,
+      rt: st[id].rt, srt: st[id].srt, atk: st[id].atk, atkt: st[id].atkt, noT,
       war: sc === 1 ? 10 : 0   // очки клановой войны
     };
   }

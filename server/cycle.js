@@ -201,35 +201,41 @@ module.exports = function cycle(getDb) {
         // урон ограничен атакой героя и числом зверей
         const capD = Math.round(atkBound(S) * 1.2 * take + 50);
         const takeD = Math.min(dmg, capD);
-        // 1. территории: по одному очку за зверя
+        // ВАЖНО: в транзакции Firestore все чтения идут ДО всех записей.
+        // Поэтому сначала читаем документы территорий и клана, потом пишем.
+        const terrs = [];
         if (cid) {
           for (const k of ['easy', 'mid', 'hard']) {
             const n = Math.floor(+q[k] || 0); if (!(n > 0)) continue;
-            const share = Math.max(1, Math.round(n * take / kills));
             const tref = dbx.collection('terr').doc(k);
             const tsn = await tx.get(tref);
-            const T = tsn.exists ? Object.assign({}, tsn.data()) : { wk, pts: {}, names: {} };
-            if (T.wk !== wk) {   // новая неделя: очки обнуляются, владелец сохраняется
-              const e = Object.entries(T.pts || {}).sort((a, b) => (b[1] | 0) - (a[1] | 0))[0];
-              T.wk = wk; T.pts = {}; T.names = {};
-              T.owner = e ? e[0] : (T.owner || ''); T.oname = e ? ((T.names || {})[e[0]] || '') : (T.oname || '');
-            }
-            T.pts = T.pts || {}; T.names = T.names || {};
-            T.pts[cid] = (T.pts[cid] | 0) + share;
-            T.names[cid] = String(S.name || cid).slice(0, 20);
-            tx.set(tref, T);
+            terrs.push({ k, n, ref: tref, T: tsn.exists ? Object.assign({}, tsn.data()) : { wk, pts: {}, names: {} } });
           }
         }
-        // 2. опыт клана и недельное задание
-        if (cid && takeD > 0) {
-          const cref = dbx.collection('clans').doc(cid);
-          const csn = await tx.get(cref); const C = csn.exists ? csn.data() : null;
-          if (C) {
-            const cx = Math.floor(takeD / CXK);
-            const nx = (C.xp | 0) + cx;
-            const w = (C.wq && C.wq.wk === wk) ? C.wq : { wk, xp: 0 };
-            tx.update(cref, { xp: nx, wq: { wk, xp: (w.xp | 0) + cx } });
+        let C = null;
+        const cref = cid ? dbx.collection('clans').doc(cid) : null;
+        if (cref && takeD > 0) { const csn = await tx.get(cref); C = csn.exists ? csn.data() : null; }
+        // ---- записи ----
+        // 1. территории: по одному очку за зверя
+        for (const it of terrs) {
+          const T = it.T;
+          if (T.wk !== wk) {   // новая неделя: очки обнуляются, владелец сохраняется
+            const e = Object.entries(T.pts || {}).sort((a, b) => (b[1] | 0) - (a[1] | 0))[0];
+            T.wk = wk; T.pts = {}; T.names = {};
+            T.owner = e ? e[0] : (T.owner || ''); T.oname = e ? ((T.names || {})[e[0]] || '') : (T.oname || '');
           }
+          T.pts = T.pts || {}; T.names = T.names || {};
+          const share = Math.max(1, Math.round(it.n * take / kills));
+          T.pts[cid] = (T.pts[cid] | 0) + share;
+          T.names[cid] = String(S.name || cid).slice(0, 20);
+          tx.set(it.ref, T);
+        }
+        // 2. опыт клана и недельное задание
+        if (C) {
+          const cx = Math.floor(takeD / CXK);
+          const nx = (C.xp | 0) + cx;
+          const w = (C.wq && C.wq.wk === wk) ? C.wq : { wk, xp: 0 };
+          tx.update(cref, { xp: nx, wq: { wk, xp: (w.xp | 0) + cx } });
         }
         // 3. счётчик частоты — в сохранение игрока
         tx.set(sref, Object.assign({}, S, { _tp: { t: now, n: (led.n | 0) + take } }));
@@ -333,10 +339,14 @@ module.exports = function cycle(getDb) {
           const need = 20000 * L;
           if (w.done) { out = { st: 'done' }; return; }
           if ((w.xp | 0) < need) { out = { st: 'no' }; return; }
-          const g = 1500 * L;
+          const g = 1500 * L, ir = Math.round(g / 20);
+          // читаем казну до любой записи — правило транзакций Firestore
+          const dref = dbx.collection('clans').doc(cid).collection('dep').doc('quest');
+          const dsn = await tx.get(dref);
+          const o = dsn.exists ? dsn.data() : { name: 'Задания клана', gold: 0, iron: 0 };
           tx.update(cref, { wq: { wk, xp: w.xp | 0, done: true } });
-          await addDep(tx, dbx, cid, 'quest', 'Задания клана', g, Math.round(g / 20));
-          out = { st: 'ok', k: 'quest', g, i: Math.round(g / 20) };
+          tx.set(dref, { name: 'Задания клана', gold: (o.gold | 0) + g, iron: (o.iron | 0) + ir });
+          out = { st: 'ok', k: 'quest', g, i: ir };
         } else if (kind === 'dungeon') {
           // доля с подземелья: сколько железа игрок принёс
           const n = Math.floor(+m.n || 0);

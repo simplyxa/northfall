@@ -83,6 +83,9 @@ module.exports = function raids(getDb) {
           const g = Math.round([150, 400, 900, 1800, 3500][t] * mf);
           const ir = Math.round([20, 40, 70, 110, 160][t] * mf);
           const du = Math.round([3, 6, 10, 15, 25][t] * mf);
+          // ВАЖНО: в транзакции Firestore все чтения идут ДО всех записей —
+          // сначала читаем сохранения всех участников, потом пишем награды.
+          const parts = [];
           for (const [id, x] of Object.entries(R.mem)) {
             if (x.bot) continue;
             const sref = db.collection('saves').doc(id);
@@ -93,8 +96,9 @@ module.exports = function raids(getDb) {
               g: (S._aw && S._aw.g || 0) + g, i: (S._aw && S._aw.i || 0) + ir,
               d: (S._aw && S._aw.d || 0) + du, x: (S._aw && S._aw.x || 0) + xp
             });
-            tx.set(sref, Object.assign({}, S, { _aw: aw }));
+            parts.push({ ref: sref, S, aw });
           }
+          for (const pt of parts) tx.set(pt.ref, Object.assign({}, pt.S, { _aw: pt.aw }));
         }
         tx.set(ref, D);
         R.hp = D.hp; R.st = D.st;
