@@ -465,5 +465,10 @@
     "v": "1.18.17",
     "t": "Страница рейтинга разделена на героев и кланы. Герои ранжируются по уровню, характеристикам и рейтингу обычной арены; кланы — по уровню.",
     "te": "The leaderboard is now split into heroes and clans. Heroes are ranked by level, stats and regular arena rating; clans are ranked by level."
+  },
+  {
+    "v": "1.18.18",
+    "t": "Вкладки рейтинга получили новые каменные иконки с бронзовыми деталями.",
+    "te": "Rating tabs now feature new carved-stone icons with bronze details."
   }
 ]
