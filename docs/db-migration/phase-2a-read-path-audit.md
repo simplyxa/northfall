@@ -58,6 +58,35 @@ The hub unsubscribes a feed after five minutes without subscribers. While subscr
 
 Static audit confirms that `server/saves.js` performs Firestore transactions for character saves and several economic actions (market listing, item mail/claim, wallet updates). `netlify/functions/gold.js` handles wallet/economy transactions. Other game modules (`raid.js`, `duel.js`, `cycle.js`, `apvp.js`) also need route-by-route inspection before they can be moved.
 
+## Server modules: transactions and persistent writes
+
+Static inspection of `server/raid.js`, `server/duel.js`, `server/cycle.js`, and `server/apvp.js` confirms these are not merely transport modules; they contain authoritative game-state transitions that must move behind transactional domain services.
+
+| Module | Firestore reads | Writes / invariants to preserve |
+|---|---|---|
+| `server/raid.js` | Loads `raids/{id}`; transaction reads raid and participating `saves/{uid}` | Persists boss/raid state and participant save rewards. Reward application must be atomic and idempotent. |
+| `server/duel.js` | Loads raid/duel state; queries active wars (limit 30); transaction reads duel state and action docs | Advances duel rounds, writes duel state and player saves/profiles, updates war scores. A round must not be scored twice. |
+| `server/cycle.js` | Reads/writes daily `world/b{day}`; reads saves, territories, clans, wars and clan deposits | Daily boss claims, territory actions, clan XP/weekly quest progress, war creation/claims and donations use transactions. Preserve per-day/per-war claim guards. |
+| `server/apvp.js` | Reads own save and opponent profile in transactions | Starts and settles arena fights, updates save and player projection. Fight settlement must be single-use. |
+
+### Netlify functions and background jobs
+
+| Function / module | Firestore use found | Migration concern |
+|---|---|---|
+| `netlify/functions/account.js` | Reads/writes `names` and `priv` for account email/reset metadata | Keep Firebase Auth identity; move private account metadata to a protected account service. |
+| `netlify/functions/gold.js` | Wallet reads, legacy balance bootstrap from saves, transaction-based balance operations and ledger writes | Wallet + ledger must remain one SQL transaction; preserve legacy bootstrap exactly once. |
+| `netlify/functions/xsolla-token.js` | Reads promo settings and writes payment order as created | Payment creation and promo snapshot need durable order semantics. |
+| `netlify/functions/xsolla-webhook.js` | Reads saves/payment promo; transaction reads order and wallet, credits balance, writes ledger/payment status | Critical idempotency boundary: duplicate webhook must never credit twice. Keep signature verification outside storage adapter. |
+| `netlify/functions/push.js`, `netlify/lib/push.js` | Reads/writes push subscriptions and VAPID configuration | Push delivery can remain a separate adapter; subscription ownership must be authenticated. |
+| `netlify/functions/push-cron.js` | Queries due energy reminders and level cohorts; reads world boss state; writes notification markers and system chat | Scheduled job needs indexed due-work queries and per-user dedupe markers. |
+| `netlify/functions/track.js` | Increments daily stats; reads stats and client error log; transactionally updates error/rate-limit documents | Analytics can be moved later, but must not block game transactions. |
+| `netlify/functions/deploy-succeeded.js` | Reads/writes changelog state in `priv` | Small deployment metadata store; do not confuse with player data. |
+| `netlify/lib/promo.js` | Reads `admin/promo-gold` | Promo config belongs in protected server configuration/admin storage. |
+| `netlify/lib/push.js` | Reads VAPID key and player push subscription | Secret material should be stored as server secret/config, not migrated as ordinary player data. |
+| `tools/funnel.js` | Reads daily stats and player level/activity projection | Offline analytics script; not a player request path, but still a Firestore consumer. |
+
+This is a source-code inventory, not a runtime trace. Additional helper modules and any dynamically constructed collection paths must be checked before declaring the audit complete. In particular, do not infer that a function is Firestore-free just because the first search did not return it.
+
 ## Recommended migration boundary
 
 Introduce a storage/service boundary on the server. Route handlers and WebSocket modules should depend on domain methods rather than Firestore SDK objects. Implement PostgreSQL repositories behind those methods and switch one domain at a time.
@@ -76,13 +105,22 @@ Suggested initial service groups:
 ## Safe implementation sequence
 
 - [x] Static inventory of major browser listeners and hub feeds.
-- [ ] Enumerate every Firestore access in server modules and Netlify functions.
+- [x] Inspect core server game modules and primary Netlify functions for Firestore reads, transactions, and writes.
+- [ ] Sweep remaining helper modules, scripts, and dynamically constructed paths; verify the inventory against a repository-wide search.
 - [ ] Define stable service contracts and response shapes; do not change runtime yet.
 - [ ] Add PostgreSQL connection/config validation without connecting to a live database.
 - [ ] Implement and test one read-only domain (rankings or public profiles) against a local/test PostgreSQL instance.
 - [ ] Migrate writes with transaction parity and idempotency tests.
 - [ ] Move WebSocket feeds to PostgreSQL-backed services.
 - [ ] Verify parity, then plan a separate maintenance-window cutover.
+
+## Next audit priorities
+
+1. Inspect `server/index.js` routes and `server/saves.js` transaction branches end-to-end; record request/response contracts and all transaction participants.
+2. Inspect remaining Netlify functions and helper libraries, including dynamically composed paths and scheduled jobs.
+3. Review `raidq` (unbounded hub feed) and any query without a limit; decide whether it should become a bounded queue table with explicit expiry/indexes.
+4. Specify SQL transaction boundaries and idempotency keys for Xsolla, wallet ledger, market trades, item claims, raid rewards, duel settlement, clan donations, and war claims.
+5. Only after the inventory is complete, define endpoint contracts and a local PostgreSQL test plan.
 
 ## Safety constraints
 
