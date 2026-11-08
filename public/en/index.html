@@ -2105,7 +2105,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.17';
+const GVER='1.18.18';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2302,7 +2302,7 @@ function inviteView(){const done=RF.filter(f=>f.done).length;
  <div class="panel"><h3>Invited (${RF.length})</h3>${RF.length?[...RF].sort((a,b)=>b.ts-a.ts).map(f=>{const pl=PL.find(x=>x.id===f.id);return`<div class="row"><div><b data-pv="${f.id}" style="cursor:pointer">${esc(pl?pl.name:f.name||f.id)}</b><small style="display:block;color:var(--mute)">${pl?'lv. '+pl.lvl:''}</small></div>${f.done?`<span class="g">+${REFG} gold ✓</span>`:`<span style="color:var(--mute);font-size:14px">waiting for lv. 10</span>`}</div>`}).join(''):'<p style="margin:0;color:var(--mute)">Nobody yet. Share the link in chats, with friends and on social media.</p>'}${done?`<p style="margin:8px 0 0;font-size:14px;color:var(--mute)">Rewards received: ${done}.</p>`:''}</div>`}
 function topView(){
  if(!online)return offline('Rating');
- const btn=(k,t)=>`<button class="b ${(k==='heroes'?rtab!=='clans':rtab===k)?'':'alt'}" data-rt="${k}">${t}</button>`;
+ const btn=(k,t)=>{const ix=({heroes:0,clans:2,level:3,stats:4,arena:5})[k]||0;return `<button class="b ${(k==='heroes'?rtab!=='clans':rtab===k)?'':'alt'}" data-rt="${k}" style="display:inline-flex;align-items:center;gap:6px"><span aria-hidden="true" style="display:inline-block;flex:0 0 28px;width:28px;height:28px;background-image:url('/img/rating-stones.svg');background-size:168px 28px;background-position:-${ix*28}px 0;background-repeat:no-repeat"></span>${t}</button>`};
  let h=`<div class="panel"><div class="top"><h3>Rating</h3><span>${btn('heroes','Heroes')}${btn('clans','Clans')}</span></div>`,body='';
  if(rtab==='clans'){
   const l=CLN.map(c=>{const m=mem(c),cl=cLv(c);return{...c,n:m.length,L:cl.L,xp:(c.xp|0)}}).sort((a,b)=>b.L-a.L||b.xp-a.xp||b.n-a.n).slice(0,20);
