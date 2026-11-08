@@ -455,5 +455,10 @@
   "v": "1.18.15",
   "t": "Обычная арена: полосы заряда и атаки теперь анимируются плавно на клиенте; полосы здоровья обновляются только при изменении здоровья.",
   "te": "Regular Arena: charge and attack meters now animate smoothly on the client; health bars update only when health changes."
+ },
+ {
+  "v": "1.18.16",
+  "t": "Обычная арена получила отдельный боевой интерфейс и независимый плавный рендерер. Система рейтинга и серверные правила боя сохранены.",
+  "te": "Regular Arena now uses a dedicated battle interface and independent smooth renderer. The rating system and server-side battle rules are preserved."
  }
 ]
