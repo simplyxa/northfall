@@ -27,6 +27,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 module.exports = function apvp(getDb) {
   const rooms = new Map();   // uid → R
+  const starting = new Set(); // защита от двойного вызова до завершения транзакции
   const D = () => getDb();
 
   // ---- характеристики по сохранению ----
@@ -48,7 +49,7 @@ module.exports = function apvp(getDb) {
   // ---- состояние боя для клиента ----
   function pub(R) {
     return {
-      pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: R.ech,
+      pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: R.ech ? clamp((R.clk - (R.ech - E_T * 1000)) / (E_T * 1000), 0, 1) : 0,
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
       e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit },
       s: R.s, log: R.log, sk: R.sk, res: R.res || null
@@ -56,7 +57,7 @@ module.exports = function apvp(getDb) {
   }
 
   // ---- старт боя: билет списывает сервер ----
-  async function start(c, m, send) {
+  async function startInner(c, m, send) {
     const db = D(); if (!db || !c.uid) return;
     const oid = String(m.id || '');
     if (!/^[A-Za-z0-9_~-]{2,40}$/.test(oid)) return send(c, { t: 'ape', rid: 'ap', why: 'noopp' });
@@ -97,6 +98,13 @@ module.exports = function apvp(getDb) {
     rooms.set(c.uid, R);
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
     tick(R, c, send);
+  }
+
+  async function start(c, m, send) {
+    if (!c.uid || rooms.has(c.uid) || starting.has(c.uid)) return;
+    starting.add(c.uid);
+    try { await startInner(c, m, send); }
+    finally { starting.delete(c.uid); }
   }
 
   // ---- ход игрока ----
@@ -209,7 +217,7 @@ module.exports = function apvp(getDb) {
         tx.set(db.collection('players').doc(R.uid), {
           rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose
         }, { merge: true });
-        R.res = { rt, lost, win, atk: st.atk, atkt: st.atkt };
+        R.res = { rt, rating: st.rt, srt: st.srt, lost, win, atk: st.atk, atkt: st.atkt };
       });
     } catch (e) { console.error('apvp end', e.message); }
     rooms.delete(R.uid);
@@ -218,7 +226,7 @@ module.exports = function apvp(getDb) {
 
   // ---- тик боя ----
   function tick(R, c, send) {
-    if (!R || R.st !== 'on') return;
+    if (!R || R.st !== 'on' || rooms.get(R.uid) !== R || !c.open) return;
     const now = Date.now();
     R.clk = now - R.t0;
     R.ch = Math.min(1, R.ch + TICK / 1000 / CH_T);
@@ -235,7 +243,7 @@ module.exports = function apvp(getDb) {
     if (m.t === 'apvp') return start(c, m, send);
     if (m.t === 'apa') return act(c, m, send);
   }
-  function onClose(c) { rooms.delete(c.uid); }
+  function onClose(c) { const R = rooms.get(c.uid); if (R) { R.st = 'closed'; rooms.delete(c.uid); } }
 
   return { onMsg, onClose, stats: () => ({ rooms: rooms.size }) };
 };

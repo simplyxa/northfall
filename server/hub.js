@@ -42,7 +42,7 @@ module.exports = function hub(server, getDb, verify) {
     const acc = crypto.createHash('sha1').update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
     sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ' + acc + '\r\n\r\n');
     sock.setNoDelay(true);
-    const c = { sock, buf: Buffer.alloc(0), subs: new Set(), uid: '', gid: '', alive: true, open: true, t0: Date.now(), v: 0 };
+    const c = { sock, buf: Buffer.alloc(0), subs: new Set(), uid: '', gid: '', alive: true, open: true, t0: Date.now(), v: 0, msgQueue: Promise.resolve() };
     clients.add(c);
     sock.on('data', d => onData(c, d));
     sock.on('close', () => drop(c));
@@ -77,14 +77,14 @@ module.exports = function hub(server, getDb, verify) {
       if (op === 8) { sendRaw(c, frame(8, Buffer.alloc(0))); return drop(c); }
       if (op === 9) { sendRaw(c, frame(10, p)); continue; }
       if (op === 10) { c.alive = true; continue; }
-      if (op === 1) { c.alive = true; let m; try { m = JSON.parse(p.toString('utf8')); } catch (e) { continue; } onMsg(c, m); }
+      if (op === 1) { c.alive = true; let m; try { m = JSON.parse(p.toString('utf8')); } catch (e) { continue; } c.msgQueue = c.msgQueue.then(() => c.open ? onMsg(c, m) : null).catch(e => console.error('hub message', e.message)); }
     }
   }
   function drop(c) {
     if (!c.open) return; c.open = false; clients.delete(c);
     try { c.sock.destroy(); } catch (e) {}
     for (const f of c.subs) unsub(c, f);
-    RAID.onClose(c); DUEL.onClose(c);
+    RAID.onClose(c); DUEL.onClose(c); APVP.onClose(c);
     onlineChanged();
   }
   // проверка живости: Fly закрывает тихие соединения, браузер на свёрнутой вкладке может «пропасть»
