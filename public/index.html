@@ -1522,8 +1522,11 @@ function duelFinish(){const R=DUEL;if(!R||R.st==='on'||!DUELID||!S)return;S.ddon
  const r0=S.dr==null?1000:S.dr,ex=1/(1+Math.pow(10,((o.dr|0||1000)-r0)/400)),dR=rs?rs.dR:Math.round(32*(sc-ex)),k0=rankOf2(meP());
  S.dr=rs?rs.dr:Math.max(0,r0+dR);S.dn=rs?rs.dn:(S.dn|0)+1;
  let g=0;if(sc===1){g=rs?rs.g:dGold(S.lvl);S.gold+=g;S.dw=rs?rs.dw:(S.dw|0)+1;SILFX={v:g,t:Date.now()}}const k1=rankOf2(meP());
- // основной рейтинг и билет посчитал сервер по итогам дуэли
+ // рейтинг и билет посчитал сервер по итогам дуэли
  if(rs&&rs.rt!=null){S.rating=rs.rt;S.srat=rs.srt}
+ // билет тоже: без этого в интерфейсе и в localStorage оставалось старое
+ // число — игрок перезаходил в игру и видел потраченный билет на месте
+ if(rs&&rs.atk!=null){S.atk=rs.atk;S.atkt=rs.atkt}
  DRES={sc,dR,g,o:o.n,up:k1[0]>k0[0]?k1[1]:''};log(`Дуэль с ${o.n}: ${sc===1?'победа':sc?'ничья':'поражение'}, рейтинг ${dR>=0?'+':''}${dR}${g?`, +${g} серебра`:''}.`,'sys');
  if(DRES.up)news(`${S.name} получил ранг «${k1[1]}» на лайв-арене!`);save();if(typeof saveNow==='function')saveNow()}
 function duelView(){if(!DB||!UID)return'<div class="panel"><p>Лайв-арена доступна только с аккаунтом.</p></div>';raidSub();
@@ -2048,7 +2051,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.9';
+const GVER='1.18.10';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2515,7 +2518,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.9</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.10</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
