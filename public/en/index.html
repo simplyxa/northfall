@@ -826,7 +826,7 @@ function fightTick(){
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
  if(fight.wb&&fight.clk>=WBT){wbEnd('time');save();return render()}
- if(fight.ech>=1){fight.ech=0;enemyTurn();settle();save();return render()}
+ if(fight.ech>=1){fight.ech=0;enemyTurn();settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}
  if(petTick(dt)){settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}
  paintFight();
 }
@@ -2067,7 +2067,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.11';
+const GVER='1.18.12';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2218,7 +2218,10 @@ function updShow(){
   d.innerHTML=`<div class="mbox" style="text-align:center"><h3 style="margin:0 0 8px">An update is ready</h3><p style="margin:0 0 12px">A new version of the game is out. Reload to get the fresh graphics and all the fixes.</p><button class="b red" style="width:100%" onclick="location.reload()">Update the game</button></div>`;
   document.body.appendChild(d);
 }
-setTimeout(verChk,2000);setInterval(verChk,60000);
+setTimeout(verChk,1200);setInterval(verChk,15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)verChk()});
+window.addEventListener('focus',verChk);window.addEventListener('online',verChk);
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.ready.then(r=>r.update()).catch(()=>{}));
 
 // ===== Задание: игра на экране «Домой» =====
 const PWAQ={g:1000,au:5,b:3};
@@ -2547,7 +2550,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.11</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.12</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
