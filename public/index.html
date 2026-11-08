@@ -1663,7 +1663,7 @@ const arNext=()=>arTk()>=ATK?0:Math.max(0,(S.atkt||Date.now())+ATH-Date.now());
 function arUse(){if(arTk()<1)return false;if(S.atk>=ATK)S.atkt=Date.now();S.atk--;return true}
 const arTkTxt=()=>{const t=arTk(),n=arNext();return`${tkIc(22)}${t}/${ATK}${n?` · следующий через ${Math.ceil(n/60000)} мин`:''}`};
 // ===== PvP =====
-function startPvp(id){const p=PL.find(x=>x.id===id);if(!p||!p.stats||fight)return;if(arTk()<1){log('Нет билетов арены: новый появится через '+Math.ceil(arNext()/60000)+' мин.','sys');return render()}
+function startPvp(id){const p=PL.find(x=>x.id===id);if(!p||!p.stats||fight)return;if(!HUB.ws||HUB.ws.readyState!==1){log('Нет соединения с сервером арены. Обнови страницу и попробуй снова.','sys');return render()}if(arTk()<1){log('Нет билетов арены: новый появится через '+Math.ceil(arNext()/60000)+' мин.','sys');return render()}
  if(S.hp<=0){log('Ты ранен. Отдохни у костра.','sys');return render()}
  // бой с копией ведёт сервер: он считает урон, исход, рейтинг и списывает билет
  fixNum();HREP=null;REP=null;APLOG=0;hubSend({t:'apvp',id:p.id});log(`Вызов: ${p.name}!`,'sys');render()}
