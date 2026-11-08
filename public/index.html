@@ -2154,7 +2154,20 @@ const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platfo
  document.addEventListener('touchmove',e=>{if(e.touches.length>1||(e.scale&&e.scale!==1))e.preventDefault()},{passive:false});}catch(e){}})();
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DIP=e;try{ui()}catch(_){}});
 window.addEventListener('appinstalled',()=>{DIP=null;try{log('Northfall установлен на устройство!','hit');ui()}catch(_){}});
-if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{}));
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+ let nfHadController=!!navigator.serviceWorker.controller,nfUpdateShown=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  if(!nfHadController||nfUpdateShown)return;nfUpdateShown=true;
+  const old=document.getElementById('nf-update-ready');if(old)old.remove();
+  const box=document.createElement('div');box.id='nf-update-ready';box.style.cssText='position:fixed;z-index:100000;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(5px)';
+  const card=document.createElement('div');card.style.cssText='width:min(100%,360px);padding:24px 20px;border:1px solid #8b754b;border-radius:14px;background:#20272b;color:#f2eadb;text-align:center;box-shadow:0 18px 60px #0009';
+  const title=document.createElement('h2');title.textContent="Игра обновилась";title.style.cssText='margin:0 0 10px;font-size:22px';
+  const msg=document.createElement('p');msg.textContent="Доступна новая версия. Перезагрузите игру, чтобы применить обновление.";msg.style.cssText='margin:0 0 18px;color:#c9c0b1;line-height:1.5';
+  const btn=document.createElement('button');btn.type='button';btn.textContent="Перезагрузить";btn.style.cssText='width:100%;padding:13px 16px;border:0;border-radius:8px;background:#9a7844;color:#fff;font-weight:700;font-size:16px;cursor:pointer';btn.addEventListener('click',()=>location.reload());
+  card.append(title,msg,btn);box.appendChild(card);document.body.appendChild(box);
+ });
+ window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+}
 
 // ===== Ответы сервера по мировому циклу: босс, охота, территории, войны, клан =====
 // Сервер сам считает урон по боссу, доли в награде, очки на территории,
