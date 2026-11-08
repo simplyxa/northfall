@@ -1485,13 +1485,18 @@ function duelCheck(){if(!S||!UID)return;S.ddone=S.ddone||[];
   d.addEventListener('click',e=>{const b=e.target.closest('[data-dx]');if(!b)return;closeModal();if(b.dataset.dx==='yes')dAccept();else dDecline()});document.body.appendChild(d)}}
 // лайв-арена через сокет: ходы мгновенно, раунд считает сервер; без сокета — по-старому через базу
 let DHUB=null;const dHub=()=>HUB.ok&&DHUB&&DHUB===DUELID;
+// Firestore используется только как запасной канал. Когда пришёл первый ответ
+// WebSocket, обе прямые подписки снимаются, чтобы не обрабатывать один бой дважды.
+function dHubStopFallback(){if(DUU){try{DUU()}catch(e){}DUU=null}if(DUU2){try{DUU2()}catch(e){}DUU2=null}}
+function dHubFallback(){if(!DUELID||!DB||dHub())return;const ref=DB.collection('raids').doc(DUELID);
+ if(!DUU)DUU=ref.onSnapshot(sn=>{if(!sn.exists)return;DUEL=sn.data();if(DUEL.st!=='on')duelFinish();if(tab==='duel'&&!fight)rDraw()},()=>{});
+ if(!DUU2)DUU2=ref.collection('a').onSnapshot(sn=>{DACT={};sn.docs.forEach(d=>{DACT[d.id]=d.data()});if(tab==='duel'&&!fight)rDraw()},()=>{})}
 function dHubJoin(){if(!HUB.ok||!DUELID||!UID||(DUEL&&DUEL.st!=='on'))return;DHUB=DUELID;hubSend({t:'dj',rid:DUELID})}
-function dHubState(m){if(m.rid!==DUELID)return;const st0=DUEL&&DUEL.st;DUEL=m.R;DHUB=DUELID;if(DUU2){try{DUU2()}catch(e){}DUU2=null}
+function dHubState(m){if(m.rid!==DUELID)return;DUEL=m.R;DHUB=DUELID;dHubStopFallback();
  if(DACT[UID]&&DACT[UID].r!==DUEL.r)delete DACT[UID];
  if(DUEL.st!=='on')duelFinish();if(tab==='duel'&&!fight)rDraw()}
-function duelOpen(rid){if(DUU)DUU();if(DUU2)DUU2();DUELID=rid;DUEL=null;DACT={};DRES=null;DHUB=null;setTimeout(dHubJoin,500);const ref=DB.collection('raids').doc(rid);
- DUU=ref.onSnapshot(sn=>{if(!sn.exists)return;DUEL=sn.data();if(DUEL.st!=='on')duelFinish();if(tab==='duel'&&!fight)rDraw()},()=>{});
- DUU2=ref.collection('a').onSnapshot(sn=>{DACT={};sn.docs.forEach(d=>{DACT[d.id]=d.data()});if(tab==='duel'&&!fight)rDraw()},()=>{});
+function duelOpen(rid){dHubStopFallback();DUELID=rid;DUEL=null;DACT={};DRES=null;DHUB=null;
+ setTimeout(()=>{dHubJoin();if(!dHub())dHubFallback()},500);
  S.dd=S.dd||{};const d=DAY();if(S.dd.d!==d)S.dd={d,n:0};if(!(S.dstart||[]).includes(rid)){S.dstart=[...(S.dstart||[]),rid].slice(-20);S.dd.n++;save()}}
 function dAct(a){if(!DUEL||DUEL.st!=='on'||!DUELID)return;const me=DUEL.mem[UID];if(!me||me.hp<=0||me.stun>=DUEL.r)return;const ac=DACT[UID];if(ac&&ac.r===DUEL.r)return;
  if(a==='pow'&&me.pcd>DUEL.r)return;if(a==='sk'&&me.scd>DUEL.r)return;if(a==='pot'&&!me.pot)return;DACT[UID]={r:DUEL.r,a};rDraw();
@@ -2076,7 +2081,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.12';
+const GVER='1.18.13';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2559,7 +2564,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.12</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.13</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
