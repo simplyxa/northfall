@@ -350,7 +350,7 @@ function hubHello(){if(!HUB.ok)return;const who=UID||('g:'+(typeof GUEST!=='unde
  const tk=UID&&typeof FBA!=='undefined'&&FBA&&FBA.currentUser?FBA.currentUser.getIdToken().catch(()=>''):Promise.resolve('');
  tk.then(tok=>hubSend({t:'hello',tok:tok||undefined,g:!tok&&g?g:undefined,v:2}))}
 function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws')}catch(e){HUB.dead=true;return}
- HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;for(const k in HUB.L)hubFs(k);HUB.n++;
+ HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;for(const k in HUB.L)hubFs(k);DHUB=null;if(typeof dHubFallback==='function')dHubFallback();HUB.n++;
   if(HUB.n>8&&!HUB.everOk){HUB.dead=true;return}clearTimeout(HUB.tm);HUB.tm=setTimeout(hubStart,Math.min(30000,1500*HUB.n))};
  ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}try{dHubJoin()}catch(e){}},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
@@ -359,7 +359,7 @@ function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSo
   else if(m.t==='nofeed'){hubFs(m.c)}
   else if(m.t==='rs'){if(typeof rHubState==='function')rHubState(m)}
   else if(m.t==='ds'){if(typeof dHubState==='function')dHubState(m)}
-  else if(m.t==='dno'){if(typeof DHUB!=='undefined'&&DHUB===m.rid)DHUB=null}
+  else if(m.t==='dno'){if(typeof DHUB!=='undefined'&&DHUB===m.rid)DHUB=null;if(typeof dHubFallback==='function')dHubFallback()}
   else if(m.t==='rno'){if(typeof RHUB!=='undefined'&&RHUB===m.rid)RHUB=null}
   else if(m.t==='wbs'||m.t==='wbc'||m.t==='hunts'||m.t==='wars'||m.t==='warc'||m.t==='clans'||m.t==='wbe'||m.t==='hunte'||m.t==='ware'||m.t==='clane'){if(typeof cycState==='function')cycState(m)}
   else if(m.t==='aps'){if(typeof apvpState==='function')apvpState(m)}
