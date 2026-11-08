@@ -11,13 +11,15 @@
 - wallet balance and ledger idempotency key;
 - unique reward claims;
 - clan, membership and contributions prerequisites;
+- clan leader must remain a member (deferred composite foreign key);
 - friendship pair uniqueness independent of pair order;
 - active market listing;
 - raid participant/action uniqueness;
 - duel action uniqueness;
 - payment and payment-order relation;
 - outbox event and notification job inserts;
-- rejection of negative wallet balances.
+- rejection of negative wallet balances;
+- rejection of removing the clan leader from membership while they remain leader.
 
 Run against a disposable PostgreSQL database only:
 
