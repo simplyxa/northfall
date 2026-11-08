@@ -223,6 +223,7 @@ const FIREBASE_CONFIG={
 const ADMINS=['shtorm1','admin'];
 const MAILDOM='@northfall.game';
 </script>
+<script src="/js/regular-arena.js"></script>
 <script>
 // язык: русская версия на «/», английская на «/en/»; выбор хранится в nf_lang
 const LANG=window.NF_LANG||'ru';
@@ -902,8 +903,21 @@ function head(){
  return`<div class="panel"><div class="top"><span style="display:flex;align-items:center;gap:10px">${avatar(S.av,44,frameOf(meP()))}<h2 style="margin:0">${esc(S.name)}, ${CL[S.cls].n}</h2></span><span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 10px">Ур. ${S.lvl}<b title="Здоровье" style="display:inline-flex;align-items:center;gap:4px;color:var(--blood)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Здоровье"><path d="M12 21S3 15.500 3 8.800C3 5.600 5.400 4 7.600 4c1.800 0 3.400 1 4.400 2.700C13 5 14.600 4 16.400 4 18.600 4 21 5.600 21 8.800 21 15.500 12 21 12 21z"/></svg>${S.hp}/${maxHp()}</b><b title="Энергия" style="display:inline-flex;align-items:center;gap:4px;color:var(--moss)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Энергия"><path d="M13.500 2 5 13.500h5.500L9.500 22 19 10h-5.800z"/></svg>${S.en}/${maxEn()}</b><span class="sv">${S.gold} сер.</span><span class="g">${S.au|0} зол.</span><span title="Железо" style="color:var(--mute);font-weight:700">${S.iron|0} жел.</span></span></div>
 </div>`;
 }
+function apvpView(){
+ const e=fight.e,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100);
+ return`<div class="panel" id="fightpanel" data-ra-root><h3>${esc(e.name)} · ур. ${e.lv}</h3>
+ <div class="lbl"><span>Твоё здоровье</span><span id="myhptext">${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>
+ <div class="bar"><i data-ra="my-hp" style="width:100%;background:var(--moss);transform:scaleX(${Math.max(0,S.hp/maxHp())});transform-origin:left;transition:transform .22s ease-out"></i></div>
+ <div class="lbl"><span>Здоровье врага</span><span id="enemyhptext">${e.hp}/${e.max}</span></div>
+ <div class="bar"><i data-ra="enemy-hp" style="width:100%;background:var(--blood);transform:scaleX(${Math.max(0,e.hp/e.max)});transform-origin:left;transition:transform .22s ease-out"></i></div>
+ <div class="lbl"><span>Атака врага</span><span id="ect">${ec}%</span></div>
+ <div class="bar"><i data-ra="enemy-charge" style="width:100%;background:var(--blood);transform:scaleX(${ec/100});transform-origin:left"></i></div>
+ <button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2?'disabled':''}>Удар</button>
+ ${skBtns()}<div class="frow">${bgBtn()}${(()=>{const L=bleft();return`<button class="b alt fcd" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt.b<1||L>0?'disabled':''}>${L>0?POT.b.sh+' '+Math.ceil(L/1000)+' с':POT.b.sh+' ('+S.pt.b+')'}</button>`})()}<button class="b alt" data-a="flee">Бежать</button></div></div>`;
+}
 function fightView(){
  if(fight.hunt)return huntView();
+ if(fight.pvp)return apvpView();
  const e=fight.e,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100);
  return`<div class="panel" id="fightpanel"><h3>${esc(e.name)} · ур. ${e.lv}</h3>${e.title?`<p style="margin:0 0 6px;color:var(--mute);font-size:15px">${esc(e.title)}</p>`:''}
  ${fight.dun?`<p style="margin:0 0 6px;color:var(--myth);font-weight:700">До конца спуска: <span id="dtm">${Math.ceil((DUNT-fight.clk)/1000)}</span> с</p>`:''}${fight.wb?`<div style="display:flex;justify-content:center;margin:0 0 6px">${wbIc(fight.wb.day,96)}</div>`:''}${fight.wb?`<p style="margin:0 0 6px;color:var(--blood);font-weight:700">До конца атаки: <span id="wtm">${Math.ceil((WBT-fight.clk)/1000)}</span> с</p>`:''}<div class="lbl"><span>Твоё здоровье</span><span>${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>${bar(S.hp,maxHp(),'--moss')}${petA()?`<p style="margin:2px 0 4px;font-size:14px;color:var(--mute)">${petImg(petA().k,22)} ${petA().n} ур. ${petA().lvl} сражается рядом</p>`:''}
@@ -919,28 +933,24 @@ function fightRefresh(){
  paintFight();
 }
 function bgBtn(){const now=fight.clk,act=now<fight.guardUntil,cd=now<fight.gcd,p=act?Math.round((fight.guardUntil-now)/3000*100):cd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100;return`<button class="b alt fcd${act?' act':''}" id="bg" data-a="guard" style="--p:${p}" ${cd?'disabled':''}>${act?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':cd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок'}</button>`}
+let APVPRenderer=null;
+function apvpDestroy(){if(APVPRenderer){APVPRenderer.destroy();APVPRenderer=null}}
 function paintPvpFight(){
  if(!fight||!fight.pvp)return;
- const t=document.getElementById('myhptext'),b=document.getElementById('myhpbar'),et=document.getElementById('enemyhptext'),eb=document.getElementById('enemyhpbar');
- if(t)t.textContent=S.hp+'/'+maxHp()+' · энергия '+S.en+'/'+maxEn();
- if(b&&b.dataset.hp!==String(S.hp)){b.innerHTML=bar(S.hp,maxHp(),'--moss');b.dataset.hp=String(S.hp)}
- if(et)et.textContent=fight.e.hp+'/'+fight.e.max;
- if(eb&&eb.dataset.hp!==String(fight.e.hp)){eb.innerHTML=bar(fight.e.hp,fight.e.max,'--blood');eb.dataset.hp=String(fight.e.hp)}
+ const root=document.getElementById('fightpanel');if(!root)return;
+ if(!APVPRenderer||APVPRenderer.panel!==root){apvpDestroy();APVPRenderer=NFRegularArena.mount(root)}
+ const now=fight.clk,guardActive=now<fight.guardUntil,guardCd=now<fight.gcd;
+ const guardProgress=guardActive?Math.round((fight.guardUntil-now)/3000*100):guardCd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100;
+ const L=bleft(),skills=skOf().map((k,i)=>{const left=skLeft(k[0]);return{text:k[1]+(left>0?' '+Math.ceil(left/1000)+' с':''),disabled:left>0}});
+ APVPRenderer.update({ch:fight.ch,ech:fight.ech},{
+  myHpText:S.hp+'/'+maxHp()+' · энергия '+S.en+'/'+maxEn(),enemyHpText:fight.e.hp+'/'+fight.e.max,
+  myHpRatio:S.hp/maxHp(),enemyHpRatio:fight.e.hp/fight.e.max,
+  guardText:guardActive?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':guardCd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок',
+  guardDisabled:guardCd,guardActive,guardProgress,
+  potionText:L>0?POT.b.sh+' '+Math.ceil(L/1000)+' с':POT.b.sh+' ('+S.pt.b+')',
+  potionDisabled:S.pt.b<1||L>0,potionProgress:Math.round(100-L/BCD*100),skills
+ });
  if(APLOGVIEW!==APLOG){const l=document.getElementById('log');if(l)l.innerHTML=logs.map(x=>'<p class="'+x[1]+'">'+esc(x[0])+'</p>').join('')||'<p>Тишина.</p>';APLOGVIEW=APLOG}
- paintFight();
- apvpSmoothStart();
-}
-let APVPRaf=0;
-function apvpSmoothStart(){if(!APVPRaf&&fight&&fight.pvp)APVPRaf=requestAnimationFrame(apvpSmooth)}
-function apvpSmooth(){
- if(!fight||!fight.pvp||!document.getElementById('fightpanel')){APVPRaf=0;return}
- const dt=Math.max(0,performance.now()-(fight.pn||performance.now()));
- const pc=Math.min(1,(fight.ch||0)+dt/5000),ec=Math.min(1,(fight.ech||0)+dt/5000);
- const bs=document.getElementById('bs'),eb=document.getElementById('ecb'),et=document.getElementById('ect');
- if(bs){bs.style.setProperty('--p',pc*100);bs.disabled=pc<.2;bs.classList.toggle('full',pc>=1)}
- if(eb)eb.style.width=(ec*100)+'%';
- if(et){const n=Math.round(ec*100)+'%';if(et.textContent!==n)et.textContent=n}
- APVPRaf=requestAnimationFrame(apvpSmooth);
 }
 function paintFight(){
  if(!fight)return;if(fight.hunt&&!fight.hunt.raid)stageFx();const now=fight.clk,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100),g=id=>document.querySelector(id);
@@ -1715,7 +1725,7 @@ function apvpState(m){const s=m.st;if(!s)return;
  if(win){S.win++;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${delta}. Новый рейтинг: ${rating}.`,'hit')}
  else{S.lose++;S.gold=Math.max(0,(S.gold|0)-lost);S.hp=1;log(`Поражение. Рейтинг ${delta}. Новый рейтинг: ${rating}.`,'dmg')}
  const e=s.e||{};REP={win,bot:e.name||'Соперник',title:'',lv:e.lv|0,s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,...(s.s||{})},dR:delta,rating,dS,srat,xp:0,gold:-lost,lvUp:0,loot:'',war:0,hp:s.hp|0,mhp:s.mhp|0};
- fight=null;save();render();repModal()}
+ apvpDestroy();fight=null;save();render();repModal()}
 function pvpList(){const L=PL.filter(p=>p.id!==UID&&p.stats).sort((a,b)=>Math.abs(a.rating-S.rating)-Math.abs(b.rating-S.rating)).slice(0,8);
  return`<div class="panel"><h3>Воины других игроков</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Бой с копией героя другого игрока: его атака, защита, здоровье и крит. Рейтинг зависит от разницы с его рейтингом.</p>${L.length?L.map(p=>{const diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(p.av,28,frameOf(p))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div><button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button></div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
 
