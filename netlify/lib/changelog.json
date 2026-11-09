@@ -565,5 +565,10 @@
   "v": "1.18.37",
   "t": "Охота: у героев появились позы для умений — Ярость, Боевой рёв, Меткий выстрел, Капкан, Тотем исцеления и Каменная кожа.",
   "te": "Hunt: heroes now have poses for their skills — Rage, Battle Roar, Precise Shot, Trap, Healing Totem and Stone Skin."
+ },
+ {
+  "v": "1.18.38",
+  "t": "Охота: кнопки умений теперь показывают перезарядку кольцом, как удар, а пока действует эффект — зелёное убывающее кольцо и свечение. Когда кончается энергия, кнопка отступления мягко светится.",
+  "te": "Hunt: skill buttons now show their cooldown as a ring like the strike button, and a green draining ring with a glow while the effect is active. When energy runs out, the retreat button glows softly."
  }
 ]
