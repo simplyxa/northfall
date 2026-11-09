@@ -58,7 +58,7 @@ const parentOf = d => segs(d).slice(0, -1).join('/');
 
 for (const d of docs) {
   const s = segs(d), c = s[0], dat = d.data || {};
-  if (s.length === 2 && c === 'saves') { addUser(d.id); chars.set(d.id, dat); }
+  if (s.length === 2 && c === 'saves') chars.set(d.id, dat);
   if (s.length === 2 && c === 'clans') clans.set(d.id, dat);
 }
 
@@ -71,7 +71,7 @@ for (const d of docs) {
       if (!name) { skip(d.path, 'нет имени'); continue; }
       const nl = name.toLowerCase();
       if (names.has(nl)) { conflict('name_duplicate', { name, uids: [names.get(nl), id] }); continue; }
-      names.set(nl, id);
+      names.set(nl, id); addUser(id);
       const cid = dat.clan ? String(dat.clan) : null;
       T('characters', [q(id), q(name), q(nl), nn(dat.lvl, 1), txt(cid), q(d.path), ts(dat.cr || d.createTime)]);
       T('character_state', ['(SELECT id FROM characters WHERE firebase_uid=' + q(id) + ')', jo(dat), q(d.path), ts(dat.ts || d.updateTime)]);
