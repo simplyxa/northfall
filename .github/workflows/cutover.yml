@@ -1,11 +1,12 @@
 # Переезд боевой базы Firestore -> Neon по шагам. Репозиторий публичный: в логах только счётчики и статусы.
-# Порядок: maint-on -> lock-rules -> import -> go-live. Откат: rollback (убирает STORE и MAINT, возвращает правила Firestore).
+# Порядок: maint-on -> (правила Firestore блокирует человек в консоли Firebase) -> import -> go-live.
+# Откат: rollback (убирает STORE и MAINT), правила Firestore человек возвращает в консоли.
 # Секреты: FLY_API_TOKEN, FIREBASE_SERVICE_ACCOUNT, NEON_PROD_DATABASE_URL (direct). DATABASE_URL (pooled) уже лежит в Fly.
 name: Cutover
 on:
   workflow_dispatch:
     inputs:
-      step: { description: 'status | maint-on | lock-rules | import | go-live | rollback', default: 'status', required: true }
+      step: { description: 'status | maint-on | import | go-live | rollback', default: 'status', required: true }
 concurrency: fly-deploy
 jobs:
   run:
@@ -32,16 +33,10 @@ jobs:
           case "$STEP" in
             status)
               flyctl secrets list -a "$APP" | awk '{print $1}' | grep -E '^(NAME|DATABASE_URL|STORE|MAINT)$' || true
-              echo "store.js: $(curl -s --max-time 10 https://playnorthfall.online/store.js | head -c 80)"
-              node tools/firestore-rules.js show ;;
+              echo "store.js: $(curl -s --max-time 10 https://playnorthfall.online/store.js | head -c 80)" ;;
             maint-on)
-              node tools/firestore-rules.js show
               flyctl secrets set MAINT=1 -a "$APP" >/dev/null
               probe https://playnorthfall.online/ 503 ;;
-            lock-rules)
-              probe https://playnorthfall.online/ 503
-              node tools/firestore-rules.js show
-              node tools/firestore-rules.js lock ;;
             import)
               probe https://playnorthfall.online/ 503
               tools/cutover-import.sh ;;
@@ -54,7 +49,6 @@ jobs:
               node -e "const w=new WebSocket('wss://playnorthfall.online/ws');w.onopen=()=>{w.send(JSON.stringify({t:'hello',g:'ci0000000'}));w.send(JSON.stringify({t:'fsl',id:'a1',q:{d:'names/zz_cutover_probe'}}))};w.onmessage=e=>{const m=JSON.parse(e.data);console.log('ws:',m.t,m.code||'')};setTimeout(()=>process.exit(0),6000)" ;;
             rollback)
               flyctl secrets unset STORE MAINT -a "$APP" >/dev/null || true
-              node tools/firestore-rules.js restore
               probe https://playnorthfall.online/healthz 200
               echo "store.js: $(curl -s --max-time 10 https://playnorthfall.online/store.js | head -c 80)" ;;
             *) echo "неизвестный шаг"; exit 1 ;;
