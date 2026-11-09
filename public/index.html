@@ -760,7 +760,7 @@ function startHunt(kind){
  fixNum();HREP=null;REP=null;const sl=[],nM=Math.min(4,Math.max(1,S.en|0));for(let i=0;i<nM;i++)sl.push(hMon(kind));// первые звери при входе — бесплатно, энергию тратят удары и новые звери
  fight={hunt:{kind,sl,kills:0,xp:0,gold:0,loot:[]},e:null,ch:fb1()?1:0,hint:fb1()?1:0,ech:0,guardUntil:0,gcd:0,pcd:0,clk:0,pn:performance.now(),s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,hp0:S.hp}};
  retarget();log(`Охота (${HKN[kind]}): на тебя выходят звери.`,'sys');save();render()}
-function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const s=fight.hunt.sl.find(x=>x.e&&x.e.hp>0);fight.e=s?s.e:null}
+function retarget(){if(!fight||!fight.hunt)return;if(fight.e&&fight.e.hp>0)return;const al=fight.hunt.sl.filter(x=>x.e&&x.e.hp>0);fight.e=al.length?al[Math.floor(Math.random()*al.length)].e:null}
 function huntCheck(){const H=fight.hunt;if(H.raid)return rCheck();
  if(S.hp<=0)return huntEnd('dead');
  for(const s of H.sl)if(s.e&&s.e.hp<=0){const e=s.e;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);if(S.clan){S.tq=S.tq||{};S.tq[H.kind]=(S.tq[H.kind]|0)+1}if(Math.random()<.04){const rk=rndRune(1);addRune(rk);H.loot.push({rune:rk});log(`Трофей: ${rName(rk)}.`,'hit')}log(`${e.name} повержен.`,'hit');const lt=drop(e.lv,false);if(lt&&LASTDROP)H.loot.push(LASTDROP);s.e=null;s.at=fight.clk+(fight.hunt.raid?rnd(1000,10000):rnd(1000,5000))}
@@ -2227,7 +2227,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.38';
+const GVER='1.18.39';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2723,7 +2723,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.38</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.39</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

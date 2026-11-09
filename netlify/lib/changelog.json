@@ -570,5 +570,10 @@
   "v": "1.18.38",
   "t": "Охота: кнопки умений теперь показывают перезарядку кольцом, как удар, а пока действует эффект — зелёное убывающее кольцо и свечение. Когда кончается энергия, кнопка отступления мягко светится.",
   "te": "Hunt: skill buttons now show their cooldown as a ring like the strike button, and a green draining ring with a glow while the effect is active. When energy runs out, the retreat button glows softly."
+ },
+ {
+  "v": "1.18.39",
+  "t": "Охота: после убийства монстра герой переключается на случайного из оставшихся, а не на первого по списку.",
+  "te": "Hunt: after a monster dies, the hero switches to a random one of the remaining monsters instead of always the first in the list."
  }
 ]
