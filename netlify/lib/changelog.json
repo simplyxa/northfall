@@ -550,5 +550,10 @@
   "v": "1.18.34",
   "t": "Охота: питомцы теперь стоят рядом с героем в полный рост — волчонок, Хугин, тролль и дракончик дышат, парят и бросаются на врага, когда бьют.",
   "te": "Hunt: pets now stand next to the hero at full size — the wolf pup, Huginn, the troll and the dragon whelp breathe, hover and lunge at the enemy when they strike."
+ },
+ {
+  "v": "1.18.35",
+  "t": "Охота: у питомцев появились позы атаки — в момент удара они меняют позу и бросаются на врага.",
+  "te": "Hunt: pets now have attack poses — they switch pose and lunge at the enemy when they strike."
  }
 ]
