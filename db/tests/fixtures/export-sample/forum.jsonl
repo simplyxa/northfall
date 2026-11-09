@@ -1,0 +1,2 @@
+{"path":"forum/t1","id":"t1","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"title":"Привет","body":"x"}}
+{"path":"forum/t1/p/p1","id":"p1","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"text":"hi \\u0000"}}

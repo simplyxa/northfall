@@ -1,0 +1,16 @@
+-- Many buyers race for the same listings: each listing sells at most once,
+-- money moves exactly once. Locks the listing row first (FOR UPDATE).
+\set n random(1,40)
+BEGIN;
+WITH l AS (
+  SELECT id, price, seller_uid FROM market_listings
+   WHERE id = 't_L' || :n AND status = 'active' FOR UPDATE),
+sold AS (
+  UPDATE market_listings m SET status = 'sold', buyer_uid = 't_buyer', sold_at = now()
+    FROM l WHERE m.id = l.id RETURNING l.price, l.seller_uid),
+debit AS (
+  UPDATE wallets w SET premium_gold = premium_gold - s.price
+    FROM sold s WHERE w.firebase_uid = 't_buyer' RETURNING 1)
+UPDATE wallets w SET premium_gold = premium_gold + s.price
+  FROM sold s WHERE w.firebase_uid = s.seller_uid;
+COMMIT;

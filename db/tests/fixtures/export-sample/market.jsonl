@@ -1,0 +1,4 @@
+{"path":"market/m1","id":"m1","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"seller":"alice@northfall.game","sname":"Alice","item":{"name":"Щит"},"price":100,"au":true,"ts":1762600000000,"sold":false}}
+{"path":"market/m2","id":"m2","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"seller":"alice@northfall.game","item":{"name":"Лук"},"price":50,"ts":1762600000000,"sold":true,"buyer":"bob@northfall.game","bname":"Bob","paid":true}}
+{"path":"market/m3","id":"m3","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"seller":"bob@northfall.game","item":{"name":"Нож"},"price":20,"ts":1762600000000,"sold":true}}
+{"path":"market/bad","id":"bad","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"seller":"bob@northfall.game","item":{"name":"x"},"price":0}}
