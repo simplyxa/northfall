@@ -555,5 +555,10 @@
   "v": "1.18.35",
   "t": "Охота: у питомцев появились позы атаки — в момент удара они меняют позу и бросаются на врага.",
   "te": "Hunt: pets now have attack poses — they switch pose and lunge at the enemy when they strike."
+ },
+ {
+  "v": "1.18.36",
+  "t": "Охота: у героев появились позы атаки — берсерк бьёт топором, охотник стреляет из лука, шаман бьёт магией.",
+  "te": "Hunt: heroes now have attack poses — the berserker swings the axe, the hunter fires the bow, the shaman casts."
  }
 ]
