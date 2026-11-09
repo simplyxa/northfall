@@ -485,5 +485,10 @@
   "v": "1.18.21",
   "t": "Новые рисунки: герои всех трёх классов (берсерк, охотник, шаман) и звери охоты — волк, вожак стаи, кабан, медведь, снежный барс, лиса-оборотень, болотная крыса, ворон-падальщик, драугр, тролль и разбойник. Каждая зона охоты получила свою сцену: Опушка, Глухой лес и Чаща.",
   "te": "New artwork: heroes of all three classes (berserker, hunter, shaman) and hunt creatures — wolf, pack leader, boar, bear, snow leopard, werefox, swamp rat, carrion raven, draugr, troll and bandit. Each hunting zone now has its own scene: the Clearing, the Deep Forest and the Thicket."
+ },
+ {
+  "v": "1.18.22",
+  "t": "Охота: звери в английской версии больше не показываются круглыми картинками, а ближние звери теперь крупнее дальних. Когда не хватает энергии на удар, появляется надпись «Недостаточно энергии».",
+  "te": "Hunt: creatures in the English version no longer appear as round pictures, and nearer creatures are now larger than distant ones. When there is not enough energy to strike, a «Not enough energy» message appears."
  }
 ]
