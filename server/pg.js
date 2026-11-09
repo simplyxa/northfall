@@ -17,7 +17,7 @@ function getPool() {
     connectionString: process.env.DATABASE_URL,
     max: Math.max(1, Math.min(10, Number(process.env.PG_POOL_MAX) || 3)),   // машина Fly — 256 МБ
     idleTimeoutMillis: 10000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: Math.max(1000, Number(process.env.PG_CONN_TIMEOUT_MS) || 5000),
     statement_timeout: 15000,
     ssl: { rejectUnauthorized: true }      // TLS обязателен, проверку сертификата не отключаем
   });

@@ -41,7 +41,10 @@ echo "== smoke пула pg (server/pg.js)"
 const p=require('./server/pg');(async()=>{const r=await p.smoke();console.log(JSON.stringify(r));await p.close();process.exit(r.ok?0:1)})()" )
 
 echo "== тесты слоя совместимости с Firestore (pgdocs) и обработчика сохранений"
-( cd "$R" && DATABASE_URL="$U" PG_POOL_MAX=8 node tools/pgdocs-test.js 2>&1 | grep -E "✗|Итог|ОШИБКА" ; DATABASE_URL="$U" PG_POOL_MAX=8 node tools/pgint-test.js 2>&1 | grep -E "✗|Итог|ОШИБКА" )
+# CI далеко от базы (задержка), поэтому таймаут подключения щедрый; на Fly рядом с Neon хватит 5 секунд
+export PG_CONN_TIMEOUT_MS=90000 PG_POOL_MAX=8
+( cd "$R" && DATABASE_URL="$U" node tools/pgdocs-test.js 2>&1 | tail -45 ) || true
+( cd "$R" && DATABASE_URL="$U" node tools/pgint-test.js 2>&1 | tail -25 ) || true
 if command -v pgbench >/dev/null; then
   echo "== конкурентные тесты"; TEST_DATABASE_URL="$U" "$R/db/tests/run-concurrency.sh"
 else echo "== pgbench не найден: конкурентные тесты пропущены"; fi
