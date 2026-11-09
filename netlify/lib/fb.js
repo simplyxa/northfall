@@ -37,4 +37,5 @@ if (!admin.apps.length) {
   } catch (e) { initErr = e.message; console.error('firebase init:', e.message); }
 }
 admin.initErr = () => initErr;
-module.exports = admin;
+// STORE=pg: данные (Firestore) берутся из PostgreSQL/Neon через server/pgdocs.js; Firebase Auth остаётся настоящим.
+module.exports = process.env.STORE === 'pg' ? require('../../server/pgdocs').wrap(admin) : admin;
