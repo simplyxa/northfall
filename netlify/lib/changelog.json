@@ -535,5 +535,10 @@
   "v": "1.18.31",
   "t": "Охота: иконки умений занимают весь круг, авто-бой и x2 без кругов (тусклые, пока выключены), x2 стоит выше авто-боя, оба — над бутылкой.",
   "te": "Hunt: skill icons fill the whole circle, auto-fight and x2 have no circles (dimmed when off), x2 sits above auto-fight, both above the flask."
+ },
+ {
+  "v": "1.18.32",
+  "t": "Охота: x2 и авто-бой стали меньше и стоят выше, на кнопке бутылки — иконка бутылки из ресурсов героя.",
+  "te": "Hunt: x2 and auto-fight are smaller and higher, and the flask button uses the flask icon from the hero's resources."
  }
 ]
