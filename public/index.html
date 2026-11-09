@@ -228,6 +228,18 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .skr .b{white-space:normal;line-height:1.1;font-size:13px;padding:0 4px}
 .st-ui .skr .sk{flex:1.5 1 0}
 .st-ui .skr .sk span:last-child{min-width:0;text-align:left}
+.st-ui{position:relative;z-index:5;height:152px;margin-top:-22px;padding:0;background:linear-gradient(180deg,rgba(8,10,12,0) 0,rgba(8,10,12,.88) 26px,#0b0d10 100%)}
+.st-ui .strk{position:absolute;right:10px;bottom:10px;width:86px;height:86px;min-height:0;border-radius:50%;font-size:17px;padding:0;margin:0;border-width:5px;display:flex;align-items:center;justify-content:center;white-space:normal;line-height:1.05}
+.st-ui .sk{position:absolute;width:58px;height:58px;min-height:0;padding:0;margin:0;border-radius:50%;display:flex;align-items:center;justify-content:center;border-width:2px;overflow:hidden}
+.st-ui .sk0{right:106px;bottom:12px}.st-ui .sk1{right:24px;bottom:100px}
+.st-ui .sk .skc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff;text-shadow:0 1px 3px #000}
+.st-ui .sk .skc:not(:empty){background:rgba(0,0,0,.6)}
+.st-ui #bpb{position:absolute;left:10px;bottom:10px;width:70px;height:70px;min-height:0;margin:0;border-radius:50%;padding:0 4px;font-size:12px;line-height:1.1;white-space:normal;display:flex;align-items:center;justify-content:center;text-align:center;border-width:4px}
+.st-ui .sq{position:absolute;flex:none;width:46px;height:46px;min-height:0;border-radius:50%}
+.st-ui .sq[data-ah]{left:12px;bottom:92px}.st-ui .sq[data-hx2]{left:66px;bottom:92px}
+.st-ui .sq svg{width:24px;height:24px}
+.st-ui .st-flee{position:absolute;left:92px;bottom:18px}
+.st-ui .sthint,.st-ui .st-cap{position:absolute;left:0;right:0;top:30px;margin:0;text-align:center}
 </style>
 <link rel="alternate" hreflang="ru" href="https://playnorthfall.online/"><link rel="alternate" hreflang="en" href="https://playnorthfall.online/en/"><link rel="alternate" hreflang="x-default" href="https://playnorthfall.online/">
 </head>
@@ -754,8 +766,10 @@ const BFIG={};for(const k in BEASTFIG)BFIG[k.toLowerCase()]=BEASTFIG[k];
 const bfBase=n=>{const w=String(n||'').split(' ');for(let i=0;i<w.length;i++){const k=w.slice(i).join(' ').toLowerCase();if(BFIG[k])return k}return''},bfKey=n=>BFIG[bfBase(n)]||'',BHL={};for(const k in BEASTH)BHL[k.toLowerCase()]=BEASTH[k];
 // точки рунных кругов на фоне (в % сцены): задний ряд мельче, передний крупнее
 const STPT=[{x:59.9,y:37.4,k:.85},{x:84.1,y:42.6,k:.85},{x:60.6,y:75,k:1},{x:84.8,y:81.5,k:1}];
-function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<button class="sq ${S.ahunt?'on':''}" data-ah="1" title="Авто-удар" aria-label="Авто-удар ${S.ahunt?'включён':'выключен'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg></button><button class="sq ${S.hx2?'on':''}" data-hx2="1" title="Скорость x2" aria-label="Скорость x2 ${S.hx2?'включена':'выключена'}"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 6l8 6-8 6z"/><path d="M12 6l8 6-8 6z"/></svg></button>`:'';
- return`<div class="st-ui">${fight.hint?'<div class="sthint">👇 Жми «Удар»!</div>':''}<div class="srow"><button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар${fight.e?' · '+esc(fight.e.name):''}</button>${ah}</div><div class="skr">${skRaw()}<button class="b alt fcd" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt.b<1||L>0?'disabled':''}>${L>0?POT.b.sh+' '+Math.ceil(L/1000)+' с':POT.b.sh+' ('+S.pt.b+')'}</button></div><div class="st-foot"><span class="st-cap">${S.lvl<3?'Нажми на зверя — и герой ударит его.':'Нажми на зверя, чтобы выбрать цель.'}</span><button class="st-flee" data-a="flee">Отступить</button></div></div>`}
+function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<button class="sq" data-ah="1" title="Авто-удар" aria-label="Авто-удар ${S.ahunt?'включён':'выключен'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg></button><button class="sq" data-hx2="1" title="Скорость x2" aria-label="Скорость x2 ${S.hx2?'включена':'выключена'}"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 6l8 6-8 6z"/><path d="M12 6l8 6-8 6z"/></svg></button>`:'';
+ const ahx=ah.replace('class="sq"','class="sq'+(S.ahunt?' on':'')+'"').replace('class="sq" data-hx2','class="sq'+(S.hx2?' on':'')+'" data-hx2');
+ return`<div class="st-ui">${fight.hint?'<div class="sthint">👇 Жми «Удар»!</div>':S.lvl<3?'<p class="st-cap">Нажми на зверя — и герой ударит его.</p>':''}<button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" title="${fight.e?esc(fight.e.name):''}" ${fight.ch<.2||!fight.e?'disabled':''}>Удар</button>${skRound()}${ahx}<button class="b alt fcd" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt.b<1||L>0?'disabled':''}>${L>0?POT.b.sh+' '+Math.ceil(L/1000)+' с':POT.b.sh+' ('+S.pt.b+')'}</button><button class="st-flee" data-a="flee">Отступить</button></div>`}
+const skRound=()=>skOf().map((k,i)=>{const L=skLeft(k[0]);return`<button class="b alt sk sk${i}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" ${L>0?'disabled':''}>${skImg(k[0],36)}<span id="skl${i}" class="skc">${L>0?Math.ceil(L/1000):''}</span></button>`}).join('');
 function stageHtml(H){const pa=petA(),fig=HEROFIG[S.cls];
  const zk=H&&H.kind&&STBGZ[H.kind]?H.kind:'';return `<div class="stage${zk?' zr '+zk:''}" style="--sbg:url(${zk?STBGZ[zk]:STBG})"><div class="st-w">${zk?'<i class="st-ring h" style="left:23.3%;top:89.9%;--rw:32%"></i>'+STPT.map(P=>`<i class="st-ring" style="left:${P.x}%;top:${P.y}%;--rw:${P.k<1?18.6:20.4}%"></i>`).join(''):''}<div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i style="width:${S.hp/maxHp()*100}%;background:var(--moss)"></i></span><small>${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div>${pa?`<span class="st-pet" title="${esc(pa.n)}">${petImg(pa.k,30)}</span>`:''}</div>
@@ -987,7 +1001,7 @@ function paintPvpFight(){
 }
 function paintFight(){
  if(!fight)return;if(fight.hunt&&!fight.hunt.raid)stageFx();const now=fight.clk,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100),g=id=>document.querySelector(id);
- const set=(id,fn)=>{const x=g(id);if(x)fn(x)};skOf().forEach((k,i)=>set('#sk'+i,x=>{const L=skLeft(k[0]);const l=g('#skl'+i);if(l)l.textContent=k[1]+(L>0?' '+Math.ceil(L/1000)+' с':'');x.disabled=L>0}));if(fight.hunt)fight.hunt.sl.forEach((s,i)=>{if(s.e)set('#ma'+i,x=>x.style.width=Math.round(s.ech*100)+'%')});if(fight.dun)set('#dtm',x=>x.textContent=Math.max(0,Math.ceil((DUNT-fight.clk)/1000)));if(fight.wb)set('#wtm',x=>x.textContent=Math.max(0,Math.ceil((WBT-fight.clk)/1000)));
+ const set=(id,fn)=>{const x=g(id);if(x)fn(x)};skOf().forEach((k,i)=>set('#sk'+i,x=>{const L=skLeft(k[0]);const l=g('#skl'+i);if(l)l.textContent=l.classList.contains('skc')?(L>0?Math.ceil(L/1000):''):k[1]+(L>0?' '+Math.ceil(L/1000)+' с':'');x.disabled=L>0}));if(fight.hunt)fight.hunt.sl.forEach((s,i)=>{if(s.e)set('#ma'+i,x=>x.style.width=Math.round(s.ech*100)+'%')});if(fight.dun)set('#dtm',x=>x.textContent=Math.max(0,Math.ceil((DUNT-fight.clk)/1000)));if(fight.wb)set('#wtm',x=>x.textContent=Math.max(0,Math.ceil((WBT-fight.clk)/1000)));
  set('#ecb',x=>x.style.width=ec+'%');set('#ect',x=>x.textContent=ec+'%');
  set('#bs',x=>{x.style.setProperty('--p',pc);x.disabled=fight.ch<.2;x.classList.toggle('full',fight.ch>=1)});
  set('#bg',x=>{const act=now<fight.guardUntil,cd=now<fight.gcd;x.textContent=act?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':cd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок';x.disabled=cd;x.style.setProperty('--p',act?Math.round((fight.guardUntil-now)/3000*100):cd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100);x.classList.toggle('act',act)});
@@ -2151,7 +2165,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.24';
+const GVER='1.18.25';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2646,7 +2660,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.24</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.18.25</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
