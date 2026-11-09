@@ -146,6 +146,11 @@ const server = http.createServer(async (req, res) => {
   const host = (req.headers.host || '').toLowerCase();
   if (host.startsWith('www.')) { res.writeHead(301, { Location: 'https://' + host.slice(4) + req.url }); return res.end(); }
   if (u.pathname === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
+  // режим техобслуживания (MAINT=1): всё, кроме проверок живости, отвечает 503 и ничего не пишет в базу
+  if (process.env.MAINT === '1' && u.pathname !== '/healthz' && u.pathname !== '/hubz') {
+    res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '300', 'Cache-Control': 'no-store' });
+    return res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Northfall</title><body style="background:#14110d;color:#e8dcc0;font-family:sans-serif;text-align:center;padding:12vh 1rem"><h1>Northfall: Barbarians</h1><p>Технические работы — переезжаем на новую базу данных. Ваш прогресс сохранён. Загляните через несколько минут.</p><p>Maintenance — we are moving to a new database. Your progress is safe. Please come back in a few minutes.</p>');
+  }
   if (u.pathname === '/hubz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(HUB.stats())); }
   if (u.pathname === '/api/admin-clan' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
@@ -325,10 +330,10 @@ async function sweepTestCards(full) {
 
 // после старта новой версии — список изменений на форум (повторы функция сама отсекает)
 // уборка тестовых карточек: при старте — по имени, потом раз в 15 минут — по маркеру
-sweepTestCards(true);
-setTimeout(() => { sweepTestCards(false); setInterval(() => sweepTestCards(false), 2 * 60000).unref(); }, 20000);
+if (process.env.MAINT !== '1') sweepTestCards(true);
+setTimeout(() => { if (process.env.MAINT === '1') return; sweepTestCards(false); setInterval(() => sweepTestCards(false), 2 * 60000).unref(); }, 20000);
 
-if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.CHANGELOG !== 'off') {
+if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.CHANGELOG !== 'off' && process.env.MAINT !== '1') {
   setTimeout(() => runFn('deploy-succeeded', { httpMethod: 'POST', headers: {}, body: JSON.stringify({ payload: { context: 'production' } }) })
     .then(r => console.log('changelog', r && r.statusCode, r && r.body)).catch(e => console.error('changelog', e)), 15000);
 }

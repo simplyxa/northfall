@@ -45,6 +45,7 @@ module.exports = function hub(server, getDb, verify, gate) {
   server.on('upgrade', (req, sock) => {
     let u; try { u = new URL(req.url, 'http://x'); } catch (e) { return sock.destroy(); }
     const key = req.headers['sec-websocket-key'];
+    if (process.env.MAINT === '1') { sock.write('HTTP/1.1 503 Service Unavailable\r\n\r\n'); return sock.destroy(); }
     if (u.pathname !== '/ws' || !key || (req.headers.upgrade || '').toLowerCase() !== 'websocket') {
       sock.write('HTTP/1.1 400 Bad Request\r\n\r\n'); return sock.destroy();
     }
