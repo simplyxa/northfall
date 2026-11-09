@@ -1,4 +1,5 @@
-// Срабатывает после каждой успешной выкладки сайта (событие Netlify deploy-succeeded).
+// Ежедневный дайджест обновлений: сервер вызывает функцию каждые 5 минут, а она сама решает,
+// пора ли публиковать. Публикуем раз в сутки, не раньше DIGEST_HOUR (по умолчанию 19:00 Израиль).
 // Пишет на форум в тему «Обновления игры» короткий список изменений из netlify/lib/changelog.json,
 // которые ещё не публиковались, и коротко сообщает об обновлении в общем чате.
 const admin = require('../lib/fb');
@@ -19,6 +20,24 @@ exports.handler = async (event) => {
     if (!fresh.length) return { statusCode: 200, body: 'nothing new' };
 
     const ts = Date.now();
+    // окно публикации: раз в сутки, после DIGEST_HOUR по времени Израиля (force в теле — для ручного запуска)
+    let force = false; try { force = !!JSON.parse(event.body || '{}').force; } catch (e) {}
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(ts);
+    const g = k => (parts.find(p => p.type === k) || {}).value;
+    const day = `${g('year')}-${g('month')}-${g('day')}`, hour = +g('hour');
+    const DH = Number.isFinite(+process.env.DIGEST_HOUR) && process.env.DIGEST_HOUR !== '' ? +process.env.DIGEST_HOUR : 19;
+    if (!force) {
+      if (hour < DH) return { statusCode: 200, body: 'wait ' + DH + ':00' };
+      if ((((await st.get()).data() || {}).lastDay) === day) return { statusCode: 200, body: 'already ' + day };
+    }
+    // занимаем сутки транзакцией, чтобы два процесса не опубликовали дважды
+    const won = await db.runTransaction(async tx => {
+      const cur = ((await tx.get(st)).data() || {});
+      if (!force && cur.lastDay === day) return false;
+      tx.set(st, { lastDay: day }, { merge: true }); return true;
+    });
+    if (!won) return { statusCode: 200, body: 'already ' + day };
+
     const date = new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Asia/Jerusalem' });
     const vs = fresh.length > 1 ? `версии ${fresh[0].v}–${fresh[fresh.length - 1].v}` : `версия ${fresh[0].v}`;
     const text = `Обновление ${date} (${vs}):\n\n` + fresh.map(x => '• ' + x.t).join('\n');
@@ -28,7 +47,7 @@ exports.handler = async (event) => {
     if (!ts0.exists) {
       await tref.set({ sec: 'news', title: 'Обновления игры', uid: 'admin', name: NAME, ts, last: ts, lastn: NAME, cnt: 0, pinned: true, closed: true });
       await tref.collection('posts').doc('p0000').set({ uid: 'admin', name: NAME, ts: ts - 1,
-        text: 'В этой теме коротко пишем обо всём, что появилось в игре. Обновления выходят по ночам. Идеи и ошибки пишите в разделах «Общий зал» и «Помощь новичкам» или через «Сообщить об ошибке».' });
+        text: 'В этой теме коротко пишем обо всём, что появилось в игре. Сводка обновлений выходит раз в день, вечером. Идеи и ошибки пишите в разделах «Общий зал» и «Помощь новичкам» или через «Сообщить об ошибке».' });
     }
     await tref.collection('posts').doc('u' + ts.toString(36)).set({ uid: 'admin', name: NAME, text: text.slice(0, 2000), ts });
     const cnt = ((ts0.exists && ts0.data().cnt) | 0) + (ts0.exists ? 1 : 2);
@@ -49,7 +68,7 @@ exports.handler = async (event) => {
       fte = TID + '_en';
     }
     await db.collection('chat').doc('n' + ts.toString(36) + 'upd').set({ uid: 'admin', name: NAME, sys: 1, ts, lg: 'ru', ft: TID,
-      text: `Вышло обновление (${vs}). Что нового — на форуме в теме «Обновления игры».` });
+      text: `Сводка обновлений за день (${vs}). Что нового — на форуме в теме «Обновления игры».` });
     // то же в английский канал чата
     const vEn2 = fresh.length > 1 ? `versions ${fresh[0].v}–${fresh[fresh.length - 1].v}` : `version ${fresh[0].v}`;
     await db.collection('chat').doc('n' + ts.toString(36) + 'upe').set({ uid: 'admin', name: 'Administration', sys: 1, ts, lg: 'en', ft: fte || TID, ...(fte ? { fte } : {}),

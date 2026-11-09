@@ -71,7 +71,8 @@ node i18n/build_en.js     # пересобрать английскую верс
 Как это устроено:
 
 1. `netlify/lib/changelog.json` — список записей `{v, t, te}`: `t` — русский текст, `te` — английский.
-2. При выкладке срабатывает `netlify/functions/deploy-succeeded.js`: он публикует новые записи
+2. Сервер каждые 5 минут вызывает `netlify/functions/deploy-succeeded.js`, а он публикует сводку
+   один раз в сутки, не раньше 19:00 по Израилю (`DIGEST_HOUR`; в теле `force:true` — вне очереди): новые записи
    в тему форума `forum/tupdates` («Обновления игры») и `forum/tupdates_en` («Game updates
    (English)»), а также короткое сообщение в оба канала чата и в Discord.
    Что уже опубликовано — лежит в `priv/changelog-state`.
