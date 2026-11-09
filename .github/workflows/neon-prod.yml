@@ -1,12 +1,13 @@
 # БОЕВАЯ база Neon. Репозиторий публичный: в логах только версия/счётчики, строку подключения не печатаем.
 # Секрет NEON_PROD_DATABASE_URL — direct-адрес (без -pooler) боевого проекта. Тестовую базу сюда не подключать.
 # check  — только проверка подключения (TLS, версия, число таблиц). Ничего не меняет.
+# zz-dry / zz-delete — найти / удалить тестовые документы zz_ap_* (только в fs_docs, ровно по префиксу id).
 # schema — накатывает миграции 0001–0004 ТОЛЬКО если в public нет ни одной таблицы.
 name: Neon prod
 on:
   workflow_dispatch:
     inputs:
-      mode: { description: 'check | schema', default: 'check', required: true }
+      mode: { description: 'check | schema | zz-dry | zz-delete', default: 'check', required: true }
       ref: { description: 'Ветка/коммит с миграциями', default: 'migration/firestore-audit-phase-1', required: true }
 jobs:
   run:
@@ -27,6 +28,15 @@ jobs:
           psql "$U" -Atc "select 'версия: '||split_part(version(),' ',2)" || { echo "ОШИБКА подключения"; exit 1; }
           N=$(psql "$U" -Atc "select count(*) from information_schema.tables where table_schema='public'")
           echo "таблиц в public: $N"
+          if [ "$MODE" = zz-dry ] || [ "$MODE" = zz-delete ]; then
+            psql "$U" -Atc "select 'zz_ap_*: '||parent||' = '||count(*) from fs_docs where id ~ '^zz_ap_' group by parent"
+          fi
+          if [ "$MODE" = zz-delete ]; then
+            T=$(psql "$U" -Atc "select count(*) from fs_docs where parent='saves' and id ~ '^zz_ap_'")
+            if [ "$T" != 30 ]; then echo "ОШИБКА: ждали 30 тестовых сохранений, нашли $T — не удаляю"; exit 1; fi
+            psql "$U" -v ON_ERROR_STOP=1 -Atc "delete from fs_docs where id ~ '^zz_ap_' and (parent='saves' or path ~ '^saves/zz_ap_[^/]*/')" 
+            psql "$U" -Atc "select 'saves осталось: '||count(*) from fs_docs where parent='saves'"
+          fi
           if [ "$MODE" = schema ]; then
             if [ "$N" != 0 ]; then echo "В базе уже есть таблицы — миграции не накатываю"; exit 1; fi
             for f in db/migrations/000[1-4]*.sql; do echo "миграция $f"; psql "$U" -v ON_ERROR_STOP=1 -q -f "$f"; done
