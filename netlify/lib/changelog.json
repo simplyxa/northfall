@@ -500,5 +500,10 @@
   "v": "1.18.24",
   "t": "Охота: сцена стала больше, а кнопки удара, умений, бутылки, авто-боя и ускорения x2 теперь прямо на ней. Кнопка «Блок» из охоты убрана. «Отступить» — в углу сцены.",
   "te": "Hunt: the scene is bigger and the Strike, skill, bottle, auto-fight and x2 buttons are now right on it. The Block button is removed from hunts. Retreat is in the corner of the scene."
+ },
+ {
+  "v": "1.18.25",
+  "t": "Охота: кнопки на сцене стали круглыми. Удар и умения — справа внизу, бутылка — слева внизу, авто-бой и x2 — над бутылкой, рядом с героем.",
+  "te": "Hunt: the buttons on the scene are now round. Strike and skills are at the bottom right, the bottle is at the bottom left, auto-fight and x2 are above the bottle next to the hero."
  }
 ]

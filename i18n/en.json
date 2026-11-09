@@ -2575,5 +2575,10 @@
   "Недостаточно энергии": "Not enough energy",
   "\" data-hx2=\"1\" title=\"Скорость x2\" aria-label=\"Скорость x2 ": "\" data-hx2=\"1\" title=\"Speed x2\" aria-label=\"Speed x2 ",
   "<details class=\"hdet\"><summary>Как тратится энергия</summary><p style=\"margin:4px 0 0;color:var(--mute);font-size:14px\">Вход бесплатный, а каждый удар и каждый новый зверь стоят 1 энергию. ": "<details class=\"hdet\"><summary>How energy is spent</summary><p style=\"margin:4px 0 0;color:var(--mute);font-size:14px\">Entry is free, but every strike and every new beast costs 1 energy. ",
-  "</span><button class=\"st-flee\" data-a=\"flee\">Отступить</button></div></div>": "</span><button class=\"st-flee\" data-a=\"flee\">Retreat</button></div></div>"
+  "</span><button class=\"st-flee\" data-a=\"flee\">Отступить</button></div></div>": "</span><button class=\"st-flee\" data-a=\"flee\">Retreat</button></div></div>",
+  "<button class=\"sq\" data-ah=\"1\" title=\"Авто-удар\" aria-label=\"Авто-удар ": "<button class=\"sq\" data-ah=\"1\" title=\"Auto-strike\" aria-label=\"Auto-strike ",
+  "\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 12a8 8 0 1 1-2.3-5.6\"/><path d=\"M20 4v4h-4\"/><path d=\"M10 9l5 3-5 3z\" fill=\"currentColor\"/></svg></button><button class=\"sq\" data-hx2=\"1\" title=\"Скорость x2\" aria-label=\"Скорость x2 ": "\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 12a8 8 0 1 1-2.3-5.6\"/><path d=\"M20 4v4h-4\"/><path d=\"M10 9l5 3-5 3z\" fill=\"currentColor\"/></svg></button><button class=\"sq\" data-hx2=\"1\" title=\"Speed x2\" aria-label=\"Speed x2 ",
+  "<p class=\"st-cap\">Нажми на зверя — и герой ударит его.</p>": "<p class=\"st-cap\">Tap a beast — and the hero will strike it.</p>",
+  ">Удар</button>": ">Strike</button>",
+  "</button><button class=\"st-flee\" data-a=\"flee\">Отступить</button></div>": "</button><button class=\"st-flee\" data-a=\"flee\">Retreat</button></div>"
 }
