@@ -2571,5 +2571,6 @@
   "Билеты арены": "Arena tickets",
   "Пополняю билеты до 10/10…": "Refilling tickets to 10/10…",
   "Билеты арены пополнены: <b>10/10</b>.": "Arena tickets refilled: <b>10/10</b>.",
-  "Не удалось пополнить билеты": "Could not refill tickets"
+  "Не удалось пополнить билеты": "Could not refill tickets",
+  "Недостаточно энергии": "Not enough energy"
 }
