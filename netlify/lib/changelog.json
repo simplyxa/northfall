@@ -490,5 +490,10 @@
   "v": "1.18.22",
   "t": "Охота: звери в английской версии больше не показываются круглыми картинками, а ближние звери теперь крупнее дальних. Когда не хватает энергии на удар, появляется надпись «Недостаточно энергии».",
   "te": "Hunt: creatures in the English version no longer appear as round pictures, and nearer creatures are now larger than distant ones. When there is not enough energy to strike, a «Not enough energy» message appears."
+ },
+ {
+  "v": "1.18.23",
+  "t": "Охота: герой стал меньше и теперь не выглядит великаном рядом со зверями, размеры зверей подогнаны.",
+  "te": "Hunt: the hero is smaller and no longer looks like a giant next to the beasts, creature sizes adjusted."
  }
 ]
