@@ -334,8 +334,10 @@ if (process.env.MAINT !== '1') sweepTestCards(true);
 setTimeout(() => { if (process.env.MAINT === '1') return; sweepTestCards(false); setInterval(() => sweepTestCards(false), 2 * 60000).unref(); }, 20000);
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.CHANGELOG !== 'off' && process.env.MAINT !== '1') {
-  setTimeout(() => runFn('deploy-succeeded', { httpMethod: 'POST', headers: {}, body: JSON.stringify({ payload: { context: 'production' } }) })
-    .then(r => console.log('changelog', r && r.statusCode, r && r.body)).catch(e => console.error('changelog', e)), 15000);
+  // дайджест: функция сама публикует раз в сутки после 19:00 (Израиль); здесь только проверка каждые 5 минут
+  const digest = () => runFn('deploy-succeeded', { httpMethod: 'POST', headers: {}, body: JSON.stringify({ payload: { context: 'production' } }) })
+    .then(r => { const b = r && r.body; if (b && !/^(wait|already|nothing)/.test(b)) console.log('changelog', r.statusCode, b); }).catch(e => console.error('changelog', e));
+  setTimeout(() => { digest(); setInterval(digest, 5 * 60000).unref(); }, 15000);
 }
 
 process.on('SIGTERM', () => { server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 8000).unref(); });
