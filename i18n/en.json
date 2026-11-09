@@ -2572,5 +2572,8 @@
   "Пополняю билеты до 10/10…": "Refilling tickets to 10/10…",
   "Билеты арены пополнены: <b>10/10</b>.": "Arena tickets refilled: <b>10/10</b>.",
   "Не удалось пополнить билеты": "Could not refill tickets",
-  "Недостаточно энергии": "Not enough energy"
+  "Недостаточно энергии": "Not enough energy",
+  "\" data-hx2=\"1\" title=\"Скорость x2\" aria-label=\"Скорость x2 ": "\" data-hx2=\"1\" title=\"Speed x2\" aria-label=\"Speed x2 ",
+  "<details class=\"hdet\"><summary>Как тратится энергия</summary><p style=\"margin:4px 0 0;color:var(--mute);font-size:14px\">Вход бесплатный, а каждый удар и каждый новый зверь стоят 1 энергию. ": "<details class=\"hdet\"><summary>How energy is spent</summary><p style=\"margin:4px 0 0;color:var(--mute);font-size:14px\">Entry is free, but every strike and every new beast costs 1 energy. ",
+  "</span><button class=\"st-flee\" data-a=\"flee\">Отступить</button></div></div>": "</span><button class=\"st-flee\" data-a=\"flee\">Retreat</button></div></div>"
 }
