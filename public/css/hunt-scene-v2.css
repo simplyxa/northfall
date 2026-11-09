@@ -21,6 +21,8 @@
   pointer-events:none;z-index:199;opacity:.53;
 }
 .stage .st-hero {z-index:90;filter:saturate(.88) contrast(1.08);}
+/* Static character art: no idle sprite animation. Existing hit feedback remains. */
+.stage .st-fig{animation:none;}
 .stage .st-fig img {object-fit:contain;object-position:center bottom;filter:drop-shadow(0 7px 5px #020606bb) drop-shadow(0 1px 2px #05090c);}
 .stage .st-foe.fig .st-img img {
   object-fit:contain;object-position:center bottom;
