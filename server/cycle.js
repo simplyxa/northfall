@@ -107,9 +107,9 @@ module.exports = function cycle(getDb) {
         const mine = (B.dmg && B.dmg[c.uid]) | 0;
         const capAll = bossDayCap(S);
         if (mine >= capAll) { out = { st: 'cap', hp: B.hp, max: B.max, mine }; return; }
-        // один удар не может превышать атаку героя
+        // клиент присылает урон за весь бой (до 11 ударов): предел — удары × атака героя, с запасом на криты
         let d = Math.round(+m.d || 0);
-        const one = Math.max(1, Math.round(atkBound(S) * 1.2));
+        const one = Math.max(1, Math.round(atkBound(S) * 1.2 * WBSTRIKES * 1.5));
         if (!(d > 0)) d = 0; else if (d > one) d = one;
         if (mine + d > capAll) d = Math.max(0, capAll - mine);
         if (!d) { out = { st: 'no', hp: B.hp, max: B.max, mine }; return; }
