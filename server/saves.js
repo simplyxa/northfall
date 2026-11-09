@@ -109,7 +109,7 @@ module.exports = function saves(admin) {
     // дневной рейтинг лайв-арены — тоже серверное число (считается в дуэли)
     s.dr = st.dr; s.dn = st.dn; s.dw = st.dw;
     s._ar = { d: st.day };   // метка суток: нужна, чтобы сбросить дневной рейтинг
-    if (res.rej) flag(db, uid, 'arena', { why: 'no_ticket' });
+    const arenaRej = !!res.rej;   // флаг пишет after(): в guard нет доступа к db
     fix = fix || {};
     fix.rating = s.rating; fix.srat = s.srat; fix.sid = s.sid; fix.psid = s.psid; fix.psrat = s.psrat;
     fix.atk = s.atk; fix.atkt = s.atkt;
@@ -130,9 +130,10 @@ module.exports = function saves(admin) {
       const bad = checkHero(target);
       if (bad.length) { items = bad.map(b => ({ uid: b.uid, where: b.where, why: b.why, name: b.item.name })); if (ITEM_CLAMP) { fix = fix || {}; fix.items = bad.map(b => ({ uid: b.uid, where: b.where, item: b.item })); } }
     } catch (e) {}
-    return { fix, clamp, items };
+    return { fix, clamp, items, arenaRej };
   }
   function after(db, uid, prev, s, g) {
+    if (g.arenaRej) flag(db, uid, 'arena', { why: 'no_ticket' });
     if (g.clamp) flag(db, uid, 'clamp', { ...g.clamp, dtMin: 0 });
     if (g.items) flag(db, uid, 'item', { list: g.items.slice(0, 5), clamped: ITEM_CLAMP, dtMin: 0 });
     try {
