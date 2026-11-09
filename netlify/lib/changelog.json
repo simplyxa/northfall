@@ -515,5 +515,10 @@
   "v": "1.18.27",
   "t": "Форум: тема «Обновления игры» снова открывается, а не висит на «Загружаю сообщения…».",
   "te": "Forum: the «Game updates» topic opens again instead of hanging on «Loading messages…»."
+ },
+ {
+  "v": "1.18.28",
+  "t": "Форум: комментарии разбиты на страницы по 20 — кнопки «Новее» и «Старше» вместо «Загрузить ещё».",
+  "te": "Forum: comments are split into pages of 20 — «Newer» and «Older» buttons instead of «Load more»."
  }
 ]
