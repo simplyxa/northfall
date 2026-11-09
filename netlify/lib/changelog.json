@@ -575,5 +575,10 @@
   "v": "1.18.39",
   "t": "Охота: после убийства монстра герой переключается на случайного из оставшихся, а не на первого по списку.",
   "te": "Hunt: after a monster dies, the hero switches to a random one of the remaining monsters instead of always the first in the list."
+ },
+ {
+  "v": "1.18.40",
+  "t": "Рейды: в награде снова показывается опыт (вместо [object HTMLDivElement]); мировой босс: засчитывается весь урон за бой",
+  "te": "Raids: the reward shows XP again (instead of [object HTMLDivElement]); world boss: damage for the whole fight now counts"
  }
 ]
