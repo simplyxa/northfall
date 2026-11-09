@@ -24,7 +24,7 @@ const MAXMSG = 64 * 1024;
 const PROTO = 2;            // текущая версия протокола дельт
 const SNAP_MS = 120;        // склейка частых изменений (бой, рейд) в одну рассылку
 
-module.exports = function hub(server, getDb, verify) {
+module.exports = function hub(server, getDb, verify, gate) {
   const clients = new Set();
   const RAID = require('./raid')(getDb);
   const DUEL = require('./duel')(getDb);
@@ -45,6 +45,7 @@ module.exports = function hub(server, getDb, verify) {
   server.on('upgrade', (req, sock) => {
     let u; try { u = new URL(req.url, 'http://x'); } catch (e) { return sock.destroy(); }
     const key = req.headers['sec-websocket-key'];
+    if (process.env.MAINT === '1') { sock.write('HTTP/1.1 503 Service Unavailable\r\n\r\n'); return sock.destroy(); }
     if (u.pathname !== '/ws' || !key || (req.headers.upgrade || '').toLowerCase() !== 'websocket') {
       sock.write('HTTP/1.1 400 Bad Request\r\n\r\n'); return sock.destroy();
     }
@@ -94,6 +95,7 @@ module.exports = function hub(server, getDb, verify) {
     try { c.sock.destroy(); } catch (e) {}
     for (const f of c.subs) unsub(c, f);
     RAID.onClose(c); DUEL.onClose(c); APVP.onClose(c);
+    if (gate) gate.drop(c);
     onlineChanged();
   }
   // проверка живости: Fly закрывает тихие соединения, браузер на свёрнутой вкладке может «пропасть»
@@ -109,6 +111,7 @@ module.exports = function hub(server, getDb, verify) {
     if (m.t === 'hello') {
       // вход: игрок присылает токен Firebase (сервер сам узнаёт логин), гость — свой случайный id
       c.uid = ''; c.gid = '';
+      if (gate) gate.drop(c);   // смена пользователя: подписки шлюза оформляются заново (с новыми правами)
       c.v = Math.max(0, Math.min(PROTO, parseInt(m.v, 10) || 0)); // версия протокола клиента
       if (m.tok) { try { c.uid = await verify(String(m.tok)); } catch (e) { c.uid = ''; } }
       if (!c.uid && m.g) c.gid = String(m.g).replace(/[^a-z0-9]/gi, '').slice(0, 24);
@@ -116,6 +119,7 @@ module.exports = function hub(server, getDb, verify) {
       onlineChanged(true);
       return;
     }
+    if (gate && (m.t === 'fsl' || m.t === 'fsu')) return gate.onMsg(c, m, send);   // шлюз данных (STORE=pg)
     if (m.t === 'sub' && Array.isArray(m.c)) { for (const f of m.c) if (FEEDS[f]) sub(c, f); return; }
     if (m.t === 'unsub' && Array.isArray(m.c)) { for (const f of m.c) unsub(c, f); return; }
     if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm' || m.t === 'rh') return RAID.onMsg(c, m, send);

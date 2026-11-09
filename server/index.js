@@ -146,6 +146,11 @@ const server = http.createServer(async (req, res) => {
   const host = (req.headers.host || '').toLowerCase();
   if (host.startsWith('www.')) { res.writeHead(301, { Location: 'https://' + host.slice(4) + req.url }); return res.end(); }
   if (u.pathname === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
+  // режим техобслуживания (MAINT=1): всё, кроме проверок живости, отвечает 503 и ничего не пишет в базу
+  if (process.env.MAINT === '1' && u.pathname !== '/healthz' && u.pathname !== '/hubz') {
+    res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '300', 'Cache-Control': 'no-store' });
+    return res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Northfall</title><body style="background:#14110d;color:#e8dcc0;font-family:sans-serif;text-align:center;padding:12vh 1rem"><h1>Northfall: Barbarians</h1><p>Технические работы — переезжаем на новую базу данных. Ваш прогресс сохранён. Загляните через несколько минут.</p><p>Maintenance — we are moving to a new database. Your progress is safe. Please come back in a few minutes.</p>');
+  }
   if (u.pathname === '/hubz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(HUB.stats())); }
   if (u.pathname === '/api/admin-clan' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
@@ -252,6 +257,14 @@ const server = http.createServer(async (req, res) => {
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
     return SAVE.op(req, res, b).catch(e => { console.error('op', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
   }
+  if (u.pathname === '/api/fs' && req.method === 'POST') {
+    let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
+    return GATE.http(req, res, b).catch(e => { console.error('fs', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
+  }
+  if (u.pathname === '/store.js') {   // клиент узнаёт, откуда брать данные: Firestore ('fs') или шлюз сервера ('pg')
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end('window.NF_STORE=' + JSON.stringify(GATE.enabled ? 'pg' : 'fs') + ';');
+  }
   if (u.pathname === '/api/save' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
@@ -267,12 +280,16 @@ server.keepAliveTimeout = 65000;
 const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
 const SAVE = require('./saves')(() => fbAdmin());
 // сокет-хаб: живые списки и «онлайн» по WebSocket (/ws)
-const HUB = require('./hub')(server, () => { const a = fbAdmin(); return a ? a.firestore() : null; }, async tok => {
+const verifyUid = async tok => {
   const a = fbAdmin(); if (!a) throw new Error('no firebase');
   const d = await a.auth().verifyIdToken(tok), DOM = '@northfall.game';
   if (!d.email || !d.email.endsWith(DOM)) throw new Error('bad user');
   return d.email.slice(0, -DOM.length);
-});
+};
+const getDbOrNull = () => { const a = fbAdmin(); return a ? a.firestore() : null; };
+// шлюз данных для браузера (STORE=pg): вместо прямого доступа клиента к Firestore
+const GATE = require('./fsgate')(getDbOrNull, verifyUid);
+const HUB = require('./hub')(server, getDbOrNull, verifyUid, GATE.enabled ? GATE : null);
 server.listen(PORT, () => console.log('Northfall server on :' + PORT));
 
 // расписание: push-cron каждые 15 минут (по границе :00/:15/:30/:45, как в Netlify)
@@ -313,10 +330,10 @@ async function sweepTestCards(full) {
 
 // после старта новой версии — список изменений на форум (повторы функция сама отсекает)
 // уборка тестовых карточек: при старте — по имени, потом раз в 15 минут — по маркеру
-sweepTestCards(true);
-setTimeout(() => { sweepTestCards(false); setInterval(() => sweepTestCards(false), 2 * 60000).unref(); }, 20000);
+if (process.env.MAINT !== '1') sweepTestCards(true);
+setTimeout(() => { if (process.env.MAINT === '1') return; sweepTestCards(false); setInterval(() => sweepTestCards(false), 2 * 60000).unref(); }, 20000);
 
-if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.CHANGELOG !== 'off') {
+if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.CHANGELOG !== 'off' && process.env.MAINT !== '1') {
   setTimeout(() => runFn('deploy-succeeded', { httpMethod: 'POST', headers: {}, body: JSON.stringify({ payload: { context: 'production' } }) })
     .then(r => console.log('changelog', r && r.statusCode, r && r.body)).catch(e => console.error('changelog', e)), 15000);
 }

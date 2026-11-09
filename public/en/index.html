@@ -225,6 +225,8 @@ const FIREBASE_CONFIG={
 const ADMINS=['shtorm1','admin'];
 const MAILDOM='@northfall.game';
 </script>
+<script src="/store.js"></script>
+<script src="/js/nfdb.js"></script>
 <script src="/js/regular-arena.js"></script>
 <script>
 // язык: русская версия на «/», английская на «/en/»; выбор хранится в nf_lang
@@ -351,14 +353,15 @@ function hubFs(name){const L=HUB.L[name];if(!L||L.fs||!L.cbs.size||!L.q)return;L
 function hubHello(){if(!HUB.ok)return;const who=UID||('g:'+(typeof GUEST!=='undefined'&&GUEST?1:0));if(HUB.who===who)return;HUB.who=who;
  let g='';try{g=localStorage.getItem('nf_gid')||''}catch(e){}
  const tk=UID&&typeof FBA!=='undefined'&&FBA&&FBA.currentUser?FBA.currentUser.getIdToken().catch(()=>''):Promise.resolve('');
- tk.then(tok=>hubSend({t:'hello',tok:tok||undefined,g:!tok&&g?g:undefined,v:2}))}
+ tk.then(tok=>{hubSend({t:'hello',tok:tok||undefined,g:!tok&&g?g:undefined,v:2});try{NFDB.onHello()}catch(e){}})}
 function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws')}catch(e){HUB.dead=true;return}
- HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;for(const k in HUB.L)hubFs(k);DHUB=null;if(typeof dHubFallback==='function')dHubFallback();HUB.n++;
+ HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;try{NFDB.onClose()}catch(e){}for(const k in HUB.L)hubFs(k);DHUB=null;if(typeof dHubFallback==='function')dHubFallback();HUB.n++;
   if(HUB.n>8&&!HUB.everOk){HUB.dead=true;return}clearTimeout(HUB.tm);HUB.tm=setTimeout(hubStart,Math.min(30000,1500*HUB.n))};
- ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}try{dHubJoin()}catch(e){}},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
+ ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;try{NFDB.attach(hubSend);NFDB.wsOpen()}catch(e){}hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}try{dHubJoin()}catch(e){}},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
   if(m.t==='snap'){const L=HUB.L[m.c];if(!L)return;L.data=m.d;if(L.fs){try{L.fs()}catch(x){}L.fs=null}const sn=()=>hubSn(m.d);for(const x of L.cbs)try{x.cb(sn())}catch(er){console.error(er)}}
   else if(m.t==='upd'){const L=HUB.L[m.c];if(!L||!L.data)return;const by=new Map();for(const x of L.data)by.set(x.id,x);for(const d of (m.u||[]))by.set(d.id,d);for(const id of (m.r||[]))by.delete(id);let arr=[...by.values()];if(m.o){const pos=new Map();m.o.forEach((id,i)=>pos.set(id,i));arr=arr.filter(x=>pos.has(x.id)).sort((a,b)=>pos.get(a.id)-pos.get(b.id));}L.data=arr;const sn=()=>hubSn(arr);for(const x of L.cbs)try{x.cb(sn())}catch(er){console.error(er)}}
+  else if(m.t==='fss'||m.t==='fse'){try{NFDB.onMsg(m)}catch(er){console.error(er)}}
   else if(m.t==='nofeed'){hubFs(m.c)}
   else if(m.t==='rs'){if(typeof rHubState==='function')rHubState(m)}
   else if(m.t==='ds'){if(typeof dHubState==='function')dHubState(m)}
@@ -2497,7 +2500,7 @@ async function initOnline(){
   if(!window.firebase||!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.includes('INSERT'))return;
   if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
   rdMeter();
-  const db=firebase.firestore();FBA=firebase.auth();
+  const db=window.NF_STORE==='pg'&&window.NFDB?NFDB.create(()=>FBA&&FBA.currentUser?FBA.currentUser.getIdToken():Promise.resolve('')):firebase.firestore();FBA=firebase.auth();
   try{await Promise.race([FBA.setPersistence(INAPP?firebase.auth.Auth.Persistence.SESSION:firebase.auth.Auth.Persistence.LOCAL),new Promise(r=>setTimeout(r,2000))])}catch(e){}
   DB=db;online=true;DBS='ok';
   const u=await new Promise(res=>{let done=false;const fin=x=>{if(done)return;done=true;res(x)};const un=FBA.onAuthStateChanged(x=>{try{un()}catch(e){}fin(x)});setTimeout(()=>{if(!done)AUTHSLOW=1;fin(null)},3000)});

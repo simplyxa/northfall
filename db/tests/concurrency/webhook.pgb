@@ -1,0 +1,9 @@
+-- Same Xsolla order delivered many times in parallel: credit must happen exactly once.
+BEGIN;
+WITH ins AS (
+  INSERT INTO wallet_transactions(firebase_uid, operation, amount, idempotency_key)
+  VALUES ('ztest_buyer', 'xsolla_credit', 500, 'xsolla:ORDER-T1')
+  ON CONFLICT (idempotency_key) DO NOTHING RETURNING amount)
+UPDATE wallets SET premium_gold = premium_gold + (SELECT amount FROM ins)
+ WHERE firebase_uid = 'ztest_buyer' AND EXISTS (SELECT 1 FROM ins);
+COMMIT;
