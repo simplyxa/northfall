@@ -540,5 +540,10 @@
   "v": "1.18.32",
   "t": "Охота: x2 и авто-бой стали меньше и стоят выше, на кнопке бутылки — иконка бутылки из ресурсов героя.",
   "te": "Hunt: x2 and auto-fight are smaller and higher, and the flask button uses the flask icon from the hero's resources."
+ },
+ {
+  "v": "1.18.33",
+  "t": "Охота: убран блок «Как тратится энергия».",
+  "te": "Hunt: removed the «How energy is spent» block."
  }
 ]
