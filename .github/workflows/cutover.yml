@@ -1,0 +1,61 @@
+# Переезд боевой базы Firestore -> Neon по шагам. Репозиторий публичный: в логах только счётчики и статусы.
+# Порядок: maint-on -> lock-rules -> import -> go-live. Откат: rollback (убирает STORE и MAINT, возвращает правила Firestore).
+# Секреты: FLY_API_TOKEN, FIREBASE_SERVICE_ACCOUNT, NEON_PROD_DATABASE_URL (direct). DATABASE_URL (pooled) уже лежит в Fly.
+name: Cutover
+on:
+  workflow_dispatch:
+    inputs:
+      step: { description: 'status | maint-on | lock-rules | import | go-live | rollback', default: 'status', required: true }
+concurrency: fly-deploy
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      STEP: ${{ inputs.step }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm i firebase-admin pg --no-save --no-audit --no-fund >/dev/null 2>&1
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null 2>&1
+      - name: Шаг
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          U: ${{ secrets.NEON_PROD_DATABASE_URL }}
+        run: |
+          set -eo pipefail
+          [ -n "$U" ] && echo "::add-mask::$U"
+          APP=$(grep -E '^app *=' fly.toml | sed -E 's/.*"(.*)".*/\1/')
+          probe() { for i in 1 2 3 4 5 6 7 8 9 10 11 12; do c=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$1" || true); [ "$c" = "$2" ] && { echo "$1 -> $c"; return 0; }; sleep 10; done; echo "ОШИБКА: $1 -> $c (ждали $2)"; return 1; }
+          case "$STEP" in
+            status)
+              flyctl secrets list -a "$APP" | awk '{print $1}' | grep -E '^(NAME|DATABASE_URL|STORE|MAINT)$' || true
+              echo "store.js: $(curl -s --max-time 10 https://playnorthfall.online/store.js | head -c 80)"
+              node tools/firestore-rules.js show ;;
+            maint-on)
+              node tools/firestore-rules.js show
+              flyctl secrets set MAINT=1 -a "$APP" >/dev/null
+              probe https://playnorthfall.online/ 503 ;;
+            lock-rules)
+              probe https://playnorthfall.online/ 503
+              node tools/firestore-rules.js show
+              node tools/firestore-rules.js lock ;;
+            import)
+              probe https://playnorthfall.online/ 503
+              tools/cutover-import.sh ;;
+            go-live)
+              flyctl secrets set STORE=pg -a "$APP" >/dev/null
+              flyctl secrets unset MAINT -a "$APP" >/dev/null
+              probe https://playnorthfall.online/healthz 200
+              echo "store.js: $(curl -s --max-time 10 https://playnorthfall.online/store.js | head -c 80)"
+              curl -s --max-time 10 https://playnorthfall.online/hubz; echo
+              node -e "const w=new WebSocket('wss://playnorthfall.online/ws');w.onopen=()=>{w.send(JSON.stringify({t:'hello',g:'ci0000000'}));w.send(JSON.stringify({t:'fsl',id:'a1',q:{d:'names/zz_cutover_probe'}}))};w.onmessage=e=>{const m=JSON.parse(e.data);console.log('ws:',m.t,m.code||'')};setTimeout(()=>process.exit(0),6000)" ;;
+            rollback)
+              flyctl secrets unset STORE MAINT -a "$APP" >/dev/null || true
+              node tools/firestore-rules.js restore
+              probe https://playnorthfall.online/healthz 200
+              echo "store.js: $(curl -s --max-time 10 https://playnorthfall.online/store.js | head -c 80)" ;;
+            *) echo "неизвестный шаг"; exit 1 ;;
+          esac
