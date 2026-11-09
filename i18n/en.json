@@ -2587,5 +2587,6 @@
   "\" alt=\"\"></button><button class=\"sq\" data-hx2=\"1\" title=\"Скорость x2\" aria-label=\"Скорость x2 ": "\" alt=\"\"></button><button class=\"sq\" data-hx2=\"1\" title=\"Speed x2\" aria-label=\"Speed x2 ",
   "<button class=\"st-flee x\" data-a=\"flee\" aria-label=\"Отступить\" title=\"Отступить\"><img src=\"": "<button class=\"st-flee x\" data-a=\"flee\" aria-label=\"Retreat\" title=\"Retreat\"><img src=\"",
   " aria-label=\"Удар\"><img src=\"": " aria-label=\"Strike\"><img src=\"",
-  "\" aria-label=\"Бутылка\" title=\"Бутылка\" ": "\" aria-label=\"Bottle\" title=\"Bottle\" "
+  "\" aria-label=\"Бутылка\" title=\"Бутылка\" ": "\" aria-label=\"Bottle\" title=\"Bottle\" ",
+  "\" data-a=\"flee\" aria-label=\"Отступить\" title=\"Отступить\"><img src=\"": "\" data-a=\"flee\" aria-label=\"Retreat\" title=\"Retreat\"><img src=\""
 }
