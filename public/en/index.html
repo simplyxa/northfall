@@ -258,6 +258,15 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .sq.on{opacity:1;filter:drop-shadow(0 0 6px rgba(111,220,125,.85))}
 .st-ui .sq img{width:100%;height:100%}
 .st-ui .sq[data-hx2]{left:10px;bottom:142px}.st-ui .sq[data-ah]{left:10px;bottom:106px}
+
+.st-pt{position:absolute;transform:translate(-50%,-100%);z-index:91;pointer-events:none}
+.st-pt:not(.fly)::after{content:'';position:absolute;left:50%;bottom:-4%;width:80%;height:9%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);z-index:-1}
+.st-pf{transform-origin:50% 100%}
+.st-pi{display:block;width:100%;height:auto;transform-origin:50% 100%;animation:pbr 2.6s ease-in-out infinite;filter:drop-shadow(0 3px 5px rgba(0,0,0,.8))}
+.st-pt.fly .st-pi{animation:pfl 1.5s ease-in-out infinite}
+@keyframes pbr{50%{transform:scale(1.015,1.04)}}
+@keyframes pfl{50%{transform:translateY(-6%) rotate(-2.5deg)}}
+@media(prefers-reduced-motion:reduce){.st-pi{animation:none!important}}
 .stage>.st-flee.x{position:absolute;top:8px;right:8px;z-index:8;width:40px;height:40px;padding:6px;box-sizing:border-box;border-radius:50%;background:rgba(15,18,22,.7);border:1px solid #58626a;display:flex;align-items:center;justify-content:center}
 .stage>.st-flee.x img{width:100%;height:100%;object-fit:contain;pointer-events:none}
 
@@ -795,9 +804,11 @@ function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<butt
  return`<button class="st-flee x" data-a="flee" aria-label="Retreat" title="Retreat"><img src="${HCI.flee}" alt=""></button><div class="st-ui">${fight.hint?'<div class="sthint">👇 Press “Strike”!</div>':S.lvl<3?'<p class="st-cap">Tap a beast — and the hero will strike it.</p>':''}<button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" title="${fight.e?esc(fight.e.name):''}" ${fight.ch<.2||!fight.e?'disabled':''} aria-label="Strike"><img src="${HCI.fist}" alt=""></button>${skRound()}${ahx}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Bottle" title="Bottle" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 
 const skRound=()=>skOf().map((k,i)=>{const L=skLeft(k[0]);return`<button class="b alt sk sk${i}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" ${L>0?'disabled':''}>${skImg(k[0],54)}<span id="skl${i}" class="skc">${L>0?Math.ceil(L/1000):''}</span></button>`}).join('');
+const PETFIG={wolf:{s:'/img/f9cbc1b986b0bd.webp',w:21,x:41,y:94},raven:{s:'/img/6066822cbe0c28.webp',w:17,x:38,y:66,fly:1},bear:{s:'/img/a2880113e78eca.webp',w:27,x:42,y:95},lynx:{s:'/img/e21083891b08c8.webp',w:23,x:41,y:94}};
+const petFig=pa=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}" id="stpet" title="${esc(pa.n)}" style="left:${F.x}%;top:${F.y}%;width:${F.w}%"><div class="st-pf"><img class="st-pi" src="${F.s}" alt=""></div></div>`};
 function stageHtml(H){const pa=petA(),fig=HEROFIG[S.cls];
  const zk=H&&H.kind&&STBGZ[H.kind]?H.kind:'';return `<div class="stage${zk?' zr '+zk:''}" style="--sbg:url(${zk?STBGZ[zk]:STBG})"><div class="st-w">${zk?'<i class="st-ring h" style="left:23.3%;top:89.9%;--rw:32%"></i>'+STPT.map(P=>`<i class="st-ring" style="left:${P.x}%;top:${P.y}%;--rw:${P.k<1?18.6:20.4}%"></i>`).join(''):''}<div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i style="width:${S.hp/maxHp()*100}%;background:var(--moss)"></i></span><small>${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
- <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div>${pa?`<span class="st-pet" title="${esc(pa.n)}">${petImg(pa.k,30)}</span>`:''}</div>
+ <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):pa?`<span class="st-pet" title="${esc(pa.n)}">${petImg(pa.k,30)}</span>`:''}
  ${H.sl.slice(0,STPT.length).map((s,i)=>{const P=STPT[i],z=Math.round(P.y);if(!s.e)return`<div class="st-foe empty" style="left:${P.x}%;top:${P.y}%;z-index:${z}"><small>${s.at!=null?'Rustling in the bushes…':''}</small></div>`;
   const bb=bfBase(s.e.name),bf=BFIG[bb]||'',im=s.e.img||mobImg(s.e.name);
   return`<button class="st-foe${fight.e===s.e?' on':''}${bf?' fig':''}" data-tg="${i}" id="sf${i}" aria-label="Target: ${esc(s.e.name)}" title="${s.e.tr?esc(TRAITS[s.e.tr][1]):''}" style="left:${P.x}%;top:${P.y}%;--k:${P.k};--fh:${BHL[bb]||24}%;z-index:${z}"><span class="st-img"${bf?'':im?` style="background-image:url(${im})"`:''}>${bf?`<img src="${bf}" alt="">`:''}</span><span class="st-hd"><span class="st-nm">${esc(s.e.name)}</span><span class="st-bar"><i style="width:${s.e.hp/s.e.max*100}%"></i></span><span class="st-atk"><i id="ma${i}" style="width:${Math.round(s.ech*100)}%"></i></span></span>${s.e.stun>fight.clk?'<span class="st-stun">💫</span>':''}</button>`}).join('')}</div>${huntCtl(H)}</div>`}
@@ -816,6 +827,7 @@ function stageFx(){if(!fight||!fight.hunt||fight.hunt.raid)return;const H=fight.
   else if(S.hp-HPH>=Math.max(5,maxHp()*.05))fxAt(hel,'fxn g','+'+(S.hp-HPH),.25)}
  HPH=S.hp;
  if(fight.lunge){fight.lunge=0;ANI(hel.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(38px) rotate(5deg) scale(1.04)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
+ if(fight.pl){fight.pl=0;const pf=document.querySelector('#stpet .st-pf'),pk=(petA()||{}).k;ANI(pf,pk==='raven'?[{transform:'translate(0,0) rotate(0deg)'},{transform:'translate(90%,35%) rotate(14deg) scale(1.1)'},{transform:'translate(0,0) rotate(0deg)'}]:[{transform:'translateX(0) scale(1)'},{transform:'translateX(65%) scale(1.08)'},{transform:'translateX(0) scale(1)'}],{duration:340,easing:'ease-out'})}
  fight.lc=0}
 function noEn(){const el=document.querySelector('.stage .st-w')||document.querySelector('.stage');if(el)fxAt(el,'fxn h big','Not enough energy',.5)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);if(!H.raid)queueMicrotask(stageFx);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Quest “${NQ.h}”</span><span><b>killed ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
@@ -1952,7 +1964,7 @@ const petA=()=>S&&S.pet&&S.pets&&S.pets[S.pet]?{k:S.pet,...PETS[S.pet],...S.pets
 const petAtk=()=>{const p=petA();return p&&p.k==='wolf'?2+p.lvl:0},petCrit=()=>{const p=petA();return p&&p.k==='raven'?3+Math.floor(p.lvl/2):0},petDef=()=>{const p=petA();return p&&p.k==='bear'?Math.min(25,8+p.lvl)/100:0},petLoot=()=>{const p=petA();return p&&p.k==='lynx'?(5+p.lvl)/100:0};
 function petBuy(k){const P=PETS[k];S.pets=S.pets||{};if(!P||S.pets[k]||S.lvl<P.lv||S.au<P.p)return;GOLD.pay(P.p,'pet',{k},()=>{if(S.pets[k])return;S.pets[k]={lvl:1,xp:0};if(!S.pet)S.pet=k;log(`New pet: ${P.n}!`,'hit');save();render()})}
 function petXp(n){const p=S.pet&&S.pets&&S.pets[S.pet];if(p)p.kills=(p.kills|0)+1;if(!p||p.lvl>=PMAX)return;if(Math.random()<.15*cbl('pen'))n*=2;p.xp+=n;while(p.lvl<PMAX&&p.xp>=pNeed(p.lvl)){p.xp-=pNeed(p.lvl);p.lvl++;log(`${PETS[S.pet].n} grew to ${p.lvl}!`,'hit')}}
-function petTick(dt){const p=petA(),e=fight.e;if(!p||!e||e.hp<=0)return false;fight.pt=(fight.pt||0)+dt/6;if(fight.pt<1)return false;fight.pt=0;
+function petTick(dt){const p=petA(),e=fight.e;if(!p||!e||e.hp<=0)return false;fight.pt=(fight.pt||0)+dt/6;if(fight.pt<1)return false;fight.pt=0;fight.pl=1;
  let d=Math.max(1,Math.round(atk()*p.dm*(1+p.lvl*.05)*rnd(.85,1.15)-e.def*.3));if(e.tr==='armor')d=Math.round(d*.5);e.hp=Math.max(0,e.hp-d);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);{const o=S.pets[p.k];o.dmg=(o.dmg||0)+d;o.hits=(o.hits|0)+1;if(d>(o.best|0))o.best=d}log(`${p.n}: ${d} damage.`,'hit');return true}
 // ===== Герой → Питомцы: свои питомцы, выбор спутника, статистика =====
 function heroPets(){S.pets=S.pets||{};const own=Object.keys(PETS).filter(k=>S.pets[k]),cur=S.pet;
@@ -2197,7 +2209,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.18.33';
+const GVER='1.18.34';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2693,7 +2705,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.33</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.18.34</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
