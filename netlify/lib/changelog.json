@@ -525,5 +525,10 @@
   "v": "1.18.29",
   "t": "Форум: новые комментарии всегда сверху, кнопки «Новее» и «Старше» теперь и над комментариями, и под ними.",
   "te": "Forum: newest comments are always on top, and the «Newer» and «Older» buttons are now above and below the comments."
+ },
+ {
+  "v": "1.18.30",
+  "t": "Охота: новые иконки в бою — кулак (удар), склянка, авто-бой, x2, а «Отступить» теперь крестик в правом верхнем углу сцены.",
+  "te": "Hunt: new combat icons — fist (strike), flask, auto-fight, x2, and «Retreat» is now an X in the top-right corner of the scene."
  }
 ]
