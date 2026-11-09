@@ -1,0 +1,34 @@
+# БОЕВАЯ база Neon. Репозиторий публичный: в логах только версия/счётчики, строку подключения не печатаем.
+# Секрет NEON_PROD_DATABASE_URL — direct-адрес (без -pooler) боевого проекта. Тестовую базу сюда не подключать.
+# check  — только проверка подключения (TLS, версия, число таблиц). Ничего не меняет.
+# schema — накатывает миграции 0001–0004 ТОЛЬКО если в public нет ни одной таблицы.
+name: Neon prod
+on:
+  workflow_dispatch:
+    inputs:
+      mode: { description: 'check | schema', default: 'check', required: true }
+      ref: { description: 'Ветка/коммит с миграциями', default: 'migration/firestore-audit-phase-1', required: true }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ inputs.ref }}' }
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null 2>&1
+      - name: Прогон
+        env:
+          U: ${{ secrets.NEON_PROD_DATABASE_URL }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [ -z "$U" ]; then echo "ОШИБКА: секрет NEON_PROD_DATABASE_URL не задан"; exit 1; fi
+          echo "::add-mask::$U"
+          case "$U" in *-pooler*) echo "ВНИМАНИЕ: адрес с -pooler; для миграций нужен direct (без -pooler)";; esac
+          export PGSSLMODE=verify-full PGCONNECT_TIMEOUT=60
+          psql "$U" -Atc "select 'версия: '||split_part(version(),' ',2)" || { echo "ОШИБКА подключения"; exit 1; }
+          N=$(psql "$U" -Atc "select count(*) from information_schema.tables where table_schema='public'")
+          echo "таблиц в public: $N"
+          if [ "$MODE" = schema ]; then
+            if [ "$N" != 0 ]; then echo "В базе уже есть таблицы — миграции не накатываю"; exit 1; fi
+            for f in db/migrations/000[1-4]*.sql; do echo "миграция $f"; psql "$U" -v ON_ERROR_STOP=1 -q -f "$f"; done
+            psql "$U" -Atc "select 'таблиц после миграций: '||count(*) from information_schema.tables where table_schema='public'"
+          fi
