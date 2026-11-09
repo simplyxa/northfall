@@ -1,0 +1,2 @@
+{"path":"players/alice@northfall.game","id":"alice@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"lvl":12,"ssum":40,"rating":1100,"srat":50,"win":3,"lose":1,"dr":20,"dn":4,"dw":2,"sid":5,"seen":1762600000000,"wp":7,"extra1":"x"}}
+{"path":"players/bob@northfall.game","id":"bob@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"lvl":7,"rating":900}}

@@ -1,0 +1,4 @@
+{"path":"wallet/alice@northfall.game","id":"alice@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"au":250,"created":1762500000000,"xd":"2026-11-08","xn":30,"gs":1,"gp":{"g1":{"n":5}}}}
+{"path":"wallet/bob@northfall.game","id":"bob@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"au":0}}
+{"path":"wallet/alice@northfall.game/log/a1","id":"a1","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"op":"xbuy","n":30,"ts":1762600000000}}
+{"path":"wallet/alice@northfall.game/log/a2","id":"a2","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"op":"pay","n":-10,"why":"market","ts":1762600001000}}

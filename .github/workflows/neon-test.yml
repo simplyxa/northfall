@@ -1,0 +1,27 @@
+# Прогон миграции на ТЕСТОВОЙ базе Neon (Northfall-test). Репозиторий публичный:
+# в логах только счётчики, данные игроков на раннере удаляются в конце, артефактов нет.
+# Секрет NEON_TEST_DATABASE_URL — direct-адрес ТЕСТОВОЙ базы. Боевую базу сюда не подключать.
+name: Neon test run
+on:
+  workflow_dispatch:
+    inputs:
+      reset: { description: 'yes = стереть схему public тестовой базы и накатить заново', default: 'no', required: true }
+      ref: { description: 'Ветка/коммит с инструментами', default: 'migration/firestore-audit-phase-1', required: true }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ inputs.ref }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i firebase-admin pg --no-save --no-audit --no-fund >/dev/null 2>&1
+      - run: sudo apt-get install -y -qq postgresql-client postgresql-contrib >/dev/null 2>&1 || sudo apt-get install -y -qq postgresql-client >/dev/null 2>&1 || true
+      - name: Прогон
+        env:
+          NEON_TEST_DATABASE_URL: ${{ secrets.NEON_TEST_DATABASE_URL }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          RESET: ${{ inputs.reset }}
+        run: |
+          export PATH="$PATH:$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | tail -1)"
+          tools/neon-test-run.sh

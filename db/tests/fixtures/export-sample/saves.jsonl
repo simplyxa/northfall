@@ -1,0 +1,3 @@
+{"path":"saves/alice@northfall.game","id":"alice@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"name":"Alice","lvl":12,"clan":"c1","gold":500,"iron":3,"inv":[{"uid":"i1","name":"Меч"}],"eq":{},"st":{"str":5},"ts":1762600000000,"acc":"alice@northfall.game"}}
+{"path":"saves/bob@northfall.game","id":"bob@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"name":"Bob","lvl":7,"clan":"c1","gold":10,"inv":[],"ts":1762600100000}}
+{"path":"saves/carol@northfall.game","id":"carol@northfall.game","createTime":"2026-10-01T10:00:00.000Z","updateTime":"2026-11-08T10:00:00.000Z","data":{"name":"Carol 'Q'","lvl":3,"inv":[],"ts":1762600200000,"note":"back\\slash"}}
