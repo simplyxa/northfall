@@ -36,9 +36,12 @@ jobs:
             psql "$U" -Atc "select 'zz_ap_*: '||parent||' = '||count(*) from fs_docs where id ~ '^zz_ap_' group by parent"
           fi
           if [ "$MODE" = zz-delete ]; then
-            T=$(psql "$U" -Atc "select count(*) from fs_docs where parent='saves' and id ~ '^zz_ap_'")
-            if [ "$T" != 30 ]; then echo "ОШИБКА: ждали 30 тестовых сохранений, нашли $T — не удаляю"; exit 1; fi
-            psql "$U" -v ON_ERROR_STOP=1 -Atc "delete from fs_docs where id ~ '^zz_ap_' and (parent='saves' or path ~ '^saves/zz_ap_[^/]*/')" 
+            # удаляем ТОЛЬКО сохранения без игрока в players, у которых id начинается с zz_ (тестовые аккаунты); ожидаем ровно 30
+            O="select id from fs_docs s where s.parent='saves' and s.id ~ '^zz_' and not exists (select 1 from fs_docs p where p.parent='players' and p.id=s.id)"
+            T=$(psql "$U" -Atc "select count(*) from ($O) x")
+            A=$(psql "$U" -Atc "select count(*) from fs_docs s where s.parent='saves' and not exists (select 1 from fs_docs p where p.parent='players' and p.id=s.id)")
+            if [ "$T" != 30 ] || [ "$A" != 30 ]; then echo "ОШИБКА: ждали 30/30 (zz_ без игрока / все без игрока), нашли $T/$A — не удаляю"; exit 1; fi
+            psql "$U" -v ON_ERROR_STOP=1 -Atc "delete from fs_docs where parent='saves' and id in ($O)"
             psql "$U" -Atc "select 'saves осталось: '||count(*) from fs_docs where parent='saves'"
           fi
           if [ "$MODE" = schema ]; then
