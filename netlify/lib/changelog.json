@@ -520,5 +520,10 @@
   "v": "1.18.28",
   "t": "Форум: комментарии разбиты на страницы по 20 — кнопки «Новее» и «Старше» вместо «Загрузить ещё».",
   "te": "Forum: comments are split into pages of 20 — «Newer» and «Older» buttons instead of «Load more»."
+ },
+ {
+  "v": "1.18.29",
+  "t": "Форум: новые комментарии всегда сверху, кнопки «Новее» и «Старше» теперь и над комментариями, и под ними.",
+  "te": "Forum: newest comments are always on top, and the «Newer» and «Older» buttons are now above and below the comments."
  }
 ]
