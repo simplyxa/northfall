@@ -252,6 +252,14 @@ const server = http.createServer(async (req, res) => {
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
     return SAVE.op(req, res, b).catch(e => { console.error('op', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
   }
+  if (u.pathname === '/api/fs' && req.method === 'POST') {
+    let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
+    return GATE.http(req, res, b).catch(e => { console.error('fs', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
+  }
+  if (u.pathname === '/store.js') {   // клиент узнаёт, откуда брать данные: Firestore ('fs') или шлюз сервера ('pg')
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end('window.NF_STORE=' + JSON.stringify(GATE.enabled ? 'pg' : 'fs') + ';');
+  }
   if (u.pathname === '/api/save' && req.method === 'POST') {
     if (!noAuthLimit(req, res)) return;
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
@@ -267,12 +275,16 @@ server.keepAliveTimeout = 65000;
 const fbAdmin = () => { if (!process.env.FIREBASE_SERVICE_ACCOUNT) return null; const a = require('../netlify/lib/fb'); return a.initErr && a.initErr() ? null : a; };
 const SAVE = require('./saves')(() => fbAdmin());
 // сокет-хаб: живые списки и «онлайн» по WebSocket (/ws)
-const HUB = require('./hub')(server, () => { const a = fbAdmin(); return a ? a.firestore() : null; }, async tok => {
+const verifyUid = async tok => {
   const a = fbAdmin(); if (!a) throw new Error('no firebase');
   const d = await a.auth().verifyIdToken(tok), DOM = '@northfall.game';
   if (!d.email || !d.email.endsWith(DOM)) throw new Error('bad user');
   return d.email.slice(0, -DOM.length);
-});
+};
+const getDbOrNull = () => { const a = fbAdmin(); return a ? a.firestore() : null; };
+// шлюз данных для браузера (STORE=pg): вместо прямого доступа клиента к Firestore
+const GATE = require('./fsgate')(getDbOrNull, verifyUid);
+const HUB = require('./hub')(server, getDbOrNull, verifyUid, GATE.enabled ? GATE : null);
 server.listen(PORT, () => console.log('Northfall server on :' + PORT));
 
 // расписание: push-cron каждые 15 минут (по границе :00/:15/:30/:45, как в Netlify)

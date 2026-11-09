@@ -5,6 +5,7 @@
 // Хранилище: таблица fs_docs (db/migrations/0004_fs_docs.sql).
 'use strict';
 const pg = require('./pg');
+const bus = new (require('events'))(); bus.setMaxListeners(0);   // «в базу что-то записано» — подписки обновляются сразу, не ждут опроса
 
 // ---------- спец-значения ----------
 class Sentinel { constructor(kind, v) { this.kind = kind; this.v = v; } }
@@ -222,7 +223,7 @@ class WriteBatch {
   update(ref, data) { this._ops.push({ k: 'update', path: ref.path, data }); return this; }
   create(ref, data) { this._ops.push({ k: 'create', path: ref.path, data }); return this; }
   delete(ref) { this._ops.push({ k: 'delete', path: ref.path }); return this; }
-  commit() { const ops = this._ops; this._ops = []; return pg.tx(c => applyOps(c, ops)); }
+  commit() { const ops = this._ops; this._ops = []; return pg.tx(c => applyOps(c, ops)).then(r => { if (ops.length) bus.emit('w'); return r; }); }
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -233,7 +234,7 @@ class Firestore {
   batch() { return new WriteBatch(this); }
   async getAll(...refs) { const out = []; for (const r of refs) out.push(await r.get()); return out; }
   async listCollections() { const r = await pg.query("SELECT DISTINCT split_part(parent, '/', 1) AS c FROM fs_docs ORDER BY 1"); return r.rows.map(x => new CollectionReference(this, [x.c])); }
-  _write(op) { return pg.tx(c => applyOps(c, [op])); }
+  _write(op) { return pg.tx(c => applyOps(c, [op])).then(r => { bus.emit('w'); return r; }); }
   async runTransaction(fn) {
     let last;
     for (let attempt = 1; attempt <= 12; attempt++) {
@@ -244,6 +245,7 @@ class Firestore {
         const tx = new Transaction(this, c), res = await fn(tx);
         await applyOps(c, tx._ops);
         await c.query('COMMIT');
+        if (tx._ops.length) bus.emit('w');
         return res;
       } catch (e) {
         try { await c.query('ROLLBACK'); } catch (e2) {}
@@ -268,8 +270,10 @@ class Firestore {
       busy = false;
     };
     const iv = setInterval(tick, ms); if (iv.unref) iv.unref();
+    let kt = null; const kick = () => { if (kt || stop) return; kt = setTimeout(() => { kt = null; if (busy) { setTimeout(kick, 30); } else tick(); }, 25); };
+    bus.on('w', kick);   // запись этим же процессом: проверяем сразу
     tick();
-    return () => { stop = true; clearInterval(iv); };
+    return () => { stop = true; clearInterval(iv); bus.off('w', kick); };
   }
   terminate() { return pg.close(); }
 }
@@ -279,6 +283,8 @@ function firestore() { return DB || (DB = new Firestore()); }
 firestore.FieldValue = FieldValue; firestore.FieldPath = FieldPath;
 firestore.Timestamp = { now: () => new Ts(new Date()), fromMillis: ms => new Ts(new Date(ms)), fromDate: d => new Ts(d) };
 // обёртка над firebase-admin: Auth и остальное — настоящие, firestore() — слой поверх Postgres
-function wrap(admin) { const w = Object.create(admin); w.firestore = firestore; return w; }
+function wrap(admin) {
+  return new Proxy(admin, { get(t, k) { if (k === 'firestore') return firestore; const v = Reflect.get(t, k, t); return typeof v === 'function' ? v.bind(t) : v; } });
+}
 
 module.exports = { firestore, wrap, FieldValue, FieldPath, Firestore, _internals: { applyOp, deepMerge, applyUpdate } };

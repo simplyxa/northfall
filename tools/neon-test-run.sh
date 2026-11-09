@@ -45,6 +45,14 @@ echo "== тесты слоя совместимости с Firestore (pgdocs) и
 export PG_CONN_TIMEOUT_MS=90000 PG_POOL_MAX=8
 ( cd "$R" && DATABASE_URL="$U" node tools/pgdocs-test.js 2>&1 | tail -45 ) || true
 ( cd "$R" && DATABASE_URL="$U" node tools/pgint-test.js 2>&1 | tail -25 ) || true
+echo "== правила доступа, шлюз данных, клиентская прослойка (сквозной тест), настоящий сервер со STORE=pg"
+( cd "$R" && node tools/fsrules-test.js 2>&1 | tail -4 ) || true
+( cd "$R" && DATABASE_URL="$U" node tools/fsgate-test.js 2>&1 | grep -E "✗|Итог|ОШИБКА" ) || true
+( cd "$R" && DATABASE_URL="$U" node tools/nfdb-e2e-test.js 2>&1 | grep -E "✗|Итог|ОШИБКА" ) || true
+if [ -n "${FIREBASE_SERVICE_ACCOUNT:-}" ]; then
+  ( cd "$R" && STORE=pg node -e "const a=require('./netlify/lib/fb');console.log('fb wrap:',typeof a.auth().verifyIdToken,typeof a.firestore().collection,a.initErr())" 2>&1 | tail -2 ) || true
+  ( cd "$R" && DATABASE_URL="$U" node tools/server-boot-test.js 2>&1 | tail -25 ) || true
+fi
 if command -v pgbench >/dev/null; then
   echo "== конкурентные тесты"; TEST_DATABASE_URL="$U" "$R/db/tests/run-concurrency.sh"
 else echo "== pgbench не найден: конкурентные тесты пропущены"; fi
