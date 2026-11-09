@@ -14,9 +14,9 @@
       skillButtons: [q('#sk0'), q('#sk1'), q('#sk2'), q('#sk3')],
       skillLabels: [q('#skl0'), q('#skl1'), q('#skl2'), q('#skl3')]
     };
-    let state = null, receivedAt = 0, raf = 0, destroyed = false, lastEnemyPct = -1;
+    let state = null, receivedAt = 0, raf = 0, destroyed = false, lastEnemyPct = -1, lastStrikePct = -1;
     const now = () => root.performance && root.performance.now ? root.performance.now() : Date.now();
-    const scale = (node, value) => { if (node) node.style.transform = 'scaleX(' + clamp(value).toFixed(4) + ')'; };
+    const scale = (node, value) => { if (!node) return; const t = 'scaleX(' + clamp(value).toFixed(3) + ')'; if (node.__t !== t) { node.__t = t; node.style.transform = t; } };
     function frame(ts) {
       raf = 0;
       if (destroyed || !state) return;
@@ -24,9 +24,14 @@
       const playerCharge = clamp(state.ch + elapsed / 5);
       const enemyCharge = clamp(state.ech + elapsed / 5);
       if (el.strike) {
-        el.strike.style.setProperty('--p', (playerCharge * 100).toFixed(2));
-        el.strike.disabled = playerCharge < .2;
-        el.strike.classList.toggle('full', playerCharge >= 1);
+        // кнопку перерисовываем только при смене целого процента: conic-gradient дорогой, 60 раз в секунду не нужен
+        const pp = Math.round(playerCharge * 100);
+        if (pp !== lastStrikePct) {
+          lastStrikePct = pp;
+          el.strike.style.setProperty('--p', String(pp));
+          el.strike.disabled = playerCharge < .2;
+          el.strike.classList.toggle('full', playerCharge >= 1);
+        }
       }
       scale(el.enemyCharge, enemyCharge);
       const pct = Math.round(enemyCharge * 100);
@@ -36,7 +41,7 @@
     function update(s, ui) {
       if (destroyed || !s) return;
       state = { ch: clamp(s.ch), ech: clamp(s.ech) };
-      receivedAt = now();
+      receivedAt = now(); lastStrikePct = -1;
       text(el.myHpText, ui.myHpText);
       text(el.enemyHpText, ui.enemyHpText);
       scale(el.myHp, ui.myHpRatio);

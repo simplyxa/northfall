@@ -585,5 +585,10 @@
   "v": "1.18.41",
   "t": "Чат: сообщение «Группа одолела босса рейда» больше не дублируется",
   "te": "Chat: the «group defeated the raid boss» message is no longer duplicated"
+ },
+ {
+  "v": "1.18.42",
+  "t": "Арена: бой с копиями меньше нагружает телефон — кнопка удара и шкалы обновляются реже, сервер не пересылает журнал боя каждый тик",
+  "te": "Arena: clone fights are lighter on phones — the strike button and bars update less often, and the server no longer resends the fight log on every tick"
  }
 ]
