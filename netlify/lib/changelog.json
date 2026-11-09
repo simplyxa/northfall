@@ -510,5 +510,10 @@
   "v": "1.18.26",
   "t": "Страница рейтинга: новые иконки вкладок — корона, знамя, стрелка, рука и скрещённые мечи.",
   "te": "Rating page: new tab icons — crown, banner, arrow, arm and crossed swords."
+ },
+ {
+  "v": "1.18.27",
+  "t": "Форум: тема «Обновления игры» снова открывается, а не висит на «Загружаю сообщения…».",
+  "te": "Forum: the «Game updates» topic opens again instead of hanging on «Loading messages…»."
  }
 ]
