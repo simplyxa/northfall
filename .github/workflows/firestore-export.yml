@@ -1,0 +1,51 @@
+# Экспорт Firestore для переезда на Neon. Репозиторий ПУБЛИЧНЫЙ, поэтому:
+#  - в логах только счётчики, содержимое документов не печатается;
+#  - выгрузка уходит артефактом ТОЛЬКО в зашифрованном виде (открытый ключ tools/export-public.pem,
+#    закрытый ключ в репозитории не хранится).
+name: Firestore export (encrypted)
+on:
+  workflow_dispatch:
+    inputs:
+      mode: { description: 'count (только счётчики) или export', default: 'count', required: true }
+      max_docs: { description: 'Лимит документов экспорта', default: '20000', required: true }
+      ref: { description: 'Ветка/коммит с инструментами', default: 'migration/firestore-audit-phase-1', required: true }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ inputs.ref }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i firebase-admin --no-save --no-audit --no-fund >/dev/null 2>&1
+      - name: Счётчики
+        if: inputs.mode == 'count'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node tools/firestore-count.js
+      - name: Экспорт
+        if: inputs.mode == 'export'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIRESTORE_EXPORT_CONFIRM: 'YES'
+          EXPORT_MAX_DOCS: ${{ inputs.max_docs }}
+          EXPORT_EXCLUDE_COLLECTIONS: push,priv
+          FIRESTORE_EXPORT_DIR: ${{ runner.temp }}/export
+        run: |
+          node tools/firestore-export.js | tee "$RUNNER_TEMP/export-summary.json"
+          cd "$RUNNER_TEMP"
+          tar czf export.tar.gz export
+          openssl rand -hex 32 > export.pass
+          openssl enc -aes-256-cbc -pbkdf2 -pass file:export.pass -in export.tar.gz -out export.tar.gz.enc
+          openssl pkeyutl -encrypt -pubin -inkey "$GITHUB_WORKSPACE/tools/export-public.pem" -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in export.pass -out export.key.enc
+          rm -rf export export.tar.gz export.pass
+          ls -l export.*.enc
+      - name: Артефакт (только шифртекст)
+        if: inputs.mode == 'export'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firestore-export-encrypted
+          path: |
+            ${{ runner.temp }}/export.tar.gz.enc
+            ${{ runner.temp }}/export.key.enc
+          retention-days: 1
