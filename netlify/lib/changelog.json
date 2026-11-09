@@ -580,5 +580,10 @@
   "v": "1.18.40",
   "t": "Рейды: в награде снова показывается опыт (вместо [object HTMLDivElement]); мировой босс: засчитывается весь урон за бой",
   "te": "Raids: the reward shows XP again (instead of [object HTMLDivElement]); world boss: damage for the whole fight now counts"
+ },
+ {
+  "v": "1.18.41",
+  "t": "Чат: сообщение «Группа одолела босса рейда» больше не дублируется",
+  "te": "Chat: the «group defeated the raid boss» message is no longer duplicated"
  }
 ]
