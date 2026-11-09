@@ -530,5 +530,10 @@
   "v": "1.18.30",
   "t": "Охота: новые иконки в бою — кулак (удар), склянка, авто-бой, x2, а «Отступить» теперь крестик в правом верхнем углу сцены.",
   "te": "Hunt: new combat icons — fist (strike), flask, auto-fight, x2, and «Retreat» is now an X in the top-right corner of the scene."
+ },
+ {
+  "v": "1.18.31",
+  "t": "Охота: иконки умений занимают весь круг, авто-бой и x2 без кругов (тусклые, пока выключены), x2 стоит выше авто-боя, оба — над бутылкой.",
+  "te": "Hunt: skill icons fill the whole circle, auto-fight and x2 have no circles (dimmed when off), x2 sits above auto-fight, both above the flask."
  }
 ]
