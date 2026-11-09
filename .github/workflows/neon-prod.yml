@@ -30,7 +30,7 @@ jobs:
           echo "таблиц в public: $N"
           if [ "$MODE" = saves-orphans ]; then
             psql "$U" -Atc "select 'saves без игрока в players: '||count(*)||' из '||(select count(*) from fs_docs where parent='saves') from fs_docs s where s.parent='saves' and not exists (select 1 from fs_docs p where p.parent='players' and p.id=s.id)"
-            psql "$U" -Atc "select regexp_replace(id,'[0-9a-f]{4,}','#','g')||' x'||count(*) from fs_docs s where s.parent='saves' and not exists (select 1 from fs_docs p where p.parent='players' and p.id=s.id) group by 1 order by count(*) desc limit 8"
+            psql "$U" -Atc "select k||' x'||count(*) from (select regexp_replace(id,'[0-9a-f]{4,}|[0-9]+','#','g') k from fs_docs s where s.parent='saves' and not exists (select 1 from fs_docs p where p.parent='players' and p.id=s.id)) t group by k order by count(*) desc limit 8"
           fi
           if [ "$MODE" = zz-dry ] || [ "$MODE" = zz-delete ]; then
             psql "$U" -Atc "select 'zz_ap_*: '||parent||' = '||count(*) from fs_docs where id ~ '^zz_ap_' group by parent"
