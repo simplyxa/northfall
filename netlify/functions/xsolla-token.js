@@ -35,13 +35,18 @@ async function main(event) {
   };
   // Xsolla требует страну игрока или его IP: берём их из заголовков Netlify
   const h = event.headers || {};
-  const ip = (h['x-nf-client-connection-ip'] || h['client-ip'] || (h['x-forwarded-for'] || '').split(',')[0] || '').trim();
+  const rawIp = (h['fly-client-ip'] || h['x-nf-client-connection-ip'] || h['client-ip'] || (h['x-forwarded-for'] || '').split(',')[0] || '').trim();
+  // Xsolla принимает в X-User-Ip только IPv4: IPv6 (у многих мобильных сетей) она не понимает и страну не определяет
+  const m4 = rawIp.match(/(\d{1,3}(?:\.\d{1,3}){3})$/);
+  const ip = m4 && !rawIp.replace(m4[1], '').replace(/[:f]/gi, '') ? m4[1] : '';
   let cc = (h['x-country'] || '').trim().toUpperCase();
   if (!cc && h['x-nf-geo']) { try { cc = (JSON.parse(Buffer.from(h['x-nf-geo'], 'base64').toString()).country || {}).code || ''; } catch (e) {} }
-  // на Fly нет заголовка со страной: тогда страну не подставляем (раньше ставили US — Xsolla отвечала ошибкой 2208),
-  // Xsolla сама определит её по IP игрока (X-User-Ip)
+  // нет страны и нет IPv4: берём регион из языка браузера (ru-IL → IL), иначе US; игрок сможет сменить страну в окне оплаты
+  if (!/^[A-Z]{2}$/.test(cc) && !ip) {
+    const al = String(h['accept-language'] || '').split(',').map(x => (x.trim().match(/^[a-z]{2,3}[-_]([A-Za-z]{2})\b/) || [])[1]).find(Boolean);
+    cc = al ? al.toUpperCase() : 'US';
+  }
   if (/^[A-Z]{2}$/.test(cc)) body.user.country = { value: cc, allow_modify: true };
-  else if (!ip) body.user.country = { value: 'US', allow_modify: true };
   const url = `https://store.xsolla.com/api/v3/project/${PID}/admin/payment/token`;
   const call = (id) => fetch(url, {
     method: 'POST',
