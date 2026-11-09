@@ -2583,5 +2583,9 @@
   "</button><button class=\"st-flee\" data-a=\"flee\">Отступить</button></div>": "</button><button class=\"st-flee\" data-a=\"flee\">Retreat</button></div>",
   "Не удалось загрузить страницу комментариев. Попробуй ещё раз.": "Could not load the comments page. Try again.",
   ">← Новее</button><span style=\"color:var(--mute);font-size:15px\">Страница ": ">← Newer</button><span style=\"color:var(--mute);font-size:15px\">Page ",
-  ">Старше →</button></div>": ">Older →</button></div>"
+  ">Старше →</button></div>": ">Older →</button></div>",
+  "\" alt=\"\"></button><button class=\"sq\" data-hx2=\"1\" title=\"Скорость x2\" aria-label=\"Скорость x2 ": "\" alt=\"\"></button><button class=\"sq\" data-hx2=\"1\" title=\"Speed x2\" aria-label=\"Speed x2 ",
+  "<button class=\"st-flee x\" data-a=\"flee\" aria-label=\"Отступить\" title=\"Отступить\"><img src=\"": "<button class=\"st-flee x\" data-a=\"flee\" aria-label=\"Retreat\" title=\"Retreat\"><img src=\"",
+  " aria-label=\"Удар\"><img src=\"": " aria-label=\"Strike\"><img src=\"",
+  "\" aria-label=\"Бутылка\" title=\"Бутылка\" ": "\" aria-label=\"Bottle\" title=\"Bottle\" "
 }
