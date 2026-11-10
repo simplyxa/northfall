@@ -745,5 +745,10 @@
   "v": "1.26.22",
   "t": "Арена: бои с копиями игроков теперь идут на сцене, как на охоте: герой слева, соперник справа (в рост по своему классу), полоски здоровья, числа урона и круглые кнопки.",
   "te": "Arena: fights against player copies now play out on a stage like the hunt: your hero on the left, the opponent on the right (full-length by class), health bars, damage numbers and round buttons."
+ },
+ {
+  "v": "1.26.23",
+  "t": "Арена: убран блок. Бутылку теперь нельзя пить одну за другой (перезарядка 90 секунд, как на охоте). Капкан останавливает заряд атаки врага на время действия.",
+  "te": "Arena: Block removed. Bottles can no longer be drunk back to back (90-second cooldown, as on the hunt). The trap freezes the enemy's attack charge while it lasts."
  }
 ]
