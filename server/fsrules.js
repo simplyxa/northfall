@@ -71,6 +71,28 @@ async function check(op, segs, auth, existing, incoming, getDoc) {
     }
     if (n === 4 && ['chat', 'log', 'dun'].includes(segs[2])) return signed;
     if (n === 4 && (segs[2] === 'dep' || segs[2] === 'led')) return op === 'read' && signed;
+    // форум клана: темы (n=4) и сообщения (n=6). Читают все вошедшие, пишут от своего имени;
+    // удалять и закреплять могут автор, лидер/офицеры клана и админ
+    if ((n === 4 && segs[2] === 'ft') || (n === 6 && segs[2] === 'ft' && segs[4] === 'fp')) {
+      if (!signed) return false;
+      if (op === 'read') return true;
+      const post = n === 6;
+      const mod = async () => {
+        if (adm) return true;
+        if (existing && existing.uid === uid) return true;
+        const cl = await getDoc('clans/' + segs[1]);
+        return !!cl && (cl.leader === uid || (cl.off || []).includes(uid));
+      };
+      if (op === 'create') return isObj(incoming) && incoming.uid === uid && (post ? str(incoming.text, 1000) : str(incoming.title, 80));
+      if (op === 'update') {
+        if (post) return false;
+        const ch = affected(existing, incoming);
+        if (hasOnly(ch, ['last', 'n', 'lby'])) return true;                 // любой участник отмечает новый ответ
+        return hasOnly(ch, ['pin']) && await mod();                         // закреплять — автор и модераторы
+      }
+      if (op === 'delete') return await mod();
+      return false;
+    }
     return false;
   }
   if ((c === 'wars' || c === 'world' || c === 'terr' || c === 'market') && n === 2) return op === 'read' && signed;
