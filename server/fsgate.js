@@ -7,7 +7,7 @@ const { check, ADMINS } = require('./fsrules');
 const { makeLimiter } = require('./ratelimit');
 const { _internals } = require('./pgdocs');
 
-const MAXBODY = 256 * 1024, MAXDOC = 300 * 1024, MAXLIM = 500, MAXSUBS = 40, DEPTH = 24;
+const MAXBODY = 256 * 1024, MAXDOC = 300 * 1024, MAXLIM = 500, MAXSUBS = 120, DEPTH = 24;
 const LIM_USER = makeLimiter({ cap: 200, perSec: 60 });     // вошедший игрок: 60 запросов/с, всплеск 200
 const LIM_ANON = makeLimiter({ cap: 40, perSec: 2 });       // без входа (проверка ника): по IP
 const BADKEY = new Set(['__proto__', 'constructor', 'prototype']);
