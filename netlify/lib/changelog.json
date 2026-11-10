@@ -640,5 +640,10 @@
   "v": "1.26.1",
   "t": "Исправлено: при быстром нажатии двух умений шаман больше не двоится. Подземелье и казна клана: снят лимит живых подписок, при сбое подписка сама переподключается.",
   "te": "Fixed: pressing two skills quickly no longer doubles the shaman. Clan dungeon and treasury: the live subscription limit is raised and a failed subscription now reconnects by itself."
+ },
+ {
+  "v": "1.26.2",
+  "t": "Клан: сервер теперь не даёт улучшать постройку выше уровня клана (раньше это проверял только экран).",
+  "te": "Clan: the server no longer lets a building be upgraded above the clan level (previously only the screen checked this)."
  }
 ]
