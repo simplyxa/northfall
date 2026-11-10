@@ -368,7 +368,7 @@ const durTxt=it=>{const m=durMax(it),d=durOf(it);return`<span style="color:${d<=
 document.addEventListener('click',e=>{const b=e.target.closest('[data-fix]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();const mb=b.closest('.modal');repair(b.dataset.fix);if(mb&&MODIT)itemModal(MODIT)});
 function EQ(){const t={atk:0,def:0,hp:0,reg:0,en:0,crit:0},e=Object.values(S.eq||{}).filter(it=>it&&!broken(it));
  for(const it of e){const m=1;for(const k in it.b)t[k]+=it.b[k]*m;for(const rk of it.rn||[])if(stFits(it,rk))t[SK[rT(rk)]]+=stBon(it,rk);if(it.en&&ENK[it.en.k])t[it.en.k]+=enVal(it)}
- if(e.length===10)t.def+=3;const sb=setBonus();if(sb)for(const k in t)t[k]*=1+sb.pct;for(const k in t)t[k]=Math.round(t[k]);return t}
+ if(e.length===10)t.def+=3;const sb=setBonus();if(sb)for(const k in t)t[k]*=1+sb.pct;const xb=elxOn();if(xb&&ELXD[xb]){const bs={atk:S.st.str*2,hp:40+S.st.hp*8+S.lvl*10,def:S.st.arm}[ELXD[xb][2]]||0;t[ELXD[xb][2]]+=(t[ELXD[xb][2]]+bs)*(ELXD[xb][3]-1)}for(const k in t)t[k]=Math.round(t[k]);return t}
 const price=it=>Math.round((8+it.lv*6)*RAR[it.rar][3]*(1+it.up*.5)*(it.tr===5?1.5:1));
 const upCost=it=>Math.ceil((15+it.lv*5)*(it.up+1)/4);
 const dis=it=>Math.max(1,Math.round(bsum(it)*(1+.1*cb('frg'))));
@@ -874,7 +874,12 @@ function enemyTurn(e){
  if(!fight.arena&&!fight.pvp){if(fight.wb||fight.dun||e.rbp)wear(1);else{fight.wh=(fight.wh|0)+1;if(fight.wh%5===0)wear(1)}}
 }
 function usePot(){}
-function potPanel(){return`<div class="panel"><h3>Бутылки</h3>`+Object.keys(POT).map(k=>{const P=POT[k],n=S.pt[k]|0;return`<div class="row"><div>${P.n} · ${n} шт.<small>${pdesc(P)}</small></div></div>`}).join('')+`</div>`}
+const ELXD={a:['Эликсир силы','атаки','atk',1.12],h:['Эликсир стойкости','здоровья','hp',1.15],d:['Эликсир брони','защиты','def',1.15]},ELXT=30*60000;
+const elxOn=()=>S&&S.eb&&S.eb.te>Date.now()?S.eb.k:'';
+function elxPanel(){const n=S.elx||{},on=elxOn();if(!on&&!Object.values(n).some(v=>v>0))return'';
+ return`<div class="panel"><h3>Эликсиры</h3><p style="margin:0 0 4px">Действует один эликсир, 30 минут. Новый заменяет прежний. Варит алхимик.${on?`<br><b style="color:var(--moss)">Сейчас: ${ELXD[on][0]}, осталось ${Math.ceil((S.eb.te-Date.now())/60000)} мин.</b>`:''}</p>`+Object.keys(ELXD).map(k=>`<div class="row"><div>${ELXD[k][0]} · ${n[k]|0} шт.<small>+${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут</small></div><button class="b alt" data-elx="${k}" ${(n[k]|0)>0?'':'disabled'}>Выпить</button></div>`).join('')+`</div>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-elx]');if(!b)return;e.preventDefault();const k=b.dataset.elx;if(!ELXD[k]||!((S.elx||{})[k]>0))return;S.elx[k]--;S.eb={k,te:Date.now()+ELXT};log(`${ELXD[k][0]}: +${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут.`,'sys');save();render()});
+function potPanel(){return elxPanel()+`<div class="panel"><h3>Бутылки</h3>`+Object.keys(POT).map(k=>{const P=POT[k],n=S.pt[k]|0;return`<div class="row"><div>${P.n} · ${n} шт.<small>${pdesc(P)}</small></div></div>`}).join('')+`</div>`}
 function settle(){
  if(fight.hunt)return huntCheck();
  const e=fight.e;
@@ -1919,7 +1924,7 @@ function craftView(){
  const nx=25*pl*pl;
  h+=`<div class="panel"><h3>${PRN[pr][0]} · ${pl} ур.</h3><p style="margin:0">${pl<10?`Опыт: ${(cf.x|0)}/${nx}`:'Максимальный уровень'} · крафтов сегодня: ${used}/12</p></div>`;
  if(q){const left=q.te-now,done=left<=0,pc=Math.max(0,Math.min(100,Math.round((now-q.t0)/(q.te-q.t0)*100)));
-  const nm=q.r==='forge'?NAMES[q.a.slot][q.a.tr]:q.r==='brew'?`Бутылки ×${q.a.n}`:rName(q.a.k);
+  const nm=q.r==='forge'?NAMES[q.a.slot][q.a.tr]:q.r==='elix'?ELXD[q.a.t][0]+' ×2':q.r==='brew'?`Бутылки ×${q.a.n}`:rName(q.a.k);
   h+=`<div class="panel"><h3>В работе</h3><div class="row"><div>${esc(nm)}<small>${done?'Готово':'Осталось '+crHm(left)}</small><div style="height:6px;background:#0003;border-radius:3px;margin-top:6px"><i style="display:block;height:6px;width:${pc}%;background:var(--gold);border-radius:3px"></i></div></div><button class="b" data-cr="claim" ${done&&!CRBUSY?'':'disabled'}>Забрать</button></div></div>`}
  const have=(k,v)=>k==='gold'?(+S.gold||0)>=v:k==='iron'?(S.iron|0)>=v:k==='dust'?(S.dust|0)>=v:((S.mat&&S.mat[k])|0)>=v;
  const cst=c=>Object.entries(c).map(([k,v])=>`<span style="${have(k,v)?'':'color:var(--blood)'}">${k==='gold'?'серебро':k==='iron'?'железо':k==='dust'?'пыль':MATN[k].toLowerCase()} ${v}</span>`).join(', ');
@@ -1929,7 +1934,7 @@ function craftView(){
   h+=`<div class="panel"><h3>Ковка</h3><div class="htab" style="grid-template-columns:repeat(5,1fr);margin-bottom:6px">${Object.keys(SL).map(k=>`<button class="${CRS.slot===k?'on':''}" data-cr="slot:${k}"><small>${SL[k]}</small></button>`).join('')}</div>`+
   TN.map((nm,i)=>{const f=F[i],c={iron:f[0],ore:f[1],hide:f[2],gold:f[3]},lvok=(S.lvl|0)>=SETLV[i];return`<div class="row"><div>${esc(NAMES[CRS.slot][i])}<small>${nm} · ${crHm(f[4]*60000)} · нужен ${SETLV[i]} ур. героя<br>${cst(c)}</small></div><button class="b" data-cr="forge:${i}" ${pl>=PL[i]&&lvok&&!q&&!CRBUSY?'':'disabled'}>${pl<PL[i]?'С '+PL[i]+' ур. проф.':!lvok?'С '+SETLV[i]+' ур.':'Ковать'}</button></div>`}).join('')+`</div>`}
  if(pr==='alch'){
-  h+=`<div class="panel"><h3>Варка бутылок</h3>`+[[10,1,3,40,10],[30,2,8,110,30],[60,4,14,200,60]].map(([n,pq,hb,g,m])=>`<div class="row"><div>Бутылки ×${n}<small>${crHm(m*60000)} · ${cst({herb:hb,gold:g})}</small></div><button class="b" data-cr="brew:${n}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Варить'}</button></div>`).join('')+`</div>`}
+  h+=`<div class="panel"><h3>Варка бутылок</h3>`+[[10,1,3,40,10],[30,2,8,110,30],[60,4,14,200,60]].map(([n,pq,hb,g,m])=>`<div class="row"><div>Бутылки ×${n}<small>${crHm(m*60000)} · ${cst({herb:hb,gold:g})}</small></div><button class="b" data-cr="brew:${n}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Варить'}</button></div>`).join('')+`</div><div class="panel"><h3>Эликсиры</h3>`+Object.keys(ELXD).map(k=>`<div class="row"><div>${ELXD[k][0]} ×2<small>+${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут · ${crHm(20*60000)} · ${cst({herb:6,bone:3,gold:150})}</small></div><button class="b" data-cr="elix:${k}" ${pl>=3&&!q&&!CRBUSY?'':'disabled'}>${pl<3?'С 3 ур. проф.':'Варить'}</button></div>`).join('')+`</div>`}
  if(pr==='rune'){
   h+=`<div class="panel"><h3>Камни</h3><div class="htab" style="grid-template-columns:repeat(5,1fr);margin-bottom:6px">${STO.map(k=>`<button class="${CRS.t===k?'on':''}" data-cr="rt:${k}"><small>${RUNE[k][0]}</small></button>`).join('')}</div>`+
   [[1,30,1,10],[2,80,2,30],[4,200,4,60],[6,500,7,120],[8,1200,12,240]].map(([pq,d,b,m],g)=>`<div class="row"><div>${esc(rName(CRS.t+g))}<small>${crHm(m*60000)} · ${cst({dust:d,bone:b})}</small></div><button class="b" data-cr="rune:${g}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Вытачивать'}</button></div>`).join('')+`</div>`}
@@ -1944,6 +1949,7 @@ async function crAct(a){
  else if(k==='forge')op={k:'cstart',r:'forge',slot:CRS.slot,tr:+v};
  else if(k==='brew')op={k:'cstart',r:'brew',n:+v};
  else if(k==='rune')op={k:'cstart',r:'rune',g:+v,t:CRS.t};
+ else if(k==='elix')op={k:'cstart',r:'elix',t:v};
  else if(k==='claim'){if(k==='claim'&&S.inv.length>=INV_MAX&&S.cf&&S.cf.q&&S.cf.q.r==='forge'&&(S.chest||[]).length>=CHEST_MAX){CRMSG='Рюкзак и сундук полны.';return render()}op={k:'cclaim'}}
  else return;
  CRBUSY=true;CRMSG='';render();
@@ -1955,6 +1961,7 @@ async function crAct(a){
  else if(op.k==='cstart'){S.cf=R.cf;S.mat=R.mat;S.gold=R.gold;S.iron=R.iron;S.dust=R.dust;CRMSG='Работа начата.'}
  else{S.cf=R.cf;
   if(R.kind==='item'){const it=gen(R.slot,0,R.rar,null,R.tr);it.pb=0;it.mk=S.name||'';if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}CRMSG=`Готово: «${it.name}» (${RAR[R.rar][0]}).`}
+  else if(R.kind==='elix'){S.elx=S.elx||{};S.elx[R.t]=(S.elx[R.t]|0)+R.n;CRMSG=`Готово: ${ELXD[R.t][0]} ×${R.n}.`}
   else if(R.kind==='bottle'){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+R.n;CRMSG=`Готово: бутылки ×${R.n}.`}
   else{addRune(R.k);CRMSG=`Готово: ${rName(R.k)}.`}
   CRMSG+=` +${R.xp} опыта профессии${R.up?` · новый уровень: ${R.pl}`:''}.`}
@@ -2293,7 +2300,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.22.0';
+const GVER='1.23.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2895,7 +2902,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.22.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.23.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
