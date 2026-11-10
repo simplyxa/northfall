@@ -54,7 +54,7 @@ module.exports = function apvp(getDb) {
     return {
       pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: R.ech ? clamp((R.clk - (R.ech - E_T * 1000)) / (E_T * 1000), 0, 1) : 0,
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
-      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit },
+      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls },
       s: R.s, log: withLog ? R.log : undefined, sk: R.sk, res: R.res || null
     };
   }
@@ -85,7 +85,8 @@ module.exports = function apvp(getDb) {
         const e = {
           name: String(O.name || oid).slice(0, 20), lv: O.lvl | 0,
           hp: Math.max(1, O.stats.hp | 0), max: Math.max(1, O.stats.hp | 0),
-          atk: Math.round((O.stats.atk | 0) * .9), def: O.stats.def | 0, crit: Math.min(40, O.stats.crit | 0)
+          atk: Math.round((O.stats.atk | 0) * .9), def: O.stats.def | 0, crit: Math.min(40, O.stats.crit | 0),
+          cls: ['berserk', 'hunter', 'shaman'].includes(O.cls) ? O.cls : 'berserk'   // чтобы клиент нарисовал соперника в рост по классу
         };
         const R = {
           uid: c.uid, oid, cls: String(S.cls || 'berserk'), lvl: S.lvl | 0, t0: now, clk: 0, ch: 0, ech: 0, guardUntil: 0, gcd: 0, pcd: 0,

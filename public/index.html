@@ -1007,17 +1007,16 @@ function head(){
  return`<div class="panel"><div class="top"><span style="display:flex;align-items:center;gap:10px">${avatar(S.av,44,frameOf(meP()))}<h2 style="margin:0">${esc(S.name)}, ${CL[S.cls].n}</h2></span><span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 10px">Ур. ${S.lvl}<b title="Здоровье" style="display:inline-flex;align-items:center;gap:4px;color:var(--blood)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Здоровье"><path d="M12 21S3 15.500 3 8.800C3 5.600 5.400 4 7.600 4c1.800 0 3.400 1 4.400 2.700C13 5 14.600 4 16.400 4 18.600 4 21 5.600 21 8.800 21 15.500 12 21 12 21z"/></svg>${S.hp}/${maxHp()}</b><b title="Энергия" style="display:inline-flex;align-items:center;gap:4px;color:var(--moss)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Энергия"><path d="M13.500 2 5 13.500h5.500L9.500 22 19 10h-5.800z"/></svg>${S.en}/${maxEn()}</b><span class="sv">${S.gold} сер.</span><span class="g">${S.au|0} зол.</span><span title="Железо" style="color:var(--mute);font-weight:700">${S.iron|0} жел.</span></span></div>
 </div>`;
 }
+const ARSTBG='/img/e0db129fedb007.webp';   // фон сцены арены (пока нет своего рисунка — берём фон охоты)
+function arCtl(){const L=bleft();
+ return`<button class="st-flee x" data-a="flee" aria-label="Сдаться" title="Сдаться"><img src="${HCI.flee}" alt=""></button><div class="st-ui"><button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${Math.round(fight.ch*100)}" ${fight.ch<.2?'disabled':''} aria-label="Удар"><img src="${HCI.fist}" alt=""></button>${skRound()}<button class="sq" id="bg" data-a="guard" style="left:12px;bottom:92px" title="Блок" aria-label="Блок"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></button><button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Бутылка" title="Бутылка" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 function apvpView(){
- const e=fight.e,pc=Math.round(fight.ch*100),ec=Math.round(fight.ech*100);
- return`<div class="panel" id="fightpanel" data-ra-root><h3>${esc(e.name)} · ур. ${e.lv}</h3>
- <div class="lbl"><span>Твоё здоровье</span><span id="myhptext">${S.hp}/${maxHp()} · энергия ${S.en}/${maxEn()}</span></div>
- <div class="bar"><i data-ra="my-hp" style="width:100%;background:var(--moss);transform:scaleX(${Math.max(0,S.hp/maxHp())});transform-origin:left;transition:transform .22s ease-out"></i></div>
- <div class="lbl"><span>Здоровье врага</span><span id="enemyhptext">${e.hp}/${e.max}</span></div>
- <div class="bar"><i data-ra="enemy-hp" style="width:100%;background:var(--blood);transform:scaleX(${Math.max(0,e.hp/e.max)});transform-origin:left;transition:transform .22s ease-out"></i></div>
- <div class="lbl"><span>Атака врага</span><span id="ect">${ec}%</span></div>
- <div class="bar"><i data-ra="enemy-charge" style="width:100%;background:var(--blood);transform:scaleX(${ec/100});transform-origin:left"></i></div>
- <button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${pc}" ${fight.ch<.2?'disabled':''}>Удар</button>
- ${skBtns()}<div class="frow">${bgBtn()}${(()=>{const L=bleft();return`<button class="b alt fcd" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" ${S.pt.b<1||L>0?'disabled':''}>${L>0?POT.b.sh+' '+Math.ceil(L/1000)+' с':POT.b.sh+' ('+S.pt.b+')'}</button>`})()}<button class="b alt" data-a="flee">Бежать</button></div></div>`;
+ const e=fight.e,fig=HEROFIG[S.cls],efig=HEROFIG[e.cls]||HEROFIG.berserk,pa=petA();queueMicrotask(paintPvpFight);
+ return`<div class="panel hpn" id="fightpanel" data-ra-root><h3>Арена · ${esc(e.name)} · ур. ${e.lv}</h3><div class="stage" style="--sbg:url(${ARSTBG||STBG})"><div class="st-w">
+ <div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i id="ahb" style="width:${Math.max(0,S.hp/maxHp()*100)}%;background:var(--moss)"></i></span><small id="ahbt">${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
+ <div class="st-hud" style="left:auto;right:56px;text-align:right"><b>${esc(e.name)}</b><span class="st-bar"><i id="aeb" style="width:${Math.max(0,e.hp/e.max*100)}%"></i></span><span class="st-atk"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aebt">${e.hp}/${e.max}</small></div>
+ <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
+ <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div></div>${arCtl()}</div></div>`;
 }
 function fightView(){
  if(fight.hunt)return huntView();
@@ -1037,23 +1036,34 @@ function fightRefresh(){
  paintFight();
 }
 function bgBtn(){const now=fight.clk,act=now<fight.guardUntil,cd=now<fight.gcd,p=act?Math.round((fight.guardUntil-now)/3000*100):cd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100;return`<button class="b alt fcd${act?' act':''}" id="bg" data-a="guard" style="--p:${p}" ${cd?'disabled':''}>${act?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':cd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок'}</button>`}
-let APVPRenderer=null;
-function apvpDestroy(){if(APVPRenderer){APVPRenderer.destroy();APVPRenderer=null}}
+let APRAF=0,APST=null;
+function apvpDestroy(){if(APRAF){cancelAnimationFrame(APRAF);APRAF=0}APST=null}
+const arClamp=v=>Math.max(0,Math.min(1,+v||0));
+// «живые» полоски: заряд удара и атаки врага плавно растёт между сообщениями сервера
+function arFrame(ts){APRAF=0;const f=fight;if(!f||!f.pvp||!APST||!document.body.contains(APST.root))return;
+ const el=Math.max(0,Math.min(5000,ts-APST.t))/1000,pc=arClamp(APST.ch+el/5),ec=arClamp(APST.ech+el/5),R=APST.root;
+ const bs=R.querySelector('#bs');if(bs){const p=Math.round(pc*100);if(p!==APST.lp){APST.lp=p;bs.style.setProperty('--p',p);bs.disabled=pc<.2;bs.classList.toggle('full',pc>=1)}}
+ const ac=R.querySelector('#aec');if(ac)ac.style.width=Math.round(ec*100)+'%';
+ APRAF=requestAnimationFrame(arFrame)}
 function paintPvpFight(){
  if(!fight||!fight.pvp)return;
  const root=document.getElementById('fightpanel');if(!root)return;
- if(!APVPRenderer||APVPRenderer.panel!==root){apvpDestroy();APVPRenderer=NFRegularArena.mount(root)}
- const now=fight.clk,guardActive=now<fight.guardUntil,guardCd=now<fight.gcd;
- const guardProgress=guardActive?Math.round((fight.guardUntil-now)/3000*100):guardCd?Math.round((now-fight.guardUntil)/Math.max(1,fight.gcd-fight.guardUntil)*100):100;
- const L=bleft(),skills=skOf().map((k,i)=>{const left=skLeft(k[0]);return{text:k[1]+(left>0?' '+Math.ceil(left/1000)+' с':''),disabled:left>0}});
- APVPRenderer.update({ch:fight.ch,ech:fight.ech},{
-  myHpText:S.hp+'/'+maxHp()+' · энергия '+S.en+'/'+maxEn(),enemyHpText:fight.e.hp+'/'+fight.e.max,
-  myHpRatio:S.hp/maxHp(),enemyHpRatio:fight.e.hp/fight.e.max,
-  guardText:guardActive?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':guardCd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок',
-  guardDisabled:guardCd,guardActive,guardProgress,
-  potionText:L>0?POT.b.sh+' '+Math.ceil(L/1000)+' с':POT.b.sh+' ('+S.pt.b+')',
-  potionDisabled:S.pt.b<1||L>0,potionProgress:Math.round(100-L/BCD*100),skills
- });
+ const E=fight.e,now=fight.clk,g=s=>root.querySelector(s),hero=g('#sthero'),foe=g('#stenemy');if(!hero||!foe)return;
+ const set=(id,fn)=>{const x=g(id);if(x)fn(x)};
+ set('#ahb',x=>x.style.width=Math.max(0,S.hp/maxHp()*100)+'%');set('#ahbt',x=>x.textContent=S.hp+'/'+maxHp()+' · ⚡'+S.en);
+ set('#aeb',x=>x.style.width=Math.max(0,E.hp/E.max*100)+'%');set('#aebt',x=>x.textContent=E.hp+'/'+E.max);
+ // удары: числа над героями и короткие рывки, как на охоте
+ if(fight._ph!=null&&S.hp<fight._ph){fxAt(hero,'fxn h','−'+(fight._ph-S.hp),.25);ANI(hero.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(1)'},{transform:'translateX(-8px)',filter:'brightness(1.6) sepia(1) hue-rotate(-30deg) saturate(4)'},{transform:'translateX(4px)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:300});
+  ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(-34px) rotate(-5deg)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
+ else if(fight._ph!=null&&S.hp-fight._ph>=Math.max(5,maxHp()*.05))fxAt(hero,'fxn g','+'+(S.hp-fight._ph),.25);
+ if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
+  ANI(hero.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(38px) rotate(5deg) scale(1.04)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
+ fight._ph=S.hp;fight._peh=E.hp;
+ // кнопки
+ skOf().forEach((k,i)=>set('#sk'+i,x=>{const st=skSt(k[0]),l=g('#skl'+i);if(l)l.textContent=st.txt;x.style.setProperty('--p',st.p);x.classList.toggle('act',st.act);x.classList.toggle('cd',!st.act&&st.L>0);x.disabled=st.L>0}));
+ set('#bg',x=>{const act=now<fight.guardUntil,cd=now<fight.gcd;x.disabled=cd;x.classList.toggle('on',act);x.title=act?'Щит '+Math.ceil((fight.guardUntil-now)/1000)+' с':cd?'Блок '+Math.ceil((fight.gcd-now)/1000)+' с':'Блок'});
+ set('#bpb',x=>{const L=bleft(),n=x.querySelector('.bn'),c=x.querySelector('.skc');if(n)n.textContent=S.pt.b;if(c)c.textContent=L>0?Math.ceil(L/1000):'';x.disabled=S.pt.b<1||L>0;x.style.setProperty('--p',Math.round(100-L/BCD*100))});
+ APST={root,t:performance.now(),ch:arClamp(fight.ch),ech:arClamp(fight.ech),lp:-1};if(!APRAF)APRAF=requestAnimationFrame(arFrame);
  if(APLOGVIEW!==APLOG){const l=document.getElementById('log');if(l)l.innerHTML=logs.map(x=>'<p class="'+x[1]+'">'+esc(x[0])+'</p>').join('')||'<p>Тишина.</p>';APLOGVIEW=APLOG}
 }
 function paintFight(){
@@ -2378,7 +2388,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.21';
+const GVER='1.26.22';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2982,7 +2992,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.21</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.22</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
