@@ -697,7 +697,7 @@ function log(t,c){logs.unshift([t,c||'']);if(logs.length>40)logs.pop()}
 // Регенерация (R) — скорость восстановления: энергия R/60 в секунду, здоровье R/180 в секунду
 const regTot=()=>Math.max(1,regv()),enPS=()=>regTot()/60,
  // на охоте энергия восстанавливается на 60% и не быстрее 0,16/с (≈80% расхода авто-удара), чтобы охота не была бесконечной; чем выше реген — тем дольше охота
- HUNTRG=.6,HUNTRC=.16,nbOn=()=>!!(S&&S.nb&&!S.nb.done),enPSH=()=>nbOn()?enPS():Math.min(enPS()*HUNTRG,HUNTRC),hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
+ HUNTRG=.6,HUNTRC=.16,nbOn=()=>!!(S&&S.nb&&!S.nb.done&&S.lvl<=10),enPSH=()=>nbOn()?enPS():Math.min(enPS()*HUNTRG,HUNTRC),hpPS=()=>regTot()/180,enMs=()=>Math.round(1000/enPS());
 function regen(){
  if(!S)return;const now=Date.now();if(!S.rt)S.rt=now;const dt=Math.min(7*864e5,Math.max(0,now-S.rt))/1000;S.rt=now;if(dt<=0)return;
  if(S.en<maxEn()){S.enf=(+S.enf||0)+(fight&&fight.hunt?enPSH():enPS())*dt;const k=Math.floor(S.enf);if(k>0){S.enf-=k;S.en=Math.min(maxEn(),S.en+k)}}else S.enf=0;
@@ -1295,7 +1295,7 @@ function skUp(id){if(!skOpen())return;const k=skAll().find(x=>x[0]===id);if(!k)r
  const done=()=>{S.skq[id]=q+1;if(q+1===4)news(`${S.name} довёл умение «${k[1]}» до мифического качества!`);log(`Умение «${k[1]}» стало ${['','редким','эпическим','легендарным','мифическим'][q+1]}: ${skDesc(id)}.`,'hit');fx('lvl');save();render()};
  if(c.s){if(S.gold<c.s)return;S.gold-=c.s;return done()}if((S.au|0)<c.au)return;GOLD.pay(c.au,'skill',{id,q:q+1},done)}
 function skillsView(){skInit();const B=`<div class="panel"><h3>Умения · ${CL[S.cls].n}</h3><p style="margin:0;color:var(--mute);font-size:15px">Умения применяются в бою кнопками под «Ударом». У каждого умения пять качеств, как у снаряжения: чем выше качество, тем сильнее эффект и короче перезарядка. Редкое — за серебро, эпическое и выше — за золото.</p></div>`;
- if(!skOpen())return B+`<div class="panel" style="border-left:4px solid var(--gold)"><p style="margin:0">Умения откроются, когда ты пройдёшь <b>путь новичка</b> (сейчас шаг ${((S.nb&&S.nb.i)|0)+1} из ${NBQ.length}). За последний шаг ты получишь базовые умения обычного качества.</p></div>`;
+ if(!skOpen())return B+`<div class="panel" style="border-left:4px solid var(--gold)"><p style="margin:0">Умения откроются на шаге «Воин Севера» <b>пути новичка</b> (10 уровень, сейчас шаг ${((S.nb&&S.nb.i)|0)+1} из ${NBQ.length}). За этот шаг ты получишь базовые умения обычного качества.</p></div>`;
  return B+skAll().map(k=>{const id=k[0],q=skQ(id),R=RAR[q],n=q<4?q+1:null,c=n?SKUP[n]:null,lock=n&&S.lvl<SKLV[n],ok=n&&!lock&&(c.s?S.gold>=c.s:(S.au|0)>=c.au);
   return`<div class="panel" style="border-left:4px solid var(${R[1]})"><div style="display:flex;gap:12px;align-items:center">${skImg(id,60)}<div style="flex:1"><b style="font-size:18px">${k[1]}</b><br><small style="color:var(${R[1]});font-weight:700">${SKRN[q]} · перезарядка ${nf(skCd(k))} с</small></div></div><p style="margin:8px 0">${skDesc(id)}.</p>
   ${n?`<div style="padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin-bottom:8px"><small style="color:var(--mute)">${SKRN[n]} качество:</small><br><span style="color:var(${RAR[n][1]})">${skDesc(id,n)} · перезарядка ${nf(skCd(k,n))} с</span></div><button class="b" data-ku="${id}" style="width:100%" ${ok?'':'disabled'}>${lock?`Улучшение с ${SKLV[n]} уровня`:`Улучшить: ${c.s?c.s+' серебра':c.au+' золота'}`}</button>`:'<p style="margin:0;color:var(--moss);font-weight:700">Максимальное качество</p>'}</div>`}).join('')}
@@ -1756,14 +1756,22 @@ const NBQ=[
  {t:'dis',n:1,h:'Кузнечное дело',ic:'forge',ir:20,d:'Разбери ненужную вещь на железо (Рюкзак → «Разобрать»).',x:.6,g:60,go:'bag'},
  {t:'saga',n:1,h:'У костра',ic:'camp',d:'Ответь на загадку сказителя (Главная → Лагерь).',x:.6,g:60,go:'camp'},
  {t:'dq',n:1,h:'Дела племени',ic:'quest',b:1,d:'Выполни и забери любое ежедневное задание (Главная → Задания).',x:.6,g:80,go:'quest'},
- {t:'prof',n:1,h:'Мастера Севера',ic:'forge',ir:20,d:'Загляни в ремёсла (Главная → Лагерь → Профессии): кузнец, алхимик и рунник. Профессия покупается один раз за золото.',x:.5,g:60,go:'craft'},
- {c:()=>MATO.reduce((s,k)=>s+((S.mat&&S.mat[k])|0),0)>=3,h:'Добыча',ic:'hunt',b:1,d:'Добудь на охоте 3 материала: шкуры, кости, руду или травы (список в Профессии).',x:.5,g:70,go:'hunt'},
  {c:()=>S.lvl>=7,h:'Закалённый',ic:'arena',ir:30,d:'Достигни 7 уровня (охота даёт больше всего опыта).',x:1.5,g:150,go:'hunt'},
  {c:()=>S.lvl>=10,go:'hunt',h:'Воин Севера',ic:'ach',d:'Достигни 10 уровня.',x:0,g:500,gift:1},
- {t:'skill',n:3,go:'hunt',h:'Сила предков',ic:'top',b:3,ir:50,d:'Используй умения класса в бою 3 раза: кнопки с картинками под «Ударом». Улучшать умения можно в профиле: Герой → Умения.',x:.5,g:200,fin:1}];
-function nbInit(){if(!S)return;if(!S.nb)S.nb=S.lvl>=10?{done:1}:{i:0,p:0,v:2};
- // в путь добавлены два шага (индексы 8 и 9): тех, кто уже дальше, сдвигаем, чтобы они не потеряли место
- if(S.nb&&!S.nb.done&&S.nb.v!==2){if((S.nb.i|0)>=8){S.nb.i+=2;S.nb.p=0}S.nb.v=2}}
+ {t:'skill',n:3,go:'hunt',h:'Сила предков',ic:'top',b:3,ir:50,d:'Используй умения класса в бою 3 раза: кнопки с картинками под «Ударом». Улучшать умения можно в профиле: Герой → Умения.',x:.5,g:200},
+ {t:'arena',n:1,go:'arena',h:'Арена',ic:'arena',b:2,d:'Победи в бою на арене (Главная → Арена). Враги там — копии героев других игроков.',x:.6,g:150},
+ {t:'upa',n:1,go:'forge',h:'Закалка',ic:'forge',ir:60,d:'Усиль любую вещь (Главная → Мастера → Кузнец). Усиление стоит железа и может не удаться, но вещь не пропадёт.',x:.5,g:120},
+ {c:()=>!!petA(),go:'pets',h:'Верный спутник',ic:'pets',b:2,d:'Заведи питомца (Главная → Питомцы). Он помогает в бою.',x:.6,g:150},
+ {c:()=>!!S.clan,go:'clan',h:'Своё племя',ic:'top',ir:80,d:'Вступи в клан или создай свой (Главная → Клан): общая казна, подземелья и задания клана.',x:.8,g:250},
+ {t:'mk',n:1,go:'market',h:'Торговый двор',ic:'market',b:1,d:'Загляни на рынок (Главная → Рынок): игроки продают вещи и ресурсы за золото. Свои лишние вещи можно выставить так же.',x:.4,g:100},
+ {c:()=>MATO.reduce((s,k)=>s+((S.mat&&S.mat[k])|0),0)>=3,go:'hunt',h:'Добыча',ic:'hunt',b:1,d:'Добудь на охоте 3 материала: шкуры, кости, руду или травы. Они нужны для ремёсел.',x:.5,g:150},
+ {c:()=>S.lvl>=15,go:'hunt',h:'Ветеран охоты',ic:'arena',ir:100,d:'Достигни 15 уровня.',x:0,g:600},
+ {c:()=>S.lvl>=20,go:'hunt',h:'Мастер Севера',ic:'ach',b:3,d:'Достигни 20 уровня: открываются профессии.',x:0,g:1000},
+ {t:'prof',n:1,go:'craft',h:'Ремёсла',ic:'forge',ir:150,d:'Загляни в профессии (Главная → Лагерь → Профессии): кузнец, алхимик и рунник. Профессия покупается один раз за золото.',x:0,g:500,fin:1}];
+function nbInit(){if(!S)return;
+ // путь продлён до 20 уровня (шаги 0–10 прежние, дальше новые): у кого пути нет, считаем по уровню; у кого он был закрыт, а уровень меньше 20, открываем с шага 11
+ if(!S.nb)S.nb=S.lvl>=20?{done:1,v:3}:S.lvl>=10?{i:11,p:0,v:3}:{i:0,p:0,v:3};
+ else if(S.nb.v!==3){if(S.nb.done)S.nb=S.lvl>=20?{done:1,v:3}:{i:11,p:0,v:3};else{S.nb.v=3;if((S.nb.i|0)>=NBQ.length){S.nb.i=NBQ.length-1;S.nb.p=0}}}}
 function nbEv(t,n){if(!S||!S.nb||S.nb.done)return;const q=NBQ[S.nb.i];if(q&&q.t===t){S.nb.p=Math.min(q.n,(S.nb.p|0)+(n||1))}}
 const nbOk=()=>{const q=S.nb&&!S.nb.done&&NBQ[S.nb.i];return!!q&&(q.c?q.c():(S.nb.p|0)>=q.n)};
 // задание «Пути новичка» выполнено — сразу окно «Забрать награду»; по кнопке — на главную и награда
@@ -1774,7 +1782,7 @@ function nbClaim(){if(!nbOk())return;if(S.nb.i===0&&!S.tnbc){S.tnbc=1;try{trk('n
  if(xp>0){S.xp+=xp;t+=`, +${xp} опыта`;RW.push(['xp','+'+xp,'опыта']);lvUp()}
  if(q.b){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+q.b;t+=`, +${q.b} бут.`;RW.push(['bottle','+'+q.b,q.b>1?'бутылки':'бутылка'])}if(q.ir){S.iron=(S.iron|0)+q.ir;t+=`, +${q.ir} железа`;RW.push(['iron','+'+q.ir,'железа'])}if(q.au){if(typeof GOLD!=='undefined'&&GOLD.boss)GOLD.boss('nb','nbfin'+(UID||''),q.au);else S.au=(S.au|0)+q.au;t+=`, +${q.au} золота`;RW.push(['gold','+'+q.au,'золота'])}
  if(q.gift){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+3;const it=gen('w',S.lvl,1);if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}t+=`, 3 бутылки и «${it.name}»`;RW.push(['bottle','+3','бутылки'],['item',it,'']);if(!S.skq){S.skq={};skAll().forEach(k=>S.skq[k[0]]=0)}t+=', а также базовые умения класса'}
- if(q.fin){S.nb={done:1};news(`${S.name} прошёл путь новичка и стал настоящим воином Севера!`)}else S.nb={i:S.nb.i+1,p:0};SILFX={v:q.g,t:Date.now()};log(t+'.','hit');nbRwPop(q,st,RW);save();render()}
+ if(q.fin){S.nb={done:1,v:3};news(`${S.name} прошёл путь новичка и стал настоящим воином Севера!`)}else S.nb={i:S.nb.i+1,p:0,v:3};SILFX={v:q.g,t:Date.now()};log(t+'.','hit');nbRwPop(q,st,RW);save();render()}
 // окно награды «Пути новичка»: иконки наград и следующий шаг
 function nbRwPop(q,st,RW){const ic=k=>k==='xp'?'<span style="font-size:30px;line-height:36px">✨</span>':`<img src="${RIC[k]}" width="36" height="36" alt="">`;
  const nx=S.nb&&!S.nb.done?NBQ[S.nb.i]:null;
@@ -1894,7 +1902,7 @@ function mkBar(){const sel=(k,o)=>`<select data-mkf="${k}" style="flex:1 1 130px
  return`<div class="panel"><div style="display:flex;flex-wrap:wrap;gap:6px"><input type="search" data-mkf="q" value="${esc(MKF.q)}" placeholder="Поиск: вещь, мастер, продавец" style="flex:1 1 100%">`+
  sel('type',[['','Всё'],['item','Вещи'],['res','Ресурсы']])+sel('slot',[['','Любой слот'],...Object.keys(SL).map(k=>[k,SL[k]])])+sel('set',[['','Любой набор'],...SETN.map((n,i)=>[i,n])])+sel('rar',[['','Любая редкость'],...RAR.map((r,i)=>[i,r[0]])])+sel('sort',[['new','Сначала новые'],['pa','Дешёвые сверху'],['pd','Дорогие сверху']])+
  `</div><button class="b alt" data-mkss="open" style="margin-top:8px">Продать ресурсы</button></div>`}
-function marketView(){if(!DB)return'<div class="panel"><p>Рынок работает только с подключённой базой данных.</p></div>';
+function marketView(){nbEv('mk');if(!DB)return'<div class="panel"><p>Рынок работает только с подключённой базой данных.</p></div>';
  const mine=MK.filter(m=>m.seller===UID),act=MK.filter(m=>!m.sold&&m.seller!==UID),L=mkFilt(act),itNote=it=>`${it.tr!=null&&SETN[it.tr]?' · '+SETN[it.tr]:''}${it.mk?' · мастер '+esc(it.mk):''}`;
  let h=(MKMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(MKMSG)}</p></div>`:'')+`<div class="panel"><h3>Рынок</h3><p style="margin:0;color:var(--mute);font-size:15px">Торговля между игроками: вещи, материалы, бутылки, эликсиры. Чтобы выставить вещь, нажми на неё в рюкзаке и укажи цену. Цены в золоте. Рынок берёт ${Math.round(MKFEE*100)}% с продажи. Золото: <b class="g">${S.au|0}</b>.</p></div>`+mkBar();
  if(mine.length)h+=`<div class="panel"><h3>Мои лоты</h3>${mine.map(m=>m.stack?stkRow(m,m.sold?`<button class="b" data-mc="${m.id}">Забрать</button>`:`<span class="g" style="font-weight:700">${m.price} зол.</span><button class="b alt" data-mx="${m.id}">Снять</button>`,m.sold?` · <span style="color:var(--moss)">продано: ${esc(m.bname||'')}</span>`:''):irow(m.item,m.sold?`<button class="b" data-mc="${m.id}">Забрать ${Math.floor(m.price*(1-MKFEE))} ${mkU(m)}</button>`:`<span class="${m.au?'g':'sv'}" style="font-weight:700">${m.price} ${mkU(m)}</span><button class="b alt" data-mx="${m.id}">Снять</button>`,(m.sold?` · <span style="color:var(--moss)">продано: ${esc(m.bname||'')}</span>`:'')+itNote(m.item))).join('')}</div>`;
@@ -1968,10 +1976,11 @@ const PRB={smith:'/img/279aee541a0d15.webp',alch:'/img/cf9a24d4c903a9.webp',rune
 const PRN={smith:['Кузнец','Куёт оружие и броню по наборам: чем выше уровень профессии, тем чаще выходят редкие и эпические вещи.'],alch:['Алхимик','Варит бутылки партиями: 10, 30 или 60 штук за раз.'],rune:['Рунник','Вытачивает камни для гнёзд: от обычных до легендарных.']};
 let CRV='',CRCF=false;
 let CRS={slot:'w',tr:0,g:0,t:'str',n:10},CRMSG='',CRBUSY=false;
-function crMenuSub(){const c=S&&S.cf;if(!c||!c.p)return'три ремесла: кузнец, алхимик, рунник';const q=c.q,n=PRN[c.p][0];if(!q)return'кузнец, алхимик, рунник';return q.te<=Date.now()?`<b style="color:var(--moss)">${n}: готово, забери</b>`:`${n}: осталось ${crHm(q.te-Date.now())}`}
+function crMenuSub(){if(S&&(S.lvl|0)<20)return'с 20 уровня';const c=S&&S.cf;if(!c||!c.p)return'три ремесла: кузнец, алхимик, рунник';const q=c.q,n=PRN[c.p][0];if(!q)return'кузнец, алхимик, рунник';return q.te<=Date.now()?`<b style="color:var(--moss)">${n}: готово, забери</b>`:`${n}: осталось ${crHm(q.te-Date.now())}`}
 const crSp=()=>Math.min(.3,.06*cb('frg'));
 const crHm=ms=>{const m=Math.max(1,Math.ceil(ms/60000));return m>=60?Math.floor(m/60)+' ч '+(m%60?(m%60)+' мин':''):m+' мин'};
 function craftView(){
+ if((S.lvl|0)<20)return`<div class="panel"><h3>Профессии</h3><p style="margin:0">🔒 Ремёсла открываются с <b>20 уровня</b>. Сейчас у тебя ${S.lvl|0} уровень. Шкуры, кости, руду и травы можно собирать на охоте уже сейчас: они понадобятся мастерским.</p></div>`;
  nbEv('prof');
  const cf=S.cf||{},own=Array.isArray(cf.own)?cf.own.slice():[],q=cf.q,now=Date.now();if(cf.p&&!own.includes(cf.p))own.push(cf.p);if(CRV&&!own.includes(CRV))CRV='';const pr=CRV,cx=pr?(pr===cf.p?cf.x|0:(cf.px&&cf.px[pr])|0):0,pl=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,cx)/25)));
  const day=Math.floor(now/86400000),used=cf.d===day?cf.n|0:0;
@@ -2005,6 +2014,7 @@ async function crAct(a){
  if(k==='cancel'){if(!CRCF){CRCF=true;return render()}}else if(CRCF){CRCF=false}
  if(k==='back'){CRV='';CRMSG='';return render()}
  if(k==='enter'){CRV=v;CRMSG='';return render()}
+ if((S.lvl|0)<20){CRMSG='Ремёсла открываются с 20 уровня.';return render()}
  if(!srvCan()){CRMSG='Ремесло работает только онлайн, при подключении к серверу.';return render()}
  let op;
  if(k==='buy'){if((S.au|0)<100){CRMSG='Профессия стоит 100 золота.';return render()}op={k:'cprof',p:v}}
