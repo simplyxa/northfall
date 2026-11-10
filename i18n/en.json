@@ -2854,5 +2854,6 @@
   "<div class=\"panel\"><h3>Профессии</h3><p style=\"margin:0 0 6px\">Каждая профессия покупается один раз за 100 золота и остаётся навсегда. Выбери, в какую мастерскую зайти: опыт у каждой свой. Работает одна мастерская за раз: пока идёт крафт, новый начать нельзя.</p>": "<div class=\"panel\"><h3>Professions</h3><p style=\"margin:0 0 6px\">Each profession is bought once for 100 gold and is yours for good. Choose which workshop to enter; each keeps its own XP. Only one workshop works at a time: you can't start a new craft while one is in progress.</p>",
   "<div class=\"panel\"><button class=\"b alt\" data-cr=\"back\">К профессиям</button></div>": "<div class=\"panel\"><button class=\"b alt\" data-cr=\"back\">To professions</button></div>",
   "Профессия куплена.": "Profession bought.",
-  "Профессии": "Professions"
+  "Профессии": "Professions",
+  " ур.</span></div></div>": " lvl.</span></div></div>"
 }
