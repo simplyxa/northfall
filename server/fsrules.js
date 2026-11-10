@@ -24,7 +24,7 @@ const hasAny = (arr, list) => arr.some(k => list.includes(k));
 const str = (v, max) => typeof v === 'string' && v.length <= max;
 
 const PROT = ['rating', 'srat', 'win', 'lose', 'sid', 'psid', 'psrat', 'lvl', 'dr', 'dw', 'dn'];   // поля карточки игрока: только сервер
-const CLAN_SRV = ['xp', 'wq', 'b', 'spent'];
+const CLAN_SRV = ['xp', 'wq', 'dq', 'b', 'spent'];
 
 // op: 'read' | 'create' | 'update' | 'delete'. segs — путь документа. existing — данные до записи (или null),
 // incoming — данные после записи (для create/update), getDoc(path) — чтение другого документа (для refs).
@@ -70,7 +70,7 @@ async function check(op, segs, auth, existing, incoming, getDoc) {
       return false;                                                   // удаление клана — только сервер
     }
     if (n === 4 && ['chat', 'log', 'dun'].includes(segs[2])) return signed;
-    if (n === 4 && segs[2] === 'dep') return op === 'read' && signed;
+    if (n === 4 && (segs[2] === 'dep' || segs[2] === 'led')) return op === 'read' && signed;
     return false;
   }
   if ((c === 'wars' || c === 'world' || c === 'terr' || c === 'market') && n === 2) return op === 'read' && signed;

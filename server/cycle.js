@@ -30,6 +30,8 @@ const TER_RATE = 40;        // очков в минуту (охота даёт �
 const TER_MAX = 400;        // за раз
 
 // ---------- войны ----------
+// задание дня: опыта клана за сутки — 3000 × уровень клана, награда в казну 200 × уровень серебра (и 1/20 железа)
+const DQ_NEED = 3000, DQ_GOLD = 200;
 const WAR_DUR = 86400000;   // война длится сутки
 const WAR_WIN = 200, WAR_DRAW = 80, WAR_LOSE = 40, WAR_RT = 40;
 
@@ -164,7 +166,7 @@ module.exports = function cycle(getDb) {
   // урон — по числу зверей и по атаке героя.
   async function onHunt(c, m, send) {
     const dbx = db(); if (!dbx || !c.uid) return;
-    const now = Date.now(), wk = weekNum(now);
+    const now = Date.now(), wk = weekNum(now), day = dayNum(now);
     const sref = dbx.collection('saves').doc(c.uid);
     const q = (m && m.q) || {};
     let kills = 0;
@@ -200,6 +202,15 @@ module.exports = function cycle(getDb) {
         let C = null;
         const cref = cid ? dbx.collection('clans').doc(cid) : null;
         if (cref && takeD > 0) { const csn = await tx.get(cref); C = csn.exists ? csn.data() : null; }
+        // задание дня: если этим ударом оно выполняется, заранее читаем документ казны (чтения — до записей)
+        let dq = null, dqRef = null, dqSn = null;
+        if (C) {
+          const L = cLv(C.xp | 0), d0 = (C.dq && C.dq.d === day) ? C.dq : { d: day, xp: 0 };
+          const nxp = (d0.xp | 0) + Math.floor(takeD / CXK), need = DQ_NEED * L;
+          const hit = !d0.done && nxp >= need;
+          dq = { d: day, xp: nxp, done: !!(d0.done || hit) };
+          if (hit) { dqRef = dbx.collection('clans').doc(cid).collection('dep').doc('quest'); dqSn = await tx.get(dqRef); dq.g = DQ_GOLD * L; dq.i = Math.round(DQ_GOLD * L / 20); }
+        }
         // ---- записи ----
         // 1. территории: по одному очку за зверя
         for (const it of terrs) {
@@ -220,11 +231,17 @@ module.exports = function cycle(getDb) {
           const cx = Math.floor(takeD / CXK);
           const nx = (C.xp | 0) + cx;
           const w = (C.wq && C.wq.wk === wk) ? C.wq : { wk, xp: 0 };
-          tx.update(cref, { xp: nx, wq: { wk, xp: (w.xp | 0) + cx } });
+          tx.update(cref, { xp: nx, wq: Object.assign({}, w, { wk, xp: (w.xp | 0) + cx }), dq: { d: dq.d, xp: dq.xp, done: dq.done } });
+          if (dqRef) {   // задание дня выполнено: награда сама падает в казну
+            const o = dqSn.exists ? dqSn.data() : { name: 'Задания клана', gold: 0, iron: 0 };
+            tx.set(dqRef, { name: 'Задания клана', gold: (o.gold | 0) + dq.g, iron: (o.iron | 0) + dq.i });
+            addLed(tx, dbx, cid, { k: 'dq', uid: c.uid, name: 'Задание дня', g: dq.g, i: dq.i });
+          }
         }
         // 3. счётчик частоты — в сохранение игрока
         tx.set(sref, Object.assign({}, S, { _tp: { t: now, n: (led.n | 0) + take } }));
         out = { st: 'ok', took: take, dmg: takeD };
+        if (dqRef) out.dq = { g: dq.g, i: dq.i };
       });
     } catch (e) { console.error('hunt', e.message); return err(c, send, 'hunt'); }
     send(c, { t: 'hunts', rid: 'hunt', ...out });
@@ -299,6 +316,12 @@ module.exports = function cycle(getDb) {
   }
 
   // ---------- клан: казна, задание, постройки ----------
+  // запись в журнал казны: кто и что внёс, потратил или получил
+  function addLed(tx, dbx, cid, e) {
+    const ts = Date.now();
+    tx.set(dbx.collection('clans').doc(cid).collection('led').doc(ts.toString(36) + Math.random().toString(36).slice(2, 5)),
+      Object.assign({ ts, k: e.k, uid: e.uid || '', name: String(e.name || '').slice(0, 24), g: e.g | 0, i: e.i | 0 }, e.what ? { what: String(e.what).slice(0, 40) } : {}));
+  }
   // документ вклада в казну клана
   async function addDep(tx, dbx, cid, doc, name, gold, iron) {
     const ref = dbx.collection('clans').doc(cid).collection('dep').doc(doc);
@@ -337,19 +360,21 @@ module.exports = function cycle(getDb) {
           const o = dsn.exists ? dsn.data() : { name: 'Задания клана', gold: 0, iron: 0 };
           tx.update(cref, { wq: { wk, xp: w.xp | 0, done: true } });
           tx.set(dref, { name: 'Задания клана', gold: (o.gold | 0) + g, iron: (o.iron | 0) + ir });
+          addLed(tx, dbx, cid, { k: 'wq', uid: c.uid, name: 'Задание недели', g, i: ir });
           out = { st: 'ok', k: 'quest', g, i: ir };
         } else if (kind === 'dungeon') {
           // доля с подземелья: сколько железа игрок принёс
           const n = Math.floor(+m.n || 0);
           if (!(n > 0) || n > 100000) { out = { st: 'no' }; return; }
           await addDep(tx, dbx, cid, 'dungeon', 'Подземелье клана', 0, n);
+          addLed(tx, dbx, cid, { k: 'dun', uid: c.uid, name: String(S.name || '').slice(0, 20), g: 0, i: n });
           out = { st: 'ok', k: 'dungeon', i: n };
         } else if (kind === 'build') {
           // постройка: деньги из казны, уровень постройки пишет сервер
           const key = String(m.b || '');
           const BLD = { bar: 'Казармы', wall: 'Крепостная стена', inf: 'Лазарет', mkt: 'Торговый двор', frg: 'Клановая кузня' };
           const B = BLD[key]; if (!B) { out = { st: 'no' }; return; }
-          if (!isLead) { out = { st: 'notlead' }; return; }
+          if (!isLead && !(C.off || []).includes(c.uid)) { out = { st: 'notlead' }; return; }   // строят лидер и офицеры
           const lv = ((C.b || {})[key] | 0);
           if (lv >= 5) { out = { st: 'max' }; return; }
           const cost = { g: 150 * (lv + 1) * (lv + 1), i: 20 * (lv + 1) };   // как в игре
@@ -361,6 +386,7 @@ module.exports = function cycle(getDb) {
           b[key] = lv + 1;
           const spent = { gold: ((C.spent || {}).gold | 0) + cost.g, iron: ((C.spent || {}).iron | 0) + cost.i };
           tx.update(cref, { b, spent });
+          addLed(tx, dbx, cid, { k: 'bld', uid: c.uid, name: String(S.name || '').slice(0, 20), g: cost.g, i: cost.i, what: B + ' ' + (lv + 1) });
           out = { st: 'ok', k: 'build', b: key, lv: lv + 1, cost };
         } else { out = { st: 'no' }; return; }
       });
