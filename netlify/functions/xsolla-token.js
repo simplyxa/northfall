@@ -3,6 +3,24 @@ const admin = require('../lib/fb');
 const PACKS = require('../lib/packs');
 const { promoNow } = require('../lib/promo');
 const DOM = '@northfall.game';
+// Страна по IP (в том числе IPv6, которую Xsolla сама не понимает). Первый ответивший сервис, таймаут 2 с, кэш на час.
+const GEO = new Map();
+async function geoCountry(ip) {
+  if (!ip || /^(10\.|127\.|192\.168\.|::1$|fe80:|fc|fd)/i.test(ip)) return '';
+  const hit = GEO.get(ip); if (hit && hit.t > Date.now()) return hit.c;
+  const ask = async (url, pick) => {
+    const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 2000);
+    try { const r = await fetch(url, { signal: ac.signal, headers: { Accept: 'application/json' } }); if (!r.ok) return ''; const c = String(pick(await r.json()) || '').toUpperCase(); return /^[A-Z]{2}$/.test(c) ? c : ''; }
+    catch (e) { return ''; } finally { clearTimeout(tm); }
+  };
+  const q = encodeURIComponent(ip);
+  const c = await ask('https://ipwho.is/' + q + '?fields=success,country_code', d => d.success === false ? '' : d.country_code) ||
+            await ask('https://ipapi.co/' + q + '/json/', d => d.error ? '' : d.country_code) ||
+            await ask('https://api.country.is/' + q, d => d.country);
+  if (GEO.size > 2000) GEO.clear();
+  GEO.set(ip, { c, t: Date.now() + (c ? 3600000 : 60000) });
+  return c;
+}
 const j = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 
 exports.handler = async (event) => { try { return await main(event); } catch (e) { console.error('token crash', e); return j(500, { error: 'Сервер: ' + (e.message || 'сбой') }); } };
@@ -41,6 +59,7 @@ async function main(event) {
   const ip = m4 && !rawIp.replace(m4[1], '').replace(/[:f]/gi, '') ? m4[1] : '';
   let cc = (h['x-country'] || '').trim().toUpperCase();
   if (!cc && h['x-nf-geo']) { try { cc = (JSON.parse(Buffer.from(h['x-nf-geo'], 'base64').toString()).country || {}).code || ''; } catch (e) {} }
+  if (!/^[A-Z]{2}$/.test(cc)) cc = await geoCountry(rawIp);   // определяем сами по IP, в том числе IPv6
   // нет страны и нет IPv4: берём регион из языка браузера (ru-IL → IL), иначе US; игрок сможет сменить страну в окне оплаты
   if (!/^[A-Z]{2}$/.test(cc) && !ip) {
     const al = String(h['accept-language'] || '').split(',').map(x => (x.trim().match(/^[a-z]{2,3}[-_]([A-Za-z]{2})\b/) || [])[1]).find(Boolean);
