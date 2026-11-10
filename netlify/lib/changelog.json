@@ -625,5 +625,10 @@
   "v": "1.24.0",
   "t": "Новые наборы только для крафта: следопыта (12 ур.), рунного кузнеца (24 ур.) и ледяного стража (30 ур.). Куёт их кузнец, в ковке теперь видны иконки вещей.",
   "te": "New craft-only sets: Pathfinder (lvl 12), Runesmith (lvl 24) and Frost Guardian (lvl 30). The blacksmith forges them; the forge now shows item icons."
+ },
+ {
+  "v": "1.25.0",
+  "t": "Рынок: поиск и фильтры (слот, набор, редкость, тип), сортировка по цене, имя мастера на вещах и в лотах, продажа материалов, бутылок, эликсиров, железа и пыли стопками.",
+  "te": "Market: search and filters (slot, set, rarity, type), price sorting, the maker's name on items and lots, and selling materials, bottles, elixirs, iron and dust in stacks."
  }
 ]

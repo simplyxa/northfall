@@ -25,6 +25,25 @@ const INV_MAX = 20, GAU = 1, MAX_PRICE = 1e6;
 const silverRate = lv => 15 * (5 + lv * 9) / 60;
 const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 const pid = (a, b) => [a, b].sort().join('~');
+// стопки на рынке: t — mat|pt|elx|iron|dust, k — ключ материала/эликсира, n — количество
+const STK = { mat: ['hide', 'bone', 'ore', 'herb'], elx: ['a', 'h', 'd'], pt: ['b'], iron: [''], dust: [''] };
+function stackSpec(o) {
+  const t = String(o.t || ''), k = String(o.sk || ''), n = Math.floor(+o.n || 0);
+  if (!STK[t] || !STK[t].includes(k) || !(n >= 1 && n <= 9999)) return null;
+  return { t, k, n };
+}
+function stackTake(s, st) {
+  const have = st.t === 'mat' ? (s.mat || {})[st.k] | 0 : st.t === 'elx' ? (s.elx || {})[st.k] | 0 : st.t === 'pt' ? (s.pt || {}).b | 0 : s[st.t] | 0;
+  if (have < st.n) throw new Fail(409, 'Не хватает товара');
+  if (st.t === 'mat') s.mat[st.k] = have - st.n; else if (st.t === 'elx') s.elx[st.k] = have - st.n; else if (st.t === 'pt') s.pt.b = have - st.n; else s[st.t] = have - st.n;
+}
+function stackAdd(s, st) {
+  if (!STK[st.t]) return;
+  if (st.t === 'mat') { s.mat = s.mat || {}; s.mat[st.k] = (s.mat[st.k] | 0) + st.n; }
+  else if (st.t === 'elx') { s.elx = s.elx || {}; s.elx[st.k] = (s.elx[st.k] | 0) + st.n; }
+  else if (st.t === 'pt') { s.pt = s.pt || {}; s.pt.b = (s.pt.b | 0) + st.n; }
+  else s[st.t] = (s[st.t] | 0) + st.n;
+}
 class Fail extends Error { constructor(code, msg) { super(msg); this.code = code; } }
 
 module.exports = function saves(admin) {
@@ -208,7 +227,14 @@ module.exports = function saves(admin) {
         // все чтения — до записей (правило транзакций Firestore)
         const sn = await tx.get(ref); prev = sn.exists ? sn.data() : null;
         let mref, ms, wref, ws, dref, ds, tref, ts;
-        if (k === 'mkcancel') { mref = db.collection('market').doc(String(o.id || '')); ms = await tx.get(mref); }
+        if (k === 'mkcancel' || k === 'mkbuy') { mref = db.collection('market').doc(String(o.id || '')); ms = await tx.get(mref); }
+        let bwref, bws, swref, sws;
+        if (k === 'mkstack') { wref = db.collection('wallet').doc(uid); ws = await tx.get(wref); }
+        if (k === 'mkbuy') {
+          bwref = db.collection('wallet').doc(uid); bws = await tx.get(bwref);
+          const sl = ms.exists ? ms.data() : null;
+          if (sl && sl.stack && /^[a-z0-9_]{2,20}$/.test(String(sl.seller || ''))) { swref = db.collection('wallet').doc(sl.seller); sws = await tx.get(swref); }
+        }
         if (k === 'give') {
           if (!/^[a-z0-9_]{2,20}$/.test(String(o.to || '')) || o.to === uid) throw new Fail(400, 'Игрок не найден');
           tref = db.collection('saves').doc(o.to); ts = await tx.get(tref); if (!ts.exists) throw new Fail(404, 'Игрок не найден');
@@ -229,7 +255,29 @@ module.exports = function saves(admin) {
         } else if (k === 'mkcancel') { // снять лот — вещь возвращается в рюкзак
           if (!ms.exists) throw new Fail(404, 'Лот не найден'); const m = ms.data();
           if (m.seller !== uid) throw new Fail(403, 'Это не твой лот'); if (m.sold) throw new Fail(409, 'Вещь уже купили, забери выручку');
-          const it = putItem(m.item); tx.delete(mref); out = { item: it };
+          if (m.stack) { stackAdd(s, m.stack); tx.delete(mref); out = { stack: m.stack }; }
+          else { const it = putItem(m.item); tx.delete(mref); out = { item: it }; }
+        } else if (k === 'mkstack') { // выставить стопку ресурсов (материалы, бутылки, эликсиры, железо, пыль)
+          const st = stackSpec(o), price = Math.floor(+o.price || 0);
+          if (!st) throw new Fail(400, 'Неверный товар'); if (!(price >= 1 && price <= MAX_PRICE)) throw new Fail(400, 'Неверная цена');
+          if (!ws.exists) throw new Fail(409, 'Сначала открой золотой кошелёк: загляни в магазин золота');
+          stackTake(s, st);
+          const id = rid('m');
+          tx.set(db.collection('market').doc(id), { seller: uid, sname: String(s.name || uid).slice(0, 20), stack: st, price, au: true, ts: Date.now(), sold: false, srv: 1 });
+          out = { id, stack: st };
+        } else if (k === 'mkbuy') { // купить стопку ресурсов за золото: деньги сразу уходят продавцу
+          if (!ms.exists) throw new Fail(404, 'Лот не найден'); const m = ms.data();
+          if (!m.stack || !m.au || m.sold || m.seller === uid) throw new Fail(409, 'Этот лот уже купили');
+          const price = Math.floor(m.price || 0); if (!(price > 0)) throw new Fail(400, 'Неверная цена');
+          if (!bws.exists || (bws.data().au | 0) < price) throw new Fail(409, 'Не хватает золота');
+          if (!sws || !sws.exists) throw new Fail(409, 'Лот временно недоступен');
+          const gain = Math.floor(price * 0.95), now = Date.now(), bAu = (bws.data().au | 0) - price;
+          tx.update(bwref, { au: bAu }); tx.update(swref, { au: (sws.data().au | 0) + gain });
+          tx.update(mref, { sold: true, buyer: uid, bname: String(s.name || uid).slice(0, 40), paid: true });
+          const lid = now.toString(36) + Math.random().toString(36).slice(2, 6);
+          tx.set(bwref.collection('log').doc(lid + 'b'), { op: 'mbuy', n: -price, lot: mref.id, ts: now });
+          tx.set(swref.collection('log').doc(lid + 's'), { op: 'msell', n: gain, lot: mref.id, ts: now });
+          stackAdd(s, m.stack); out = { au: bAu, stack: m.stack };
         } else if (k === 'give') { // отправить вещь по почте (1 золото)
           if (!ws.exists || (ws.data().au | 0) < GAU) throw new Fail(409, `Передача вещи стоит ${GAU} золото`);
           const item = takeItem(String(o.iu || '')), now = Date.now(), note = String(o.note || '').slice(0, 200);
