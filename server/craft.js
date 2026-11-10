@@ -7,18 +7,22 @@ const MATS = ['hide', 'bone', 'ore', 'herb'];
 const DAY = 86400000, DAILY = 12, SWITCH_COST = 5000;
 const PROFS = ['smith', 'alch', 'rune'];
 const SLOTS = ['w', 'h', 'a', 'g', 'b', 'r', 'c', 'p', 'n', 'o'];
-const SETLV = [1, 8, 15, 22, 30];
+const SETLV = [1, 8, 15, 22, 30, 30, 12, 24, 30];   // 5 — набор Одина (не крафтится); 6–8 — наборы только для крафта
 const RUNES = ['str', 'hp', 'arm', 'reg', 'en'];
 const pLevel = x => Math.min(10, 1 + Math.floor(Math.sqrt(Math.max(0, x | 0) / 25)));
 
 // Кузнец: набор tr 0..4, нужен уровень профессии и героя
-const FORGE = [
-  { pl: 1, iron: 40, ore: 3, hide: 2, gold: 100, min: 10, xp: 10 },
-  { pl: 2, iron: 90, ore: 5, hide: 3, gold: 300, min: 25, xp: 20 },
-  { pl: 3, iron: 170, ore: 8, hide: 5, gold: 800, min: 60, xp: 30 },
-  { pl: 5, iron: 300, ore: 12, hide: 8, gold: 2000, min: 120, xp: 45 },
-  { pl: 7, iron: 500, ore: 18, hide: 12, gold: 5000, min: 240, xp: 60 }
-];
+const FORGE = {
+  0: { pl: 1, iron: 40, ore: 3, hide: 2, gold: 100, min: 10, xp: 10 },
+  1: { pl: 2, iron: 90, ore: 5, hide: 3, gold: 300, min: 25, xp: 20 },
+  2: { pl: 3, iron: 170, ore: 8, hide: 5, gold: 800, min: 60, xp: 30 },
+  3: { pl: 5, iron: 300, ore: 12, hide: 8, gold: 2000, min: 120, xp: 45 },
+  4: { pl: 7, iron: 500, ore: 18, hide: 12, gold: 5000, min: 240, xp: 60 },
+  // наборы, которых нет в добыче: только крафт
+  6: { pl: 2, iron: 70, ore: 4, hide: 6, bone: 2, gold: 200, min: 20, xp: 18 },    // следопыта, 12 ур.
+  7: { pl: 5, iron: 260, ore: 12, bone: 8, gold: 1500, min: 100, xp: 40 },         // рунного кузнеца, 24 ур.
+  8: { pl: 7, iron: 450, ore: 14, hide: 10, bone: 10, gold: 4000, min: 200, xp: 55 } // ледяного стража, 30 ур.
+};
 // Алхимик: партии бутылок
 const BREW = {
   10: { pl: 1, herb: 3, gold: 40, min: 10, xp: 8 },
@@ -57,10 +61,10 @@ function start(s, o, now, fail) {
   if (r === 'forge') {
     if (c.p !== 'smith') throw fail(400, 'Это ремесло кузнеца');
     const tr = o.tr | 0, slot = String(o.slot || '');
-    if (!(tr >= 0 && tr <= 4) || !SLOTS.includes(slot)) throw fail(400, 'Неверный рецепт');
+    if (!FORGE[tr] || !SLOTS.includes(slot)) throw fail(400, 'Неверный рецепт');
     rec = FORGE[tr]; a = { slot, tr };
     if ((s.lvl | 0) < SETLV[tr]) throw fail(409, 'Нужен ' + SETLV[tr] + ' уровень героя');
-    cost = { iron: rec.iron, ore: rec.ore, hide: rec.hide, gold: rec.gold };
+    cost = { iron: rec.iron, ore: rec.ore, gold: rec.gold }; if (rec.hide) cost.hide = rec.hide; if (rec.bone) cost.bone = rec.bone;
   } else if (r === 'brew') {
     if (c.p !== 'alch') throw fail(400, 'Это ремесло алхимика');
     const n = o.n | 0; rec = BREW[n]; if (!rec) throw fail(400, 'Неверный рецепт');

@@ -620,5 +620,10 @@
   "v": "1.23.0",
   "t": "Эликсиры: алхимик (с 3 уровня профессии) варит эликсиры силы, стойкости и брони. Выпитый эликсир даёт +12–15% на 30 минут. Выпить можно в рюкзаке.",
   "te": "Elixirs: the alchemist (profession level 3) brews elixirs of strength, endurance and armor. A drunk elixir gives +12–15% for 30 minutes. Drink it in the backpack."
+ },
+ {
+  "v": "1.24.0",
+  "t": "Новые наборы только для крафта: следопыта (12 ур.), рунного кузнеца (24 ур.) и ледяного стража (30 ур.). Куёт их кузнец, в ковке теперь видны иконки вещей.",
+  "te": "New craft-only sets: Pathfinder (lvl 12), Runesmith (lvl 24) and Frost Guardian (lvl 30). The blacksmith forges them; the forge now shows item icons."
  }
 ]
