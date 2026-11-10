@@ -670,5 +670,10 @@
   "v": "1.26.7",
   "t": "Ремесло: остались три набора (следопыта, рунного кузнеца, ледяного стража). Добавлена плавка: руда превращается в слитки, из слитков куются вещи. Рамки в списке ковки показывают реальную редкость.",
   "te": "Crafting: only three sets remain (Pathfinder, Rune Smith, Ice Guardian). Added smelting: ore becomes ingots, and gear is forged from ingots. Frames in the forge list show real rarity."
+ },
+ {
+  "v": "1.26.8",
+  "t": "Профессии: доступны все три, каждая покупается один раз за 100 золота. Переключаться между купленными можно бесплатно, опыт у каждой свой.",
+  "te": "Professions: all three are available; each is bought once for 100 gold. Switching between owned professions is free, and each keeps its own XP."
  }
 ]

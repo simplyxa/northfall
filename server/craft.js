@@ -4,7 +4,7 @@
 //   cf = { p: 'smith'|'alch'|'rune', x: опыт профессии, q: {r, a, t0, te, n}|null, d: сутки, n: крафтов за сутки }
 'use strict';
 const MATS = ['hide', 'bone', 'ore', 'herb', 'ingot'];
-const DAY = 86400000, DAILY = 12, SWITCH_COST = 5000;
+const DAY = 86400000, DAILY = 12, PROF_AU = 100;   // профессия покупается навсегда за золото, переключение бесплатное
 const PROFS = ['smith', 'alch', 'rune'];
 const SLOTS = ['w', 'h', 'a', 'g', 'b', 'r', 'c', 'p', 'n', 'o'];
 const SETLV = [1, 8, 15, 22, 30, 30, 12, 24, 30];   // 5 — набор Одина (не крафтится); 6–8 — наборы только для крафта
@@ -43,7 +43,11 @@ const RUNEC = [
 
 function init(s) {
   const c = s.cf && typeof s.cf === 'object' ? s.cf : {};
-  s.cf = { p: PROFS.includes(c.p) ? c.p : '', x: Math.max(0, c.x | 0), q: c.q && c.q.r ? c.q : null, d: c.d | 0, n: c.n | 0 };
+  const p = PROFS.includes(c.p) ? c.p : '';
+  const own = Array.isArray(c.own) ? c.own.filter(x => PROFS.includes(x)) : [];
+  if (p && !own.includes(p)) own.push(p);   // кто уже выбрал профессию раньше — она остаётся за ним
+  const px = {}; for (const k of PROFS) px[k] = Math.max(0, (c.px && c.px[k]) | 0);
+  s.cf = { p, x: Math.max(0, c.x | 0), own, px, q: c.q && c.q.r ? c.q : null, d: c.d | 0, n: c.n | 0 };
   s.mat = s.mat && typeof s.mat === 'object' ? s.mat : {};
   for (const m of MATS) s.mat[m] = Math.max(0, s.mat[m] | 0);
   return s.cf;
@@ -117,13 +121,16 @@ function claim(s, now, fail) {
   return out;
 }
 
+function owns(s, p) { return init(s).own.includes(p); }
+// переключение на купленную профессию (бесплатно, опыт у каждой свой); покупку и списание золота делает saves.js
 function pick(s, o, now, fail) {
   const c = init(s), p = String(o.p || '');
   if (!PROFS.includes(p)) throw fail(400, 'Неизвестная профессия');
   if (c.q) throw fail(409, 'Сначала забери готовое');
   if (c.p === p) throw fail(409, 'Эта профессия уже выбрана');
-  if (c.p) { if ((+s.gold || 0) < SWITCH_COST) throw fail(409, 'Смена профессии стоит ' + SWITCH_COST + ' серебра'); s.gold -= SWITCH_COST; c.x = 0; }
-  c.p = p;
+  if (c.p) c.px[c.p] = c.x;
+  if (!c.own.includes(p)) c.own.push(p);
+  c.p = p; c.x = c.px[p] | 0;
   return { p };
 }
 
@@ -137,4 +144,4 @@ function clampMats(prev, s, dt) {
 // cf меняет только сервер
 function lockCf(prev, s) { if (prev && prev.cf) s.cf = prev.cf; else delete s.cf; }
 
-module.exports = { SMELT, ELIX, MATS, PROFS, DAILY, SWITCH_COST, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
+module.exports = { PROF_AU, owns, SMELT, ELIX, MATS, PROFS, DAILY, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
