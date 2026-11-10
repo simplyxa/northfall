@@ -416,7 +416,7 @@ let syncT,HREP=null,CLOUD={ok:0,err:'',warn:0};
 // карточка игрока в общем списке — только при важных изменениях или раз в минуту. На устройстве всё сохраняется мгновенно.
 let SAVEDT=0,PLT=0,PLSIG='',SLV=0;
 const APPM=()=>{try{const a=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;if(a&&S&&!S.appEver)S.appEver=1;return a}catch(e){return false}};
-const plSig=()=>{try{return JSON.stringify([APPM(),S.ex&&S.ex.end||0,S.name,S.cls,S.lvl,S.clan||'',S.sid,S.war||'',S.av,S.title||'',Object.values(S.eq||{}).map(i=>i?i.uid+':'+(i.up|0)+':'+(typeof broken==='function'&&broken(i)?0:1):'')])}catch(e){return String(Date.now())}};
+const plSig=()=>{try{return JSON.stringify([APPM(),S.ex&&S.ex.end||0,S.name,S.cls,S.lvl,S.pet||'',S.clan||'',S.sid,S.war||'',S.av,S.title||'',Object.values(S.eq||{}).map(i=>i?i.uid+':'+(i.up|0)+':'+(typeof broken==='function'&&broken(i)?0:1):'')])}catch(e){return String(Date.now())}};
 function saveNow(){if(!DB||!UID||!S)return;clearTimeout(syncT);pushDb(true)}
 // защита от «отката»: если игра открыта на двух устройствах, старая вкладка не затирает свежий прогресс
 let SESS=Math.random().toString(36).slice(2,10),SBASE=null,STALE=false,SLAST='';
@@ -561,7 +561,7 @@ function socMaybe(t){if(SOCON||!SOCF)return;const g=typeof GUEST!=='undefined'&&
 // сервер не отвечает: говорим игроку один раз и ждём следующей попытки
 function cloudDown(){if(CLOUD.warn)return;CLOUD.warn=1;log('Облако недоступно — прогресс сохранён локально и уйдёт на сервер, когда тот оживёт.','sys');if(typeof ui==='function')ui()}
 function pushDb(force){if(!DB||!UID||!S||STALE)return;actMark();if(S.clan&&!S.cjt)S.cjt=Date.now();if(!S.clan&&S.cjt)delete S.cjt;const now=Date.now(),sig=plSig();SAVEDT=now;SLV=S.lvl;
- if(force||sig!==PLSIG||now-PLT>180000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({lg:LANG,name:S.name,cls:S.cls,clan:S.clan||'',war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0},{merge:true}).catch(()=>{})}
+ if(force||sig!==PLSIG||now-PLT>180000){PLSIG=sig;PLT=now;DB.collection('players').doc(UID).set({lg:LANG,name:S.name,cls:S.cls,clan:S.clan||'',war:S.war||'',wp:S.wp||0,av:S.av||{s:0,c:0},cxt:S.cxt|0,title:S.title||'',ssum:statSum(),seen:Date.now(),reg:S.reg||0,rd:S.rd!=null?S.rd:null,old:S.old?1:0,src:S.src||'',act:(S.act||[]).slice(-40),eq:JSON.parse(JSON.stringify(S.eq||{})),pet:S.pet&&S.pets&&S.pets[S.pet]?S.pet:'',stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()},ex:S.ex&&S.ex.end?+S.ex.end:0,app:APPM()?1:0,appEver:S.appEver?1:0,dr:S.dr==null?1000:S.dr,dn:S.dn|0,dw:S.dw|0,cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||0},{merge:true}).catch(()=>{})}
  S.ses=SESS;const sref=DB.collection('saves').doc(UID),sdat=JSON.parse(JSON.stringify(S));{const k=JSON.stringify({...sdat,ts:0,act:0,hpf:0,enf:0,rt:0});if(k===SLAST)return;SLAST=k}const done=r=>{if(r==='stale')return staleHit();SBASE=SESS;CLOUD.ok=Date.now();CLOUD.err='';CLOUD.warn=0},bad=e=>{CLOUD.err=String((e&&(e.code||e.message))||e).slice(0,80);CLOUD.ok=0},
   // сервер не ответил — данные остаются в localStorage, и повтор уйдёт при следующей попытке.
   // Прямой записи в saves здесь намеренно нет: она обходила серверную проверку
@@ -819,7 +819,7 @@ const skRound=()=>skOf().map((k,i)=>{const st=skSt(k[0]);return`<button class="b
 const HPOSEMS={rage:900,roar:1000,shot:600,trap:700,totem:1200,skin:1200};
 const HEROPOSE={berserk:{atk:{a:'/img/2f382b5e57cc8e.webp',l:-27.69,t:-2.42,w:140.17},rage:{a:'/img/e86398326e20c3.webp',l:-11.5,t:-8.98,w:114.15},roar:{a:'/img/4dd7cf6f934bff.webp',l:-13.3,t:-3.67,w:113.14}},hunter:{atk:{a:'/img/ccadd015dd40d1.webp',l:-9.03,t:3.84,w:134.47},shot:{a:'/img/ad901f495e58ba.webp',l:0.69,t:10.39,w:97.77},trap:{a:'/img/23cfda7d6bfb66.webp',l:6.2,t:31.28,w:107.75}},shaman:{atk:{a:'/img/13cc90a0f4d245.webp',l:4.0,t:15.64,w:106.72},totem:{a:'/img/6d9aa5e25b84d2.webp',l:-8.02,t:-1.26,w:101.83},skin:{a:'/img/2cff98cf22206b.webp',l:5.69,t:1.53,w:100.42}}};
 const PETFIG={lynx:{s:'/img/d782352b9cd13d.webp',a:'/img/54c3f93db30266.webp',w:23.5,x:41.0,y:94.0,p:4.2},bear:{s:'/img/37e5a544955fd2.webp',a:'/img/023b4694d16fcf.webp',w:23.2,x:38.1,y:95.0,p:3.8},wolf:{s:'/img/a6554ddb3d7a16.webp',a:'/img/ad0fed1ee01e22.webp',w:21.7,x:41.0,y:94.0,p:0.9},raven:{s:'/img/0a0ca14b9c9c00.webp',a:'/img/20c693dccb241f.webp',w:19.3,x:43.1,y:62.0,p:0.0,fly:1}};
-const petFig=pa=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}" id="stpet" title="${esc(pa.n)}" style="left:${F.x}%;top:${F.y}%;width:${F.w}%;--pp:${F.p||0}%"><div class="st-pf"><img class="st-pi" src="${F.s}" alt=""><img class="st-pa" src="${F.a}" alt=""></div></div>`};
+const petFig=(pa,foe)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}"${foe?'':' id="stpet"'} title="${esc(pa.n)}" style="left:${foe?105-F.x:F.x}%;top:${F.y}%;width:${F.w}%;--pp:${F.p||0}%"><div class="st-pf"${foe?' style="transform:scaleX(-1)"':''}><img class="st-pi" src="${F.s}" alt=""><img class="st-pa" src="${F.a}" alt=""></div></div>`};
 function stageHtml(H){const pa=petA(),fig=HEROFIG[S.cls];
  const zk=H&&H.kind&&STBGZ[H.kind]?H.kind:'';return `<div class="stage${zk?' zr '+zk:''}" style="--sbg:url(${zk?STBGZ[zk]:STBG})"><div class="st-w">${zk?'<i class="st-ring h" style="left:23.3%;top:89.9%;--rw:32%"></i>'+STPT.map(P=>`<i class="st-ring" style="left:${P.x}%;top:${P.y}%;--rw:${P.k<1?18.6:20.4}%"></i>`).join(''):''}<div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i style="width:${S.hp/maxHp()*100}%;background:var(--moss)"></i></span><small>${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">${Object.entries(HEROPOSE[S.cls]||{}).map(([n,q])=>`<img class="st-fa" data-p="${n}" src="${q.a}" alt="" style="left:${q.l}%;top:${q.t}%;width:${q.w}%">`).join('')}`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):pa?`<span class="st-pet" title="${esc(pa.n)}">${petImg(pa.k,30)}</span>`:''}
@@ -1017,7 +1017,7 @@ function apvpView(){
  <div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i id="ahb" style="width:${Math.max(0,S.hp/maxHp()*100)}%;background:var(--moss)"></i></span><small id="ahbt">${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
  <div class="st-hud" style="left:auto;right:56px;text-align:right"><b>${esc(e.name)}</b><span class="st-bar"><i id="aeb" style="width:${Math.max(0,e.hp/e.max*100)}%"></i></span><span class="st-atk"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aebt">${e.hp}/${e.max}</small><small id="aestn" ${e.stun>fight.clk?'':'hidden'}>💫 в капкане</small></div>
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
- <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div></div>${arCtl()}</div></div>`;
+ <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div>${e.pet&&PETFIG[e.pet]?petFig({k:e.pet,n:(PETS[e.pet]||{}).n||''},1):''}</div>${arCtl()}</div></div>`;
 }
 function fightView(){
  if(fight.hunt)return huntView();
@@ -2400,7 +2400,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.24';
+const GVER='1.26.25';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3004,7 +3004,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.24</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.25</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
