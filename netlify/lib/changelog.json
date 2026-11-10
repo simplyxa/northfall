@@ -610,5 +610,10 @@
   "v": "1.21.0",
   "t": "Клан: доска общих заданий — любой участник берёт задание сам (до двух сразу), 24 часа на выполнение, после выполнения откат 24 часа; видно, кто занят заданием, и другой игрок взять его не может",
   "te": "Clan: a shared quest board — any member takes a quest (up to two at a time), 24 hours to finish it, then a 24-hour cooldown; you can see who is on a quest and others cannot take it"
+ },
+ {
+  "v": "1.22.0",
+  "t": "Ремесло: выбери одну профессию (кузнец, алхимик или рунник), собирай шкуры, кости, руду и травы на охоте и создавай снаряжение, бутылки и камни. Работа идёт по таймеру, до 12 крафтов в сутки.",
+  "te": "Crafting: pick one profession (blacksmith, alchemist or runesmith), gather hides, bones, ore and herbs on hunts and make gear, bottles and stones. Jobs run on a timer, up to 12 crafts a day."
  }
 ]
