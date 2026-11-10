@@ -2821,5 +2821,10 @@
   "Закончить {t} крафта": "Finish {t} crafts",
   "+10% железа при разборе и −6% времени крафта за уровень": "+10% iron on dismantling and −6% crafting time per level",
   "Для этой постройки нужен ": "This building needs clan level ",
-  " уровень клана.": "."
+  " уровень клана.": ".",
+  "выбери ремесло: кузнец, алхимик, рунник": "choose a trade: blacksmith, alchemist, runesmith",
+  ": готово, забери</b>": ": ready, collect</b>",
+  ": осталось ": ": left ",
+  "Профессия": "Profession",
+  "Выбери одну профессию: кузнец, алхимик или рунник. Материалы падают на охоте, работа идёт по таймеру, до 12 крафтов в сутки. Клановая кузня ускоряет крафт.": "Choose one profession: blacksmith, alchemist or runesmith. Materials drop on hunts, jobs run on a timer, up to 12 crafts a day. The clan forge speeds crafting up."
 }
