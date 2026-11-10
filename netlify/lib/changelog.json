@@ -660,5 +660,10 @@
   "v": "1.26.5",
   "t": "Ковка: на кнопках выбора слота теперь иконки.",
   "te": "Forging: the slot buttons now have icons."
+ },
+ {
+  "v": "1.26.6",
+  "t": "Ковка: рамки иконок в списке рецептов больше не синие, редкость вещи неизвестна заранее. Над списком показаны реальные шансы редкости на твоём уровне профессии.",
+  "te": "Forging: icon frames in the recipe list are no longer blue, since the item rarity is not known in advance. The list now shows the real rarity chances at your profession level."
  }
 ]

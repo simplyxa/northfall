@@ -2826,5 +2826,11 @@
   ": готово, забери</b>": ": ready, collect</b>",
   ": осталось ": ": left ",
   "Профессия": "Profession",
-  "Выбери одну профессию: кузнец, алхимик или рунник. Материалы падают на охоте, работа идёт по таймеру, до 12 крафтов в сутки. Клановая кузня ускоряет крафт.": "Choose one profession: blacksmith, alchemist or runesmith. Materials drop on hunts, jobs run on a timer, up to 12 crafts a day. The clan forge speeds crafting up."
+  "Выбери одну профессию: кузнец, алхимик или рунник. Материалы падают на охоте, работа идёт по таймеру, до 12 крафтов в сутки. Клановая кузня ускоряет крафт.": "Choose one profession: blacksmith, alchemist or runesmith. Materials drop on hunts, jobs run on a timer, up to 12 crafts a day. The clan forge speeds crafting up.",
+  "обычная ": "common ",
+  ", редкая ": ", rare ",
+  ", эпическая ": ", epic ",
+  ", легендарная ": ", legendary ",
+  "<div class=\"panel\"><h3>Ковка</h3><p style=\"margin:0 0 8px;color:var(--mute);font-size:15px\">Редкость вещи выпадает случайно при выдаче, чем выше уровень профессии, тем лучше шансы. Сейчас: наборы охотника и железный: ": "<div class=\"panel\"><h3>Forging</h3><p style=\"margin:0 0 8px;color:var(--mute);font-size:15px\">Item rarity is rolled randomly when you collect it; the higher your profession level, the better the odds. Now: Hunter and Iron sets: ",
+  ". Остальные наборы: ": ". Other sets: "
 }
