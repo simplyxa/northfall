@@ -2859,5 +2859,7 @@
   ">Забрать</button><button class=\"b alt\" data-cr=\"cancel\" ": ">Collect</button><button class=\"b alt\" data-cr=\"cancel\" ",
   "Точно отменить?": "Really cancel?",
   "Отменить": "Cancel",
-  "Работа отменена, ресурсы вернулись.": "Job cancelled, resources refunded."
+  "Работа отменена, ресурсы вернулись.": "Job cancelled, resources refunded.",
+  "<div>Бутылки ×": "<div>Bottles ×",
+  " на 30 минут</small></div></div><button class=\"b alt\" data-elx=\"": " for 30 minutes</small></div></div><button class=\"b alt\" data-elx=\""
 }
