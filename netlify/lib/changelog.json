@@ -680,5 +680,10 @@
   "v": "1.26.9",
   "t": "Иконки материалов (шкура, кость, руда, трава, слиток) в ремесле, на рынке и в наградах.",
   "te": "Material icons (hide, bone, ore, herb, ingot) in crafting, the market and rewards."
+ },
+ {
+  "v": "1.26.10",
+  "t": "Иконки материалов с прозрачным фоном, хорошо смотрятся и на светлой теме.",
+  "te": "Material icons now have a transparent background and look good on the light theme too."
  }
 ]
