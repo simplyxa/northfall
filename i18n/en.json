@@ -2627,5 +2627,21 @@
   "<p>На этой неделе вкладов ещё не было.</p>": "<p>No deposits yet this week.</p>",
   "</div>\n <div class=\"panel\"><h3>Журнал казны</h3>": "</div>\n <div class=\"panel\"><h3>Treasury ledger</h3>",
   "<p>Записей пока нет. Новые вклады, траты и награды появятся здесь.</p>": "<p>No entries yet. New deposits, spending and rewards will appear here.</p>",
-  "</div>\n <div class=\"panel\"><h3>Все вклады</h3>": "</div>\n <div class=\"panel\"><h3>All deposits</h3>"
+  "</div>\n <div class=\"panel\"><h3>Все вклады</h3>": "</div>\n <div class=\"panel\"><h3>All deposits</h3>",
+  "<div class=\"panel\"><button class=\"b alt\" data-cfa=\"back\" style=\"margin:0 0 8px\">← К темам</button><h3 style=\"margin:0 0 4px\">": "<div class=\"panel\"><button class=\"b alt\" data-cfa=\"back\" style=\"margin:0 0 8px\">← To topics</button><h3 style=\"margin:0 0 4px\">",
+  "<button class=\"b alt\" data-cfa=\"tdel\">Удалить тему</button>": "<button class=\"b alt\" data-cfa=\"tdel\">Delete topic</button>",
+  "\" aria-label=\"Удалить\">✕</button>": "\" aria-label=\"Delete\">✕</button>",
+  "<p>Загружаю сообщения…</p>": "<p>Loading messages…</p>",
+  "</div>\n  <div class=\"panel\"><h3>Ответить</h3><textarea id=\"cfr\" maxlength=\"1000\" rows=\"3\" placeholder=\"Сообщение\" aria-label=\"Сообщение\"></textarea><button class=\"b\" data-cfa=\"reply\" style=\"margin-top:6px\">Отправить</button></div>": "</div>\n  <div class=\"panel\"><h3>Reply</h3><textarea id=\"cfr\" maxlength=\"1000\" rows=\"3\" placeholder=\"Message\" aria-label=\"Message\"></textarea><button class=\"b\" data-cfa=\"reply\" style=\"margin-top:6px\">Send</button></div>",
+  "<div class=\"panel\"><h3>Новая тема</h3><input id=\"cft\" maxlength=\"80\" placeholder=\"Заголовок\" aria-label=\"Заголовок\"><textarea id=\"cfb\" maxlength=\"1000\" rows=\"3\" placeholder=\"Текст\" aria-label=\"Текст\"></textarea><button class=\"b\" data-cfa=\"new\" style=\"margin-top:6px\">Создать тему</button></div>\n <div class=\"panel\"><h3>Форум клана</h3>": "<div class=\"panel\"><h3>New topic</h3><input id=\"cft\" maxlength=\"80\" placeholder=\"Title\" aria-label=\"Title\"><textarea id=\"cfb\" maxlength=\"1000\" rows=\"3\" placeholder=\"Text\" aria-label=\"Text\"></textarea><button class=\"b\" data-cfa=\"new\" style=\"margin-top:6px\">Create topic</button></div>\n <div class=\"panel\"><h3>Clan forum</h3>",
+  " · последний: ": " · last: ",
+  "<p>Тем пока нет. Создай первую: обсудите планы клана, войны и подземелья.</p>": "<p>No topics yet. Start the first one: discuss clan plans, wars and the dungeon.</p>",
+  "Подожди пару секунд.": "Wait a couple of seconds.",
+  "Не удалось отправить.": "Could not send.",
+  "Не удалось закрепить.": "Could not pin.",
+  "Не удалось удалить тему.": "Could not delete the topic.",
+  "Не удалось удалить сообщение.": "Could not delete the message.",
+  "</span>. Бонус клана: +5% к добыче.</p></div>": "</span>. Clan bonus: +5% loot.</p></div>",
+  "<div class=\"panel\"><h3>Состав: ": "<div class=\"panel\"><h3>Members: ",
+  "Состав": "Members"
 }

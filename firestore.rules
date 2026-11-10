@@ -91,6 +91,8 @@ service cloud.firestore {
       match /dep/{doc}  { allow read: if signed(); allow write: if false; }
       // журнал казны: вклады, траты, награды — пишет сервер
       match /led/{doc}  { allow read: if signed(); allow write: if false; }
+      // форум клана: темы и сообщения (подробные правила — в server/fsrules.js)
+      match /ft/{doc}   { allow read, write: if signed(); match /fp/{p} { allow read, write: if signed(); } }
     }
 
     // Войны, мировой босс, территории: жизненный цикл ведёт сервер
