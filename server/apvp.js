@@ -55,7 +55,7 @@ module.exports = function apvp(getDb) {
     return {
       pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: clamp(R.ech, 0, 1),
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
-      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, stun: R.e.stun | 0 },
+      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, pet: R.e.pet || '', stun: R.e.stun | 0 },
       s: R.s, log: withLog ? R.log : undefined, sk: R.sk, res: R.res || null
     };
   }
@@ -87,6 +87,7 @@ module.exports = function apvp(getDb) {
           name: String(O.name || oid).slice(0, 20), lv: O.lvl | 0,
           hp: Math.max(1, O.stats.hp | 0), max: Math.max(1, O.stats.hp | 0),
           atk: Math.round((O.stats.atk | 0) * .9), def: O.stats.def | 0, crit: Math.min(40, O.stats.crit | 0),
+          pet: ['wolf', 'bear', 'lynx', 'raven'].includes(O.pet) ? O.pet : '',   // питомец соперника: только для вида
           cls: ['berserk', 'hunter', 'shaman'].includes(O.cls) ? O.cls : 'berserk'   // чтобы клиент нарисовал соперника в рост по классу
         };
         const R = {
@@ -132,9 +133,9 @@ module.exports = function apvp(getDb) {
       const n = R.pots.b | 0;
       if (n < 1 || now < R.pcd) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });   // бутылку нельзя пить одну за другой
       R.pots.b = n - 1; R.s.pots++; R.pcd = now + BCD;
-      const h = Math.round(R.mhp * .4);
-      R.hp = Math.min(R.mhp, R.hp + h);
-      msg = `Бутылка: +${h} здоровья.`;
+      const h = R.mhp - R.hp;           // бутылка лечит полностью (энергию возвращает клиент)
+      R.hp = R.mhp;
+      msg = `Бутылка: здоровье и энергия восстановлены полностью${h > 0 ? ` (+${h})` : ''}.`;
     } else if (a.startsWith('sk-')) {
       msg = skill(R, a.slice(3));
       if (msg === false) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
@@ -193,6 +194,9 @@ module.exports = function apvp(getDb) {
       await db.runTransaction(async tx => {
         const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
         const on = await tx.get(oref); const O = on.exists ? on.data() : null;
+        const mn = await tx.get(db.collection('players').doc(R.uid)); const M = mn.exists ? mn.data() : null;
+        const h1 = await tx.get(db.collection('arhist').doc(R.uid));
+        const h2 = await tx.get(db.collection('arhist').doc(R.oid));
         if (!S) return;
         const st = ARENA.readState(S, now);
         const orat = O ? (O.rating | 0) : 1000;
@@ -216,6 +220,12 @@ module.exports = function apvp(getDb) {
         tx.set(db.collection('players').doc(R.uid), {
           rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose
         }, { merge: true });
+        // история боёв: последние 10 как нападающий и как защитник
+        const myName = String((M && M.name) || R.uid).slice(0, 20);
+        const keep = (a, e) => [e].concat(Array.isArray(a) ? a : []).slice(0, 10);
+        const H1 = h1.exists ? h1.data() : {}, H2 = h2.exists ? h2.data() : {};
+        tx.set(db.collection('arhist').doc(R.uid), { a: keep(H1.a, { n: R.e.name, w: win, r: rt, t: now }), d: Array.isArray(H1.d) ? H1.d : [] });
+        tx.set(db.collection('arhist').doc(R.oid), { a: Array.isArray(H2.a) ? H2.a : [], d: keep(H2.d, { n: myName, w: win, r: 0, t: now }) });
         R.res = { rt, rating: st.rt, srt: st.srt, lost, win, atk: st.atk, atkt: st.atkt };
       });
     } catch (e) { console.error('apvp end', e.message); }

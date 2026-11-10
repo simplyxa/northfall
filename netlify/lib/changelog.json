@@ -750,5 +750,15 @@
   "v": "1.26.23",
   "t": "Арена: убран блок. Бутылку теперь нельзя пить одну за другой (перезарядка 90 секунд, как на охоте). Капкан останавливает заряд атаки врага на время действия.",
   "te": "Arena: Block removed. Bottles can no longer be drunk back to back (90-second cooldown, as on the hunt). The trap freezes the enemy's attack charge while it lasts."
+ },
+ {
+  "v": "1.26.24",
+  "t": "Арена: бутылка теперь полностью восстанавливает здоровье и энергию. Добавлена история боёв: последние 10 твоих атак и последние 10 нападений на тебя.",
+  "te": "Arena: the bottle now fully restores health and energy. Added fight history: your last 10 attacks and the last 10 attacks on you."
+ },
+ {
+  "v": "1.26.25",
+  "t": "Арена: на сцене боя теперь виден питомец соперника, если он у него есть.",
+  "te": "Arena: your opponent's pet is now shown on the fight stage, if they have one."
  }
 ]
