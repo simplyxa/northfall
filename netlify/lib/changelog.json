@@ -645,5 +645,10 @@
   "v": "1.26.2",
   "t": "Клан: сервер теперь не даёт улучшать постройку выше уровня клана (раньше это проверял только экран).",
   "te": "Clan: the server no longer lets a building be upgraded above the clan level (previously only the screen checked this)."
+ },
+ {
+  "v": "1.26.3",
+  "t": "Профессия теперь на главной, в разделе «Магазин» рядом с мастерами: видно выбранную профессию и готовность работы.",
+  "te": "Profession is now on the main menu, in the Shop section next to the masters: it shows your chosen profession and whether a job is ready."
  }
 ]
