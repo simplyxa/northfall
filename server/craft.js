@@ -107,6 +107,30 @@ function start(s, o, now, fail, speed) {
   return { q: c.q };
 }
 
+// стоимость работы в очереди: считается по рецепту, поэтому годится и для задач, начатых до этой версии
+function costOf(q) {
+  const a = q.a || {};
+  if (q.r === 'forge') { const r = FORGE[a.tr]; if (!r) return {}; const c = { iron: r.iron, ingot: r.ingot, gold: r.gold }; if (r.hide) c.hide = r.hide; if (r.bone) c.bone = r.bone; return c; }
+  if (q.r === 'smelt') { const r = SMELT[a.n]; return r ? { ore: r.ore, iron: r.iron } : {}; }
+  if (q.r === 'brew') { const r = BREW[a.n]; return r ? { herb: r.herb, gold: r.gold } : {}; }
+  if (q.r === 'elix') return { herb: ELIX.herb, bone: ELIX.bone, gold: ELIX.gold };
+  if (q.r === 'rune') { const g = parseInt(String(a.k || '').slice(-1), 10), r = RUNEC[g]; return r ? { dust: r.dust, bone: r.bone } : {}; }
+  return {};
+}
+
+// отмена работы: всё потраченное возвращается, дневной лимит тоже
+function cancel(s, now, fail) {
+  const c = init(s);
+  if (!c.q) throw fail(409, 'Нечего отменять');
+  const q = c.q, cost = costOf(q);
+  for (const [k, v] of Object.entries(cost)) {
+    if (k === 'gold') s.gold = (+s.gold || 0) + v; else if (k === 'iron' || k === 'dust') s[k] = (s[k] | 0) + v; else s.mat[k] = (s.mat[k] | 0) + v;
+  }
+  if (c.d === Math.floor((+q.t0 || 0) / DAY) && c.n > 0) c.n--;
+  c.q = null;
+  return { back: cost };
+}
+
 function rollRar(pl, tr) {
   const x = Math.random(), legend = tr >= 2 ? .01 * pl : 0, epic = .08 + .03 * pl, rare = .35 + .04 * pl;
   return x < legend ? 3 : x < legend + epic ? 2 : x < legend + epic + rare ? 1 : 0;
@@ -150,4 +174,4 @@ function clampMats(prev, s, dt) {
 // cf меняет только сервер
 function lockCf(prev, s) { if (prev && prev.cf) s.cf = prev.cf; else delete s.cf; }
 
-module.exports = { PROF_AU, owns, SMELT, ELIX, MATS, PROFS, DAILY, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
+module.exports = { cancel, costOf, PROF_AU, owns, SMELT, ELIX, MATS, PROFS, DAILY, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };

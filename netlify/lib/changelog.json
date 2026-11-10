@@ -700,5 +700,15 @@
   "v": "1.26.13",
   "t": "Баннеры профессий: у кузнеца, алхимика и рунника своя картинка на странице профессий и в самой мастерской.",
   "te": "Profession banners: the smith, alchemist and runecarver each have their own picture on the professions page and in the workshop."
+ },
+ {
+  "v": "1.26.14",
+  "t": "Профессии: описание и кнопка «Войти» / «Купить» теперь прямо на баннере.",
+  "te": "Professions: the description and the Enter / Buy button are now on the banner itself."
+ },
+ {
+  "v": "1.26.15",
+  "t": "Ремесло: работу можно отменить, все ресурсы, серебро и дневной лимит крафта возвращаются.",
+  "te": "Crafting: you can cancel a job; all materials, silver and the daily craft limit are refunded."
  }
 ]

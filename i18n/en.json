@@ -2855,5 +2855,9 @@
   "<div class=\"panel\"><button class=\"b alt\" data-cr=\"back\">К профессиям</button></div>": "<div class=\"panel\"><button class=\"b alt\" data-cr=\"back\">To professions</button></div>",
   "Профессия куплена.": "Profession bought.",
   "Профессии": "Professions",
-  " ур.</span></div></div>": " lvl.</span></div></div>"
+  " ур.</span></div></div>": " lvl.</span></div></div>",
+  ">Забрать</button><button class=\"b alt\" data-cr=\"cancel\" ": ">Collect</button><button class=\"b alt\" data-cr=\"cancel\" ",
+  "Точно отменить?": "Really cancel?",
+  "Отменить": "Cancel",
+  "Работа отменена, ресурсы вернулись.": "Job cancelled, resources refunded."
 }
