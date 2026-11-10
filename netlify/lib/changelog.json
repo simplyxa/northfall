@@ -735,5 +735,10 @@
   "v": "1.26.20",
   "t": "Профессии открываются с 20 уровня. «Путь новичка» продлён до 20 уровня: теперь 20 шагов (арена, закалка, питомец, клан, рынок, материалы и профессии). Добавлено 10 новых достижений и титулов: ремесло, плавка, наборы, эликсиры, камни, рынок, клан.",
   "te": "Professions unlock at level 20. The Newcomer's Path now runs up to level 20 with 20 steps (arena, upgrading, pet, clan, market, materials and professions). Added 10 new achievements and titles: crafting, smelting, sets, elixirs, stones, market, clan."
+ },
+ {
+  "v": "1.26.21",
+  "t": "Ремесло: вместо двух кнопок одна: пока работа идёт, «Отменить», когда готова, «Забрать».",
+  "te": "Crafting: one button instead of two: Cancel while the job is running, Collect once it's done."
  }
 ]
