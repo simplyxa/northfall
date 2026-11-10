@@ -630,5 +630,10 @@
   "v": "1.25.0",
   "t": "Рынок: поиск и фильтры (слот, набор, редкость, тип), сортировка по цене, имя мастера на вещах и в лотах, продажа материалов, бутылок, эликсиров, железа и пыли стопками.",
   "te": "Market: search and filters (slot, set, rarity, type), price sorting, the maker's name on items and lots, and selling materials, bottles, elixirs, iron and dust in stacks."
+ },
+ {
+  "v": "1.26.0",
+  "t": "Клановая кузня теперь сокращает время крафта на 6% за уровень (до −30%). На доске клановых заданий новое задание «Мастер-ремесленник»: закончить 2 крафта.",
+  "te": "The clan forge now cuts crafting time by 6% per level (up to −30%). New clan board quest: Master Craftsman, finish 2 crafts."
  }
 ]

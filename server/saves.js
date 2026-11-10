@@ -228,7 +228,8 @@ module.exports = function saves(admin) {
         const sn = await tx.get(ref); prev = sn.exists ? sn.data() : null;
         let mref, ms, wref, ws, dref, ds, tref, ts;
         if (k === 'mkcancel' || k === 'mkbuy') { mref = db.collection('market').doc(String(o.id || '')); ms = await tx.get(mref); }
-        let bwref, bws, swref, sws;
+        let bwref, bws, swref, sws, forgeSp = 0;
+        if (k === 'cstart' && s.clan) { const cs = await tx.get(db.collection('clans').doc(String(s.clan))); if (cs.exists) forgeSp = Math.min(.3, .06 * ((((cs.data().b || {}).frg) | 0))); }
         if (k === 'mkstack') { wref = db.collection('wallet').doc(uid); ws = await tx.get(wref); }
         if (k === 'mkbuy') {
           bwref = db.collection('wallet').doc(uid); bws = await tx.get(bwref);
@@ -306,13 +307,14 @@ module.exports = function saves(admin) {
           s.dep = s.dep || {}; s.dep[s.clan] = { g: nd.gold, i: nd.iron };
           out = { kind, n, dep: s.dep[s.clan] };
         } else if (k === 'cprof') { out = CRAFT.pick(s, o, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
-        } else if (k === 'cstart') { out = CRAFT.start(s, o, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf; out.mat = s.mat; out.gold = s.gold; out.iron = s.iron | 0; out.dust = s.dust | 0;
+        } else if (k === 'cstart') { out = CRAFT.start(s, o, Date.now(), (c, m) => new Fail(c, m), forgeSp); out.cf = s.cf; out.mat = s.mat; out.gold = s.gold; out.iron = s.iron | 0; out.dust = s.dust | 0;
         } else if (k === 'cclaim') { out = CRAFT.claim(s, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
         } else throw new Fail(400, 'Неизвестное действие');
         tx.set(ref, s);
       });
       if (g && g.stale) return J(res, 409, { stale: 1 });
       after(db, uid, prev, s, g);
+      if (k === 'cclaim') require('./cq.js').add(db, uid, 'craft', 1);   // клановое задание «Мастер-ремесленник»
       if (k === 'donate' && out && out.kind === 'g') require('./cq.js').add(db, uid, 'dep', out.n);   // клановое задание «Щедрая рука»
       return J(res, 200, { ok: 1, res: out, fix: g && g.fix || undefined });
     } catch (e) { if (e instanceof Fail) return J(res, e.code, { error: e.message }); console.error('op', e); return J(res, 500, { error: 'db' }); }

@@ -50,7 +50,7 @@ function init(s) {
 }
 
 // returns {need:{...}} or throws via fail(code,msg)
-function start(s, o, now, fail) {
+function start(s, o, now, fail, speed) {
   const c = init(s), day = Math.floor(now / DAY);
   if (!c.p) throw fail(400, 'Сначала выбери профессию');
   if (c.q) throw fail(409, 'Мастерская занята');
@@ -88,7 +88,8 @@ function start(s, o, now, fail) {
     if (k === 'gold') s.gold = (+s.gold || 0) - v; else if (k === 'iron' || k === 'dust') s[k] = (s[k] | 0) - v; else s.mat[k] -= v;
   }
   c.n++;
-  c.q = { r, a, t0: now, te: now + rec.min * 60000, xp: rec.xp };
+  const sp = Math.max(0, Math.min(.3, +speed || 0));   // клановая кузня: до −30% времени
+  c.q = { r, a, t0: now, te: now + Math.round(rec.min * 60000 * (1 - sp)), xp: rec.xp };
   return { q: c.q };
 }
 

@@ -2815,5 +2815,9 @@
   " выставлены на рынок за ": " listed on the market for ",
   " сняты с продажи и вернулись к тебе.": " withdrawn from sale and returned to you.",
   "Продано: ": "Sold: ",
-  " игроку ": " to "
+  " игроку ": " to ",
+  "Клановая кузня: время крафта −": "Clan forge: crafting time −",
+  "Мастер-ремесленник": "Master Craftsman",
+  "Закончить {t} крафта": "Finish {t} crafts",
+  "+10% железа при разборе и −6% времени крафта за уровень": "+10% iron on dismantling and −6% crafting time per level"
 }
