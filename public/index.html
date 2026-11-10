@@ -1947,6 +1947,7 @@ function matDrop(kind,H){const D=MATD[kind];if(!D||!S)return;S.mat=S.mat||{};for
 const PRN={smith:['Кузнец','Куёт оружие и броню по наборам: чем выше уровень профессии, тем чаще выходят редкие и эпические вещи.'],alch:['Алхимик','Варит бутылки партиями: 10, 30 или 60 штук за раз.'],rune:['Рунник','Вытачивает камни для гнёзд: от обычных до легендарных.']};
 let CRSW=false;
 let CRS={slot:'w',tr:0,g:0,t:'str',n:10},CRMSG='',CRBUSY=false;
+const crSp=()=>Math.min(.3,.06*cb('frg'));
 const crHm=ms=>{const m=Math.max(1,Math.ceil(ms/60000));return m>=60?Math.floor(m/60)+' ч '+(m%60?(m%60)+' мин':''):m+' мин'};
 function craftView(){
  const cf=S.cf||{},pr=cf.p,q=cf.q,now=Date.now(),pl=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,cf.x|0)/25)));
@@ -1955,7 +1956,7 @@ function craftView(){
  let h=`<div class="panel"><h3>Ремесло</h3><p style="margin:0">${mats}<br>Материалы падают с обычной охоты: шкуры и травы с опушки, руда и кости в глубине леса и на высокой сложности.</p>${CRMSG?`<p style="margin:6px 0 0;color:var(--gold)">${esc(CRMSG)}</p>`:''}</div>`;
  if(!pr||CRSW){return h+`<div class="panel"><h3>${CRSW?'Новая профессия':'Выбери профессию'}</h3><p style="margin:0 0 6px">У героя может быть только одна. Потом её можно сменить за 5000 серебра, но опыт профессии сбросится.</p>`+['smith','alch','rune'].map(k=>`<div class="row"><div><b>${PRN[k][0]}</b><small>${PRN[k][1]}</small></div><button class="b" data-cr="pick:${k}" ${CRBUSY?'disabled':''}>Выбрать</button></div>`).join('')+`</div>`}
  const nx=25*pl*pl;
- h+=`<div class="panel"><h3>${PRN[pr][0]} · ${pl} ур.</h3><p style="margin:0">${pl<10?`Опыт: ${(cf.x|0)}/${nx}`:'Максимальный уровень'} · крафтов сегодня: ${used}/12</p></div>`;
+ h+=`<div class="panel"><h3>${PRN[pr][0]} · ${pl} ур.</h3><p style="margin:0">${crSp()>0?`Клановая кузня: время крафта −${Math.round(crSp()*100)}%.<br>`:''}${pl<10?`Опыт: ${(cf.x|0)}/${nx}`:'Максимальный уровень'} · крафтов сегодня: ${used}/12</p></div>`;
  if(q){const left=q.te-now,done=left<=0,pc=Math.max(0,Math.min(100,Math.round((now-q.t0)/(q.te-q.t0)*100)));
   const nm=q.r==='forge'?NAMES[q.a.slot][q.a.tr]:q.r==='elix'?ELXD[q.a.t][0]+' ×2':q.r==='brew'?`Бутылки ×${q.a.n}`:rName(q.a.k);
   h+=`<div class="panel"><h3>В работе</h3><div class="row"><div>${esc(nm)}<small>${done?'Готово':'Осталось '+crHm(left)}</small><div style="height:6px;background:#0003;border-radius:3px;margin-top:6px"><i style="display:block;height:6px;width:${pc}%;background:var(--gold);border-radius:3px"></i></div></div><button class="b" data-cr="claim" ${done&&!CRBUSY?'':'disabled'}>Забрать</button></div></div>`}
@@ -1965,12 +1966,12 @@ function craftView(){
  if(pr==='smith'){
   const FT=[[0,1,40,3,2,0,100,10],[1,2,90,5,3,0,300,25],[2,3,170,8,5,0,800,60],[3,5,300,12,8,0,2000,120],[4,7,500,18,12,0,5000,240],[6,2,70,4,6,2,200,20],[7,5,260,12,0,8,1500,100],[8,7,450,14,10,10,4000,200]];
   h+=`<div class="panel"><h3>Ковка</h3><div class="htab" style="grid-template-columns:repeat(5,1fr);margin-bottom:6px">${Object.keys(SL).map(k=>`<button class="${CRS.slot===k?'on':''}" data-cr="slot:${k}"><small>${SL[k]}</small></button>`).join('')}</div>`+
-  FT.map(([i,pq,ir,ore,hd,bn,gd,mn])=>{const c={iron:ir,ore,gold:gd};if(hd)c.hide=hd;if(bn)c.bone=bn;const lvok=(S.lvl|0)>=SETLV[i];return`<div class="row"><div style="display:flex;gap:10px;align-items:center">${itemIcon({slot:CRS.slot,tr:i,rar:1,lv:SETLV[i],name:NAMES[CRS.slot][i],b:{},up:0},44,1)}<div>${esc(NAMES[CRS.slot][i])}<small>${SETN[i]}${i>=6?' · только крафт':''} · ${crHm(mn*60000)} · нужен ${SETLV[i]} ур. героя<br>${cst(c)}</small></div></div><button class="b" data-cr="forge:${i}" ${pl>=pq&&lvok&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':!lvok?'С '+SETLV[i]+' ур.':'Ковать'}</button></div>`}).join('')+`</div>`}
+  FT.map(([i,pq,ir,ore,hd,bn,gd,mn])=>{const c={iron:ir,ore,gold:gd};if(hd)c.hide=hd;if(bn)c.bone=bn;const lvok=(S.lvl|0)>=SETLV[i];return`<div class="row"><div style="display:flex;gap:10px;align-items:center">${itemIcon({slot:CRS.slot,tr:i,rar:1,lv:SETLV[i],name:NAMES[CRS.slot][i],b:{},up:0},44,1)}<div>${esc(NAMES[CRS.slot][i])}<small>${SETN[i]}${i>=6?' · только крафт':''} · ${crHm(mn*60000*(1-crSp()))} · нужен ${SETLV[i]} ур. героя<br>${cst(c)}</small></div></div><button class="b" data-cr="forge:${i}" ${pl>=pq&&lvok&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':!lvok?'С '+SETLV[i]+' ур.':'Ковать'}</button></div>`}).join('')+`</div>`}
  if(pr==='alch'){
-  h+=`<div class="panel"><h3>Варка бутылок</h3>`+[[10,1,3,40,10],[30,2,8,110,30],[60,4,14,200,60]].map(([n,pq,hb,g,m])=>`<div class="row"><div>Бутылки ×${n}<small>${crHm(m*60000)} · ${cst({herb:hb,gold:g})}</small></div><button class="b" data-cr="brew:${n}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Варить'}</button></div>`).join('')+`</div><div class="panel"><h3>Эликсиры</h3>`+Object.keys(ELXD).map(k=>`<div class="row"><div>${ELXD[k][0]} ×2<small>+${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут · ${crHm(20*60000)} · ${cst({herb:6,bone:3,gold:150})}</small></div><button class="b" data-cr="elix:${k}" ${pl>=3&&!q&&!CRBUSY?'':'disabled'}>${pl<3?'С 3 ур. проф.':'Варить'}</button></div>`).join('')+`</div>`}
+  h+=`<div class="panel"><h3>Варка бутылок</h3>`+[[10,1,3,40,10],[30,2,8,110,30],[60,4,14,200,60]].map(([n,pq,hb,g,m])=>`<div class="row"><div>Бутылки ×${n}<small>${crHm(m*60000*(1-crSp()))} · ${cst({herb:hb,gold:g})}</small></div><button class="b" data-cr="brew:${n}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Варить'}</button></div>`).join('')+`</div><div class="panel"><h3>Эликсиры</h3>`+Object.keys(ELXD).map(k=>`<div class="row"><div>${ELXD[k][0]} ×2<small>+${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут · ${crHm(20*60000*(1-crSp()))} · ${cst({herb:6,bone:3,gold:150})}</small></div><button class="b" data-cr="elix:${k}" ${pl>=3&&!q&&!CRBUSY?'':'disabled'}>${pl<3?'С 3 ур. проф.':'Варить'}</button></div>`).join('')+`</div>`}
  if(pr==='rune'){
   h+=`<div class="panel"><h3>Камни</h3><div class="htab" style="grid-template-columns:repeat(5,1fr);margin-bottom:6px">${STO.map(k=>`<button class="${CRS.t===k?'on':''}" data-cr="rt:${k}"><small>${RUNE[k][0]}</small></button>`).join('')}</div>`+
-  [[1,30,1,10],[2,80,2,30],[4,200,4,60],[6,500,7,120],[8,1200,12,240]].map(([pq,d,b,m],g)=>`<div class="row"><div>${esc(rName(CRS.t+g))}<small>${crHm(m*60000)} · ${cst({dust:d,bone:b})}</small></div><button class="b" data-cr="rune:${g}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Вытачивать'}</button></div>`).join('')+`</div>`}
+  [[1,30,1,10],[2,80,2,30],[4,200,4,60],[6,500,7,120],[8,1200,12,240]].map(([pq,d,b,m],g)=>`<div class="row"><div>${esc(rName(CRS.t+g))}<small>${crHm(m*60000*(1-crSp()))} · ${cst({dust:d,bone:b})}</small></div><button class="b" data-cr="rune:${g}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'С '+pq+' ур. проф.':'Вытачивать'}</button></div>`).join('')+`</div>`}
  h+=`<div class="panel"><button class="b alt" data-cr="swap" ${q||CRBUSY?'disabled':''}>Сменить профессию</button></div>`;return h}
 async function crAct(a){
  if(CRBUSY)return;const [k,v]=a.split(':');
@@ -2333,7 +2334,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.25.0';
+const GVER='1.26.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2612,6 +2613,7 @@ const CQD={
  dun:{n:'Покоритель подземелья',d:'Пройти клановое подземелье {t} раза',t:()=>2,x:600,g:0,i:10,mg:300,mi:5},
  boss:{n:'Охотник на босса',d:'Нанести мировому боссу {t} урона',t:()=>20000,x:600,g:200,i:0,mg:500,mi:0},
  gift:{n:'Щедрая рука',d:'Внести в казну {t} серебра',t:()=>1000,x:300,g:0,i:0,mg:100,mi:0},
+ craft:{n:'Мастер-ремесленник',d:'Закончить {t} крафта',t:()=>2,x:400,g:150,i:0,mg:300,mi:0},
  pet:{n:'Верный друг',d:'Убить {t} монстров с активным питомцем',t:()=>80,x:300,g:0,i:0,mg:250,mi:0}};
 const CQDAY=864e5,cqF=L=>.5+.5*L,
  cqSt=(q,now)=>!q?'free':q.done?(now<(+q.cd||0)?'done':'free'):(q.u&&now<(+q.t||0)+CQDAY?'on':'free'),
@@ -2694,7 +2696,7 @@ function clanView(){
  return`<div class="panel"><h3>Создать клан (100 сер.)</h3><input id="cn" maxlength="20" placeholder="Название клана" aria-label="Название клана"><button class="b" data-a="mkclan" ${S.gold<100?'disabled':''}>Основать клан</button></div>
  <div class="panel"><h3>Найти клан</h3><input id="cfq" maxlength="20" placeholder="Название клана" aria-label="Название клана" value="${esc(CF.q)}"><div class="cfl">${[['seats','Есть места'],['open','Вход свободный'],['act','Активные']].map(x=>`<label><input type="checkbox" data-cf="${x[0]}" ${CF[x[0]]?'checked':''}> ${x[1]}</label>`).join('')}</div><div class="cfl"><label>Уровень от <select data-cf="minL">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${CF.minL===n?'selected':''}>${n}</option>`).join('')}</select></label><label>Сортировка <select data-cf="sort">${[['rat','по рейтингу'],['lvl','по уровню'],['act','по активности'],['seats','по числу мест']].map(x=>`<option value="${x[0]}" ${CF.sort===x[0]?'selected':''}>${x[1]}</option>`).join('')}</select></label></div><div id="clst">${clanListHtml()}</div></div>`;
 }
-const BLD={bar:['Казармы','+3% к атаке за уровень'],wall:['Крепостная стена','+1 к защите за уровень'],inf:['Лазарет','+1 к регенерации за уровень'],mkt:['Торговый двор','+4% серебра с боёв за уровень'],frg:['Клановая кузня','+10% железа при разборе за уровень']};
+const BLD={bar:['Казармы','+3% к атаке за уровень'],wall:['Крепостная стена','+1 к защите за уровень'],inf:['Лазарет','+1 к регенерации за уровень'],mkt:['Торговый двор','+4% серебра с боёв за уровень'],frg:['Клановая кузня','+10% железа при разборе и −6% времени крафта за уровень']};
 const bcost=n=>({g:150*(n+1)*(n+1),i:20*(n+1)});
 const kf=n=>{n=Math.round(n||0);const a=Math.abs(n),u=[[1e12,'T'],[1e9,'G'],[1e6,'м'],[1e3,'к']];for(const [v,l] of u)if(a>=v){const x=n/v;return(x>=100?Math.floor(x):Math.floor(x*10)/10).toString().replace('.',',')+l}return String(n)};
 const CMAXL=10,CXK=10,cxOf=d=>Math.max(1,Math.round(d/CXK)),cNeed=L=>Math.round(22500*Math.pow(L,1.7)),cLv=c=>{let L=1,x=Math.max(0,(c&&c.xp)|0);while(L<CMAXL&&x>=cNeed(L)){x-=cNeed(L);L++}return{L,cur:x,need:L<CMAXL?cNeed(L):0}},cCap=c=>5+3*(cLv(c).L-1);
@@ -2935,7 +2937,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.25.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
