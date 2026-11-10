@@ -317,6 +317,7 @@ module.exports = function saves(admin) {
           }
           out.cf = s.cf;
         } else if (k === 'cstart') { out = CRAFT.start(s, o, Date.now(), (c, m) => new Fail(c, m), forgeSp); out.cf = s.cf; out.mat = s.mat; out.gold = s.gold; out.iron = s.iron | 0; out.dust = s.dust | 0;
+        } else if (k === 'ccancel') { out = CRAFT.cancel(s, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf; out.mat = s.mat; out.gold = s.gold; out.iron = s.iron | 0; out.dust = s.dust | 0;
         } else if (k === 'cclaim') { out = CRAFT.claim(s, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
         } else throw new Fail(400, 'Неизвестное действие');
         tx.set(ref, s);
