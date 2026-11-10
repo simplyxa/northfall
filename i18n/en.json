@@ -2643,5 +2643,10 @@
   "Не удалось удалить сообщение.": "Could not delete the message.",
   "</span>. Бонус клана: +5% к добыче.</p></div>": "</span>. Clan bonus: +5% loot.</p></div>",
   "<div class=\"panel\"><h3>Состав: ": "<div class=\"panel\"><h3>Members: ",
-  "Состав": "Members"
+  "Состав": "Members",
+  "<div class=\"panel\" style=\"padding:8px 12px\"><button class=\"lnk\" data-ct=\"main\" style=\"padding:0\">‹ Клан</button> <b style=\"margin-left:8px\">": "<div class=\"panel\" style=\"padding:8px 12px\"><button class=\"lnk\" data-ct=\"main\" style=\"padding:0\">‹ Clan</button> <b style=\"margin-left:8px\">",
+  " участников": " members",
+  "задание дня выполнено": "daily quest complete",
+  "задание дня: ": "daily quest: ",
+  "темы и обсуждения клана": "clan topics and discussions"
 }
