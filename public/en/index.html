@@ -1010,13 +1010,14 @@ function head(){
 </div>`;
 }
 const ARSTBG='/img/e0db129fedb007.webp';   // фон сцены арены (пока нет своего рисунка — берём фон охоты)
-function arCtl(){const L=bleft();
- return`<button class="st-flee x" data-a="flee" aria-label="Surrender" title="Surrender"><img src="${HCI.flee}" alt=""></button><div class="st-ui"><button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${Math.round(fight.ch*100)}" ${fight.ch<.2?'disabled':''} aria-label="Strike"><img src="${HCI.fist}" alt=""></button>${skRound()}<button class="sq" id="bg" data-a="guard" style="left:12px;bottom:92px" title="Block" aria-label="Block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></button><button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Bottle" title="Bottle" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
+const arBl=()=>Math.max(0,((fight&&fight.pcd)|0)-((fight&&fight.clk)|0));   // перезарядка бутылки идёт по часам боя на сервере
+function arCtl(){const L=arBl();
+ return`<button class="st-flee x" data-a="flee" aria-label="Surrender" title="Surrender"><img src="${HCI.flee}" alt=""></button><div class="st-ui"><button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${Math.round(fight.ch*100)}" ${fight.ch<.2?'disabled':''} aria-label="Strike"><img src="${HCI.fist}" alt=""></button>${skRound()}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Bottle" title="Bottle" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 function apvpView(){
  const e=fight.e,fig=HEROFIG[S.cls],efig=HEROFIG[e.cls]||HEROFIG.berserk,pa=petA();queueMicrotask(paintPvpFight);
  return`<div class="panel hpn" id="fightpanel" data-ra-root><h3>Arena · ${esc(e.name)} · lv. ${e.lv}</h3><div class="stage" style="--sbg:url(${ARSTBG||STBG})"><div class="st-w">
  <div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i id="ahb" style="width:${Math.max(0,S.hp/maxHp()*100)}%;background:var(--moss)"></i></span><small id="ahbt">${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
- <div class="st-hud" style="left:auto;right:56px;text-align:right"><b>${esc(e.name)}</b><span class="st-bar"><i id="aeb" style="width:${Math.max(0,e.hp/e.max*100)}%"></i></span><span class="st-atk"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aebt">${e.hp}/${e.max}</small></div>
+ <div class="st-hud" style="left:auto;right:56px;text-align:right"><b>${esc(e.name)}</b><span class="st-bar"><i id="aeb" style="width:${Math.max(0,e.hp/e.max*100)}%"></i></span><span class="st-atk"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aebt">${e.hp}/${e.max}</small><small id="aestn" ${e.stun>fight.clk?'':'hidden'}>💫 trapped</small></div>
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
  <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div></div>${arCtl()}</div></div>`;
 }
@@ -1043,7 +1044,9 @@ function apvpDestroy(){if(APRAF){cancelAnimationFrame(APRAF);APRAF=0}APST=null}
 const arClamp=v=>Math.max(0,Math.min(1,+v||0));
 // «живые» полоски: заряд удара и атаки врага плавно растёт между сообщениями сервера
 function arFrame(ts){APRAF=0;const f=fight;if(!f||!f.pvp||!APST||!document.body.contains(APST.root))return;
- const el=Math.max(0,Math.min(5000,ts-APST.t))/1000,pc=arClamp(APST.ch+el/5),ec=arClamp(APST.ech+el/5),R=APST.root;
+ const el=Math.max(0,Math.min(5000,ts-APST.t))/1000,pc=arClamp(APST.ch+el/5),R=APST.root;
+ // пока враг в капкане, его заряд стоит на месте (так же считает сервер)
+ const ec=APST.stun>APST.clk+el*1000?arClamp(APST.ech):arClamp(APST.ech+el/5);
  const bs=R.querySelector('#bs');if(bs){const p=Math.round(pc*100);if(p!==APST.lp){APST.lp=p;bs.style.setProperty('--p',p);bs.disabled=pc<.2;bs.classList.toggle('full',pc>=1)}}
  const ac=R.querySelector('#aec');if(ac)ac.style.width=Math.round(ec*100)+'%';
  APRAF=requestAnimationFrame(arFrame)}
@@ -1063,9 +1066,9 @@ function paintPvpFight(){
  fight._ph=S.hp;fight._peh=E.hp;
  // кнопки
  skOf().forEach((k,i)=>set('#sk'+i,x=>{const st=skSt(k[0]),l=g('#skl'+i);if(l)l.textContent=st.txt;x.style.setProperty('--p',st.p);x.classList.toggle('act',st.act);x.classList.toggle('cd',!st.act&&st.L>0);x.disabled=st.L>0}));
- set('#bg',x=>{const act=now<fight.guardUntil,cd=now<fight.gcd;x.disabled=cd;x.classList.toggle('on',act);x.title=act?'Shield '+Math.ceil((fight.guardUntil-now)/1000)+' s':cd?'Block '+Math.ceil((fight.gcd-now)/1000)+' s':'Block'});
- set('#bpb',x=>{const L=bleft(),n=x.querySelector('.bn'),c=x.querySelector('.skc');if(n)n.textContent=S.pt.b;if(c)c.textContent=L>0?Math.ceil(L/1000):'';x.disabled=S.pt.b<1||L>0;x.style.setProperty('--p',Math.round(100-L/BCD*100))});
- APST={root,t:performance.now(),ch:arClamp(fight.ch),ech:arClamp(fight.ech),lp:-1};if(!APRAF)APRAF=requestAnimationFrame(arFrame);
+ set('#aestn',x=>{x.hidden=!(E.stun>now)});
+ set('#bpb',x=>{const L=arBl(),n=x.querySelector('.bn'),c=x.querySelector('.skc');if(n)n.textContent=S.pt.b;if(c)c.textContent=L>0?Math.ceil(L/1000):'';x.disabled=S.pt.b<1||L>0;x.style.setProperty('--p',Math.round(100-L/BCD*100))});
+ APST={root,t:performance.now(),ch:arClamp(fight.ch),ech:arClamp(fight.ech),clk:now,stun:E.stun|0,lp:-1};if(!APRAF)APRAF=requestAnimationFrame(arFrame);
  if(APLOGVIEW!==APLOG){const l=document.getElementById('log');if(l)l.innerHTML=logs.map(x=>'<p class="'+x[1]+'">'+esc(x[0])+'</p>').join('')||'<p>Silence.</p>';APLOGVIEW=APLOG}
 }
 function paintFight(){
@@ -2390,7 +2393,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.22';
+const GVER='1.26.23';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2994,7 +2997,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.22</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.23</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

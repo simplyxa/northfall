@@ -20,6 +20,7 @@ const TICK = 250;        // тик боя, мс
 const CH_T = 5;          // время заряда удара, с
 const E_T = 5;           // период атаки врага, с
 const FIGHT_T = 45000;   // максимум боя, мс
+const BCD = 90000;       // перезарядка бутылки, мс (как на охоте)
 const SKQ = { rage: [2, 2.2, 2.4, 2.7, 3], roar: [40, 45, 50, 55, 60], shot: [1.2, 1.4, 1.6, 1.85, 2.2], trap: [4, 4.5, 5, 6, 7], totem: [25, 30, 35, 42, 50], skin: [6, 7, 8, 9, 10] };
 const SKCD = [1, .95, .9, .85, .8];
 const SKL = { berserk: [['rage', 20], ['roar', 25]], hunter: [['shot', 15], ['trap', 20]], shaman: [['totem', 25], ['skin', 30]] };
@@ -52,9 +53,9 @@ module.exports = function apvp(getDb) {
     const withLog = R.lsent !== R.log.length || R.st !== 'on';
     R.lsent = R.log.length;
     return {
-      pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: R.ech ? clamp((R.clk - (R.ech - E_T * 1000)) / (E_T * 1000), 0, 1) : 0,
+      pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: clamp(R.ech, 0, 1),
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
-      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls },
+      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, stun: R.e.stun | 0 },
       s: R.s, log: withLog ? R.log : undefined, sk: R.sk, res: R.res || null
     };
   }
@@ -117,11 +118,7 @@ module.exports = function apvp(getDb) {
     const a = String(m.a || '');
     const now = R.clk;
     let msg = null;
-    if (a === 'guard') {
-      if (now < R.gcd) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
-      R.guardUntil = now + 3000; R.gcd = now + 8000;
-      msg = 'Ты поднимаешь щит на 3 секунды.';
-    } else if (a === 'strike') {
+    if (a === 'strike') {
       if (R.ch < .2) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
       const k = R.ch; R.ch = 0; R.s.r++;
       let mul = 1;
@@ -133,8 +130,8 @@ module.exports = function apvp(getDb) {
       msg = `Ты наносишь ${d} урона${crit ? ' (крит!)' : ''}.`;
     } else if (a === 'pot') {
       const n = R.pots.b | 0;
-      if (n < 1) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
-      R.pots.b = n - 1; R.s.pots++;
+      if (n < 1 || now < R.pcd) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });   // бутылку нельзя пить одну за другой
+      R.pots.b = n - 1; R.s.pots++; R.pcd = now + BCD;
       const h = Math.round(R.mhp * .4);
       R.hp = Math.min(R.mhp, R.hp + h);
       msg = `Бутылка: +${h} здоровья.`;
@@ -176,10 +173,8 @@ module.exports = function apvp(getDb) {
 
   // ---- ход врага ----
   function enemyTurn(R) {
-    if (R.e.stun > R.clk) return;
     let d = Math.max(1, Math.round(rnd(.8, 1.2) * R.e.atk - R.def * .6));
     if (R.e.crit && Math.random() * 100 < R.e.crit) { d = Math.round(d * 1.6); R.s.ecrit++; }
-    if (R.clk < R.guardUntil) d = Math.max(1, Math.round(d * .4));
     if (R.clk < R.skin) d = Math.max(1, Math.round(d * (1 - 60 / 100)));
     if (R.clk < R.weak) d = Math.max(1, Math.round(d * R.weakv));
     R.hp = Math.max(0, R.hp - d); R.s.taken += d;
@@ -235,7 +230,9 @@ module.exports = function apvp(getDb) {
     const now = Date.now();
     R.clk = now - R.t0;
     R.ch = Math.min(1, R.ch + TICK / 1000 / CH_T);
-    if (R.clk >= R.ech) { R.ech += E_T * 1000; enemyTurn(R); }
+    // заряд атаки врага не растёт, пока он в капкане (как на охоте)
+    if (!(R.e.stun > R.clk)) R.ech += TICK / 1000 / E_T;
+    if (R.ech >= 1) { R.ech = 0; enemyTurn(R); }
     if (R.hp <= 0) return end(R, 0, c, send);
     if (R.e.hp <= 0) return end(R, 1, c, send);
     if (R.clk >= FIGHT_T) { R.log.push('Время вышло.'); return end(R, R.hp > 0 ? 1 : 0, c, send); }
