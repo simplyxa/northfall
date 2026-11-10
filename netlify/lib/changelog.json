@@ -605,5 +605,10 @@
   "v": "1.20.1",
   "t": "Клан: «Состав», «Задания» и «Форум» теперь отдельным меню на странице клана, как на странице героя",
   "te": "Clan: Members, Quests and Forum are now a separate menu on the clan page, like on the hero page"
+ },
+ {
+  "v": "1.21.0",
+  "t": "Клан: доска общих заданий — любой участник берёт задание сам (до двух сразу), 24 часа на выполнение, после выполнения откат 24 часа; видно, кто занят заданием, и другой игрок взять его не может",
+  "te": "Clan: a shared quest board — any member takes a quest (up to two at a time), 24 hours to finish it, then a 24-hour cooldown; you can see who is on a quest and others cannot take it"
  }
 ]

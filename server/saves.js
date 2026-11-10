@@ -258,6 +258,7 @@ module.exports = function saves(admin) {
       });
       if (g && g.stale) return J(res, 409, { stale: 1 });
       after(db, uid, prev, s, g);
+      if (k === 'donate' && out && out.kind === 'g') require('./cq.js').add(db, uid, 'dep', out.n);   // клановое задание «Щедрая рука»
       return J(res, 200, { ok: 1, res: out, fix: g && g.fix || undefined });
     } catch (e) { if (e instanceof Fail) return J(res, e.code, { error: e.message }); console.error('op', e); return J(res, 500, { error: 'db' }); }
   }

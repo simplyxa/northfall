@@ -3,6 +3,7 @@
 // сервер считает здоровье босса, бьёт за наёмников, следит за временем и рассылает состояние всей группе.
 // В Firestore рейд записывается только раз в 30 секунд (на случай перезапуска) и в конце — раньше это были сотни записей.
 'use strict';
+const CQ = require('./cq.js');
 const RN = [['🐻', 'Медведь-шатун'], ['💀', 'Конунг драугров'], ['🪨', 'Горный тролль'], ['🐍', 'Ледяной змей'], ['🔥', 'Сурт Огненный']];
 const RBOTK = 0.18;          // наёмник наносит ~18% атаки в секунду (как в клиенте)
 const PERSIST = 30000, TICK = 1000, CAST = 250;
@@ -56,8 +57,10 @@ module.exports = function raids(getDb) {
     const db = getDb(); if (!db || !r.R) return;
     r.saved = Date.now();
     const ref = db.collection('raids').doc(rid);
+    let winIds = null;   // участники победы — для клановых заданий
     try {
       await db.runTransaction(async tx => {
+        winIds = null;
         const sn = await tx.get(ref); if (!sn.exists) return;
         const D = sn.data(), R = r.R;
         D.hp = Math.min(D.hp, R.hp);
@@ -77,6 +80,7 @@ module.exports = function raids(getDb) {
         // в документ рейда st:'win' и забрать добычу.
         if (R.st === 'win' && !D.awarded) {
           D.awarded = 1;
+          winIds = Object.entries(R.mem).filter(([, x]) => !x.bot).map(([id]) => id);
           const t = R.b | 0;
           const hum = Object.values(R.mem).filter(x => !x.bot).length;
           const mf = hum < 5 ? .7 : 1;
@@ -105,6 +109,7 @@ module.exports = function raids(getDb) {
         for (const [id, x] of Object.entries(D.mem)) if (R.mem[id]) Object.assign(R.mem[id], { dealt: x.dealt, wv: x.wv, bs: x.bs, dead: x.dead });
       });
     } catch (e) { console.error('raid persist', rid, e.message); }
+    if (winIds) for (const id of winIds) CQ.add(db, id, 'raid', 1);
   }
 
   function nextWave(R) {
