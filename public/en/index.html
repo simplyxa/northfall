@@ -1949,19 +1949,20 @@ const MATN={hide:'Hide',bone:'Bone',ore:'Ore',herb:'Herb',ingot:'Ingot'},MATO=['
 const MATD={easy:{hide:.18,herb:.18,bone:.06},mid:{hide:.14,bone:.16,ore:.14,herb:.08},hard:{bone:.18,ore:.2,hide:.12,herb:.08}};
 function matDrop(kind,H){const D=MATD[kind];if(!D||!S)return;S.mat=S.mat||{};for(const k of MATO){if(Math.random()<(D[k]||0)){const n=kind==='hard'&&Math.random()<.3?2:1;S.mat[k]=(S.mat[k]|0)+n;if(H){H.mats=H.mats||{};H.mats[k]=(H.mats[k]|0)+n}}}}
 const PRN={smith:['Blacksmith','Forges weapons and armor by set: the higher the profession level, the more often rare and epic items come out.'],alch:['Alchemist','Brews bottles in batches: 10, 30 or 60 at a time.'],rune:['Runesmith','Carves stones for sockets: from common to legendary.']};
-let CRSW=false;
+let CRV='';
 let CRS={slot:'w',tr:0,g:0,t:'str',n:10},CRMSG='',CRBUSY=false;
-function crMenuSub(){const c=S&&S.cf;if(!c||!c.p)return'choose a trade: blacksmith, alchemist, runesmith';const q=c.q,n=PRN[c.p][0];if(!q)return n;return q.te<=Date.now()?`<b style="color:var(--moss)">${n}: ready, collect</b>`:`${n}: left ${crHm(q.te-Date.now())}`}
+function crMenuSub(){const c=S&&S.cf;if(!c||!c.p)return'three crafts: smith, alchemist, runecarver';const q=c.q,n=PRN[c.p][0];if(!q)return'smith, alchemist, runecarver';return q.te<=Date.now()?`<b style="color:var(--moss)">${n}: ready, collect</b>`:`${n}: left ${crHm(q.te-Date.now())}`}
 const crSp=()=>Math.min(.3,.06*cb('frg'));
 const crHm=ms=>{const m=Math.max(1,Math.ceil(ms/60000));return m>=60?Math.floor(m/60)+' h '+(m%60?(m%60)+' min':''):m+' min'};
 function craftView(){
- const cf=S.cf||{},pr=cf.p,q=cf.q,now=Date.now(),pl=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,cf.x|0)/25)));
+ const cf=S.cf||{},own=Array.isArray(cf.own)?cf.own.slice():[],q=cf.q,now=Date.now();if(cf.p&&!own.includes(cf.p))own.push(cf.p);if(CRV&&!own.includes(CRV))CRV='';const pr=CRV,cx=pr?(pr===cf.p?cf.x|0:(cf.px&&cf.px[pr])|0):0,pl=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,cx)/25)));
  const day=Math.floor(now/86400000),used=cf.d===day?cf.n|0:0;
  const mats=MATO.map(k=>`<span style="white-space:nowrap">${matIc(k,22)} ${MATN[k]}: <b>${(S.mat&&S.mat[k])|0}</b></span>`).join(' · ');
  let h=`<div class="panel"><h3>Crafting</h3><p style="margin:0">${mats}<br>Materials drop on regular hunts: hides and herbs at the forest edge, ore and bones deeper in the forest and on higher difficulty.</p>${CRMSG?`<p style="margin:6px 0 0;color:var(--gold)">${esc(CRMSG)}</p>`:''}</div>`;
- if(!pr||CRSW){return h+`<div class="panel"><h3>${CRSW?'New profession':'Choose a profession'}</h3><p style="margin:0 0 6px">Each profession is bought once for 100 gold and is yours for good. Switching between owned professions is free, and each keeps its own XP. There is one workshop: you can't switch while a craft is in progress.</p>`+['smith','alch','rune'].map(k=>{const own=S.cf&&Array.isArray(S.cf.own)&&S.cf.own.includes(k)||(S.cf&&S.cf.p===k),cur=S.cf&&S.cf.p===k;return`<div class="row"><div><b>${PRN[k][0]}</b><small>${PRN[k][1]}${cur?' · selected':own?' · owned':''}</small></div><button class="b" data-cr="pick:${k}" ${CRBUSY||cur||(S.cf&&S.cf.q)?'disabled':''}>${own?(cur?'Selected':'Select'):'Buy for 100 gold'}</button></div>`}).join('')+`</div>`}
+ if(!pr){const qn=q?(q.r==='forge'?NAMES[q.a.slot][q.a.tr]:q.r==='elix'?ELXD[q.a.t][0]+' ×2':q.r==='brew'?`Bottles ×${q.a.n}`:q.r==='smelt'?`Ingots ×${q.a.n}`:rName(q.a.k)):'';
+  return h+(q?`<div class="panel"><h3>In progress</h3><div class="row"><div>${esc(qn)}<small>${q.te<=now?'Done':'Left: '+crHm(q.te-now)}</small></div><button class="b" data-cr="claim" ${q.te<=now&&!CRBUSY?'':'disabled'}>Collect</button></div></div>`:'')+`<div class="panel"><h3>Professions</h3><p style="margin:0 0 6px">Each profession is bought once for 100 gold and is yours for good. Choose which workshop to enter; each keeps its own XP. Only one workshop works at a time: you can't start a new craft while one is in progress.</p>`+['smith','alch','rune'].map(k=>{const ow=own.includes(k),x=k===cf.p?cf.x|0:(cf.px&&cf.px[k])|0,lv=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,x)/25)));return`<div class="row"><div><b>${PRN[k][0]}</b><small>${PRN[k][1]}${ow?' · '+lv+' lv.':''}</small></div><button class="b" data-cr="${ow?'enter':'buy'}:${k}" ${CRBUSY?'disabled':''}>${ow?'Log in':'Buy for 100 gold'}</button></div>`}).join('')+`</div>`}
  const nx=25*pl*pl;
- h+=`<div class="panel"><h3>${PRN[pr][0]} · ${pl} lvl.</h3><p style="margin:0">${crSp()>0?`Clan forge: crafting time −${Math.round(crSp()*100)}%.<br>`:''}${pl<10?`Experience: ${(cf.x|0)}/${nx}`:'Max level'} · crafts today: ${used}/12</p></div>`;
+ h+=`<div class="panel"><h3>${PRN[pr][0]} · ${pl} lvl.</h3><p style="margin:0">${crSp()>0?`Clan forge: crafting time −${Math.round(crSp()*100)}%.<br>`:''}${pl<10?`Experience: ${cx}/${nx}`:'Max level'} · crafts today: ${used}/12</p></div>`;
  if(q){const left=q.te-now,done=left<=0,pc=Math.max(0,Math.min(100,Math.round((now-q.t0)/(q.te-q.t0)*100)));
   const nm=q.r==='forge'?NAMES[q.a.slot][q.a.tr]:q.r==='elix'?ELXD[q.a.t][0]+' ×2':q.r==='brew'?`Bottles ×${q.a.n}`:q.r==='smelt'?`Ingots ×${q.a.n}`:rName(q.a.k);
   h+=`<div class="panel"><h3>In progress</h3><div class="row"><div>${esc(nm)}<small>${done?'Done':'Left: '+crHm(left)}</small><div style="height:6px;background:#0003;border-radius:3px;margin-top:6px"><i style="display:block;height:6px;width:${pc}%;background:var(--gold);border-radius:3px"></i></div></div><button class="b" data-cr="claim" ${done&&!CRBUSY?'':'disabled'}>Collect</button></div></div>`}
@@ -1978,19 +1979,20 @@ function craftView(){
  if(pr==='rune'){
   h+=`<div class="panel"><h3>Stones</h3><div class="htab" style="grid-template-columns:repeat(5,1fr);margin-bottom:6px">${STO.map(k=>`<button class="${CRS.t===k?'on':''}" data-cr="rt:${k}"><small>${RUNE[k][0]}</small></button>`).join('')}</div>`+
   [[1,30,1,10],[2,80,2,30],[4,200,4,60],[6,500,7,120],[8,1200,12,240]].map(([pq,d,b,m],g)=>`<div class="row"><div>${esc(rName(CRS.t+g))}<small>${crHm(m*60000*(1-crSp()))} · ${cst({dust:d,bone:b})}</small></div><button class="b" data-cr="rune:${g}" ${pl>=pq&&!q&&!CRBUSY?'':'disabled'}>${pl<pq?'From '+pq+' prof. lvl.':'Carve'}</button></div>`).join('')+`</div>`}
- h+=`<div class="panel"><button class="b alt" data-cr="swap" ${q||CRBUSY?'disabled':''}>Change profession</button></div>`;return h}
+ h+=`<div class="panel"><button class="b alt" data-cr="back">To professions</button></div>`;return h}
 async function crAct(a){
  if(CRBUSY)return;const [k,v]=a.split(':');
  if(k==='slot'){CRS.slot=v;return render()}if(k==='rt'){CRS.t=v;return render()}
- if(k==='swap'){CRSW=true;CRMSG='';return render()}
+ if(k==='back'){CRV='';CRMSG='';return render()}
+ if(k==='enter'){CRV=v;CRMSG='';return render()}
  if(!srvCan()){CRMSG='Crafting works only online, connected to the server.';return render()}
  let op;
- if(k==='pick'){if(S.cf&&S.cf.p===v){CRSW=false;return render()}if(!(S.cf&&(S.cf.p===v||(S.cf.own||[]).includes(v)))&&(S.au|0)<100){CRMSG='A profession costs 100 gold.';return render()}op={k:'cprof',p:v}}
- else if(k==='forge')op={k:'cstart',r:'forge',slot:CRS.slot,tr:+v};
- else if(k==='brew')op={k:'cstart',r:'brew',n:+v};
- else if(k==='smelt')op={k:'cstart',r:'smelt',n:+v};
- else if(k==='rune')op={k:'cstart',r:'rune',g:+v,t:CRS.t};
- else if(k==='elix')op={k:'cstart',r:'elix',t:v};
+ if(k==='buy'){if((S.au|0)<100){CRMSG='A profession costs 100 gold.';return render()}op={k:'cprof',p:v}}
+ else if(k==='forge')op={k:'cstart',r:'forge',slot:CRS.slot,tr:+v,p:CRV};
+ else if(k==='brew')op={k:'cstart',r:'brew',n:+v,p:CRV};
+ else if(k==='smelt')op={k:'cstart',r:'smelt',n:+v,p:CRV};
+ else if(k==='rune')op={k:'cstart',r:'rune',g:+v,t:CRS.t,p:CRV};
+ else if(k==='elix')op={k:'cstart',r:'elix',t:v,p:CRV};
  else if(k==='claim'){if(k==='claim'&&S.inv.length>=INV_MAX&&S.cf&&S.cf.q&&S.cf.q.r==='forge'&&(S.chest||[]).length>=CHEST_MAX){CRMSG='Backpack and chest are full.';return render()}op={k:'cclaim'}}
  else return;
  CRBUSY=true;CRMSG='';render();
@@ -1998,7 +2000,7 @@ async function crAct(a){
  if(!r){CRMSG='No connection to the server, try again.';return render()}
  if(r.err){CRMSG=r.err==='stale'?'':r.err;return render()}
  const R=r.res||{};
- if(op.k==='cprof'){if(R.au!=null)S.au=R.au|0;S.cf=R.cf;CRSW=false;CRMSG='Profession chosen.'}
+ if(op.k==='cprof'){if(R.au!=null)S.au=R.au|0;S.cf=R.cf;CRV=v;CRMSG='Profession bought.'}
  else if(op.k==='cstart'){S.cf=R.cf;S.mat=R.mat;S.gold=R.gold;S.iron=R.iron;S.dust=R.dust;CRMSG='Job started.'}
  else{S.cf=R.cf;
   if(R.kind==='item'){const it=gen(R.slot,0,R.rar,null,R.tr);it.pb=0;it.mk=S.name||'';if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}CRMSG=`Done: “${it.name}» (${RAR[R.rar][0]}).`}
@@ -2343,7 +2345,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.10';
+const GVER='1.26.11';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2947,7 +2949,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.10</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.11</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
