@@ -2734,5 +2734,21 @@
   "Готово: бутылки ×": "Done: bottles ×",
   "Готово: ": "Done: ",
   " опыта профессии": " profession XP",
-  " · новый уровень: ": " · new level: "
+  " · новый уровень: ": " · new level: ",
+  "Эликсир силы": "Elixir of Strength",
+  "атаки": "attack",
+  "Эликсир стойкости": "Elixir of Endurance",
+  "Эликсир брони": "Elixir of Armor",
+  "защиты": "defense",
+  "<div class=\"panel\"><h3>Эликсиры</h3><p style=\"margin:0 0 4px\">Действует один эликсир, 30 минут. Новый заменяет прежний. Варит алхимик.": "<div class=\"panel\"><h3>Elixirs</h3><p style=\"margin:0 0 4px\">One elixir works at a time, for 30 minutes. A new one replaces the old. Brewed by the alchemist.",
+  "<br><b style=\"color:var(--moss)\">Сейчас: ": "<br><b style=\"color:var(--moss)\">Active: ",
+  ", осталось ": ", left ",
+  " мин.</b>": " min.</b>",
+  " шт.<small>+": " pcs.<small>+",
+  " на 30 минут</small></div><button class=\"b alt\" data-elx=\"": " for 30 minutes</small></div><button class=\"b alt\" data-elx=\"",
+  ">Выпить</button></div>": ">Drink</button></div>",
+  " на 30 минут.": " for 30 minutes.",
+  "</div><div class=\"panel\"><h3>Эликсиры</h3>": "</div><div class=\"panel\"><h3>Elixirs</h3>",
+  " на 30 минут · ": " for 30 minutes · ",
+  "С 3 ур. проф.": "From prof. lvl. 3"
 }
