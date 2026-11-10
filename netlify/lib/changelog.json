@@ -720,5 +720,10 @@
   "v": "1.26.17",
   "t": "Рунник: иконки камней на вкладках типов и в списке рецептов, рамка по редкости камня.",
   "te": "Runecarver: stone icons on the type tabs and in the recipe list, with a frame matching the stone's rarity."
+ },
+ {
+  "v": "1.26.18",
+  "t": "Алхимик: иконки бутылок в списке варки.",
+  "te": "Alchemist: bottle icons in the brewing list."
  }
 ]
