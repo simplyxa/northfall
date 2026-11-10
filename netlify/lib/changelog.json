@@ -600,5 +600,10 @@
   "v": "1.20.0",
   "t": "Клан: страница разделена на «Клан», «Состав», «Задания» и «Форум»; в клане появился настоящий форум с темами, ответами и закреплением",
   "te": "Clan: the page is split into Clan, Members, Quests and Forum; the clan now has a real forum with topics, replies and pinning"
+ },
+ {
+  "v": "1.20.1",
+  "t": "Клан: «Состав», «Задания» и «Форум» теперь отдельным меню на странице клана, как на странице героя",
+  "te": "Clan: Members, Quests and Forum are now a separate menu on the clan page, like on the hero page"
  }
 ]

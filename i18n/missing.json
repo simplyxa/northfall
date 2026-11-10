@@ -1,18 +1,7 @@
 [
- "<div class=\"panel\"><button class=\"b alt\" data-cfa=\"back\" style=\"margin:0 0 8px\">← К темам</button><h3 style=\"margin:0 0 4px\">",
- "<button class=\"b alt\" data-cfa=\"tdel\">Удалить тему</button>",
- "\" aria-label=\"Удалить\">✕</button>",
- "<p>Загружаю сообщения…</p>",
- "</div>\n  <div class=\"panel\"><h3>Ответить</h3><textarea id=\"cfr\" maxlength=\"1000\" rows=\"3\" placeholder=\"Сообщение\" aria-label=\"Сообщение\"></textarea><button class=\"b\" data-cfa=\"reply\" style=\"margin-top:6px\">Отправить</button></div>",
- "<div class=\"panel\"><h3>Новая тема</h3><input id=\"cft\" maxlength=\"80\" placeholder=\"Заголовок\" aria-label=\"Заголовок\"><textarea id=\"cfb\" maxlength=\"1000\" rows=\"3\" placeholder=\"Текст\" aria-label=\"Текст\"></textarea><button class=\"b\" data-cfa=\"new\" style=\"margin-top:6px\">Создать тему</button></div>\n <div class=\"panel\"><h3>Форум клана</h3>",
- " · последний: ",
- "<p>Тем пока нет. Создай первую: обсудите планы клана, войны и подземелья.</p>",
- "Подожди пару секунд.",
- "Не удалось отправить.",
- "Не удалось закрепить.",
- "Не удалось удалить тему.",
- "Не удалось удалить сообщение.",
- "</span>. Бонус клана: +5% к добыче.</p></div>",
- "<div class=\"panel\"><h3>Состав: ",
- "Состав"
+ "<div class=\"panel\" style=\"padding:8px 12px\"><button class=\"lnk\" data-ct=\"main\" style=\"padding:0\">‹ Клан</button> <b style=\"margin-left:8px\">",
+ " участников",
+ "задание дня выполнено",
+ "задание дня: ",
+ "темы и обсуждения клана"
 ]
