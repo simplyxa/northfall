@@ -2832,5 +2832,14 @@
   ", эпическая ": ", epic ",
   ", легендарная ": ", legendary ",
   "<div class=\"panel\"><h3>Ковка</h3><p style=\"margin:0 0 8px;color:var(--mute);font-size:15px\">Редкость вещи выпадает случайно при выдаче, чем выше уровень профессии, тем лучше шансы. Сейчас: наборы охотника и железный: ": "<div class=\"panel\"><h3>Forging</h3><p style=\"margin:0 0 8px;color:var(--mute);font-size:15px\">Item rarity is rolled randomly when you collect it; the higher your profession level, the better the odds. Now: Hunter and Iron sets: ",
-  ". Остальные наборы: ": ". Other sets: "
+  ". Остальные наборы: ": ". Other sets: ",
+  "Слитки": "Ingots",
+  "Слиток": "Ingot",
+  "Слитки ×": "Ingots ×",
+  "<div class=\"panel\"><h3>Плавка</h3>": "<div class=\"panel\"><h3>Smelting</h3>",
+  "<div class=\"row\"><div>Слитки ×": "<div class=\"row\"><div>Ingots ×",
+  "Плавить": "Smelt",
+  "</div><div class=\"panel\"><h3>Ковка</h3><p style=\"margin:0 0 8px;color:var(--mute);font-size:15px\">Редкость вещи выпадает случайно при выдаче, чем выше уровень профессии, тем лучше шансы. Шансы: ": "</div><div class=\"panel\"><h3>Forging</h3><p style=\"margin:0 0 8px;color:var(--mute);font-size:15px\">Item rarity is rolled when you collect it; the higher your profession level, the better the odds. Chances: ",
+  ". Вещи куются из слитков: сначала выплавь их из руды.</p><div class=\"htab\" style=\"grid-template-columns:repeat(5,1fr);margin-bottom:6px\">": ". Gear is forged from ingots: smelt them from ore first.</p><div class=\"htab\" style=\"grid-template-columns:repeat(5,1fr);margin-bottom:6px\">",
+  "Готово: слитки ×": "Done: ingots ×"
 }

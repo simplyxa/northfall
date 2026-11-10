@@ -26,7 +26,7 @@ const silverRate = lv => 15 * (5 + lv * 9) / 60;
 const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 const pid = (a, b) => [a, b].sort().join('~');
 // стопки на рынке: t — mat|pt|elx|iron|dust, k — ключ материала/эликсира, n — количество
-const STK = { mat: ['hide', 'bone', 'ore', 'herb'], elx: ['a', 'h', 'd'], pt: ['b'], iron: [''], dust: [''] };
+const STK = { mat: ['hide', 'bone', 'ore', 'herb', 'ingot'], elx: ['a', 'h', 'd'], pt: ['b'], iron: [''], dust: [''] };
 function stackSpec(o) {
   const t = String(o.t || ''), k = String(o.sk || ''), n = Math.floor(+o.n || 0);
   if (!STK[t] || !STK[t].includes(k) || !(n >= 1 && n <= 9999)) return null;
