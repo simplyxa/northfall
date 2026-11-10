@@ -710,5 +710,10 @@
   "v": "1.26.15",
   "t": "Ремесло: работу можно отменить, все ресурсы, серебро и дневной лимит крафта возвращаются.",
   "te": "Crafting: you can cancel a job; all materials, silver and the daily craft limit are refunded."
+ },
+ {
+  "v": "1.26.16",
+  "t": "Профессии: название и описание перенесены наверх баннера.",
+  "te": "Professions: the title and description moved to the top of the banner."
  }
 ]
