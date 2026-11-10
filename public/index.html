@@ -775,7 +775,7 @@ function huntEnd(why){const H=fight.hunt;if(H.raid)return rRunEnd(why);if(why===
 // итог охоты — во всплывающем окне, как награда «Пути новичка»
 function huntPop(R){const dead=R.why==='dead',ic=k=>`<img src="${RIC[k]}" width="36" height="36" alt="">`;
  const it=[`<div class="nbrw-i"><span style="font-size:30px;line-height:36px">🐺</span><b>${R.kills}</b><small>убито</small></div>`,`<div class="nbrw-i"><span style="font-size:30px;line-height:36px">✨</span><b>+${R.xp}</b><small>опыт</small></div>`,`<div class="nbrw-i">${ic('silver')}<b>+${R.gold}</b><small>серебро</small></div>`,
-  ...Object.entries(R.mats||{}).map(([k,n])=>`<div class="nbrw-i"><span style="font-size:26px;line-height:36px">🧵</span><b>+${n}</b><small>${(MATN[k]||k).toLowerCase()}</small></div>`),...R.loot.map(l=>l.rune?`<div class="nbrw-i">${stIc(l.rune,40)}<b style="color:var(${RAR[rR(l.rune)][1]});font-size:13px">${rName(l.rune)}</b></div>`:`<div class="nbrw-i">${itemIcon(l.it,40)}<b style="color:var(${RAR[l.it.rar][1]});font-size:13px">${esc(l.it.name)}</b>${l.dis?`<small>разобран: +${l.g} жел.</small>`:l.mail?'<small>на почте</small>':''}</div>`)];
+  ...Object.entries(R.mats||{}).map(([k,n])=>`<div class="nbrw-i">${matIc(k,36)}<b>+${n}</b><small>${(MATN[k]||k).toLowerCase()}</small></div>`),...R.loot.map(l=>l.rune?`<div class="nbrw-i">${stIc(l.rune,40)}<b style="color:var(${RAR[rR(l.rune)][1]});font-size:13px">${rName(l.rune)}</b></div>`:`<div class="nbrw-i">${itemIcon(l.it,40)}<b style="color:var(${RAR[l.it.rar][1]});font-size:13px">${esc(l.it.name)}</b>${l.dis?`<small>разобран: +${l.g} жел.</small>`:l.mail?'<small>на почте</small>':''}</div>`)];
  popup(dead?'💀 Ты пал на охоте':R.why==='out'?'🌙 Силы кончились':'🏹 Охота окончена',`<div class="nbrw-t">${HKN[R.kind]||''}${dead?' · соплеменники унесли тебя в лагерь':''}</div><div class="nbrw hrw">${it.join('')}</div>${R.loot.length||Object.keys(R.mats||{}).length?'':'<p style="margin:8px 0 0;font-size:14px;color:var(--mute)">Трофеев в этот раз нет.</p>'}<button class="b red" data-a="h-${R.kind}" style="width:100%;margin-top:12px" onclick="closeModal()">Снова на охоту</button>`,dead)}
 // ===== Авто-удар на охоте (идея игрока Lanky): бьёт сам при полном заряде, умения — вручную =====
 const AHLV=2,AHHP=.3,ahOk=()=>S&&S.lvl>=AHLV;
@@ -1860,11 +1860,12 @@ function mkCancel(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||m.sol
 function mkCollect(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||!m.sold)return;const g=Math.floor(m.price*(1-MKFEE));DB.collection('market').doc(id).delete().then(()=>{S[mkC(m)]=(S[mkC(m)]|0)+g;MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: +${g} ${mkU(m)} (сбор рынка ${Math.round(MKFEE*100)}%).`;log(MKMSG,'sys');save();render()}).catch(()=>{})}
 // ===== Рынок: фильтры, поиск, сортировка, лоты-стопки (материалы, бутылки, эликсиры, железо, пыль) =====
 const MKF={q:'',type:'',slot:'',set:'',rar:'',sort:'new',n:40};
+const matIc=(k,sz)=>{const i=['hide','bone','ore','herb','ingot'].indexOf(k);return i<0?'🧵':`<span aria-hidden="true" style="display:inline-block;flex:none;vertical-align:middle;width:${sz}px;height:${sz}px;background:url(/img/be120f38cddb5b.webp) no-repeat;background-size:${sz*5}px ${sz}px;background-position:-${i*sz}px 0"></span>`};
 const STKN={hide:'Шкуры',bone:'Кости',ore:'Руда',herb:'Травы',ingot:'Слитки'};
 const stkName=st=>st.t==='mat'?(STKN[st.k]||st.k):st.t==='elx'?(ELXD[st.k]?ELXD[st.k][0]:st.k):st.t==='pt'?'Бутылки':st.t==='iron'?'Железо':'Руническая пыль';
 const stkHave=st=>st.t==='mat'?((S.mat||{})[st.k]|0):st.t==='elx'?((S.elx||{})[st.k]|0):st.t==='pt'?((S.pt||{}).b|0):(S[st.t]|0);
 function stkLocal(st,sg){const n=st.n*sg;if(st.t==='mat'){S.mat=S.mat||{};S.mat[st.k]=(S.mat[st.k]|0)+n}else if(st.t==='elx'){S.elx=S.elx||{};S.elx[st.k]=(S.elx[st.k]|0)+n}else if(st.t==='pt'){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+n}else S[st.t]=(S[st.t]|0)+n}
-const stkRow=(m,btns,note)=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:30px;line-height:1">${m.stack.t==='pt'?'🧪':m.stack.t==='elx'?'⚗️':m.stack.t==='mat'?'🧵':m.stack.t==='iron'?'⛓️':'✨'}</span><div><b>${esc(stkName(m.stack))} ×${m.stack.n}</b><small>${(m.price/m.stack.n).toFixed(m.price/m.stack.n<10?2:1)} зол. за шт.${note||''}</small></div></div><div class="rb">${btns}</div></div>`;
+const stkRow=(m,btns,note)=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:30px;line-height:1">${m.stack.t==='pt'?'🧪':m.stack.t==='elx'?'⚗️':m.stack.t==='mat'?matIc(m.stack.k,34):m.stack.t==='iron'?'⛓️':'✨'}</span><div><b>${esc(stkName(m.stack))} ×${m.stack.n}</b><small>${(m.price/m.stack.n).toFixed(m.price/m.stack.n<10?2:1)} зол. за шт.${note||''}</small></div></div><div class="rb">${btns}</div></div>`;
 function mkFilt(act){const q=MKF.q.trim().toLowerCase();let L=act.filter(m=>{const st=m.stack,it=m.item;
   if(MKF.type==='item'&&st)return false;if(MKF.type==='res'&&!st)return false;
   if(st){if(MKF.slot||MKF.set!==''||MKF.rar!=='')return false;if(q&&!(stkName(st).toLowerCase().includes(q)||String(m.sname||'').toLowerCase().includes(q)))return false;return true}
@@ -1954,7 +1955,7 @@ const crHm=ms=>{const m=Math.max(1,Math.ceil(ms/60000));return m>=60?Math.floor(
 function craftView(){
  const cf=S.cf||{},pr=cf.p,q=cf.q,now=Date.now(),pl=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,cf.x|0)/25)));
  const day=Math.floor(now/86400000),used=cf.d===day?cf.n|0:0;
- const mats=MATO.map(k=>`${MATN[k]}: <b>${(S.mat&&S.mat[k])|0}</b>`).join(' · ');
+ const mats=MATO.map(k=>`<span style="white-space:nowrap">${matIc(k,22)} ${MATN[k]}: <b>${(S.mat&&S.mat[k])|0}</b></span>`).join(' · ');
  let h=`<div class="panel"><h3>Ремесло</h3><p style="margin:0">${mats}<br>Материалы падают с обычной охоты: шкуры и травы с опушки, руда и кости в глубине леса и на высокой сложности.</p>${CRMSG?`<p style="margin:6px 0 0;color:var(--gold)">${esc(CRMSG)}</p>`:''}</div>`;
  if(!pr||CRSW){return h+`<div class="panel"><h3>${CRSW?'Новая профессия':'Выбери профессию'}</h3><p style="margin:0 0 6px">Каждая профессия покупается один раз за 100 золота и остаётся навсегда. Переключаться между купленными можно бесплатно, опыт у каждой свой. Работает одна мастерская: пока идёт крафт, сменить профессию нельзя.</p>`+['smith','alch','rune'].map(k=>{const own=S.cf&&Array.isArray(S.cf.own)&&S.cf.own.includes(k)||(S.cf&&S.cf.p===k),cur=S.cf&&S.cf.p===k;return`<div class="row"><div><b>${PRN[k][0]}</b><small>${PRN[k][1]}${cur?' · выбрана':own?' · куплена':''}</small></div><button class="b" data-cr="pick:${k}" ${CRBUSY||cur||(S.cf&&S.cf.q)?'disabled':''}>${own?(cur?'Выбрана':'Выбрать'):'Купить за 100 золота'}</button></div>`}).join('')+`</div>`}
  const nx=25*pl*pl;
@@ -1963,7 +1964,7 @@ function craftView(){
   const nm=q.r==='forge'?NAMES[q.a.slot][q.a.tr]:q.r==='elix'?ELXD[q.a.t][0]+' ×2':q.r==='brew'?`Бутылки ×${q.a.n}`:q.r==='smelt'?`Слитки ×${q.a.n}`:rName(q.a.k);
   h+=`<div class="panel"><h3>В работе</h3><div class="row"><div>${esc(nm)}<small>${done?'Готово':'Осталось '+crHm(left)}</small><div style="height:6px;background:#0003;border-radius:3px;margin-top:6px"><i style="display:block;height:6px;width:${pc}%;background:var(--gold);border-radius:3px"></i></div></div><button class="b" data-cr="claim" ${done&&!CRBUSY?'':'disabled'}>Забрать</button></div></div>`}
  const have=(k,v)=>k==='gold'?(+S.gold||0)>=v:k==='iron'?(S.iron|0)>=v:k==='dust'?(S.dust|0)>=v:((S.mat&&S.mat[k])|0)>=v;
- const cst=c=>Object.entries(c).map(([k,v])=>`<span style="${have(k,v)?'':'color:var(--blood)'}">${k==='gold'?'серебро':k==='iron'?'железо':k==='dust'?'пыль':MATN[k].toLowerCase()} ${v}</span>`).join(', ');
+ const cst=c=>Object.entries(c).map(([k,v])=>`<span style="${have(k,v)?'':'color:var(--blood)'}">${k==='gold'||k==='iron'||k==='dust'?'':matIc(k,16)+' '}${k==='gold'?'серебро':k==='iron'?'железо':k==='dust'?'пыль':MATN[k].toLowerCase()} ${v}</span>`).join(', ');
  const btn=(rec,act,lv,extra)=>{const ok=pl>=rec.pl&&(!extra||extra.ok);return`<button class="b" data-cr="${act}" ${ok&&!q&&!CRBUSY?'':'disabled'}>${pl<rec.pl?'С '+rec.pl+' ур. проф.':'Начать'}</button>`};
  if(pr==='smith'){
   const FT=[[6,2,70,3,6,2,200,20],[7,5,260,8,0,8,1500,100],[8,7,450,14,10,10,4000,200]];
@@ -2340,7 +2341,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.8';
+const GVER='1.26.9';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2944,7 +2945,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.9</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

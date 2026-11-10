@@ -675,5 +675,10 @@
   "v": "1.26.8",
   "t": "Профессии: доступны все три, каждая покупается один раз за 100 золота. Переключаться между купленными можно бесплатно, опыт у каждой свой.",
   "te": "Professions: all three are available; each is bought once for 100 gold. Switching between owned professions is free, and each keeps its own XP."
+ },
+ {
+  "v": "1.26.9",
+  "t": "Иконки материалов (шкура, кость, руда, трава, слиток) в ремесле, на рынке и в наградах.",
+  "te": "Material icons (hide, bone, ore, herb, ingot) in crafting, the market and rewards."
  }
 ]
