@@ -4,7 +4,7 @@
 //   cf = { p: 'smith'|'alch'|'rune', x: опыт профессии, q: {r, a, t0, te, n}|null, d: сутки, n: крафтов за сутки }
 'use strict';
 const MATS = ['hide', 'bone', 'ore', 'herb', 'ingot'];
-const DAY = 86400000, DAILY = 12, PROF_AU = 100;   // профессия покупается навсегда за золото, переключение бесплатное
+const DAY = 86400000, DAILY = 12, PROF_AU = 100, PROF_LV = 20;   // профессия покупается навсегда за золото, переключение бесплатное
 const PROFS = ['smith', 'alch', 'rune'];
 const SLOTS = ['w', 'h', 'a', 'g', 'b', 'r', 'c', 'p', 'n', 'o'];
 const SETLV = [1, 8, 15, 22, 30, 30, 12, 24, 30];   // 5 — набор Одина (не крафтится); 6–8 — наборы только для крафта
@@ -56,6 +56,7 @@ function init(s) {
 // returns {need:{...}} or throws via fail(code,msg)
 function start(s, o, now, fail, speed) {
   const c = init(s), day = Math.floor(now / DAY);
+  if ((s.lvl | 0) < PROF_LV) throw fail(409, 'Ремёсла открываются с ' + PROF_LV + ' уровня');
   if (c.q) throw fail(409, 'Мастерская занята');
   const want = String(o.p || '');   // в какую купленную мастерскую зашёл игрок: переключение без отдельной смены
   if (want && want !== c.p) {
@@ -155,6 +156,7 @@ function owns(s, p) { return init(s).own.includes(p); }
 // переключение на купленную профессию (бесплатно, опыт у каждой свой); покупку и списание золота делает saves.js
 function pick(s, o, now, fail) {
   const c = init(s), p = String(o.p || '');
+  if ((s.lvl | 0) < PROF_LV) throw fail(409, 'Ремёсла открываются с ' + PROF_LV + ' уровня');
   if (!PROFS.includes(p)) throw fail(400, 'Неизвестная профессия');
   if (c.q) throw fail(409, 'Сначала забери готовое');
   if (c.p === p) throw fail(409, 'Эта профессия уже выбрана');
@@ -174,4 +176,4 @@ function clampMats(prev, s, dt) {
 // cf меняет только сервер
 function lockCf(prev, s) { if (prev && prev.cf) s.cf = prev.cf; else delete s.cf; }
 
-module.exports = { cancel, costOf, PROF_AU, owns, SMELT, ELIX, MATS, PROFS, DAILY, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
+module.exports = { PROF_LV, cancel, costOf, PROF_AU, owns, SMELT, ELIX, MATS, PROFS, DAILY, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
