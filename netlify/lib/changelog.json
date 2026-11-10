@@ -695,5 +695,10 @@
   "v": "1.26.12",
   "t": "Профессии перенесены в раздел «Лагерь» главного меню.",
   "te": "Professions moved to the Camp section of the main menu."
+ },
+ {
+  "v": "1.26.13",
+  "t": "Баннеры профессий: у кузнеца, алхимика и рунника своя картинка на странице профессий и в самой мастерской.",
+  "te": "Profession banners: the smith, alchemist and runecarver each have their own picture on the professions page and in the workshop."
  }
 ]
