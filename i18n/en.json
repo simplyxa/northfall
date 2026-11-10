@@ -2912,5 +2912,15 @@
   "<button class=\"st-flee x\" data-a=\"flee\" aria-label=\"Сдаться\" title=\"Сдаться\"><img src=\"": "<button class=\"st-flee x\" data-a=\"flee\" aria-label=\"Surrender\" title=\"Surrender\"><img src=\"",
   "<button class=\"sq\" id=\"bg\" data-a=\"guard\" style=\"left:12px;bottom:92px\" title=\"Блок\" aria-label=\"Блок\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z\"/></svg></button><button class=\"b alt fcd rbt\" id=\"bpb\" data-a=\"pot-b\" style=\"--p:": "<button class=\"sq\" id=\"bg\" data-a=\"guard\" style=\"left:12px;bottom:92px\" title=\"Block\" aria-label=\"Block\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z\"/></svg></button><button class=\"b alt fcd rbt\" id=\"bpb\" data-a=\"pot-b\" style=\"--p:",
   "<div class=\"panel hpn\" id=\"fightpanel\" data-ra-root><h3>Арена · ": "<div class=\"panel hpn\" id=\"fightpanel\" data-ra-root><h3>Arena · ",
-  ">💫 в капкане</small></div>\n <div class=\"st-hero": ">💫 trapped</small></div>\n <div class=\"st-hero"
+  ">💫 в капкане</small></div>\n <div class=\"st-hero": ">💫 trapped</small></div>\n <div class=\"st-hero",
+  "Мои атаки (последние 10)": "My attacks (last 10)",
+  "Нападения на меня (последние 10)": "Attacks on me (last 10)",
+  "Пока нет боёв.": "No fights yet.",
+  "только что": "just now",
+  " ч назад": " h ago",
+  " дн назад": " d ago",
+  "Отбился": "Defended",
+  "Проиграл": "Lost",
+  "Бутылка: здоровье и энергия восстановлены полностью": "Bottle: health and energy fully restored",
+  "<p style=\"margin:0;color:var(--mute)\">Пока нет боёв.</p>": "<p style=\"margin:0;color:var(--mute)\">No fights yet.</p>"
 }

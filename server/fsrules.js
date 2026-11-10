@@ -38,6 +38,7 @@ async function check(op, segs, auth, existing, incoming, getDoc) {
     if (op === 'read' || op === 'delete') return me(segs[1]) || adm;
     return false;
   }
+  if (c === 'arhist') return n === 2 && op === 'read' && (me(segs[1]) || adm);
   if (c === 'wallet') {
     if (n === 2) return op === 'read' && (me(segs[1]) || adm);
     if (n === 4 && segs[2] === 'log') return op === 'read' && (me(segs[1]) || adm);

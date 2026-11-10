@@ -1166,7 +1166,7 @@ function tabView(){
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Чаща<small>На уровень сильнее, добыча богаче${terTag('hard')}</small></div><button class="b red" data-a="h-hard" ${S.en<1?'disabled':''}>На охоту</button></div></div>`;
- if(tab==='arena')return`<div class="dban"><img src="${ARENAI}" alt="Арена" style="aspect-ratio:3/1"><div class="dbt"><b>Арена Севера</b><span>Сойдись с воинами других кланов в честном бою</span></div></div><div class="panel"><h3 style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>Арена</span><span style="font-size:16px;color:var(--gold)">${arTkTxt()}</span></h3><p style="margin:0 0 6px;font-size:15px">Бой стоит <b>1 билет</b>. Билетов максимум 10, каждый час восстанавливается один.</p><p style="margin:0 0 4px">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>`+(online?pvpList():'<div class="panel"><p style="margin:0">Арена доступна только с подключённой базой данных.</p></div>');
+ if(tab==='arena')return`<div class="dban"><img src="${ARENAI}" alt="Арена" style="aspect-ratio:3/1"><div class="dbt"><b>Арена Севера</b><span>Сойдись с воинами других кланов в честном бою</span></div></div><div class="panel"><h3 style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>Арена</span><span style="font-size:16px;color:var(--gold)">${arTkTxt()}</span></h3><p style="margin:0 0 6px;font-size:15px">Бой стоит <b>1 билет</b>. Билетов максимум 10, каждый час восстанавливается один.</p><p style="margin:0 0 4px">Поединки только с героями других игроков: их атака, защита, здоровье и крит. Чем выше рейтинг соперника, тем больше рейтинга за победу. В бою удар заряжается 5 секунд, а враг бьёт раз в 5 секунд. Опыт, серебро и трофеи на арене не выдаются, только рейтинг. Поражение стоит 10% серебра и немного рейтинга.</p></div>`+(online?pvpList()+arHist():'<div class="panel"><p style="margin:0">Арена доступна только с подключённой базой данных.</p></div>');
  if(tab==='shop'){
   const SN=SETN,TN=RAR.map(r=>r[0]),SD=['Дерево, кожа и шкуры. Обычное качество.','Железо. Редкое качество.','Сталь. Эпическое качество.','Тёмный металл и руны. Легендарное качество.','Сила богов. Мифическое качество.','Дар Всеотца: руны, вороны и тёмная сталь. Мифическое качество, самое мощное в игре.'];
   const tabs=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${TN.map((n,i)=>`<button class="b ${stab===String(i)?'':'alt'}" data-st="${i}"${stab===String(i)?'':` style="color:var(${RAR[i][1]})"`}>${n}</button>`).join('')}</div>`;
@@ -1862,6 +1862,7 @@ function startPvp(id){const p=PL.find(x=>x.id===id);if(!p||!p.stats||fight)retur
  // бой с копией ведёт сервер: он считает урон, исход, рейтинг и списывает билет
  fixNum();HREP=null;REP=null;APLOG=0;APLOGVIEW=0;hubSend({t:'apvp',id:p.id});log(`Вызов: ${p.name}!`,'sys');render()}
 function apvpState(m){const s=m.st;if(!s)return;
+ {const pp=(fight&&fight.s&&fight.s.pots)|0,np=(s.s&&s.s.pots)|0;if(np>pp)S.en=maxEn()}   // бутылка на арене: энергия 100%
  const pushLog=()=>{if(s.log&&s.log.length>APLOG){for(let k=APLOG;k<s.log.length;k++)log(s.log[k],'sys');APLOG=s.log.length}};
  if(s.st==='on'){pushLog();fight=Object.assign(fight||{},s,{arena:true,pvp:s.pid,pn:performance.now(),s:Object.assign({r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0},s.s||{})});S.hp=s.hp;if(document.getElementById('fightpanel'))paintPvpFight();else render();return}
  pushLog();const r0=Number.isFinite(+S.rating)?(+S.rating):1000,sr0=Number.isFinite(+S.srat)?(+S.srat):0,rs=s.res||{},win=s.win===1;
@@ -1875,7 +1876,15 @@ function apvpState(m){const s=m.st;if(!s)return;
  if(win){S.win++;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${delta}. Новый рейтинг: ${rating}.`,'hit')}
  else{S.lose++;S.gold=Math.max(0,(S.gold|0)-lost);S.hp=1;log(`Поражение. Рейтинг ${delta}. Новый рейтинг: ${rating}.`,'dmg')}
  const e=s.e||{};REP={win,bot:e.name||'Соперник',title:'',lv:e.lv|0,s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,...(s.s||{})},dR:delta,rating,dS,srat,xp:0,gold:-lost,lvUp:0,loot:'',war:0,hp:s.hp|0,mhp:s.mhp|0};
- apvpDestroy();fight=null;save();render();repModal()}
+ ARH=null;apvpDestroy();fight=null;save();render();repModal()}
+let ARH=null,ARHL=false,ARHT=0;
+function arHistLoad(){if(ARHL||!DB||!UID)return;ARHL=true;const me=UID;DB.collection('arhist').doc(me).get().then(sn=>{ARHL=false;ARHT=Date.now();if(UID!==me)return;ARH=sn.exists?sn.data():{a:[],d:[]};if(tab==='arena'&&!fight)ui()}).catch(()=>{ARHL=false;ARH={a:[],d:[]}})}
+function arHist(){if(ARH===null||Date.now()-ARHT>30000)arHistLoad();if(ARH===null)return''
+ const ago=t=>{const m=Math.max(0,Math.floor((Date.now()-t)/60000));return m<1?'только что':m<60?m+' мин. назад':m<1440?Math.floor(m/60)+' ч назад':Math.floor(m/1440)+' дн назад'};
+ const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const row=(e,att)=>{const won=att?e.w===1:e.w!==1;const dr=att&&e.r?` <span style="color:var(--${e.r>0?'gold':'mute'})">${e.r>0?'+':''}${e.r|0}</span>`:'';return`<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--line,#0002)"><span>${esc(e.n)}</span><span><b style="color:${won?'var(--ok,#4a4)':'var(--bad,#c44)'}">${att?(won?'Победа':'Поражение'):(won?'Отбился':'Проиграл')}</b>${dr} <span style="color:var(--mute);font-size:13px">${ago(+e.t||0)}</span></span></div>`};
+ const blk=(t,a,att)=>`<div class="panel"><h3>${t}</h3>${a&&a.length?a.slice(0,10).map(e=>row(e,att)).join(''):'<p style="margin:0;color:var(--mute)">Пока нет боёв.</p>'}</div>`;
+ return blk('Мои атаки (последние 10)',ARH.a,true)+blk('Нападения на меня (последние 10)',ARH.d,false)}
 function pvpList(){const L=PL.filter(p=>p.id!==UID&&p.stats).sort((a,b)=>Math.abs(a.rating-S.rating)-Math.abs(b.rating-S.rating)).slice(0,8);
  return`<div class="panel"><h3>Воины других игроков</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Бой с копией героя другого игрока: его атака, защита, здоровье и крит. Рейтинг зависит от разницы с его рейтингом.</p>${L.length?L.map(p=>{const diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(p.av,28,frameOf(p))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div><button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button></div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
 
@@ -2391,7 +2400,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.23';
+const GVER='1.26.24';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2995,7 +3004,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.23</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.24</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

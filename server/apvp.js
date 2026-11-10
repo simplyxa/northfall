@@ -132,9 +132,9 @@ module.exports = function apvp(getDb) {
       const n = R.pots.b | 0;
       if (n < 1 || now < R.pcd) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });   // бутылку нельзя пить одну за другой
       R.pots.b = n - 1; R.s.pots++; R.pcd = now + BCD;
-      const h = Math.round(R.mhp * .4);
-      R.hp = Math.min(R.mhp, R.hp + h);
-      msg = `Бутылка: +${h} здоровья.`;
+      const h = R.mhp - R.hp;           // бутылка лечит полностью (энергию возвращает клиент)
+      R.hp = R.mhp;
+      msg = `Бутылка: здоровье и энергия восстановлены полностью${h > 0 ? ` (+${h})` : ''}.`;
     } else if (a.startsWith('sk-')) {
       msg = skill(R, a.slice(3));
       if (msg === false) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
@@ -193,6 +193,9 @@ module.exports = function apvp(getDb) {
       await db.runTransaction(async tx => {
         const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
         const on = await tx.get(oref); const O = on.exists ? on.data() : null;
+        const mn = await tx.get(db.collection('players').doc(R.uid)); const M = mn.exists ? mn.data() : null;
+        const h1 = await tx.get(db.collection('arhist').doc(R.uid));
+        const h2 = await tx.get(db.collection('arhist').doc(R.oid));
         if (!S) return;
         const st = ARENA.readState(S, now);
         const orat = O ? (O.rating | 0) : 1000;
@@ -216,6 +219,12 @@ module.exports = function apvp(getDb) {
         tx.set(db.collection('players').doc(R.uid), {
           rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose
         }, { merge: true });
+        // история боёв: последние 10 как нападающий и как защитник
+        const myName = String((M && M.name) || R.uid).slice(0, 20);
+        const keep = (a, e) => [e].concat(Array.isArray(a) ? a : []).slice(0, 10);
+        const H1 = h1.exists ? h1.data() : {}, H2 = h2.exists ? h2.data() : {};
+        tx.set(db.collection('arhist').doc(R.uid), { a: keep(H1.a, { n: R.e.name, w: win, r: rt, t: now }), d: Array.isArray(H1.d) ? H1.d : [] });
+        tx.set(db.collection('arhist').doc(R.oid), { a: Array.isArray(H2.a) ? H2.a : [], d: keep(H2.d, { n: myName, w: win, r: 0, t: now }) });
         R.res = { rt, rating: st.rt, srt: st.srt, lost, win, atk: st.atk, atkt: st.atkt };
       });
     } catch (e) { console.error('apvp end', e.message); }
