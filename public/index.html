@@ -451,7 +451,8 @@ function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSo
   else if(m.t==='rno'){if(typeof RHUB!=='undefined'&&RHUB===m.rid)RHUB=null}
   else if(m.t==='wbs'||m.t==='wbc'||m.t==='hunts'||m.t==='wars'||m.t==='warc'||m.t==='clans'||m.t==='wbe'||m.t==='hunte'||m.t==='ware'||m.t==='clane'){if(typeof cycState==='function')cycState(m)}
   else if(m.t==='aps'){if(typeof apvpState==='function')apvpState(m)}
-  else if(m.t==='ape'){log('Сервер не начал бой: '+(m.why||'неизвестно'),'sys')}
+  else if(m.t==='arl'){if(typeof arlState==='function')arlState(m)}
+  else if(m.t==='ape'){{log(m.why==='won'?'Этого противника ты уже победил.':m.why==='notlist'?'Этого воина нет в твоём списке противников.':'Сервер не начал бой: '+(m.why||'неизвестно'),'sys');ARL=null;if(tab==='arena')ui()}}
   else if(m.t==='onl'){HUB.onl=new Set(m.u||[]);HUB.g=m.g|0;if(typeof GONL!=='undefined')GONL=HUB.g;if(typeof ui==='function')ui()}};
  ws.onclose=fail;ws.onerror=()=>{try{ws.close()}catch(x){}}}
 // подписка на живой список: через хаб, а если его нет — напрямую на запрос Firestore q
@@ -1857,7 +1858,7 @@ const arNext=()=>arTk()>=ATK?0:Math.max(0,(S.atkt||Date.now())+ATH-Date.now());
 function arUse(){if(arTk()<1)return false;if(S.atk>=ATK)S.atkt=Date.now();S.atk--;return true}
 const arTkTxt=()=>{const t=arTk(),n=arNext();return`${tkIc(22)}${t}/${ATK}${n?` · следующий через ${Math.ceil(n/60000)} мин`:''}`};
 // ===== PvP =====
-function startPvp(id){const p=PL.find(x=>x.id===id);if(!p||!p.stats||fight)return;if(!HUB.ws||HUB.ws.readyState!==1){log('Нет соединения с сервером арены. Обнови страницу и попробуй снова.','sys');return render()}if(arTk()<1){log('Нет билетов арены: новый появится через '+Math.ceil(arNext()/60000)+' мин.','sys');return render()}
+function startPvp(id){const p=ARL&&ARL.o.find(x=>x.id===id);if(!p||!p.stats||fight||ARL.won.includes(id))return;if(!HUB.ws||HUB.ws.readyState!==1){log('Нет соединения с сервером арены. Обнови страницу и попробуй снова.','sys');return render()}if(arTk()<1){log('Нет билетов арены: новый появится через '+Math.ceil(arNext()/60000)+' мин.','sys');return render()}
  if(S.hp<=0){log('Ты ранен. Отдохни у костра.','sys');return render()}
  // бой с копией ведёт сервер: он считает урон, исход, рейтинг и списывает билет
  fixNum();HREP=null;REP=null;APLOG=0;APLOGVIEW=0;hubSend({t:'apvp',id:p.id});log(`Вызов: ${p.name}!`,'sys');render()}
@@ -1876,7 +1877,7 @@ function apvpState(m){const s=m.st;if(!s)return;
  if(win){S.win++;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${delta}. Новый рейтинг: ${rating}.`,'hit')}
  else{S.lose++;S.gold=Math.max(0,(S.gold|0)-lost);S.hp=1;log(`Поражение. Рейтинг ${delta}. Новый рейтинг: ${rating}.`,'dmg')}
  const e=s.e||{};REP={win,bot:e.name||'Соперник',title:'',lv:e.lv|0,s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,...(s.s||{})},dR:delta,rating,dS,srat,xp:0,gold:-lost,lvUp:0,loot:'',war:0,hp:s.hp|0,mhp:s.mhp|0};
- ARH=null;apvpDestroy();fight=null;save();render();repModal()}
+ ARH=null;ARL=null;apvpDestroy();fight=null;save();render();repModal()}
 let ARH=null,ARHL=false,ARHT=0;
 function arHistLoad(){if(ARHL||!DB||!UID)return;ARHL=true;const me=UID;DB.collection('arhist').doc(me).get().then(sn=>{ARHL=false;ARHT=Date.now();if(UID!==me)return;ARH=sn.exists?sn.data():{a:[],d:[]};if(tab==='arena'&&!fight)ui()}).catch(()=>{ARHL=false;ARH={a:[],d:[]}})}
 function arHist(){if(ARH===null||Date.now()-ARHT>30000)arHistLoad();if(ARH===null)return''
@@ -1885,8 +1886,18 @@ function arHist(){if(ARH===null||Date.now()-ARHT>30000)arHistLoad();if(ARH===nul
  const row=(e,att)=>{const won=att?e.w===1:e.w!==1;const dr=att&&e.r?` <span style="color:var(--${e.r>0?'gold':'mute'})">${e.r>0?'+':''}${e.r|0}</span>`:'';return`<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--line,#0002)"><span>${esc(e.n)}</span><span><b style="color:${won?'var(--ok,#4a4)':'var(--bad,#c44)'}">${att?(won?'Победа':'Поражение'):(won?'Отбился':'Проиграл')}</b>${dr} <span style="color:var(--mute);font-size:13px">${ago(+e.t||0)}</span></span></div>`};
  const blk=(t,a,att)=>`<div class="panel"><h3>${t}</h3>${a&&a.length?a.slice(0,10).map(e=>row(e,att)).join(''):'<p style="margin:0;color:var(--mute)">Пока нет боёв.</p>'}</div>`;
  return blk('Мои атаки (последние 10)',ARH.a,true)+blk('Нападения на меня (последние 10)',ARH.d,false)}
-function pvpList(){const L=PL.filter(p=>p.id!==UID&&p.stats).sort((a,b)=>Math.abs(a.rating-S.rating)-Math.abs(b.rating-S.rating)).slice(0,8);
- return`<div class="panel"><h3>Воины других игроков</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Бой с копией героя другого игрока: его атака, защита, здоровье и крит. Рейтинг зависит от разницы с его рейтингом.</p>${L.length?L.map(p=>{const diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(p.av,28,frameOf(p))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div><button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button></div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
+let ARL=null,ARLQ=0,ARCONF=0;
+const arlAsk=(t,pay)=>{if(!HUB.ws||HUB.ws.readyState!==1)return;ARLQ=Date.now();hubSend({t,pay:pay?1:0})};
+function arlState(m){if(!m.why)ARLQ=0;if(m.why){if(m.why==='nogold')log('Не хватает золота для обновления.','sys');else if(m.why==='cd')log('Обновлять бесплатно можно раз в 15 минут.','sys');ARCONF=0;if(tab==='arena'&&!fight)ui();return}
+ ARL={ts:Date.now(),o:m.o||[],won:m.won||[],t:+m.lt||0,off:(m.now||Date.now())-Date.now(),cd:m.cd||900000,price:m.price||5};ARCONF=0;if(m.au!=null){S.au=m.au|0;tbPaint()}if(tab==='arena'&&!fight)ui()}
+const arlLeft=()=>ARL?Math.max(0,ARL.t+ARL.cd-(Date.now()+ARL.off)):0;
+function arlRefresh(){if(!ARL||fight)return;if(arlLeft()<=0){return arlAsk('arr',0)}
+ if(!ARCONF){ARCONF=1;return ui()}if(S.au<ARL.price){ARCONF=0;log('Не хватает золота для обновления.','sys');return ui()}arlAsk('arr',1)}
+function pvpList(){if((!ARL||Date.now()-ARL.ts>3e5)&&(!ARLQ||Date.now()-ARLQ>8000))arlAsk('arl')
+ if(!ARL)return`<div class="panel"><h3>Противники</h3><p style="margin:0">Ищем противников…</p></div>`;
+ const L=ARL.o,left=arlLeft(),free=left<=0,mins=Math.ceil(left/60000);
+ const btn=`<button class="b alt" data-arr="1">${free?'Обновить':ARCONF?`Точно? −${ARL.price} зол.`:`Обновить · ${ARL.price} зол.`}</button>`;
+ return`<div class="panel"><h3 style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span>Противники</span>${btn}</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Пять случайных воинов с ближайшим к твоему рейтингом. Бой с копией героя: его атака, защита, здоровье и крит. Победить каждого можно один раз, после победы над всеми пятью список обновится сам. После поражения можно напасть снова. ${free?'Список можно обновить бесплатно.':`Бесплатное обновление через ${mins} мин, раньше за золото.`}</p>${L.length?L.map(p=>{const q=PL.find(x=>x.id===p.id)||p,won=ARL.won.includes(p.id),diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(q.av,28,frameOf(q))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div>${won?'<span style="color:var(--ok,#4a4);font-weight:700">Побеждён</span>':`<button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button>`}</div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
 
 // ===== Рынок =====
 let MK=[],mkUn=null,MKMSG='',mkMode='',mkFor=null;const MKFEE=.05,mkC=m=>m.au?'au':'gold',mkU=m=>m.au?'зол.':'сер.';
@@ -2400,7 +2411,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.25';
+const GVER='1.26.26';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3004,7 +3015,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.25</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.26</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3246,7 +3257,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  if(d.tip){S.tipsSeen=[...(S.tipsSeen||[]),d.tip];save();return render()}
  if(d.ex){const [z,hh]=d.ex.split(':');return exBuy(z,+hh)}
  if(d.mb)return mkBuy(d.mb);if(d.mx)return mkCancel(d.mx);if(d.mc)return mkCollect(d.mc);
- if(d.wk)return wbClaim(d.wk);if(d.pp)return startPvp(d.pp);
+ if(d.wk)return wbClaim(d.wk);if(d.pp)return startPvp(d.pp);if(d.arr)return arlRefresh();
  if(d.mt){mtab=d.mt;return render()}if(d.rs){RSEL=d.rs;render();const el=document.getElementById('rsel');if(el)el.scrollIntoView({block:'start'});return}if(d.rp)return rmIn(d.rp);if(d.ro!=null)return rmOut(+d.ro);
  if(d.ri)return runeIn(d.ri);if(d.rx!=null)return runeOut(+d.rx);
  if(d.qc!=null)return dqClaim(+d.qc);if(d.ti){S.title=d.ti==='-'?'':d.ti;save();return render()}

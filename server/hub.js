@@ -127,7 +127,7 @@ module.exports = function hub(server, getDb, verify, gate) {
     // мировой цикл: босс, охота, территории, войны, клан
     if (m.t === 'wb' || m.t === 'wbcl' || m.t === 'hunt' || m.t === 'war' || m.t === 'warc' || m.t === 'clan') return CYCLE.onMsg(c, m, send);
     // арена против копии героя: бой ведёт сервер
-    if (m.t === 'apvp' || m.t === 'apa') return APVP.onMsg(c, m, send);
+    if (m.t === 'apvp' || m.t === 'apa' || m.t === 'arl' || m.t === 'arr') return APVP.onMsg(c, m, send);
   }
 
   // ---------- подписки на Firestore ----------
