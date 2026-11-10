@@ -655,5 +655,10 @@
   "v": "1.26.4",
   "t": "Оплата золота: страну игрока теперь определяем по IP (в том числе у мобильных сетей с IPv6), поэтому Xsolla показывает правильную страну. Политика конфиденциальности дополнена.",
   "te": "Gold purchase: the player's country is now detected from the IP (including IPv6 mobile networks), so Xsolla shows the right country. Privacy policy updated."
+ },
+ {
+  "v": "1.26.5",
+  "t": "Ковка: на кнопках выбора слота теперь иконки.",
+  "te": "Forging: the slot buttons now have icons."
  }
 ]
