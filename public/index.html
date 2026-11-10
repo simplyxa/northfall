@@ -1857,12 +1857,42 @@ function mkBuy(id){const m=MK.find(x=>x.id===id);if(!m||m.seller===UID||m.sold||
 function mkCancel(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||m.sold)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон, освободи место.','sys');return render()}
  const ref=DB.collection('market').doc(id);ref.get().then(sn=>{if(!sn.exists)return;if(sn.data().sold){MKMSG='Вещь уже купили, забери выручку.';return render()}return ref.delete().then(()=>{const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();S.inv.push(it);MKMSG=`«${it.name}» снят с продажи и вернулся в рюкзак.`;save();render()})}).catch(()=>{})}
 function mkCollect(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||!m.sold)return;const g=Math.floor(m.price*(1-MKFEE));DB.collection('market').doc(id).delete().then(()=>{S[mkC(m)]=(S[mkC(m)]|0)+g;MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: +${g} ${mkU(m)} (сбор рынка ${Math.round(MKFEE*100)}%).`;log(MKMSG,'sys');save();render()}).catch(()=>{})}
+// ===== Рынок: фильтры, поиск, сортировка, лоты-стопки (материалы, бутылки, эликсиры, железо, пыль) =====
+const MKF={q:'',type:'',slot:'',set:'',rar:'',sort:'new',n:40};
+const STKN={hide:'Шкуры',bone:'Кости',ore:'Руда',herb:'Травы'};
+const stkName=st=>st.t==='mat'?(STKN[st.k]||st.k):st.t==='elx'?(ELXD[st.k]?ELXD[st.k][0]:st.k):st.t==='pt'?'Бутылки':st.t==='iron'?'Железо':'Руническая пыль';
+const stkHave=st=>st.t==='mat'?((S.mat||{})[st.k]|0):st.t==='elx'?((S.elx||{})[st.k]|0):st.t==='pt'?((S.pt||{}).b|0):(S[st.t]|0);
+function stkLocal(st,sg){const n=st.n*sg;if(st.t==='mat'){S.mat=S.mat||{};S.mat[st.k]=(S.mat[st.k]|0)+n}else if(st.t==='elx'){S.elx=S.elx||{};S.elx[st.k]=(S.elx[st.k]|0)+n}else if(st.t==='pt'){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+n}else S[st.t]=(S[st.t]|0)+n}
+const stkRow=(m,btns,note)=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:30px;line-height:1">${m.stack.t==='pt'?'🧪':m.stack.t==='elx'?'⚗️':m.stack.t==='mat'?'🧵':m.stack.t==='iron'?'⛓️':'✨'}</span><div><b>${esc(stkName(m.stack))} ×${m.stack.n}</b><small>${(m.price/m.stack.n).toFixed(m.price/m.stack.n<10?2:1)} зол. за шт.${note||''}</small></div></div><div class="rb">${btns}</div></div>`;
+function mkFilt(act){const q=MKF.q.trim().toLowerCase();let L=act.filter(m=>{const st=m.stack,it=m.item;
+  if(MKF.type==='item'&&st)return false;if(MKF.type==='res'&&!st)return false;
+  if(st){if(MKF.slot||MKF.set!==''||MKF.rar!=='')return false;if(q&&!(stkName(st).toLowerCase().includes(q)||String(m.sname||'').toLowerCase().includes(q)))return false;return true}
+  if(!it)return false;if(MKF.slot&&it.slot!==MKF.slot)return false;if(MKF.set!==''&&String(it.tr)!==MKF.set)return false;if(MKF.rar!==''&&String(it.rar)!==MKF.rar)return false;
+  if(q&&!(String(it.name||'').toLowerCase().includes(q)||String(m.sname||'').toLowerCase().includes(q)||String(it.mk||'').toLowerCase().includes(q)))return false;return true});
+ return L.sort(MKF.sort==='pa'?(a,b)=>a.price-b.price:MKF.sort==='pd'?(a,b)=>b.price-a.price:(a,b)=>b.ts-a.ts)}
+function mkBar(){const sel=(k,o)=>`<select data-mkf="${k}" style="flex:1 1 130px;min-width:0">${o.map(([v,l])=>`<option value="${v}"${String(MKF[k])===String(v)?' selected':''}>${l}</option>`).join('')}</select>`;
+ return`<div class="panel"><div style="display:flex;flex-wrap:wrap;gap:6px"><input type="search" data-mkf="q" value="${esc(MKF.q)}" placeholder="Поиск: вещь, мастер, продавец" style="flex:1 1 100%">`+
+ sel('type',[['','Всё'],['item','Вещи'],['res','Ресурсы']])+sel('slot',[['','Любой слот'],...Object.keys(SL).map(k=>[k,SL[k]])])+sel('set',[['','Любой набор'],...SETN.map((n,i)=>[i,n])])+sel('rar',[['','Любая редкость'],...RAR.map((r,i)=>[i,r[0]])])+sel('sort',[['new','Сначала новые'],['pa','Дешёвые сверху'],['pd','Дорогие сверху']])+
+ `</div><button class="b alt" data-mkss="open" style="margin-top:8px">Продать ресурсы</button></div>`}
 function marketView(){if(!DB)return'<div class="panel"><p>Рынок работает только с подключённой базой данных.</p></div>';
- const mine=MK.filter(m=>m.seller===UID),act=MK.filter(m=>!m.sold&&m.seller!==UID).sort((a,b)=>b.ts-a.ts);
- let h=(MKMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(MKMSG)}</p></div>`:'')+`<div class="panel"><h3>Рынок</h3><p style="margin:0;color:var(--mute);font-size:15px">Торговля вещами между игроками. Чтобы выставить вещь, нажми на неё в рюкзаке и укажи цену. Цены на рынке в золоте. Рынок берёт ${Math.round(MKFEE*100)}% с продажи. Золото: <b class="g">${S.au|0}</b>.</p></div>`;
- if(mine.length)h+=`<div class="panel"><h3>Мои лоты</h3>${mine.map(m=>irow(m.item,m.sold?`<button class="b" data-mc="${m.id}">Забрать ${Math.floor(m.price*(1-MKFEE))} ${mkU(m)}</button>`:`<span class="${m.au?'g':'sv'}" style="font-weight:700">${m.price} ${mkU(m)}</span><button class="b alt" data-mx="${m.id}">Снять</button>`,m.sold?` · <span style="color:var(--moss)">продано: ${esc(m.bname||'')}</span>`:'')).join('')}</div>`;
- h+=`<div class="panel"><h3>Товары (${act.length})</h3>${act.length?act.slice(0,60).map(m=>irow(m.item,`<button class="b" data-mb="${m.id}" ${(S[mkC(m)]|0)<m.price||S.inv.length>=INV_MAX?'disabled':''}>${m.price} ${mkU(m)}</button>`,` · продаёт ${esc(m.sname||'')}`)).join(''):'<p style="margin:0">Пока ничего не продаётся.</p>'}</div>`;
+ const mine=MK.filter(m=>m.seller===UID),act=MK.filter(m=>!m.sold&&m.seller!==UID),L=mkFilt(act),itNote=it=>`${it.tr!=null&&SETN[it.tr]?' · '+SETN[it.tr]:''}${it.mk?' · мастер '+esc(it.mk):''}`;
+ let h=(MKMSG?`<div class="panel" style="border-left:4px solid var(--moss)"><p style="margin:0">${esc(MKMSG)}</p></div>`:'')+`<div class="panel"><h3>Рынок</h3><p style="margin:0;color:var(--mute);font-size:15px">Торговля между игроками: вещи, материалы, бутылки, эликсиры. Чтобы выставить вещь, нажми на неё в рюкзаке и укажи цену. Цены в золоте. Рынок берёт ${Math.round(MKFEE*100)}% с продажи. Золото: <b class="g">${S.au|0}</b>.</p></div>`+mkBar();
+ if(mine.length)h+=`<div class="panel"><h3>Мои лоты</h3>${mine.map(m=>m.stack?stkRow(m,m.sold?`<button class="b" data-mc="${m.id}">Забрать</button>`:`<span class="g" style="font-weight:700">${m.price} зол.</span><button class="b alt" data-mx="${m.id}">Снять</button>`,m.sold?` · <span style="color:var(--moss)">продано: ${esc(m.bname||'')}</span>`:''):irow(m.item,m.sold?`<button class="b" data-mc="${m.id}">Забрать ${Math.floor(m.price*(1-MKFEE))} ${mkU(m)}</button>`:`<span class="${m.au?'g':'sv'}" style="font-weight:700">${m.price} ${mkU(m)}</span><button class="b alt" data-mx="${m.id}">Снять</button>`,(m.sold?` · <span style="color:var(--moss)">продано: ${esc(m.bname||'')}</span>`:'')+itNote(m.item))).join('')}</div>`;
+ h+=`<div class="panel"><h3>Товары (${L.length}${L.length!==act.length?' из '+act.length:''})</h3>${L.length?L.slice(0,MKF.n).map(m=>m.stack?stkRow(m,`<button class="b" data-mb="${m.id}" ${(S.au|0)<m.price?'disabled':''}>${m.price} ${mkU(m)}</button>`,` · продаёт ${esc(m.sname||'')}`):irow(m.item,`<button class="b" data-mb="${m.id}" ${(S[mkC(m)]|0)<m.price||S.inv.length>=INV_MAX?'disabled':''}>${m.price} ${mkU(m)}</button>`,` · продаёт ${esc(m.sname||'')}`+itNote(m.item))).join('')+(L.length>MKF.n?`<button class="b alt" data-mkmore="1" style="width:100%;margin-top:8px">Показать ещё</button>`:''):'<p style="margin:0">Ничего не найдено.</p>'}</div>`;
  return h}
+function mkStackForm(){const opts=[];for(const k of ['hide','bone','ore','herb'])opts.push({t:'mat',k});for(const k of Object.keys(ELXD))opts.push({t:'elx',k});opts.push({t:'pt',k:'b'},{t:'iron',k:''},{t:'dust',k:''});
+ const have=opts.filter(o=>stkHave(o)>0);
+ if(!have.length){MKMSG='Нечего продавать: нужны материалы, бутылки, эликсиры, железо или пыль.';return render()}
+ closeModal();const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="mbox" style="max-width:340px"><h3 style="margin:0 0 8px">Продать ресурсы</h3><label style="display:block;margin-bottom:6px">Товар<select id="mkst" style="width:100%">${have.map(o=>`<option value="${o.t}|${o.k}">${esc(stkName(o))} (есть ${stkHave(o)})</option>`).join('')}</select></label><label style="display:block;margin-bottom:6px">Количество<input id="mksn" type="number" min="1" value="1" style="width:100%"></label><label style="display:block;margin-bottom:10px">Цена за всю партию, золото<input id="mksp" type="number" min="1" value="1" style="width:100%"></label><div style="display:flex;gap:8px"><button class="b" data-mkss="go" style="flex:1">Выставить</button><button class="b alt" onclick="closeModal()" style="flex:1">Отмена</button></div></div>`;document.body.appendChild(d)}
+async function mkStackGo(){const v=(document.getElementById('mkst')||{}).value||'',[t,k]=v.split('|'),n=Math.floor(+(document.getElementById('mksn')||{}).value||0),pr=Math.floor(+(document.getElementById('mksp')||{}).value||0),st={t,k:k||'',n};
+ if(!t||!(n>=1)||!(pr>=1))return;if(stkHave(st)<n){MKMSG='Столько нет.';closeModal();return render()}
+ if(!srvCan()){MKMSG='Выставить можно только онлайн.';closeModal();return render()}
+ closeModal();MKMSG='Выставляю на рынок…';render();const r=await srvOp({k:'mkstack',t,sk:k||'',n,price:pr});
+ if(!r){MKMSG='Нет связи с рынком, попробуй ещё раз.';return render()}if(r.err){MKMSG=r.err==='stale'?'':'Не удалось выставить: '+r.err;return render()}
+ stkLocal(st,-1);save();MKMSG=`${stkName(st)} ×${n} выставлены на рынок за ${pr} зол.`;log(MKMSG,'sys');render()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mkss],[data-mkmore]');if(!b)return;e.preventDefault();if(b.dataset.mkmore){MKF.n+=40;return render()}if(b.dataset.mkss==='open')return mkStackForm();mkStackGo()});
+document.addEventListener('change',e=>{const el=e.target.closest&&e.target.closest('[data-mkf]');if(!el)return;MKF[el.dataset.mkf]=el.value;MKF.n=40;render()});
+
 
 // ===== Кланы: офицеры, заявки, недельное задание, территории =====
 const terTag=k=>{const o=terOwner(k);return o?`<br>Владеет «${esc(o.name)}»${S.clan===o.id?' · <b style="color:var(--moss)">твой клан: +'+Math.round(TERB*100)+'%</b>':''}`:''};
@@ -2303,7 +2333,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.24.0';
+const GVER='1.25.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2905,7 +2935,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.24.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.25.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3218,6 +3248,14 @@ mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||SG!==true)return 
  goldApi({a:'market',id,name:S.name}).then(j=>{S.au=j.au|0;const it=fixItem(JSON.parse(JSON.stringify(j.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} зол.`;log(MKMSG,'sys');save();render()}).catch(e=>{MKMSG=e.message||'Покупка не удалась.';render()}).finally(()=>{GBUSY=false})};
 mkCollect=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||!m.paid)return _mkCollect(id);if(m.seller!==UID)return;
  MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
+const _mkBuy2=mkBuy,_mkCancel2=mkCancel,_mkCollect2=mkCollect;
+mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkBuy2(id);if(m.seller===UID||m.sold||(S.au|0)<m.price||GBUSY||!srvCan())return;GBUSY=true;
+ srvOp({k:'mkbuy',id}).then(r=>{if(!r){MKMSG='Нет связи с рынком, попробуй ещё раз.';return render()}if(r.err){MKMSG=r.err==='stale'?'':r.err;return render()}
+  S.au=r.res.au|0;stkLocal(r.res.stack,1);MKMSG=`Куплено: ${stkName(r.res.stack)} ×${r.res.stack.n} за ${m.price} зол.`;log(MKMSG,'sys');save();render()}).finally(()=>{GBUSY=false})};
+mkCancel=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkCancel2(id);if(m.seller!==UID||m.sold||!srvCan())return;
+ srvOp({k:'mkcancel',id}).then(r=>{if(!r||r.err){MKMSG=r&&r.err&&r.err!=='stale'?r.err:'';return render()}stkLocal(r.res.stack,1);MKMSG=`${stkName(r.res.stack)} ×${r.res.stack.n} сняты с продажи и вернулись к тебе.`;save();render()})};
+mkCollect=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkCollect2(id);if(m.seller!==UID)return;
+ MKMSG=`Продано: ${stkName(m.stack)} ×${m.stack.n} игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
 
 </script>
 </body>
