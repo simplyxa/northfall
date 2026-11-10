@@ -244,8 +244,13 @@ module.exports = function saves(admin) {
           const n = Math.floor(+o.n || 0), kind = o.kind === 'i' ? 'i' : 'g'; if (!(n > 0 && n <= 1e7)) throw new Fail(400, 'Неверная сумма');
           if (kind === 'g') { if ((+s.gold || 0) < n) throw new Fail(409, 'Не хватает серебра'); s.gold -= n; } else { if ((s.iron | 0) < n) throw new Fail(409, 'Не хватает железа'); s.iron -= n; }
           const d = ds.exists ? ds.data() : { gold: 0, iron: 0 };
-          const nd = { name: String(s.name || uid).slice(0, 20), gold: (d.gold | 0) + (kind === 'g' ? n : 0), iron: (d.iron | 0) + (kind === 'i' ? n : 0) };
+          const wkN = Math.floor(Date.now() / 604800000), cw = d.wk === wkN;   // вклады этой недели — для «топа недели»
+          const nd = { name: String(s.name || uid).slice(0, 20), gold: (d.gold | 0) + (kind === 'g' ? n : 0), iron: (d.iron | 0) + (kind === 'i' ? n : 0),
+            wk: wkN, wg: (cw ? d.wg | 0 : 0) + (kind === 'g' ? n : 0), wi: (cw ? d.wi | 0 : 0) + (kind === 'i' ? n : 0) };
           tx.set(dref, nd);
+          const tsn = Date.now();
+          tx.set(db.collection('clans').doc(String(s.clan)).collection('led').doc(tsn.toString(36) + Math.random().toString(36).slice(2, 5)),
+            { ts: tsn, k: 'dep', uid, name: nd.name, g: kind === 'g' ? n : 0, i: kind === 'i' ? n : 0 });
           s.dep = s.dep || {}; s.dep[s.clan] = { g: nd.gold, i: nd.iron };
           out = { kind, n, dep: s.dep[s.clan] };
         } else throw new Fail(400, 'Неизвестное действие');

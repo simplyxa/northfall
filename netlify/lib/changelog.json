@@ -590,5 +590,10 @@
   "v": "1.18.42",
   "t": "Арена: бой с копиями меньше нагружает телефон — кнопка удара и шкалы обновляются реже, сервер не пересылает журнал боя каждый тик",
   "te": "Arena: clone fights are lighter on phones — the strike button and bars update less often, and the server no longer resends the fight log on every tick"
+ },
+ {
+  "v": "1.19.0",
+  "t": "Кланы: звания (лидер, офицер, воин, новичок) и описание прав, задание дня с наградой в казну, журнал казны и топ вкладчиков недели, поиск клана с фильтрами; офицеры теперь действительно могут улучшать постройки",
+  "te": "Clans: ranks (leader, officer, warrior, recruit) with rights, a daily quest rewarding the treasury, a treasury ledger and weekly top donors, clan search with filters; officers can now actually upgrade buildings"
  }
 ]
