@@ -56,8 +56,14 @@ function init(s) {
 // returns {need:{...}} or throws via fail(code,msg)
 function start(s, o, now, fail, speed) {
   const c = init(s), day = Math.floor(now / DAY);
-  if (!c.p) throw fail(400, 'Сначала выбери профессию');
   if (c.q) throw fail(409, 'Мастерская занята');
+  const want = String(o.p || '');   // в какую купленную мастерскую зашёл игрок: переключение без отдельной смены
+  if (want && want !== c.p) {
+    if (!c.own.includes(want)) throw fail(409, 'Сначала купи эту профессию');
+    if (c.p) c.px[c.p] = c.x;
+    c.p = want; c.x = c.px[want] | 0;
+  }
+  if (!c.p) throw fail(400, 'Сначала выбери профессию');
   if (c.d !== day) { c.d = day; c.n = 0; }
   if (c.n >= DAILY) throw fail(409, 'Дневной лимит крафта: ' + DAILY);
   const pl = pLevel(c.x), r = String(o.r || '');

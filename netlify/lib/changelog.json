@@ -685,5 +685,10 @@
   "v": "1.26.10",
   "t": "Иконки материалов с прозрачным фоном, хорошо смотрятся и на светлой теме.",
   "te": "Material icons now have a transparent background and look good on the light theme too."
+ },
+ {
+  "v": "1.26.11",
+  "t": "Профессии: убрана смена профессии. На странице ремесла сразу видны все три профессии: купленные открываются кнопкой «Войти», остальные покупаются за 100 золота.",
+  "te": "Professions: the switch-profession mechanic is gone. The crafting page shows all three professions at once: owned ones open with \"Enter\", the rest can be bought for 100 gold."
  }
 ]
