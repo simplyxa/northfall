@@ -725,5 +725,10 @@
   "v": "1.26.18",
   "t": "Алхимик: иконки бутылок в списке варки.",
   "te": "Alchemist: bottle icons in the brewing list."
+ },
+ {
+  "v": "1.26.19",
+  "t": "Алхимик: иконки эликсиров силы, стойкости и брони в списке варки и в панели эликсиров.",
+  "te": "Alchemist: icons for the elixirs of strength, endurance and armor in the brewing list and the elixir panel."
  }
 ]
