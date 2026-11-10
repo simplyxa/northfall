@@ -3,8 +3,8 @@
 // и защищено от записи клиентом (см. guard в saves.js).
 //   cf = { p: 'smith'|'alch'|'rune', x: опыт профессии, q: {r, a, t0, te, n}|null, d: сутки, n: крафтов за сутки }
 'use strict';
-const MATS = ['hide', 'bone', 'ore', 'herb'];
-const DAY = 86400000, DAILY = 12, SWITCH_COST = 5000;
+const MATS = ['hide', 'bone', 'ore', 'herb', 'ingot'];
+const DAY = 86400000, DAILY = 12, PROF_AU = 100;   // профессия покупается навсегда за золото, переключение бесплатное
 const PROFS = ['smith', 'alch', 'rune'];
 const SLOTS = ['w', 'h', 'a', 'g', 'b', 'r', 'c', 'p', 'n', 'o'];
 const SETLV = [1, 8, 15, 22, 30, 30, 12, 24, 30];   // 5 — набор Одина (не крафтится); 6–8 — наборы только для крафта
@@ -12,16 +12,16 @@ const RUNES = ['str', 'hp', 'arm', 'reg', 'en'];
 const pLevel = x => Math.min(10, 1 + Math.floor(Math.sqrt(Math.max(0, x | 0) / 25)));
 
 // Кузнец: набор tr 0..4, нужен уровень профессии и героя
+// Вещи куются только из слитков (руда → слиток на плавке); крафтятся только три наши наборы, список будет расти
 const FORGE = {
-  0: { pl: 1, iron: 40, ore: 3, hide: 2, gold: 100, min: 10, xp: 10 },
-  1: { pl: 2, iron: 90, ore: 5, hide: 3, gold: 300, min: 25, xp: 20 },
-  2: { pl: 3, iron: 170, ore: 8, hide: 5, gold: 800, min: 60, xp: 30 },
-  3: { pl: 5, iron: 300, ore: 12, hide: 8, gold: 2000, min: 120, xp: 45 },
-  4: { pl: 7, iron: 500, ore: 18, hide: 12, gold: 5000, min: 240, xp: 60 },
-  // наборы, которых нет в добыче: только крафт
-  6: { pl: 2, iron: 70, ore: 4, hide: 6, bone: 2, gold: 200, min: 20, xp: 18 },    // следопыта, 12 ур.
-  7: { pl: 5, iron: 260, ore: 12, bone: 8, gold: 1500, min: 100, xp: 40 },         // рунного кузнеца, 24 ур.
-  8: { pl: 7, iron: 450, ore: 14, hide: 10, bone: 10, gold: 4000, min: 200, xp: 55 } // ледяного стража, 30 ур.
+  6: { pl: 2, iron: 70, ingot: 3, hide: 6, bone: 2, gold: 200, min: 20, xp: 18 },    // следопыта, 12 ур.
+  7: { pl: 5, iron: 260, ingot: 8, bone: 8, gold: 1500, min: 100, xp: 40 },          // рунного кузнеца, 24 ур.
+  8: { pl: 7, iron: 450, ingot: 14, hide: 10, bone: 10, gold: 4000, min: 200, xp: 55 } // ледяного стража, 30 ур.
+};
+// Плавка: руда и железо → слитки (партия)
+const SMELT = {
+  3: { pl: 1, ore: 9, iron: 30, min: 10, xp: 8 },
+  10: { pl: 3, ore: 28, iron: 90, min: 30, xp: 22 }
 };
 // Алхимик: партии бутылок
 const BREW = {
@@ -43,7 +43,11 @@ const RUNEC = [
 
 function init(s) {
   const c = s.cf && typeof s.cf === 'object' ? s.cf : {};
-  s.cf = { p: PROFS.includes(c.p) ? c.p : '', x: Math.max(0, c.x | 0), q: c.q && c.q.r ? c.q : null, d: c.d | 0, n: c.n | 0 };
+  const p = PROFS.includes(c.p) ? c.p : '';
+  const own = Array.isArray(c.own) ? c.own.filter(x => PROFS.includes(x)) : [];
+  if (p && !own.includes(p)) own.push(p);   // кто уже выбрал профессию раньше — она остаётся за ним
+  const px = {}; for (const k of PROFS) px[k] = Math.max(0, (c.px && c.px[k]) | 0);
+  s.cf = { p, x: Math.max(0, c.x | 0), own, px, q: c.q && c.q.r ? c.q : null, d: c.d | 0, n: c.n | 0 };
   s.mat = s.mat && typeof s.mat === 'object' ? s.mat : {};
   for (const m of MATS) s.mat[m] = Math.max(0, s.mat[m] | 0);
   return s.cf;
@@ -64,7 +68,11 @@ function start(s, o, now, fail, speed) {
     if (!FORGE[tr] || !SLOTS.includes(slot)) throw fail(400, 'Неверный рецепт');
     rec = FORGE[tr]; a = { slot, tr };
     if ((s.lvl | 0) < SETLV[tr]) throw fail(409, 'Нужен ' + SETLV[tr] + ' уровень героя');
-    cost = { iron: rec.iron, ore: rec.ore, gold: rec.gold }; if (rec.hide) cost.hide = rec.hide; if (rec.bone) cost.bone = rec.bone;
+    cost = { iron: rec.iron, ingot: rec.ingot, gold: rec.gold }; if (rec.hide) cost.hide = rec.hide; if (rec.bone) cost.bone = rec.bone;
+  } else if (r === 'smelt') {
+    if (c.p !== 'smith') throw fail(400, 'Это ремесло кузнеца');
+    const n = o.n | 0; rec = SMELT[n]; if (!rec) throw fail(400, 'Неверный рецепт');
+    a = { n }; cost = { ore: rec.ore, iron: rec.iron };
   } else if (r === 'brew') {
     if (c.p !== 'alch') throw fail(400, 'Это ремесло алхимика');
     const n = o.n | 0; rec = BREW[n]; if (!rec) throw fail(400, 'Неверный рецепт');
@@ -82,7 +90,7 @@ function start(s, o, now, fail, speed) {
   if (pl < rec.pl) throw fail(409, 'Нужен ' + rec.pl + ' уровень профессии');
   for (const [k, v] of Object.entries(cost)) {
     const have = k === 'gold' ? +s.gold || 0 : k === 'iron' || k === 'dust' ? s[k] | 0 : s.mat[k] | 0;
-    if (have < v) throw fail(409, 'Не хватает: ' + ({ gold: 'серебра', iron: 'железа', dust: 'пыли', hide: 'шкур', bone: 'костей', ore: 'руды', herb: 'трав' })[k]);
+    if (have < v) throw fail(409, 'Не хватает: ' + ({ gold: 'серебра', iron: 'железа', dust: 'пыли', hide: 'шкур', bone: 'костей', ore: 'руды', herb: 'трав', ingot: 'слитков' })[k]);
   }
   for (const [k, v] of Object.entries(cost)) {
     if (k === 'gold') s.gold = (+s.gold || 0) - v; else if (k === 'iron' || k === 'dust') s[k] = (s[k] | 0) - v; else s.mat[k] -= v;
@@ -104,6 +112,7 @@ function claim(s, now, fail) {
   if (now < c.q.te) throw fail(409, 'Ещё не готово');
   const q = c.q, pl = pLevel(c.x); let out;
   if (q.r === 'forge') out = { kind: 'item', slot: q.a.slot, tr: q.a.tr, rar: rollRar(pl, q.a.tr) };
+  else if (q.r === 'smelt') { s.mat = s.mat && typeof s.mat === 'object' ? s.mat : {}; s.mat.ingot = (s.mat.ingot | 0) + q.a.n; out = { kind: 'ingot', n: q.a.n }; }
   else if (q.r === 'elix') { s.elx = s.elx && typeof s.elx === 'object' ? s.elx : {}; s.elx[q.a.t] = (s.elx[q.a.t] | 0) + ELIX.n; out = { kind: 'elix', t: q.a.t, n: ELIX.n }; }
   else if (q.r === 'brew') { s.pt = s.pt && typeof s.pt === 'object' ? s.pt : {}; s.pt.b = (s.pt.b | 0) + q.a.n; out = { kind: 'bottle', n: q.a.n }; }
   else { s.runes = s.runes && typeof s.runes === 'object' ? s.runes : {}; s.runes[q.a.k] = (s.runes[q.a.k] | 0) + 1; out = { kind: 'rune', k: q.a.k }; }
@@ -112,13 +121,16 @@ function claim(s, now, fail) {
   return out;
 }
 
+function owns(s, p) { return init(s).own.includes(p); }
+// переключение на купленную профессию (бесплатно, опыт у каждой свой); покупку и списание золота делает saves.js
 function pick(s, o, now, fail) {
   const c = init(s), p = String(o.p || '');
   if (!PROFS.includes(p)) throw fail(400, 'Неизвестная профессия');
   if (c.q) throw fail(409, 'Сначала забери готовое');
   if (c.p === p) throw fail(409, 'Эта профессия уже выбрана');
-  if (c.p) { if ((+s.gold || 0) < SWITCH_COST) throw fail(409, 'Смена профессии стоит ' + SWITCH_COST + ' серебра'); s.gold -= SWITCH_COST; c.x = 0; }
-  c.p = p;
+  if (c.p) c.px[c.p] = c.x;
+  if (!c.own.includes(p)) c.own.push(p);
+  c.p = p; c.x = c.px[p] | 0;
   return { p };
 }
 
@@ -132,4 +144,4 @@ function clampMats(prev, s, dt) {
 // cf меняет только сервер
 function lockCf(prev, s) { if (prev && prev.cf) s.cf = prev.cf; else delete s.cf; }
 
-module.exports = { ELIX, MATS, PROFS, DAILY, SWITCH_COST, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
+module.exports = { PROF_AU, owns, SMELT, ELIX, MATS, PROFS, DAILY, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };

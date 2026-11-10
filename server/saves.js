@@ -26,7 +26,7 @@ const silverRate = lv => 15 * (5 + lv * 9) / 60;
 const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 const pid = (a, b) => [a, b].sort().join('~');
 // стопки на рынке: t — mat|pt|elx|iron|dust, k — ключ материала/эликсира, n — количество
-const STK = { mat: ['hide', 'bone', 'ore', 'herb'], elx: ['a', 'h', 'd'], pt: ['b'], iron: [''], dust: [''] };
+const STK = { mat: ['hide', 'bone', 'ore', 'herb', 'ingot'], elx: ['a', 'h', 'd'], pt: ['b'], iron: [''], dust: [''] };
 function stackSpec(o) {
   const t = String(o.t || ''), k = String(o.sk || ''), n = Math.floor(+o.n || 0);
   if (!STK[t] || !STK[t].includes(k) || !(n >= 1 && n <= 9999)) return null;
@@ -230,7 +230,7 @@ module.exports = function saves(admin) {
         if (k === 'mkcancel' || k === 'mkbuy') { mref = db.collection('market').doc(String(o.id || '')); ms = await tx.get(mref); }
         let bwref, bws, swref, sws, forgeSp = 0;
         if (k === 'cstart' && s.clan) { const cs = await tx.get(db.collection('clans').doc(String(s.clan))); if (cs.exists) forgeSp = Math.min(.3, .06 * ((((cs.data().b || {}).frg) | 0))); }
-        if (k === 'mkstack') { wref = db.collection('wallet').doc(uid); ws = await tx.get(wref); }
+        if (k === 'mkstack' || (k === 'cprof' && !CRAFT.owns(s, String(o.p || '')))) { wref = db.collection('wallet').doc(uid); ws = await tx.get(wref); }
         if (k === 'mkbuy') {
           bwref = db.collection('wallet').doc(uid); bws = await tx.get(bwref);
           const sl = ms.exists ? ms.data() : null;
@@ -306,7 +306,16 @@ module.exports = function saves(admin) {
             { ts: tsn, k: 'dep', uid, name: nd.name, g: kind === 'g' ? n : 0, i: kind === 'i' ? n : 0 });
           s.dep = s.dep || {}; s.dep[s.clan] = { g: nd.gold, i: nd.iron };
           out = { kind, n, dep: s.dep[s.clan] };
-        } else if (k === 'cprof') { out = CRAFT.pick(s, o, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
+        } else if (k === 'cprof') {
+          const fl = (c, m) => new Fail(c, m), buy = wref && !CRAFT.owns(s, String(o.p || ''));
+          if (buy && (!ws.exists || (ws.data().au | 0) < CRAFT.PROF_AU)) throw new Fail(409, `Профессия стоит ${CRAFT.PROF_AU} золота`);
+          out = CRAFT.pick(s, o, Date.now(), fl);   // сначала проверки профессии, потом списание
+          if (buy) {
+            const now = Date.now(), au = (ws.data().au | 0) - CRAFT.PROF_AU;
+            tx.update(wref, { au }); tx.set(wref.collection('log').doc(now.toString(36) + 'p'), { op: 'pay', n: -CRAFT.PROF_AU, why: 'prof', ts: now });
+            out.au = au;
+          }
+          out.cf = s.cf;
         } else if (k === 'cstart') { out = CRAFT.start(s, o, Date.now(), (c, m) => new Fail(c, m), forgeSp); out.cf = s.cf; out.mat = s.mat; out.gold = s.gold; out.iron = s.iron | 0; out.dust = s.dust | 0;
         } else if (k === 'cclaim') { out = CRAFT.claim(s, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
         } else throw new Fail(400, 'Неизвестное действие');

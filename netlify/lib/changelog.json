@@ -660,5 +660,20 @@
   "v": "1.26.5",
   "t": "Ковка: на кнопках выбора слота теперь иконки.",
   "te": "Forging: the slot buttons now have icons."
+ },
+ {
+  "v": "1.26.6",
+  "t": "Ковка: рамки иконок в списке рецептов больше не синие, редкость вещи неизвестна заранее. Над списком показаны реальные шансы редкости на твоём уровне профессии.",
+  "te": "Forging: icon frames in the recipe list are no longer blue, since the item rarity is not known in advance. The list now shows the real rarity chances at your profession level."
+ },
+ {
+  "v": "1.26.7",
+  "t": "Ремесло: остались три набора (следопыта, рунного кузнеца, ледяного стража). Добавлена плавка: руда превращается в слитки, из слитков куются вещи. Рамки в списке ковки показывают реальную редкость.",
+  "te": "Crafting: only three sets remain (Pathfinder, Rune Smith, Ice Guardian). Added smelting: ore becomes ingots, and gear is forged from ingots. Frames in the forge list show real rarity."
+ },
+ {
+  "v": "1.26.8",
+  "t": "Профессии: доступны все три, каждая покупается один раз за 100 золота. Переключаться между купленными можно бесплатно, опыт у каждой свой.",
+  "te": "Professions: all three are available; each is bought once for 100 gold. Switching between owned professions is free, and each keeps its own XP."
  }
 ]
