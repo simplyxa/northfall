@@ -830,7 +830,7 @@ function stageHtml(H){const pa=petA(),fig=HEROFIG[S.cls];
 const HPW=new WeakMap();let SLE=[],HPH=null,SLH=null;
 function fxl(){let l=document.getElementById('fxl');if(!l){l=document.createElement('div');l.id='fxl';document.body.appendChild(l)}return l}
 function fxAt(el,cls,txt,dy){if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;const d=document.createElement('div');d.className=cls;if(txt!=null)d.textContent=txt;d.style.left=(r.left+r.width/2+(txt!=null?Math.random()*24-12:0))+'px';d.style.top=(r.top+r.height*(dy==null?.4:dy))+'px';fxl().appendChild(d);setTimeout(()=>d.remove(),1000)}
-const ANI=(el,k,o)=>{try{el&&el.animate&&el.animate(k,o)}catch(e){}};
+const ANI=(el,k,o)=>{try{return el&&el.animate&&el.animate(k,o)}catch(e){}};
 function stageFx(){if(!fight||!fight.hunt||fight.hunt.raid)return;const H=fight.hunt;if(SLH!==H){SLH=H;SLE=[];HPH=null}
  const hel=document.getElementById('sthero');if(!hel)return;
  H.sl.forEach((s,i)=>{const el=document.getElementById('sf'+i)||document.querySelectorAll('.stage .st-foe')[i],old=SLE[i];
@@ -841,7 +841,7 @@ function stageFx(){if(!fight||!fight.hunt||fight.hunt.raid)return;const H=fight.
  if(HPH!=null){if(S.hp<HPH){fxAt(hel,'fxn h','−'+(HPH-S.hp),.25);ANI(hel.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(1)'},{transform:'translateX(-8px)',filter:'brightness(1.6) sepia(1) hue-rotate(-30deg) saturate(4)'},{transform:'translateX(4px)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:300})}
   else if(S.hp-HPH>=Math.max(5,maxHp()*.05))fxAt(hel,'fxn g','+'+(S.hp-HPH),.25)}
  HPH=S.hp;
- {const pn=fight.hpose||(fight.lunge?'atk':'');if(pn){const hm=fight.hpose?(HPOSEMS[pn]||900):430;fight.hpose=0;fight.lunge=0;const fg=hel.querySelector('.st-fig'),fa=fg&&fg.querySelector('.st-fa[data-p="'+pn+'"]');if(fa){const k=Math.min(.4,170/hm),k2=1-k,fl=[{opacity:0},{opacity:1,offset:k},{opacity:1,offset:k2},{opacity:0}],fb=[{opacity:1},{opacity:0,offset:k},{opacity:0,offset:k2},{opacity:1}];ANI(fa,fl,{duration:hm});ANI(fg.firstElementChild,fb,{duration:hm});if(pn==='atk')ANI(fg,[{transform:'translateX(0)'},{transform:'translateX(18px)'},{transform:'translateX(0)'}],{duration:hm,easing:'ease-out'})}else if(pn==='atk')ANI(fg,[{transform:'translateX(0)'},{transform:'translateX(38px) rotate(5deg) scale(1.04)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}}
+ {const pn=fight.hpose||(fight.lunge?'atk':'');if(pn){const hm=fight.hpose?(HPOSEMS[pn]||900):430;fight.hpose=0;fight.lunge=0;const fg=hel.querySelector('.st-fig'),fa=fg&&fg.querySelector('.st-fa[data-p="'+pn+'"]');const pa=[];if(fg){(fg._pa||[]).forEach(a=>{try{a.cancel()}catch(e){}});fg._pa=pa}if(fa){const k=Math.min(.4,170/hm),k2=1-k,fl=[{opacity:0},{opacity:1,offset:k},{opacity:1,offset:k2},{opacity:0}],fb=[{opacity:1},{opacity:0,offset:k},{opacity:0,offset:k2},{opacity:1}];pa.push(ANI(fa,fl,{duration:hm}),ANI(fg.firstElementChild,fb,{duration:hm}));if(pn==='atk')pa.push(ANI(fg,[{transform:'translateX(0)'},{transform:'translateX(18px)'},{transform:'translateX(0)'}],{duration:hm,easing:'ease-out'}))}else if(pn==='atk')pa.push(ANI(fg,[{transform:'translateX(0)'},{transform:'translateX(38px) rotate(5deg) scale(1.04)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'}))}}
  if(fight.pl){fight.pl=0;const pf=document.querySelector('#stpet .st-pf'),pk=(petA()||{}).k;if(pf){const fl=[{opacity:0},{opacity:1,offset:.18},{opacity:1,offset:.72},{opacity:0}],fb=[{opacity:1},{opacity:0,offset:.18},{opacity:0,offset:.72},{opacity:1}];ANI(pf.querySelector('.st-pa'),fl,{duration:420});ANI(pf.querySelector('.st-pi'),fb,{duration:420})}ANI(pf,pk==='raven'?[{transform:'translate(0,0) rotate(0deg)'},{transform:'translate(90%,35%) rotate(14deg) scale(1.1)'},{transform:'translate(0,0) rotate(0deg)'}]:[{transform:'translateX(0) scale(1)'},{transform:'translateX(65%) scale(1.08)'},{transform:'translateX(0) scale(1)'}],{duration:420,easing:"ease-out"})}
  fight.lc=0}
 function noEn(){const el=document.querySelector('.stage .st-w')||document.querySelector('.stage');if(el)fxAt(el,'fxn h big','Not enough energy',.5)}
@@ -2336,7 +2336,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.0';
+const GVER='1.26.1';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2755,7 +2755,7 @@ function dunSub(){
  if(dunFor===S.clan)return;if(dunUn)dunUn();dunFor=S.clan;DUN=null;
  dunUn=DB.collection('clans').doc(S.clan).collection('dun').limit(5).onSnapshot(sn=>{const d=sn.docs.find(x=>x.id==='st');DUN=d?JSON.parse(JSON.stringify(d.data())):null;
   if((!DUN||DUN.wk!==curS())&&!sn.metadata.fromCache){const n=dNew(1);n.kills=DUN&&DUN.wk===curS()?DUN.kills:[];DUN=n;dunRef().set(n).catch(()=>{})}
-  if(tab==='clan'&&ctab==='dun'&&!fight)ui()},()=>{})}
+  if(tab==='clan'&&ctab==='dun'&&!fight)ui()},()=>{dunUn=null;dunFor=null;setTimeout(()=>{if(S&&S.clan)dunSub()},6000)})}
 function startDun(){
  if(!S.clan||!DB||!DUN||fight)return;const cost=5;
  if(dLeft()>0){log('You can descend once every 8 hours. Time left '+hm(dLeft())+'.','sys');return render()}
@@ -2798,7 +2798,7 @@ function dunView(my){
 function depSub(){
  if(!DB||!S||!S.clan){if(depUn)depUn();depUn=null;depFor=null;DEP=[];return}
  if(depFor===S.clan)return;if(depUn)depUn();depFor=S.clan;
- depUn=DB.collection('clans').doc(S.clan).collection('dep').limit(100).onSnapshot(sn=>{DEP=sn.docs.map(d=>({id:d.id,...d.data()}));ui()},()=>{})}
+ depUn=DB.collection('clans').doc(S.clan).collection('dep').limit(100).onSnapshot(sn=>{DEP=sn.docs.map(d=>({id:d.id,...d.data()}));ui()},()=>{depUn=null;depFor=null;setTimeout(()=>{if(S&&S.clan)depSub()},6000)})}
 function kick(uid){const my=CLN.find(c=>c.id===S.clan);if(!canMng(my)||uid===UID||uid===my.leader||(my.leader!==UID&&isOff(my,uid)))return;DB.collection('clans').doc(my.id).update({kicked:[...(my.kicked||[]),uid]}).then(()=>clog(`${S.name} expelled ${pnm(uid)} from the clan.`,'✖')).catch(()=>{log('Could not expel the player.','sys');render()})}
 function leaveClan(){const my=CLN.find(c=>c.id===S.clan);
  if(my&&my.leader===UID&&DB){const r=mem(my).filter(p=>p.id!==UID).sort((x,y)=>y.rating-x.rating),ref=DB.collection('clans').doc(my.id);(r.length?ref.update({leader:r[0].id}):ref.delete()).catch(()=>{})}
@@ -2939,7 +2939,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

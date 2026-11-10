@@ -635,5 +635,10 @@
   "v": "1.26.0",
   "t": "Клановая кузня теперь сокращает время крафта на 6% за уровень (до −30%). На доске клановых заданий новое задание «Мастер-ремесленник»: закончить 2 крафта.",
   "te": "The clan forge now cuts crafting time by 6% per level (up to −30%). New clan board quest: Master Craftsman, finish 2 crafts."
+ },
+ {
+  "v": "1.26.1",
+  "t": "Исправлено: при быстром нажатии двух умений шаман больше не двоится. Подземелье и казна клана: снят лимит живых подписок, при сбое подписка сама переподключается.",
+  "te": "Fixed: pressing two skills quickly no longer doubles the shaman. Clan dungeon and treasury: the live subscription limit is raised and a failed subscription now reconnects by itself."
  }
 ]
