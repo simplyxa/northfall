@@ -650,5 +650,10 @@
   "v": "1.26.3",
   "t": "Профессия теперь на главной, в разделе «Магазин» рядом с мастерами: видно выбранную профессию и готовность работы.",
   "te": "Profession is now on the main menu, in the Shop section next to the masters: it shows your chosen profession and whether a job is ready."
+ },
+ {
+  "v": "1.26.4",
+  "t": "Оплата золота: страну игрока теперь определяем по IP (в том числе у мобильных сетей с IPv6), поэтому Xsolla показывает правильную страну. Политика конфиденциальности дополнена.",
+  "te": "Gold purchase: the player's country is now detected from the IP (including IPv6 mobile networks), so Xsolla shows the right country. Privacy policy updated."
  }
 ]
