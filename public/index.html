@@ -883,7 +883,7 @@ const ELXD={a:['Эликсир силы','атаки','atk',1.12],h:['Эликс
 const elxOn=()=>S&&S.eb&&S.eb.te>Date.now()?S.eb.k:'';
 function elxPanel(){const n=S.elx||{},on=elxOn();if(!on&&!Object.values(n).some(v=>v>0))return'';
  return`<div class="panel"><h3>Эликсиры</h3><p style="margin:0 0 4px">Действует один эликсир, 30 минут. Новый заменяет прежний. Варит алхимик.${on?`<br><b style="color:var(--moss)">Сейчас: ${ELXD[on][0]}, осталось ${Math.ceil((S.eb.te-Date.now())/60000)} мин.</b>`:''}</p>`+Object.keys(ELXD).map(k=>`<div class="row"><div style="display:flex;gap:10px;align-items:center">${elxIc(k,40)}<div>${ELXD[k][0]} · ${n[k]|0} шт.<small>+${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут</small></div></div><button class="b alt" data-elx="${k}" ${(n[k]|0)>0?'':'disabled'}>Выпить</button></div>`).join('')+`</div>`}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-elx]');if(!b)return;e.preventDefault();const k=b.dataset.elx;if(!ELXD[k]||!((S.elx||{})[k]>0))return;S.elx[k]--;S.eb={k,te:Date.now()+ELXT};log(`${ELXD[k][0]}: +${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут.`,'sys');save();render()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-elx]');if(!b)return;e.preventDefault();const k=b.dataset.elx;if(!ELXD[k]||!((S.elx||{})[k]>0))return;S.elx[k]--;S.eb={k,te:Date.now()+ELXT};cntInc('ex');log(`${ELXD[k][0]}: +${Math.round((ELXD[k][3]-1)*100)}% ${ELXD[k][1]} на 30 минут.`,'sys');save();render()});
 function potPanel(){return elxPanel()+`<div class="panel"><h3>Бутылки</h3>`+Object.keys(POT).map(k=>{const P=POT[k],n=S.pt[k]|0;return`<div class="row"><div>${P.n} · ${n} шт.<small>${pdesc(P)}</small></div></div>`}).join('')+`</div>`}
 function settle(){
  if(fight.hunt)return huntCheck();
@@ -1230,7 +1230,19 @@ const ACH=[['sg7','Знаток саг','Отгадай загадки сказ�
  ['d1','Покоритель глубин','Дойди до 5-го этажа подземелья',c=>(c.df|0)>=5,'Покоритель глубин',600],['d2','Убийца драугров','Дойди до 10-го этажа подземелья',c=>(c.df|0)>=10,'Убийца драугров',2000],
  ['l1','Воин','Достигни 10 уровня',(c,S)=>S.lvl>=10,'Воин',300],['l2','Ветеран','Достигни 30 уровня',(c,S)=>S.lvl>=30,'Ветеран',1500],['l3','Легенда Севера','Достигни 50 уровня',(c,S)=>S.lvl>=50,'Легенда Севера',5000],
  ['u5','Мастер кузни','Усиль вещь до +5',c=>!!c.u5,'Мастер кузни',800],['m1','Сокрушитель','Нанеси 100 000 урона',c=>(c.dmg|0)>=1e5,'Сокрушитель',700],['m2','Разрушитель миров','Нанеси 1 000 000 урона',c=>(c.dmg|0)>=1e6,'Разрушитель миров',4000],
- ['b1','Враг богов','Атакуй мирового босса 10 раз',c=>(c.bs|0)>=10,'Враг богов',800]];
+ ['b1','Враг богов','Атакуй мирового босса 10 раз',c=>(c.bs|0)>=10,'Враг богов',800],
+ ['c1','Подмастерье','Заверши 5 работ в мастерской',c=>(c.cr|0)>=5,'Подмастерье',300],['c2','Мастер на все руки','Заверши 50 работ в мастерской',c=>(c.cr|0)>=50,'Мастер на все руки',1500],
+ ['p1','Три ремесла','Купи все три профессии',(c,S)=>!!S.cf&&Array.isArray(S.cf.own)&&['smith','alch','rune'].every(k=>S.cf.own.includes(k)),'Мастер трёх ремёсел',800],
+ ['p2','Великий мастер','Подними любую профессию до 10 уровня',(c,S)=>crMaxLv()>=10,'Великий мастер',2000],
+ ['s1','Плавильщик','Выплавь 50 слитков',c=>(c.sm|0)>=50,'Плавильщик',400],
+ ['s2','Оружейник Севера','Выкуй вещи из всех трёх крафтовых наборов',c=>((c.cs|0)&7)===7,'Оружейник Севера',1200],
+ ['e1','Зельевар','Выпей 10 эликсиров',c=>(c.ex|0)>=10,'Зельевар',400],
+ ['r1','Рунный мастер','Выточи 5 рунных камней',c=>(c.rn|0)>=5,'Рунный мастер',600],
+ ['t1','Купец Севера','Продай 5 лотов на рынке',c=>(c.ms|0)>=5,'Купец Севера',600],
+ ['cl1','Свой в племени','Вступи в клан',(c,S)=>!!S.clan,'Соклановец',200]];
+function cntInc(k,n){S.cnt=S.cnt||{};S.cnt[k]=(S.cnt[k]|0)+(n==null?1:n);achCheck()}
+function cntBit(k,b){S.cnt=S.cnt||{};S.cnt[k]=(S.cnt[k]|0)|b;achCheck()}
+const crLv=x=>Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,x|0)/25))),crMaxLv=()=>{const f=S.cf||{};return Math.max(f.p?crLv(f.x):0,...['smith','alch','rune'].map(k=>crLv((f.px||{})[k])))};
 function achCheck(){S.ach=S.ach||[];S.cnt=S.cnt||{};for(const a of ACH)if(!S.ach.includes(a[0])&&a[3](S.cnt,S)){S.ach.push(a[0]);S.gold+=a[5];log(`Достижение «${a[1]}»! +${a[5]} серебра, титул «${a[4]}».`,'hit');QMSG=`Достижение «${a[1]}»: +${a[5]} серебра и титул «${a[4]}».`}}
 const titleOf=p=>{const a=ACH.find(x=>x[0]===p.title);return a?a[4]:''};
 function questView(){dqEnsure();loginCheck();const L=S.login,r=qRew();
@@ -1744,10 +1756,14 @@ const NBQ=[
  {t:'dis',n:1,h:'Кузнечное дело',ic:'forge',ir:20,d:'Разбери ненужную вещь на железо (Рюкзак → «Разобрать»).',x:.6,g:60,go:'bag'},
  {t:'saga',n:1,h:'У костра',ic:'camp',d:'Ответь на загадку сказителя (Главная → Лагерь).',x:.6,g:60,go:'camp'},
  {t:'dq',n:1,h:'Дела племени',ic:'quest',b:1,d:'Выполни и забери любое ежедневное задание (Главная → Задания).',x:.6,g:80,go:'quest'},
+ {t:'prof',n:1,h:'Мастера Севера',ic:'forge',ir:20,d:'Загляни в ремёсла (Главная → Лагерь → Профессии): кузнец, алхимик и рунник. Профессия покупается один раз за золото.',x:.5,g:60,go:'craft'},
+ {c:()=>MATO.reduce((s,k)=>s+((S.mat&&S.mat[k])|0),0)>=3,h:'Добыча',ic:'hunt',b:1,d:'Добудь на охоте 3 материала: шкуры, кости, руду или травы (список в Профессии).',x:.5,g:70,go:'hunt'},
  {c:()=>S.lvl>=7,h:'Закалённый',ic:'arena',ir:30,d:'Достигни 7 уровня (охота даёт больше всего опыта).',x:1.5,g:150,go:'hunt'},
  {c:()=>S.lvl>=10,go:'hunt',h:'Воин Севера',ic:'ach',d:'Достигни 10 уровня.',x:0,g:500,gift:1},
  {t:'skill',n:3,go:'hunt',h:'Сила предков',ic:'top',b:3,ir:50,d:'Используй умения класса в бою 3 раза: кнопки с картинками под «Ударом». Улучшать умения можно в профиле: Герой → Умения.',x:.5,g:200,fin:1}];
-function nbInit(){if(!S)return;if(!S.nb)S.nb=S.lvl>=10?{done:1}:{i:0,p:0}}
+function nbInit(){if(!S)return;if(!S.nb)S.nb=S.lvl>=10?{done:1}:{i:0,p:0,v:2};
+ // в путь добавлены два шага (индексы 8 и 9): тех, кто уже дальше, сдвигаем, чтобы они не потеряли место
+ if(S.nb&&!S.nb.done&&S.nb.v!==2){if((S.nb.i|0)>=8){S.nb.i+=2;S.nb.p=0}S.nb.v=2}}
 function nbEv(t,n){if(!S||!S.nb||S.nb.done)return;const q=NBQ[S.nb.i];if(q&&q.t===t){S.nb.p=Math.min(q.n,(S.nb.p|0)+(n||1))}}
 const nbOk=()=>{const q=S.nb&&!S.nb.done&&NBQ[S.nb.i];return!!q&&(q.c?q.c():(S.nb.p|0)>=q.n)};
 // задание «Пути новичка» выполнено — сразу окно «Забрать награду»; по кнопке — на главную и награда
@@ -1859,7 +1875,7 @@ function mkBuy(id){const m=MK.find(x=>x.id===id);if(!m||m.seller===UID||m.sold||
   return ref.update({sold:true,buyer:UID,bname:S.name}).then(()=>{if((S[mkC(m)]|0)<m.price){ref.update({sold:false,buyer:null}).catch(()=>{});return}S[mkC(m)]-=m.price;const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} ${mkU(m)}`;log(MKMSG,'sys');save();render()})}).catch(()=>{MKMSG='Покупка не удалась.';render()})}
 function mkCancel(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||m.sold)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон, освободи место.','sys');return render()}
  const ref=DB.collection('market').doc(id);ref.get().then(sn=>{if(!sn.exists)return;if(sn.data().sold){MKMSG='Вещь уже купили, забери выручку.';return render()}return ref.delete().then(()=>{const it=fixItem(JSON.parse(JSON.stringify(m.item)));it.uid=uid();S.inv.push(it);MKMSG=`«${it.name}» снят с продажи и вернулся в рюкзак.`;save();render()})}).catch(()=>{})}
-function mkCollect(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||!m.sold)return;const g=Math.floor(m.price*(1-MKFEE));DB.collection('market').doc(id).delete().then(()=>{S[mkC(m)]=(S[mkC(m)]|0)+g;MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: +${g} ${mkU(m)} (сбор рынка ${Math.round(MKFEE*100)}%).`;log(MKMSG,'sys');save();render()}).catch(()=>{})}
+function mkCollect(id){const m=MK.find(x=>x.id===id);if(!m||m.seller!==UID||!m.sold)return;const g=Math.floor(m.price*(1-MKFEE));DB.collection('market').doc(id).delete().then(()=>{S[mkC(m)]=(S[mkC(m)]|0)+g;cntInc('ms');MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: +${g} ${mkU(m)} (сбор рынка ${Math.round(MKFEE*100)}%).`;log(MKMSG,'sys');save();render()}).catch(()=>{})}
 // ===== Рынок: фильтры, поиск, сортировка, лоты-стопки (материалы, бутылки, эликсиры, железо, пыль) =====
 const MKF={q:'',type:'',slot:'',set:'',rar:'',sort:'new',n:40};
 const matIc=(k,sz)=>{const i=['hide','bone','ore','herb','ingot'].indexOf(k);return i<0?'🧵':`<span aria-hidden="true" style="display:inline-block;flex:none;vertical-align:middle;width:${sz}px;height:${sz}px;background:url(/img/dc1e97df17fc7c.webp) no-repeat;background-size:${sz*5}px ${sz}px;background-position:-${i*sz}px 0"></span>`};
@@ -1956,6 +1972,7 @@ function crMenuSub(){const c=S&&S.cf;if(!c||!c.p)return'три ремесла: �
 const crSp=()=>Math.min(.3,.06*cb('frg'));
 const crHm=ms=>{const m=Math.max(1,Math.ceil(ms/60000));return m>=60?Math.floor(m/60)+' ч '+(m%60?(m%60)+' мин':''):m+' мин'};
 function craftView(){
+ nbEv('prof');
  const cf=S.cf||{},own=Array.isArray(cf.own)?cf.own.slice():[],q=cf.q,now=Date.now();if(cf.p&&!own.includes(cf.p))own.push(cf.p);if(CRV&&!own.includes(CRV))CRV='';const pr=CRV,cx=pr?(pr===cf.p?cf.x|0:(cf.px&&cf.px[pr])|0):0,pl=Math.min(10,1+Math.floor(Math.sqrt(Math.max(0,cx)/25)));
  const day=Math.floor(now/86400000),used=cf.d===day?cf.n|0:0;
  const mats=MATO.map(k=>`<span style="white-space:nowrap">${matIc(k,22)} ${MATN[k]}: <b>${(S.mat&&S.mat[k])|0}</b></span>`).join(' · ');
@@ -2008,11 +2025,12 @@ async function crAct(a){
  else if(op.k==='ccancel'){S.cf=R.cf;S.mat=R.mat;S.gold=R.gold;S.iron=R.iron;S.dust=R.dust;CRMSG='Работа отменена, ресурсы вернулись.'}
  else if(op.k==='cstart'){S.cf=R.cf;S.mat=R.mat;S.gold=R.gold;S.iron=R.iron;S.dust=R.dust;CRMSG='Работа начата.'}
  else{S.cf=R.cf;
-  if(R.kind==='item'){const it=gen(R.slot,0,R.rar,null,R.tr);it.pb=0;it.mk=S.name||'';if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}CRMSG=`Готово: «${it.name}» (${RAR[R.rar][0]}).`}
+  cntInc('cr');
+  if(R.kind==='item'){cntBit('cs',1<<(R.tr-6));const it=gen(R.slot,0,R.rar,null,R.tr);it.pb=0;it.mk=S.name||'';if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}CRMSG=`Готово: «${it.name}» (${RAR[R.rar][0]}).`}
   else if(R.kind==='elix'){S.elx=S.elx||{};S.elx[R.t]=(S.elx[R.t]|0)+R.n;CRMSG=`Готово: ${ELXD[R.t][0]} ×${R.n}.`}
-  else if(R.kind==='ingot'){S.mat=S.mat||{};S.mat.ingot=(S.mat.ingot|0)+R.n;CRMSG=`Готово: слитки ×${R.n}.`}
+  else if(R.kind==='ingot'){cntInc('sm',R.n);S.mat=S.mat||{};S.mat.ingot=(S.mat.ingot|0)+R.n;CRMSG=`Готово: слитки ×${R.n}.`}
   else if(R.kind==='bottle'){S.pt=S.pt||{};S.pt.b=(S.pt.b|0)+R.n;CRMSG=`Готово: бутылки ×${R.n}.`}
-  else{addRune(R.k);CRMSG=`Готово: ${rName(R.k)}.`}
+  else{cntInc('rn');addRune(R.k);CRMSG=`Готово: ${rName(R.k)}.`}
   CRMSG+=` +${R.xp} опыта профессии${R.up?` · новый уровень: ${R.pl}`:''}.`}
  log(CRMSG,'sys');save();render()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cr]');if(!b)return;e.preventDefault();crAct(b.dataset.cr)});
@@ -2350,7 +2368,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.19';
+const GVER='1.26.20';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2954,7 +2972,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.19</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.20</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3266,7 +3284,7 @@ const _mkBuy=mkBuy,_mkCollect=mkCollect;
 mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||SG!==true)return _mkBuy(id);if(m.seller===UID||m.sold||(S.au|0)<m.price)return;if(S.inv.length>=INV_MAX){log('Рюкзак полон.','sys');return render()}if(GBUSY)return;GBUSY=true;
  goldApi({a:'market',id,name:S.name}).then(j=>{S.au=j.au|0;const it=fixItem(JSON.parse(JSON.stringify(j.item)));it.uid=uid();S.inv.push(it);MKMSG=`Куплено: «${it.name}» за ${m.price} зол.`;log(MKMSG,'sys');save();render()}).catch(e=>{MKMSG=e.message||'Покупка не удалась.';render()}).finally(()=>{GBUSY=false})};
 mkCollect=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.au||!m.paid)return _mkCollect(id);if(m.seller!==UID)return;
- MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
+ cntInc('ms');MKMSG=`Продано «${m.item.name}» игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
 const _mkBuy2=mkBuy,_mkCancel2=mkCancel,_mkCollect2=mkCollect;
 mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkBuy2(id);if(m.seller===UID||m.sold||(S.au|0)<m.price||GBUSY||!srvCan())return;GBUSY=true;
  srvOp({k:'mkbuy',id}).then(r=>{if(!r){MKMSG='Нет связи с рынком, попробуй ещё раз.';return render()}if(r.err){MKMSG=r.err==='stale'?'':r.err;return render()}
@@ -3274,7 +3292,7 @@ mkBuy=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkBuy2(
 mkCancel=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkCancel2(id);if(m.seller!==UID||m.sold||!srvCan())return;
  srvOp({k:'mkcancel',id}).then(r=>{if(!r||r.err){MKMSG=r&&r.err&&r.err!=='stale'?r.err:'';return render()}stkLocal(r.res.stack,1);MKMSG=`${stkName(r.res.stack)} ×${r.res.stack.n} сняты с продажи и вернулись к тебе.`;save();render()})};
 mkCollect=function(id){const m=MK.find(x=>x.id===id);if(!m||!m.stack)return _mkCollect2(id);if(m.seller!==UID)return;
- MKMSG=`Продано: ${stkName(m.stack)} ×${m.stack.n} игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
+ cntInc('ms');MKMSG=`Продано: ${stkName(m.stack)} ×${m.stack.n} игроку ${m.bname||''}: золото уже в кошельке.`;log(MKMSG,'sys');render();try{DB.collection('market').doc(id).delete().catch(()=>{})}catch(e){}};
 
 </script>
 </body>

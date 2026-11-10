@@ -730,5 +730,10 @@
   "v": "1.26.19",
   "t": "Алхимик: иконки эликсиров силы, стойкости и брони в списке варки и в панели эликсиров.",
   "te": "Alchemist: icons for the elixirs of strength, endurance and armor in the brewing list and the elixir panel."
+ },
+ {
+  "v": "1.26.20",
+  "t": "Достижения и «Путь новичка»: 10 новых достижений и титулов (ремесло, плавка, наборы, эликсиры, камни, рынок, клан) и два новых шага пути новичка про ремёсла и материалы.",
+  "te": "Achievements and the Newcomer's Path: 10 new achievements and titles (crafting, smelting, sets, elixirs, stones, market, clan) and two new Newcomer's Path steps about professions and materials."
  }
 ]
