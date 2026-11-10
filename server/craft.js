@@ -25,6 +25,9 @@ const BREW = {
   30: { pl: 2, herb: 8, gold: 110, min: 30, xp: 20 },
   60: { pl: 4, herb: 14, gold: 200, min: 60, xp: 36 }
 };
+// Эликсиры: a — сила, h — стойкость, d — броня; партия из 2
+const ELIX = { pl: 3, herb: 6, bone: 3, gold: 150, min: 20, xp: 25, n: 2 };
+const ELK = ['a', 'h', 'd'];
 // Рунник: камень уровня g 0..4
 const RUNEC = [
   { pl: 1, dust: 30, bone: 1, min: 10, xp: 10 },
@@ -62,6 +65,10 @@ function start(s, o, now, fail) {
     if (c.p !== 'alch') throw fail(400, 'Это ремесло алхимика');
     const n = o.n | 0; rec = BREW[n]; if (!rec) throw fail(400, 'Неверный рецепт');
     a = { n }; cost = { herb: rec.herb, gold: rec.gold };
+  } else if (r === 'elix') {
+    if (c.p !== 'alch') throw fail(400, 'Это ремесло алхимика');
+    const t = String(o.t || ''); if (!ELK.includes(t)) throw fail(400, 'Неверный рецепт');
+    rec = ELIX; a = { t }; cost = { herb: rec.herb, bone: rec.bone, gold: rec.gold };
   } else if (r === 'rune') {
     if (c.p !== 'rune') throw fail(400, 'Это ремесло рунника');
     const g = o.g | 0, t = String(o.t || '');
@@ -92,6 +99,7 @@ function claim(s, now, fail) {
   if (now < c.q.te) throw fail(409, 'Ещё не готово');
   const q = c.q, pl = pLevel(c.x); let out;
   if (q.r === 'forge') out = { kind: 'item', slot: q.a.slot, tr: q.a.tr, rar: rollRar(pl, q.a.tr) };
+  else if (q.r === 'elix') { s.elx = s.elx && typeof s.elx === 'object' ? s.elx : {}; s.elx[q.a.t] = (s.elx[q.a.t] | 0) + ELIX.n; out = { kind: 'elix', t: q.a.t, n: ELIX.n }; }
   else if (q.r === 'brew') { s.pt = s.pt && typeof s.pt === 'object' ? s.pt : {}; s.pt.b = (s.pt.b | 0) + q.a.n; out = { kind: 'bottle', n: q.a.n }; }
   else { s.runes = s.runes && typeof s.runes === 'object' ? s.runes : {}; s.runes[q.a.k] = (s.runes[q.a.k] | 0) + 1; out = { kind: 'rune', k: q.a.k }; }
   const was = pl; c.x += q.xp | 0; c.q = null;
@@ -119,4 +127,4 @@ function clampMats(prev, s, dt) {
 // cf меняет только сервер
 function lockCf(prev, s) { if (prev && prev.cf) s.cf = prev.cf; else delete s.cf; }
 
-module.exports = { MATS, PROFS, DAILY, SWITCH_COST, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };
+module.exports = { ELIX, MATS, PROFS, DAILY, SWITCH_COST, FORGE, BREW, RUNEC, pLevel, init, start, claim, pick, clampMats, lockCf };

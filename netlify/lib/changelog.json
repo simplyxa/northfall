@@ -615,5 +615,10 @@
   "v": "1.22.0",
   "t": "Ремесло: выбери одну профессию (кузнец, алхимик или рунник), собирай шкуры, кости, руду и травы на охоте и создавай снаряжение, бутылки и камни. Работа идёт по таймеру, до 12 крафтов в сутки.",
   "te": "Crafting: pick one profession (blacksmith, alchemist or runesmith), gather hides, bones, ore and herbs on hunts and make gear, bottles and stones. Jobs run on a timer, up to 12 crafts a day."
+ },
+ {
+  "v": "1.23.0",
+  "t": "Эликсиры: алхимик (с 3 уровня профессии) варит эликсиры силы, стойкости и брони. Выпитый эликсир даёт +12–15% на 30 минут. Выпить можно в рюкзаке.",
+  "te": "Elixirs: the alchemist (profession level 3) brews elixirs of strength, endurance and armor. A drunk elixir gives +12–15% for 30 minutes. Drink it in the backpack."
  }
 ]
