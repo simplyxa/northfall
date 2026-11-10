@@ -10,6 +10,7 @@ const DOM = '@northfall.game';
 const checkHero = require('./items');
 const { makeLimiter } = require('./ratelimit');
 const ARENA = require('./arena');
+const CRAFT = require('./craft');
 // Клиент шлёт сохранение раз в 5 секунд (автосейв при изменении энергии/здоровья),
 // в бою — чаще. Запас большой: обычный игрок укладывается в 12-20 сохранений в минуту.
 // Каждое сохранение — транзакция Firestore, поэтому и режем, и защищаем кошелёк.
@@ -85,6 +86,9 @@ module.exports = function saves(admin) {
       else if (gain > 0) bud -= gain;
     }
     s._eb = { b: Math.round(bud), t: now };
+
+    // ---- ремесло: профессию/очередь меняет только сервер, материалы растут ограниченно ----
+    CRAFT.lockCf(prev, s); CRAFT.clampMats(prev, s, dt);
 
     // ---- очки умений: сервер урезает до базы класса + 3 очка за уровень ----
     const stFix = ARENA.clampStats(s);
@@ -253,6 +257,9 @@ module.exports = function saves(admin) {
             { ts: tsn, k: 'dep', uid, name: nd.name, g: kind === 'g' ? n : 0, i: kind === 'i' ? n : 0 });
           s.dep = s.dep || {}; s.dep[s.clan] = { g: nd.gold, i: nd.iron };
           out = { kind, n, dep: s.dep[s.clan] };
+        } else if (k === 'cprof') { out = CRAFT.pick(s, o, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
+        } else if (k === 'cstart') { out = CRAFT.start(s, o, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf; out.mat = s.mat; out.gold = s.gold; out.iron = s.iron | 0; out.dust = s.dust | 0;
+        } else if (k === 'cclaim') { out = CRAFT.claim(s, Date.now(), (c, m) => new Fail(c, m)); out.cf = s.cf;
         } else throw new Fail(400, 'Неизвестное действие');
         tx.set(ref, s);
       });
