@@ -14,6 +14,7 @@
 // бойцы с набором получают чуть меньше силы, чем в клиентском бою.
 'use strict';
 const ARENA = require('./arena');
+const CQ = require('./cq.js');
 
 const TICK = 250;        // тик боя, мс
 const CH_T = 5;          // время заряда удара, с
@@ -223,6 +224,7 @@ module.exports = function apvp(getDb) {
       });
     } catch (e) { console.error('apvp end', e.message); }
     rooms.delete(R.uid);
+    if (R.res && R.res.win === 1) CQ.add(db, R.uid, 'arena', 1);   // клановое задание «Арена клана»
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
   }
 

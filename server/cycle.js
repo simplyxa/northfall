@@ -14,6 +14,7 @@
 // сохранении, и начислить её второй раз нельзя.
 'use strict';
 
+const CQ = require('./cq.js');
 const DAYMS = 86400000, WEEKMS = 604800000;
 const dayNum = now => Math.floor((now + 2 * 3600000) / DAYMS);  // сутки игры — по Израилю
 const weekNum = now => Math.floor(now / WEEKMS);
@@ -126,6 +127,7 @@ module.exports = function cycle(getDb) {
       });
     } catch (e) { console.error('boss dmg', e.message); return err(c, send, 'wb'); }
     send(c, { t: 'wbs', rid: 'wb', ...out });
+    if (out && out.st === 'ok' && out.dealt > 0) CQ.add(dbx, c.uid, 'wb', out.dealt);
   }
 
   // награда за босса: долю урона считает сервер, числа начисляет сервер
@@ -173,11 +175,12 @@ module.exports = function cycle(getDb) {
     for (const k of ['easy', 'mid', 'hard']) { const n = Math.floor(+q[k] || 0); if (n > 0) kills += n; }
     const dmg = Math.max(0, Math.floor(+m.d || 0));
     if (!(kills > 0) && !(dmg > 0)) return;
-    let out = null;
+    let out = null, petOn = false;
     try {
       await dbx.runTransaction(async tx => {
         const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
         if (!S) { out = { st: 'no' }; return; }
+        petOn = !!S.pet;
         const cid = String(S.clan || '');
         // ограничение по частоте: зверей не больше, чем игрок может поймать
         const led = S._tp || { t: now, n: 0 };
@@ -245,6 +248,9 @@ module.exports = function cycle(getDb) {
       });
     } catch (e) { console.error('hunt', e.message); return err(c, send, 'hunt'); }
     send(c, { t: 'hunts', rid: 'hunt', ...out });
+    if (out && out.st === 'ok') {   // клановые задания с доски: охота
+      CQ.add(dbx, c.uid, 'kill', out.took); if (out.dmg > 0) CQ.add(dbx, c.uid, 'dmg', out.dmg); if (petOn) CQ.add(dbx, c.uid, 'pet', out.took);
+    }
   }
 
   // ---------- войны ----------
@@ -388,10 +394,18 @@ module.exports = function cycle(getDb) {
           tx.update(cref, { b, spent });
           addLed(tx, dbx, cid, { k: 'bld', uid: c.uid, name: String(S.name || '').slice(0, 20), g: cost.g, i: cost.i, what: B + ' ' + (lv + 1) });
           out = { st: 'ok', k: 'build', b: key, lv: lv + 1, cost };
+        } else if (kind === 'cqtake' || kind === 'cqdrop') {
+          // задания с доски: взять или отказаться (правила — в server/cq.js)
+          const key = String(m.b || '');
+          const r = kind === 'cqtake' ? CQ.take(C, c.uid, S.name, key, cLv(C.xp | 0), now) : CQ.drop(C, c.uid, key, now);
+          if (r.err) { out = { st: r.err, until: r.until }; return; }
+          tx.update(cref, { cq: r.cq });
+          out = { st: 'ok', k: kind, b: key };
         } else { out = { st: 'no' }; return; }
       });
     } catch (e) { console.error('clan', e.message); return err(c, send, 'clan'); }
     send(c, { t: 'clans', rid: 'clan', ...out });
+    if (out && out.st === 'ok' && out.k === 'dungeon') CQ.add(dbx, c.uid, 'dun', 1);
   }
 
   async function onMsg(c, m, send) {
