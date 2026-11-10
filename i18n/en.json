@@ -2819,5 +2819,7 @@
   "Клановая кузня: время крафта −": "Clan forge: crafting time −",
   "Мастер-ремесленник": "Master Craftsman",
   "Закончить {t} крафта": "Finish {t} crafts",
-  "+10% железа при разборе и −6% времени крафта за уровень": "+10% iron on dismantling and −6% crafting time per level"
+  "+10% железа при разборе и −6% времени крафта за уровень": "+10% iron on dismantling and −6% crafting time per level",
+  "Для этой постройки нужен ": "This building needs clan level ",
+  " уровень клана.": "."
 }

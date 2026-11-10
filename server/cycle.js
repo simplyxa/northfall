@@ -383,6 +383,7 @@ module.exports = function cycle(getDb) {
           if (!isLead && !(C.off || []).includes(c.uid)) { out = { st: 'notlead' }; return; }   // строят лидер и офицеры
           const lv = ((C.b || {})[key] | 0);
           if (lv >= 5) { out = { st: 'max' }; return; }
+          if (lv + 1 > cLv(C.xp | 0)) { out = { st: 'lvl', need: lv + 1 }; return; }   // постройка не выше уровня клана
           const cost = { g: 150 * (lv + 1) * (lv + 1), i: 20 * (lv + 1) };   // как в игре
           const dsn = await tx.get(dbx.collection('clans').doc(cid).collection('dep').limit(100));
           const depDocs = dsn.docs.map(d => d.data());
