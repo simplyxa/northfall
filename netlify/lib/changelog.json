@@ -845,5 +845,10 @@
   "v": "1.26.42",
   "t": "Рейд: на сцене видны все пятеро игроков сразу — у каждого имя и полоса здоровья, павшие затемнены.",
   "te": "Raid: all five players are visible on the scene at once, each with a name and health bar; fallen ones are dimmed."
+ },
+ {
+  "v": "1.26.43",
+  "t": "Рейд: все пятеро игроков одного размера и расставлены по левой части поля; босс стоит справа крупно. Добавлена поддержка своего фона и фигуры босса для каждого рейда.",
+  "te": "Raid: all five players are the same size and spread across the left of the field; the boss stands large on the right. Added support for a per-raid background and boss figure."
  }
 ]
