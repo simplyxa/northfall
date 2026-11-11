@@ -2937,5 +2937,8 @@
   "<span style=\"color:var(--ok,#4a4);font-weight:700\">Побеждён</span>": "<span style=\"color:var(--ok,#4a4);font-weight:700\">Defeated</span>",
   ">Вызвать</button>": ">Challenge</button>",
   "Этого противника ты уже победил.": "You have already beaten this opponent.",
-  "Этого воина нет в твоём списке противников.": "This warrior is not in your opponents list."
+  "Этого воина нет в твоём списке противников.": "This warrior is not in your opponents list.",
+  "Нажми на крестик ещё раз в течение 3 секунд, чтобы сдаться (это поражение).": "Tap the cross again within 3 seconds to surrender (counts as a defeat).",
+  "откат ": "cooldown ",
+  "<small style=\"color:var(--mute);margin-right:6px\">откат ": "<small style=\"color:var(--mute);margin-right:6px\">cooldown "
 }

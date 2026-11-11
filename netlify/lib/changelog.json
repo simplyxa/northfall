@@ -770,5 +770,10 @@
   "v": "1.26.27",
   "t": "Арена: кнопка «Обновить» у противников снова работает. Умения теперь видно в бою: название над героем, значок действия у ярости, рёва, каменной кожи и капкана.",
   "te": "Arena: the Refresh button for opponents works again. Skills are now visible in the fight: the name above the hero and an active indicator for rage, roar, stone skin and the trap."
+ },
+ {
+  "v": "1.26.28",
+  "t": "Арена: бутылка лечит до настоящих 100% (сервер учитывает все бонусы героя), полоса заряда удара больше не дёргается, у умений яркая анимация и название (у всех классов), рядом с «Обновить» виден откат, «Сдаться» теперь работает (это поражение), обрыв связи в бою тоже поражение, по времени побеждает тот, у кого больше доля здоровья.",
+  "te": "Arena: the bottle heals to a true 100% (the server now counts all hero bonuses), the strike charge bar no longer jitters, skills have a bright animation and name for every class, the cooldown is shown next to Refresh, Surrender now works (counts as a defeat), a disconnect mid-fight is a defeat, and on timeout the one with the higher health share wins."
  }
 ]
