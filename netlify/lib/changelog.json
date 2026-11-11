@@ -860,5 +860,10 @@
   "v": "1.26.45",
   "t": "Рейд: игроки на сцене стали меньше, союзники бьют и применяют умения с анимацией, твой герой выделен золотым кольцом и стрелкой.",
   "te": "Raid: players on the scene are smaller, allies strike and use skills with animations, and your hero is marked with a gold ring and arrow."
+ },
+ {
+  "v": "1.26.46",
+  "t": "Рейд: питомец меньше и стоит рядом с героем, слуги стоят на земле, босс бьёт с рывком, а позы умений союзников приходят с сервера и совпадают с настоящими.",
+  "te": "Raid: the pet is smaller and stands next to the hero, servants stand on the ground, the boss attacks with a lunge, and allies' skill poses now come from the server and match what they really used."
  }
 ]

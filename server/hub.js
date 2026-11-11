@@ -122,7 +122,7 @@ module.exports = function hub(server, getDb, verify, gate) {
     if (gate && (m.t === 'fsl' || m.t === 'fsu')) return gate.onMsg(c, m, send);   // шлюз данных (STORE=pg)
     if (m.t === 'sub' && Array.isArray(m.c)) { for (const f of m.c) if (FEEDS[f]) sub(c, f); return; }
     if (m.t === 'unsub' && Array.isArray(m.c)) { for (const f of m.c) unsub(c, f); return; }
-    if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm' || m.t === 'rh') return RAID.onMsg(c, m, send);
+    if (m.t === 'rj' || m.t === 'rd' || m.t === 'rm' || m.t === 'rh' || m.t === 'rsk') return RAID.onMsg(c, m, send);
     if (m.t === 'dj' || m.t === 'da') return DUEL.onMsg(c, m, send);
     // мировой цикл: босс, охота, территории, войны, клан
     if (m.t === 'wb' || m.t === 'wbcl' || m.t === 'hunt' || m.t === 'war' || m.t === 'warc' || m.t === 'clan') return CYCLE.onMsg(c, m, send);

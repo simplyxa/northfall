@@ -34,7 +34,7 @@ module.exports = function raids(getDb) {
   const rooms = new Map(); // rid → {R, subs:Set, dirty, last, saved, loading}
 
   function L0(R, t) { R.log = [t, ...(R.log || [])].slice(0, 14); }
-  function pub(R) { return { b: R.b, w: R.w, st: R.st, hp: R.hp, max: R.max, dl: R.dl, bon: R.bon || 0, mem: R.mem, log: R.log, sw: R.sw || 0, wv: R.wv || 0, mobs: R.mobs || [], go: R.go || 0 }; }
+  function pub(R) { return { b: R.b, w: R.w, st: R.st, hp: R.hp, max: R.max, dl: R.dl, bon: R.bon || 0, mem: R.mem, log: R.log, sw: R.sw || 0, wv: R.wv || 0, mobs: R.mobs || [], go: R.go || 0, ske: R.ske || [] }; }
 
   async function load(rid) {
     let r = rooms.get(rid);
@@ -176,6 +176,12 @@ module.exports = function raids(getDb) {
     }
     const r = rooms.get(rid); if (!r || !r.R || !r.subs.has(c)) return;
     const R = r.R, me = R.mem[c.uid]; if (!me || R.st !== 'on') return;
+    if (m.t === 'rsk') { // игрок применил умение: показываем позу остальным (только анимация, на бой не влияет)
+      const k = String(m.k || ''); if (!['rage', 'roar', 'shot', 'trap', 'totem', 'skin'].includes(k) || me.dead) return;
+      const now = Date.now(); if (now - (me._sk || 0) < 700) return; me._sk = now;
+      R.sen = (R.sen | 0) + 1; R.ske = [...(R.ske || []), { u: c.uid, k, n: R.sen }].slice(-8);
+      cast(rid, r, send, false); return;
+    }
     if (m.t === 'rd') { // урон по боссу
       if (me.dead || !me.bs) return;
       const now = Date.now(), dt = Math.min(10, Math.max(0.25, (now - (me._t || now - 1000)) / 1000)); me._t = now;
