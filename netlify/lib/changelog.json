@@ -810,5 +810,10 @@
   "v": "1.26.35",
   "t": "Задания клана: убитые звери и урон теперь считаются точно. Исправлен счётчик, из-за которого через несколько часов охоты засчитывалось по 4 зверя за отправку; урон для заданий считается настоящий (раньше в 10 раз меньше); данные отправляются и во время охоты, и не теряются без связи.",
   "te": "Clan quests: kills and damage are now counted accurately. Fixed a counter that, after a few hours of hunting, only credited 4 beasts per upload; quest damage is now the real damage (it used to be 10 times lower); data is sent during the hunt too and is not lost when offline."
+ },
+ {
+  "v": "1.26.36",
+  "t": "Админ: на доске заданий клана появилась кнопка сброса заданий.",
+  "te": "Admin: a reset button for clan quests on the board."
  }
 ]

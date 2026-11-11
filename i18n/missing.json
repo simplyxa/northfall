@@ -1,3 +1,4 @@
 [
- "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">Досталось обновление</h3><p style=\"margin:0 0 12px\">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class=\"b red\" style=\"width:100%\" onclick=\"nfReload()\">Обновить игру</button></div>"
+ "Доска заданий клана очищена.",
+ "<button class=\"b alt\" data-cqr=\"1\" style=\"margin:0 0 6px\">Сбросить задания (админ)</button>"
 ]

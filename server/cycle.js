@@ -398,6 +398,11 @@ module.exports = function cycle(getDb) {
           tx.update(cref, { b, spent });
           addLed(tx, dbx, cid, { k: 'bld', uid: c.uid, name: String(S.name || '').slice(0, 20), g: cost.g, i: cost.i, what: B + ' ' + (lv + 1) });
           out = { st: 'ok', k: 'build', b: key, lv: lv + 1, cost };
+        } else if (kind === 'cqreset') {
+          // только для администратора: очистить доску заданий своего клана (прогресс, откаты и запреты)
+          if (!require('./fsrules.js').ADMINS.includes(c.uid)) { out = { st: 'no' }; return; }
+          tx.update(cref, { cq: {} });
+          out = { st: 'ok', k: 'cqreset' };
         } else if (kind === 'cqtake' || kind === 'cqdrop') {
           // задания с доски: взять или отказаться (правила — в server/cq.js)
           const key = String(m.b || '');
