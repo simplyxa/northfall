@@ -855,5 +855,10 @@
   "v": "1.26.44",
   "t": "Рейды: у каждого рейда своя сцена и свой босс в полный рост (Медведь-шатун, Конунг драугров, Горный тролль, Ледяной змей, Сурт Огненный).",
   "te": "Raids: every raid now has its own scene and a full-body boss (Bear, Draugr King, Mountain Troll, Ice Serpent, Surtr)."
+ },
+ {
+  "v": "1.26.45",
+  "t": "Рейд: игроки на сцене стали меньше, союзники бьют и применяют умения с анимацией, твой герой выделен золотым кольцом и стрелкой.",
+  "te": "Raid: players on the scene are smaller, allies strike and use skills with animations, and your hero is marked with a gold ring and arrow."
  }
 ]
