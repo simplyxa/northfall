@@ -820,5 +820,10 @@
   "v": "1.26.37",
   "t": "Рейд: полоса здоровья босса больше не откатывается назад при отправке урона.",
   "te": "Raid: the boss health bar no longer jumps back when damage is sent."
+ },
+ {
+  "v": "1.26.38",
+  "t": "Ремесло: на созданном снаряжении теперь видно имя мастера (в карточке вещи и в списке снаряжения).",
+  "te": "Crafting: crafted gear now shows its maker's name (item card and gear list)."
  }
 ]
