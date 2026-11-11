@@ -815,5 +815,10 @@
   "v": "1.26.36",
   "t": "Админ: на доске заданий клана появилась кнопка сброса заданий.",
   "te": "Admin: a reset button for clan quests on the board."
+ },
+ {
+  "v": "1.26.37",
+  "t": "Рейд: полоса здоровья босса больше не откатывается назад при отправке урона.",
+  "te": "Raid: the boss health bar no longer jumps back when damage is sent."
  }
 ]

@@ -1564,7 +1564,7 @@ function rWave(n){const H=fight.hunt,X=H.raid;if(n>RWV)return rBossPhase();X.wav
   if(n===RWV&&i===k-1){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.hp=e.max=Math.round(e.max*1.8);e.atk*=1.2}
   H.sl.push({e,ech:Math.random()*.5,at:null})}
  fight.e=null;retarget();log(`Волна ${n} из ${RWV}: на тебя выходят слуги — ${RAIDS[X.b].n} ждёт впереди.`,'sys')}
-function rBossPhase(){const H=fight.hunt,X=H.raid,R=RAID,B=RAIDS[X.b];X.boss=true;X.wave=RWV+1;
+function rBossPhase(){const H=fight.hunt,X=H.raid,R=RAID,B=RAIDS[X.b];X.boss=true;X.wave=RWV+1;X.d0=R.mem&&R.mem[UID]?R.mem[UID].dealt|0:0;X.sent=0;X.fl=[];
  const e={name:B.n,lv:Math.max(B.lv,S.lvl),hp:R.hp,max:R.max,atk:Math.max(1,R.bAtk*.45),def:R.bDef,xp:0,gold:0,rbp:RBPCT[X.b],img:RIMG[X.b],guard:false};X.lastHp=e.hp;X.ft=fight.clk;
  H.sl=[{e,ech:0,at:null}];fight.e=e;log(`${B.ic} ${B.n}! Бей вместе с группой — урон всех складывается.`,'hit');rMem({wv:RWV,bs:1},true)}
 // записать своё состояние в рейд (волна, босс, гибель)
@@ -1576,16 +1576,18 @@ function rMem(o,bon){const X=rX(),rid=X?X.rid:RAIDID;if(!DB||!rid)return Promise
   t.set(ref,R)}).catch(()=>{})}
 const L0=(R,t)=>{R.log=[t,...(R.log||[])].slice(0,14)};
 // урон по боссу копится и раз в несколько секунд записывается в общий рейд
-function rFlush(){const X=rX();if(!X||X.busy||!DB)return;if(rHub()){const d=Math.round(X.pend);X.ft=fight.clk;if(d>0){X.pend-=d;hubSend({t:'rd',rid:X.rid,d})}return}const sent=Math.round(X.pend);X.busy=1;X.ft=fight.clk;const ref=DB.collection('raids').doc(X.rid);
+function rFlush(){const X=rX();if(!X||X.busy||!DB)return;if(rHub()){const d=Math.round(X.pend);X.ft=fight.clk;if(d>0){X.pend-=d;X.sent=(X.sent|0)+d;(X.fl=X.fl||[]).push({t:Date.now(),d});hubSend({t:'rd',rid:X.rid,d})}return}const sent=Math.round(X.pend);X.busy=1;X.ft=fight.clk;const ref=DB.collection('raids').doc(X.rid);
  rTx(async t=>{const sn=await t.get(ref);if(!sn.exists)return null;const R=JSON.parse(JSON.stringify(sn.data()));if(R.st!=='on')return R;const now=Date.now();
   R.hp=Math.max(0,R.hp-sent);const m=R.mem[UID];if(m)m.dealt=(m.dealt|0)+sent;
   if(R.bon){const dt=Math.min(12,Math.max(0,(now-(R.bt||R.bon))/1000));R.bt=now;for(const b of Object.values(R.mem))if(b.bot&&!b.dead&&R.hp>0){const d=Math.round(b.atk*RBOTK*dt*rnd(.8,1.2));R.hp=Math.max(0,R.hp-d);b.dealt=(b.dealt|0)+d}}
   if(R.hp<=0){R.st='win';L0(R,`${RAIDS[R.b].ic} ${RAIDS[R.b].n} повержен! Победа!`)}
   t.set(ref,R);return R}).then(R=>{const X2=rX();if(X2===X)X.pend=Math.max(0,X.pend-sent);if(R&&RAID&&RAIDID===X.rid){RAID.hp=R.hp;RAID.mem=R.mem;if(R.st!=='on'){RAID.st=R.st;raidFinish()}}}).catch(()=>{}).then(()=>{X.busy=0})}
+// урон, уже отправленный на сервер, но ещё не учтённый в его ответе: чтобы полоса босса не откатывалась назад
+function rInfl(X,R){if(!X.fl||!X.fl.length||!rHub())return 0;const now=Date.now();X.fl=X.fl.filter(f=>now-f.t<3000);let r=0;for(const f of X.fl)r+=f.d;const m=R.mem&&R.mem[UID],ack=Math.max(0,(m?m.dealt|0:0)-(X.d0|0));return Math.max(0,Math.min(r,(X.sent|0)-ack))}
 // каждый кадр боя в рейде; true — бой закончился
 function rRunTick(){const X=rX(),R=RAID;if(!R||RAIDID!==X.rid){rRunEnd('lost');return true}
  if(R.st!=='on'){rRunEnd(R.st);return true}
- if(X.boss){const e=X.e||fight.hunt.sl[0]&&fight.hunt.sl[0].e;if(e){const loc=X.lastHp-e.hp;if(loc>0)X.pend+=loc;e.hp=Math.max(0,R.hp-X.pend);e.max=R.max;X.lastHp=e.hp;
+ if(X.boss){const e=X.e||fight.hunt.sl[0]&&fight.hunt.sl[0].e;if(e){const loc=X.lastHp-e.hp;if(loc>0)X.pend+=loc;e.hp=Math.max(0,R.hp-X.pend-rInfl(X,R));e.max=R.max;X.lastHp=e.hp;
   if((X.pend>0&&fight.clk-X.ft>=(rHub()?1000:RFLUSH))||(e.hp<=0&&X.pend>0)||(fight.clk-X.ft>=RFLUSH*2))rFlush()}}
  if(Date.now()>R.dl+2000&&!rHub()){rTimeout();}
  return false}
@@ -2434,7 +2436,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.36';
+const GVER='1.26.37';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3051,7 +3053,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.36</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.37</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
