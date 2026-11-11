@@ -57,7 +57,7 @@ module.exports = function apvp(getDb) {
       pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: clamp(R.ech, 0, 1),
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
       e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, pet: R.e.pet || '', stun: R.e.stun | 0 },
-      s: R.s, log: withLog ? R.log : undefined, sk: R.sk, rage: R.rage || 0, weak: R.weak | 0, skin: R.skin | 0, res: R.res || null
+      s: R.s, log: withLog ? R.log : undefined, sk: R.sk, ske: R.ske || null, rage: R.rage || 0, weak: R.weak | 0, skin: R.skin | 0, res: R.res || null
     };
   }
 
@@ -75,6 +75,7 @@ module.exports = function apvp(getDb) {
         const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
         if (!S) { out = { why: 'nosave' }; return; }
         const on = await tx.get(oref); const O = on.exists ? on.data() : null;
+        const mn = await tx.get(db.collection('players').doc(c.uid)); const M = mn.exists ? mn.data() : null;
         if (!O || !O.stats || oid === c.uid) { out = { why: 'noopp' }; return; }
         // нападать можно только на тех, кто в списке «Противники», и не на побеждённых
         const ln = await tx.get(db.collection('arlist').doc(c.uid)); const L = ln.exists ? ln.data() : null;
@@ -88,6 +89,13 @@ module.exports = function apvp(getDb) {
         const ns = Object.assign({}, S, { atk: st.atk, atkt: st.atkt });
         tx.set(sref, ns);
         const h = hero(S);
+        // клиент считает бонусы (камни, чары, комплекты, эликсиры, постройки), сервер их не знает:
+        // берём опубликованные характеристики героя, но не больше чем в 2.5 раза выше расчёта по вещам
+        const ms = (M && M.stats) || null;
+        if (ms) {
+          const up = (v, base) => { v = v | 0; return v > 0 ? Math.min(v, Math.round(base * 2.5) + 20) : base; };
+          h.atk = up(ms.atk, h.atk); h.def = up(ms.def, h.def); h.mhp = up(ms.hp, h.mhp); h.crit = Math.min(60, Math.max(h.crit, ms.crit | 0));
+        }
         const e = {
           name: String(O.name || oid).slice(0, 20), lv: O.lvl | 0,
           hp: Math.max(1, O.stats.hp | 0), max: Math.max(1, O.stats.hp | 0),
@@ -141,6 +149,9 @@ module.exports = function apvp(getDb) {
       const h = R.mhp - R.hp;           // бутылка лечит полностью (энергию возвращает клиент)
       R.hp = R.mhp;
       msg = `Бутылка: здоровье и энергия восстановлены полностью${h > 0 ? ` (+${h})` : ''}.`;
+    } else if (a === 'flee') {
+      R.log.push('Ты сдался.');
+      return end(R, 0, c, send);
     } else if (a.startsWith('sk-')) {
       msg = skill(R, a.slice(3));
       if (msg === false) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
@@ -162,6 +173,7 @@ module.exports = function apvp(getDb) {
     const cd = Math.round(def[1] * SKCD[q] * 10) / 10 * 1000;
     if ((R.sk[id] | 0) > R.clk) return false;
     R.sk[id] = R.clk + cd;
+    R.ske = { id, n: ((R.ske && R.ske.n) | 0) + 1 };   // событие для анимации на клиенте
     const v = SKQ[id][q];
     if (id === 'rage') { R.rage = v; return `Ярость! Следующий удар ×${String(v).replace('.', ',')}.`; }
     if (id === 'roar') { R.weak = R.clk + 6000; R.weakv = 1 - v / 100; return 'Боевой рёв: враг бьёт слабее.'; }
@@ -219,7 +231,7 @@ module.exports = function apvp(getDb) {
         }
         const ns = Object.assign({}, S, {
           rating: st.rt, srat: st.srt, atk: st.atk, atkt: st.atkt,
-          hp: win === 1 ? S.hp : 1, gold: Math.max(0, (S.gold | 0) - lost),
+          hp: win === 1 ? Math.max(1, Math.min(R.mhp, R.hp | 0)) : 1, gold: Math.max(0, (S.gold | 0) - lost),
           win: (S.win | 0) + (win === 1 ? 1 : 0), lose: (S.lose | 0) + (win === 0 ? 1 : 0)
         });
         tx.set(sref, ns);
@@ -244,15 +256,17 @@ module.exports = function apvp(getDb) {
   // ---- тик боя ----
   function tick(R, c, send) {
     if (!R || R.st !== 'on' || rooms.get(R.uid) !== R || !c.open) return;
-    const now = Date.now();
+    const now = Date.now(), prev = R.clk;
     R.clk = now - R.t0;
-    R.ch = Math.min(1, R.ch + TICK / 1000 / CH_T);
+    // заряды растут по реальному времени (setTimeout «уплывает», клиент считает по часам)
+    const dt = Math.max(0, Math.min(1000, R.clk - prev)) / 1000;
+    R.ch = Math.min(1, R.ch + dt / CH_T);
     // заряд атаки врага не растёт, пока он в капкане (как на охоте)
-    if (!(R.e.stun > R.clk)) R.ech += TICK / 1000 / E_T;
+    if (!(R.e.stun > R.clk)) R.ech += dt / E_T;
     if (R.ech >= 1) { R.ech = 0; enemyTurn(R); }
     if (R.hp <= 0) return end(R, 0, c, send);
     if (R.e.hp <= 0) return end(R, 1, c, send);
-    if (R.clk >= FIGHT_T) { R.log.push('Время вышло.'); return end(R, R.hp > 0 ? 1 : 0, c, send); }
+    if (R.clk >= FIGHT_T) { R.log.push('Время вышло.'); return end(R, R.hp > 0 && R.hp / R.mhp > R.e.hp / R.e.max ? 1 : 0, c, send); }   // по времени побеждает тот, у кого больше доля здоровья
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
     setTimeout(() => tick(R, c, send), TICK).unref();
   }
@@ -311,7 +325,8 @@ module.exports = function apvp(getDb) {
     if (m.t === 'apvp') return start(c, m, send);
     if (m.t === 'apa') return act(c, m, send);
   }
-  function onClose(c) { const R = rooms.get(c.uid); if (R) { R.st = 'closed'; rooms.delete(c.uid); } }
+  // обрыв связи посреди боя = поражение (иначе можно было бы уйти от проигрыша, закрыв вкладку)
+  function onClose(c) { const R = rooms.get(c.uid); if (R) { if (R.st === 'on') end(R, 0, c, () => {}); else { R.st = 'closed'; rooms.delete(c.uid); } } }
 
   return { onMsg, onClose, stats: () => ({ rooms: rooms.size }) };
 };
