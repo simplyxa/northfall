@@ -57,7 +57,7 @@ module.exports = function apvp(getDb) {
       pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: clamp(R.ech, 0, 1),
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
       e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, pet: R.e.pet || '', stun: R.e.stun | 0 },
-      s: R.s, log: withLog ? R.log : undefined, sk: R.sk, res: R.res || null
+      s: R.s, log: withLog ? R.log : undefined, sk: R.sk, rage: R.rage || 0, weak: R.weak | 0, skin: R.skin | 0, res: R.res || null
     };
   }
 
