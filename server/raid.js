@@ -5,6 +5,7 @@
 'use strict';
 const CQ = require('./cq.js');
 const RN = [['🐻', 'Медведь-шатун'], ['💀', 'Конунг драугров'], ['🪨', 'Горный тролль'], ['🐍', 'Ледяной змей'], ['🔥', 'Сурт Огненный']];
+const BOTHIT = 5000;          // наёмник бьёт раз в 5 с
 const RBOTK = 0.18;          // наёмник наносит ~18% атаки в секунду (как в клиенте)
 const PERSIST = 30000, TICK = 1000, CAST = 250;
 // общие волны: все игроки группы бьют одних и тех же слуг (здоровье — на сервере)
@@ -140,17 +141,19 @@ module.exports = function raids(getDb) {
       try {
         const R = r.R; if (!R) continue;
         if (R.st === 'on') {
+          // наёмники бьют раз в BOTHIT мс (со сдвигом, чтобы не все разом); урон за удар = урон в секунду × интервал
+          const bhit = b => { if (!b.nx) b.nx = now + Math.floor(rnd(500, BOTHIT)); if (now < b.nx) return false; b.nx = now + BOTHIT; return true; };
           if (R.sw && R.go && R.wv <= RWV && R.mobs) {
-            for (const b of Object.values(R.mem)) if (b.bot && !b.dead) {
+            for (const b of Object.values(R.mem)) if (b.bot && !b.dead && bhit(b)) {
               const L = R.mobs.filter(m => m.hp > 0); if (!L.length) break;
-              const m = L[Math.floor(Math.random() * L.length)], d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2));
-              m.hp = Math.max(0, m.hp - d); r.dirty = true;
+              const m = L[Math.floor(Math.random() * L.length)], d = Math.round(b.atk * RBOTK * (BOTHIT / 1000) * rnd(0.8, 1.2));
+              m.hp = Math.max(0, m.hp - d); b.ba = (b.ba | 0) + 1; b.lh = d; r.dirty = true;
             }
             if (waveDone(R)) nextWave(R);
           }
           if (R.bon) {
-            for (const b of Object.values(R.mem)) if (b.bot && !b.dead && R.hp > 0) {
-              const d = Math.round(b.atk * RBOTK * rnd(0.8, 1.2)); R.hp = Math.max(0, R.hp - d); b.dealt = (b.dealt | 0) + d; r.dirty = true;
+            for (const b of Object.values(R.mem)) if (b.bot && !b.dead && R.hp > 0 && bhit(b)) {
+              const d = Math.round(b.atk * RBOTK * (BOTHIT / 1000) * rnd(0.8, 1.2)); R.hp = Math.max(0, R.hp - d); b.dealt = (b.dealt | 0) + d; b.ba = (b.ba | 0) + 1; b.lh = d; r.dirty = true;
             }
           }
           const st0 = R.st; finish(R);

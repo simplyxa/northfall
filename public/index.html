@@ -831,7 +831,7 @@ const RBG=["/img/84925907927473.webp", "/img/9b7b7d30d6e1d5.webp", "/img/bdac0ce
  RBA=[{"a":"/img/b9a8bb742b8ab4.webp","l":0.65,"t":-0.86,"w":93.71},{"a":"/img/92d18111a72804.webp","l":-2.13,"t":1.46,"w":104.6},{"a":"/img/afc102040e4e01.webp","l":0.81,"t":0.81,"w":97.42},{"a":"/img/b34d1a1b979f8d.webp","l":-1.33,"t":1.73,"w":102.24},{"a":"/img/db375e9402471d.webp","l":-0.73,"t":1.93,"w":99.92}], // поза удара босса: картинка и её место относительно основной (в % от неё)
  RBH=[44,50,50,48,52],RBP={x:74,y:86,k:1}; // высота босса в % высоты сцены (по рейдам)
 // положения союзников в рейде (в % сцены) и классы по умолчанию, если у игрока класс неизвестен
-const RALP=[{x:7,y:62},{x:26,y:58},{x:43,y:65},{x:34,y:83}],RACLS=['berserk','hunter','shaman','hunter'];
+const RALP=[{x:7,y:62},{x:26,y:58},{x:43,y:65},{x:44,y:83}],RACLS=['berserk','hunter','shaman','hunter'];
 const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}"${foe?'':' id="stpet"'} title="${esc(pa.n)}" style="left:${rd?29.5:foe?105-F.x:F.x}%;top:${rd?(F.fly?70:93):F.y}%;width:${rd?F.w*.6:F.w}%;--pp:${F.p||0}%"><div class="st-pf"${foe?' style="transform:scaleX(-1)"':''}><img class="st-pi" src="${F.s}" alt=""><img class="st-pa" src="${F.a}" alt=""></div></div>`};
 // ===== Боевая сцена рейда на канвасе: один цикл отрисовки, герои, питомец, слуги, босс и эффекты =====
 const RCN={cv:null,cx:null,W:900,H:745,sc:1,imgs:{},sil:{},fx:[],num:[],pt:[],amb:[],q:[],t:0,last:0,raf:0,sh:0,meA:null,petA:null,fa:{},al:{},fp:[],hp:null,rid:null,pend:[],hit:[],ske:{},dl:{},mid:0};
@@ -894,7 +894,7 @@ function rcUpdate(dt,H,R){
   if(boss){rcShake(7);rcAt(.3,()=>{rcFx({k:'ring',x:RCME.x+50,y:RCME.y-4,r0:10,r1:200,col:'255,120,80',life:.45,w:5,flat:1});rcPart(RCME.x+40,RCME.y-RCME.h*.4,14,['#ff6a4a','#ffd0a0'],{v:200,life:.5,sz:3})})}})}
  // союзники: рост нанесённого урона и события умений
  if(R&&R.mem){if(RCN.rid!==RAIDID){RCN.rid=RAIDID;RCN.dl={};RCN.ske=null}
-  Object.entries(R.mem).forEach(([id,m])=>{if(id===UID)return;const d=m.dealt|0,o=RCN.dl[id];RCN.dl[id]=d;if(o==null||d<=o||m.dead||m.hp<=0)return;const A=RCN.al[id]=RCN.al[id]||{};A.a={pn:'atk',t0:RCN.t,dur:.43};const T=rcTarget(H),x=rcAllyIdx(R,id);if(x>=0)rcNum(T.x,T.y-T.h*.95,'−'+kf(d-o),'#ffe9a8',0)});
+  Object.entries(R.mem).forEach(([id,m])=>{if(id===UID)return;const d=m.bot?(m.ba|0):(m.dealt|0),o=RCN.dl[id];RCN.dl[id]=d;if(o==null||d<=o||m.dead||m.hp<=0)return;const A=RCN.al[id]=RCN.al[id]||{};A.a={pn:'atk',t0:RCN.t,dur:.43};const T=rcTarget(H),x=rcAllyIdx(R,id);if(x>=0)rcNum(T.x,T.y-T.h*.95,'−'+kf(m.bot?(m.lh|0):d-o),'#ffe9a8',0)});
   const E=R.ske||[];if(RCN.ske==null)RCN.ske=E.reduce((a,x)=>Math.max(a,x.n|0),0);else{let mx=RCN.ske;for(const x of E){if((x.n|0)<=RCN.ske)continue;mx=Math.max(mx,x.n|0);if(x.u===UID)continue;const A=RCN.al[x.u]=RCN.al[x.u]||{};A.a={pn:x.k,t0:RCN.t,dur:(HPOSEMS[x.k]||900)/1000};const ai=rcAllyIdx(R,x.u);if(ai>=0){const P=rcAllyPos(ai);rcFx({k:'aura',x:P.x,y:P.y-P.h*.5,col:x.k==='totem'?'110,235,170':x.k==='skin'?'255,215,120':'255,150,70',life:.7})}}RCN.ske=mx}}
  // частицы, числа и эффекты
  for(const p of RCN.pt){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=p.g*dt}RCN.pt=RCN.pt.filter(p=>p.t<p.life);
