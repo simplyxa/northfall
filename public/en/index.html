@@ -272,8 +272,8 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .stage.rd .st-hero{left:17%;top:91%;height:31%}.stage.rd .st-hero::before{content:'';position:absolute;left:50%;bottom:-5%;width:120%;height:11%;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(240,200,90,.95);box-shadow:0 0 14px 3px rgba(240,200,90,.65),inset 0 0 10px rgba(240,200,90,.45);animation:rdMe 1.8s ease-in-out infinite;z-index:-1}.stage.rd .st-hero .st-fig::before{content:'▼';position:absolute;left:50%;top:-11%;transform:translateX(-50%);font-size:17px;line-height:1;color:#f0c85a;text-shadow:0 0 6px #000,0 0 10px rgba(240,200,90,.9);animation:rdArr 1.1s ease-in-out infinite;z-index:3}@keyframes rdMe{0%,100%{opacity:.75}50%{opacity:1}}@keyframes rdArr{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(4px)}}.stage.rd .st-hero:not(.full){height:auto}
 .st-foe.fig .st-img{position:relative}.st-foe.fig .st-img img.st-ba{position:absolute;height:auto;max-width:none;opacity:0;pointer-events:none}
 .hfx{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:7}
-.stage.rcs .st-w{aspect-ratio:900/1150}
-.rcv{position:absolute;left:0;top:0;width:100%;height:auto;aspect-ratio:900/1150;display:block;z-index:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.stage.rcs .st-w{aspect-ratio:900/1000}
+.rcv{position:absolute;left:0;top:0;width:100%;height:auto;aspect-ratio:900/1000;display:block;z-index:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .st-fig img.st-fa{position:absolute;height:auto;max-width:none;opacity:0;pointer-events:none}
 .stage>.st-flee.x{position:absolute;top:8px;right:8px;z-index:8;width:40px;height:40px;padding:6px;box-sizing:border-box;border-radius:50%;background:rgba(15,18,22,.7);border:1px solid #58626a;display:flex;align-items:center;justify-content:center}
 
@@ -829,7 +829,7 @@ const HPOSEMS={rage:900,roar:1000,shot:600,trap:700,totem:1200,skin:1200};
 const HEROPOSE={berserk:{atk:{a:'/img/2f382b5e57cc8e.webp',l:-27.69,t:-2.42,w:140.17},rage:{a:'/img/e86398326e20c3.webp',l:-11.5,t:-8.98,w:114.15},roar:{a:'/img/4dd7cf6f934bff.webp',l:-13.3,t:-3.67,w:113.14}},hunter:{atk:{a:'/img/ccadd015dd40d1.webp',l:-9.03,t:3.84,w:134.47},shot:{a:'/img/ad901f495e58ba.webp',l:0.69,t:10.39,w:97.77},trap:{a:'/img/23cfda7d6bfb66.webp',l:6.2,t:31.28,w:107.75}},shaman:{atk:{a:'/img/13cc90a0f4d245.webp',l:4.0,t:15.64,w:106.72},totem:{a:'/img/6d9aa5e25b84d2.webp',l:-8.02,t:-1.26,w:101.83},skin:{a:'/img/2cff98cf22206b.webp',l:5.69,t:1.53,w:100.42}}};
 const PETFIG={lynx:{s:'/img/d782352b9cd13d.webp',a:'/img/54c3f93db30266.webp',w:23.5,x:41.0,y:94.0,p:4.2},bear:{s:'/img/37e5a544955fd2.webp',a:'/img/023b4694d16fcf.webp',w:23.2,x:38.1,y:95.0,p:3.8},wolf:{s:'/img/a6554ddb3d7a16.webp',a:'/img/ad0fed1ee01e22.webp',w:21.7,x:41.0,y:94.0,p:0.9},raven:{s:'/img/0a0ca14b9c9c00.webp',a:'/img/20c693dccb241f.webp',w:19.3,x:43.1,y:62.0,p:0.0,fly:1}};
 const RSPT=[{x:61,y:55,k:.85},{x:84,y:59,k:.85},{x:60,y:82,k:1},{x:84,y:88,k:1}]; // слуги в рейде: стоят на земле, а не в воздухе
-const RBG=["/img/84925907927473.webp", "/img/9b7b7d30d6e1d5.webp", "/img/bdac0ce5fd8ac4.webp", "/img/68bb221c3b9cf4.webp", "/img/f4f15290aa0558.webp"],
+const RBG=["/img/41c0b2c018e5ea.webp", "/img/f636a13b486338.webp", "/img/3cdae0f5612c53.webp", "/img/33de58c1674e90.webp", "/img/2994261532875e.webp"],
  RBF=["/img/456805bacc441a.webp", "/img/64a36b5a16d853.webp", "/img/440939d74d515e.webp", "/img/6f7629521d462c.webp", "/img/0ff89e7c33702c.webp"],
  RBA=[{"a":"/img/b9a8bb742b8ab4.webp","l":0.65,"t":-0.86,"w":93.71},{"a":"/img/92d18111a72804.webp","l":-2.13,"t":1.46,"w":104.6},{"a":"/img/afc102040e4e01.webp","l":0.81,"t":0.81,"w":97.42},{"a":"/img/b34d1a1b979f8d.webp","l":-1.33,"t":1.73,"w":102.24},{"a":"/img/db375e9402471d.webp","l":-0.73,"t":1.93,"w":99.92}], // поза удара босса: картинка и её место относительно основной (в % от неё)
  RBH=[44,50,50,48,52],RBP={x:74,y:80,k:1}; // высота босса в % высоты сцены (по рейдам)
@@ -839,7 +839,7 @@ const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?
 // ===== Боевая сцена рейда на канвасе: один цикл отрисовки, герои, питомец, слуги, босс и эффекты =====
 const RCN={cv:null,cx:null,W:900,H:745,sc:1,imgs:{},sil:{},fx:[],num:[],pt:[],amb:[],q:[],t:0,last:0,raf:0,sh:0,meA:null,petA:null,fa:{},al:{},fp:[],hp:null,rid:null,pend:[],hit:[],ske:{},dl:{},mid:0};
 // высокая сцена рейда: 900×1150 (портрет), фигуры крупнее
-const RCH=1150,RCS=1.42,RCME={x:175,y:1035,h:340},RCPET={x:395},RCAL=[{x:110,y:560,h:270},{x:305,y:610,h:280},{x:430,y:775,h:300},{x:300,y:910,h:318}],RCFOE=[{x:600,y:560},{x:775,y:690},{x:610,y:830},{x:775,y:975}];
+const RCH=1000,RCS=1.0,RCME={x:200,y:880,h:215},RCPET={x:335},RCAL=[{x:95,y:520,h:185},{x:250,y:575,h:190},{x:120,y:715,h:198},{x:300,y:775,h:205}],RCFOE=[{x:700,y:400},{x:790,y:510},{x:650,y:610},{x:760,y:735}];
 function rcImg(u){let i=RCN.imgs[u];if(!i){i=new Image();i.src=u;RCN.imgs[u]=i}return i}
 const rcOk=i=>i&&i.complete&&i.naturalWidth>0;
 function rcSil(u,col){const k=u+col;let c=RCN.sil[k];if(c)return c;const i=rcImg(u);if(!rcOk(i))return null;c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const x=c.getContext('2d');x.drawImage(i,0,0);x.globalCompositeOperation='source-in';x.fillStyle=col;x.fillRect(0,0,c.width,c.height);RCN.sil[k]=c;return c}
@@ -858,7 +858,7 @@ function rcText(t,x,y,sz,col,o){const cx=RCN.cx;o=o||{};cx.font=(o.b?'700 ':'')+
 function rcClip(t,max,sz){const cx=RCN.cx;cx.font='700 '+sz+'px Alegreya,Georgia,serif';t=String(t);if(cx.measureText(t).width<=max)return t;while(t.length>1&&cx.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…'}
 // ----- положения всех участников (в координатах 900×1150) -----
 function rcAllyPos(i){return RCAL[i]||RCAL[0]}
-function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?650:Q.x,y:bs?870:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.8:.98):(.19*(P.k||1)*900*1.15)}}
+function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?690:Q.x,y:bs?650:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.52:.66):(.19*(P.k||1)*900*.8)}}
 function rcTarget(H){const i=H.sl.findIndex(s=>s.e&&s.e===fight.e),j=i>=0?i:H.sl.findIndex(s=>s.e&&s.e.hp>0);return j>=0?rcFoePos(H,j):{x:640,y:430,h:150}}
 // ----- эффекты -----
 function rcPart(x,y,n,col,o){o=o||{};for(let i=0;i<n;i++){const a=(o.a==null?Math.random()*6.28:o.a+(Math.random()-.5)*(o.sp||1.2)),v=(o.v||160)*(.4+Math.random()*.8);RCN.pt.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v+(o.vy||0),g:o.g==null?260:o.g,t:0,life:(o.life||.5)*(.6+Math.random()*.6),col:Array.isArray(col)?col[i%col.length]:col,sz:(o.sz||3)*(.6+Math.random()*.8)})}}
@@ -937,7 +937,7 @@ function rcHero(x,y,h,cl,A,o){const fig=HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A
  return rcFig(fig,x,y,h,{dx,dy:o.dead?0:idle*1.6,sy:o.dead?1:1+idle*.008,a:o.dead?.75:1,gray:o.dead,fl:hit.fl,fc:hit.fc},P)}
 function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx.clearRect(0,0,900,RCH);RCN.hit=[];
  const shx=RCN.sh?(Math.random()-.5)*RCN.sh:0,shy=RCN.sh?(Math.random()-.5)*RCN.sh:0;cx.save();cx.translate(shx,shy);
- const bg=rcImg(RBG[H.raid.b]||STBG);if(rcOk(bg)){cx.drawImage(bg,-8,-8,916,761);cx.save();cx.beginPath();cx.rect(0,745,900,RCH-745);cx.clip();cx.translate(0,RCH);cx.scale(1,-(RCH-745)/300);cx.drawImage(bg,0,445,900,300,-8,0,916,300);cx.restore();const gr=cx.createLinearGradient(0,745,0,RCH);gr.addColorStop(0,'rgba(8,10,12,0)');gr.addColorStop(1,'rgba(8,10,12,.6)');cx.fillStyle=gr;cx.fillRect(0,745,900,RCH-745)}else{cx.fillStyle='#0b0d10';cx.fillRect(0,0,900,RCH)}
+ const bg=rcImg(RBG[H.raid.b]||STBG);if(rcOk(bg)){cx.drawImage(bg,-6,-6,912,RCH+12)}else{cx.fillStyle='#0b0d10';cx.fillRect(0,0,900,RCH)}
  const ents=[];
  // герой
  ents.push({y:RCME.y,d:()=>{rcShadow(RCME.x,RCME.y,RCME.h*.5);const pu=.75+.25*Math.sin(RCN.t*3.4);cx.save();cx.translate(RCME.x,RCME.y);cx.scale(1,.24);cx.lineWidth=7;cx.strokeStyle='rgba(240,200,90,'+(.55+.4*pu)+')';cx.shadowColor='rgba(240,200,90,.9)';cx.shadowBlur=18;cx.beginPath();cx.arc(0,0,RCME.h*.36,0,7);cx.stroke();cx.restore();
