@@ -2018,7 +2018,7 @@ const terOwner=k=>{const t=TER[k];if(!t)return null;if(t.wk===curS())return t.ow
 // охота: пойманные звери и набежавший урон. Очки на территории, опыт клана и
 // недельное задание начисляет сервер — и ограничивает частоту, чтобы нельзя
 // было набить очки десятками записей.
-function huntFlush(){if(!S||fight||!DB||!S.clan)return;const q=S.tq||{},d=S.cxq|0;
+function huntFlush(){if(!S||(fight&&!fight.hunt)||!DB||!S.clan)return;if(!(HUB.ws&&HUB.ws.readyState===1))return;const q=S.tq||{},d=S.cxq|0;   // во время охоты тоже отправляем (раньше — только вне боя), и не отправляем без связи, чтобы не потерять счётчики
  if(!((q.easy|0)>0||(q.mid|0)>0||(q.hard|0)>0||d>0))return;S.tq=null;S.cxq=0;save();hubSend({t:'hunt',q,d})}
 function terView(){return`<div class="panel"><h3>Territories of the North</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Every beast killed on the hunt brings your clan a point in that area. The clan with the most points for the week owns the territory for the whole next week: its warriors get +${Math.round(TERB*100)}% XP and silver when hunting there.</p>`+
  Object.keys(TERN).map(k=>{const t=TER[k],o=terOwner(k),pts=t&&t.wk===curS()?Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1]).slice(0,3):[];return`<div class="row"><div><b>${TERN[k]}</b><small>Owner: ${o?`<b style="color:var(--gold)">«${esc(o.name)}»</b>`:'nobody'}${pts.length?' · this week: '+pts.map(([id,v])=>`${esc((t.names||{})[id]||cname(id))} ${v}`).join(', '):''}</small></div></div>`}).join('')+`</div>`}
@@ -2436,7 +2436,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.34';
+const GVER='1.26.35';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3051,7 +3051,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.34</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.35</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3338,7 +3338,7 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.target.id;if(i==='cm')say();else if(i==='gct2')gcSend('gct2');else if(i==='cm2')say('cm2');else if(!S&&['lg','pw','pw2','nm'].includes(i)){if(scr==='login')doLogin();else if(scr==='reg')doReg();else doNewHero()}});
 load();if(!S&&!(LEG&&!LEG.guest)&&scr==='login')scr='gnew';render();initOnline();
 setInterval(fightTick,100);
-setInterval(()=>{if(S){const b=S.en,h=S.hp;if(S.ex){const k0=S.ex.k;exSettle();exBoss();if(!S.ex||S.ex.k!==k0){if(!fight)render()}}regen();if(S.en!==b||S.hp!==h){save();if(!fight)render()}}},5000);
+setInterval(()=>{if(S&&S.clan&&(S.cxq>0||S.tq)&&Date.now()-(window.__hft||0)>30000){window.__hft=Date.now();try{huntFlush()}catch(e){}}if(S){const b=S.en,h=S.hp;if(S.ex){const k0=S.ex.k;exSettle();exBoss();if(!S.ex||S.ex.k!==k0){if(!fight)render()}}regen();if(S.en!==b||S.hp!==h){save();if(!fight)render()}}},5000);
 
 // ===== Серверное золото (онлайн-версия) =====
 let SG=null,GBUSY=false,WUN=null,WFOR=null,WTRY=0;

@@ -27,6 +27,7 @@ const WBFIGHTS = 24;        // не больше 24 боёв с боссом в 
 const WBSTRIKES = 11;       // ударов за бой (бой 45 секунд, заряд удара 5 секунд)
 
 // ---------- территории ----------
+const TER_START = 30 * 40, TER_CAP = 180 * 40;   // запас отлова: сколько зверей можно засчитать разом (новому игроку / после долгой паузы)
 const TER_RATE = 40;        // очков в минуту (охота даёт примерно 10-12 зверей в минуту)
 const TER_MAX = 400;        // за раз
 
@@ -183,10 +184,12 @@ module.exports = function cycle(getDb) {
         petOn = !!S.pet;
         const cid = String(S.clan || '');
         // ограничение по частоте: зверей не больше, чем игрок может поймать
-        const led = S._tp || { t: now, n: 0 };
-        const dt = Math.max(0, (now - (led.t || now)) / 60000);
-        const room = Math.max(0, TER_RATE * dt - (led.n | 0)) + 4;
-        const take = Math.min(kills, Math.floor(room));
+        // «ведро с запасом»: запас копится со скоростью TER_RATE в минуту (до TER_CAP), засчитанные звери его тратят.
+        // Раньше счётчик только рос и не убывал, и через несколько часов охоты засчитывалось 4 зверя за отправку.
+        const led = S._tp || {};
+        const dt = Math.max(0, (now - (+led.t || now)) / 60000);
+        const credit = Math.min(TER_CAP, (led.c != null ? +led.c : TER_START) + TER_RATE * dt);
+        const take = Math.min(kills, Math.floor(credit) + 4);
         if (!(take > 0)) { out = { st: 'rate', took: 0 }; return; }
         // урон ограничен атакой героя и числом зверей
         const capD = Math.round(atkBound(S) * 1.2 * take + 50);
@@ -242,14 +245,14 @@ module.exports = function cycle(getDb) {
           }
         }
         // 3. счётчик частоты — в сохранение игрока
-        tx.set(sref, Object.assign({}, S, { _tp: { t: now, n: (led.n | 0) + take } }));
+        tx.set(sref, Object.assign({}, S, { _tp: { t: now, c: Math.max(0, credit - take) } }));
         out = { st: 'ok', took: take, dmg: takeD };
         if (dqRef) out.dq = { g: dq.g, i: dq.i };
       });
     } catch (e) { console.error('hunt', e.message); return err(c, send, 'hunt'); }
     send(c, { t: 'hunts', rid: 'hunt', ...out });
     if (out && out.st === 'ok') {   // клановые задания с доски: охота
-      CQ.add(dbx, c.uid, 'kill', out.took); if (out.dmg > 0) CQ.add(dbx, c.uid, 'dmg', out.dmg); if (petOn) CQ.add(dbx, c.uid, 'pet', out.took);
+      CQ.add(dbx, c.uid, 'kill', out.took); if (out.dmg > 0) CQ.add(dbx, c.uid, 'dmg', out.dmg * CXK);   // клиент присылает урон, уже поделённый на CXK; заданию нужен настоящий урон if (petOn) CQ.add(dbx, c.uid, 'pet', out.took);
     }
   }
 
