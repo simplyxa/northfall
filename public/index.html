@@ -824,6 +824,11 @@ const skRound=()=>skOf().map((k,i)=>{const st=skSt(k[0]);return`<button class="b
 const HPOSEMS={rage:900,roar:1000,shot:600,trap:700,totem:1200,skin:1200};
 const HEROPOSE={berserk:{atk:{a:'/img/2f382b5e57cc8e.webp',l:-27.69,t:-2.42,w:140.17},rage:{a:'/img/e86398326e20c3.webp',l:-11.5,t:-8.98,w:114.15},roar:{a:'/img/4dd7cf6f934bff.webp',l:-13.3,t:-3.67,w:113.14}},hunter:{atk:{a:'/img/ccadd015dd40d1.webp',l:-9.03,t:3.84,w:134.47},shot:{a:'/img/ad901f495e58ba.webp',l:0.69,t:10.39,w:97.77},trap:{a:'/img/23cfda7d6bfb66.webp',l:6.2,t:31.28,w:107.75}},shaman:{atk:{a:'/img/13cc90a0f4d245.webp',l:4.0,t:15.64,w:106.72},totem:{a:'/img/6d9aa5e25b84d2.webp',l:-8.02,t:-1.26,w:101.83},skin:{a:'/img/2cff98cf22206b.webp',l:5.69,t:1.53,w:100.42}}};
 const PETFIG={lynx:{s:'/img/d782352b9cd13d.webp',a:'/img/54c3f93db30266.webp',w:23.5,x:41.0,y:94.0,p:4.2},bear:{s:'/img/37e5a544955fd2.webp',a:'/img/023b4694d16fcf.webp',w:23.2,x:38.1,y:95.0,p:3.8},wolf:{s:'/img/a6554ddb3d7a16.webp',a:'/img/ad0fed1ee01e22.webp',w:21.7,x:41.0,y:94.0,p:0.9},raven:{s:'/img/0a0ca14b9c9c00.webp',a:'/img/20c693dccb241f.webp',w:19.3,x:43.1,y:62.0,p:0.0,fly:1}};
+const RSPT=[{x:61,y:55,k:.85},{x:84,y:59,k:.85},{x:60,y:82,k:1},{x:84,y:88,k:1}]; // слуги в рейде: стоят на земле, а не в воздухе
+const RBG=["/img/84925907927473.webp", "/img/9b7b7d30d6e1d5.webp", "/img/bdac0ce5fd8ac4.webp", "/img/68bb221c3b9cf4.webp", "/img/f4f15290aa0558.webp"],
+ RBF=["/img/456805bacc441a.webp", "/img/64a36b5a16d853.webp", "/img/440939d74d515e.webp", "/img/6f7629521d462c.webp", "/img/0ff89e7c33702c.webp"],
+ RBA=[{"a":"/img/b9a8bb742b8ab4.webp","l":0.65,"t":-0.86,"w":93.71},{"a":"/img/92d18111a72804.webp","l":-2.13,"t":1.46,"w":104.6},{"a":"/img/afc102040e4e01.webp","l":0.81,"t":0.81,"w":97.42},{"a":"/img/b34d1a1b979f8d.webp","l":-1.33,"t":1.73,"w":102.24},{"a":"/img/db375e9402471d.webp","l":-0.73,"t":1.93,"w":99.92}], // поза удара босса: картинка и её место относительно основной (в % от неё)
+ RBH=[44,50,50,48,52],RBP={x:74,y:86,k:1}; // высота босса в % высоты сцены (по рейдам)
 // положения союзников в рейде (в % сцены) и классы по умолчанию, если у игрока класс неизвестен
 const RALP=[{x:7,y:62},{x:26,y:58},{x:43,y:65},{x:34,y:83}],RACLS=['berserk','hunter','shaman','hunter'];
 const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}"${foe?'':' id="stpet"'} title="${esc(pa.n)}" style="left:${rd?29.5:foe?105-F.x:F.x}%;top:${rd?(F.fly?70:93):F.y}%;width:${rd?F.w*.6:F.w}%;--pp:${F.p||0}%"><div class="st-pf"${foe?' style="transform:scaleX(-1)"':''}><img class="st-pi" src="${F.s}" alt=""><img class="st-pa" src="${F.a}" alt=""></div></div>`};
@@ -880,7 +885,7 @@ function rcUpdate(dt,H,R){
  // враги: потери здоровья, появление и гибель
  H.sl.forEach((s,i)=>{const e=s.e,pr=RCN.fp[i],pos=rcFoePos(H,i);
   if(pr&&pr.e&&pr.e!==e){RCN.fa[i]=null;rcPart(pr.x,pr.y-pr.h*.4,16,['#ffd9a0','#ff7a4a','#fff'],{v:190,life:.55,sz:3});rcFx({k:'ring',x:pr.x,y:pr.y-4,r0:8,r1:pr.h*.5,col:'255,220,170',life:.4,w:3})}
-  if(e&&pr&&pr.e===e&&e.hp<pr.hp){const dm=pr.hp-e.hp;rcNum(pos.x,pos.y-pos.h*.9,'−'+kf(dm),fight.lc?'#ffd24a':'#ffffff',fight.lc);(RCN.fa[i]=RCN.fa[i]||{}).fl=RCN.t;rcPart(pos.x,pos.y-pos.h*.5,6,['#fff','#ffb060'],{v:120,life:.3,sz:2.5})}
+  if(e&&pr&&pr.e===e&&e.hp<pr.hp){const dm=pr.hp-e.hp;rcNum(pos.x+(Math.random()-.5)*40,pos.y-pos.h*.5,'−'+kf(dm),fight.lc?'#ffd24a':'#ffffff',fight.lc);(RCN.fa[i]=RCN.fa[i]||{}).fl=RCN.t;rcPart(pos.x,pos.y-pos.h*.5,6,['#fff','#ffb060'],{v:120,life:.3,sz:2.5})}
   RCN.fp[i]=e?{e,hp:e.hp,x:pos.x,y:pos.y,h:pos.h}:null});
  fight.lc=0;
  // удары врагов (приходят из mobPulse)
@@ -967,7 +972,7 @@ function rcMount(){if(!fight||!fight.hunt||!fight.hunt.raid)return;const w=docum
  if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null}
  if(RCN.cv.parentNode!==w)w.insertBefore(RCN.cv,w.firstChild);
  if(!RCN.raf){RCN.last=0;RCN.raf=requestAnimationFrame(rcLoop)}}
-function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})"><div class="st-w" id="rcw">${huntCtl(H)}</div></div>`}
+function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})"><div class="st-w" id="rcw"></div>${huntCtl(H)}</div>`}
 
 function stageHtml(H){const pa=petA(),fig=HEROFIG[S.cls];
  const zk=H&&H.kind&&STBGZ[H.kind]?H.kind:'';const rbg=H&&H.raid&&RBG[H.raid.b];return `<div class="stage${zk?' zr '+zk:''}${H&&H.raid?' rd':''}" style="--sbg:url(${rbg||(zk?STBGZ[zk]:STBG)})"><div class="st-w">${zk?'<i class="st-ring h" style="left:23.3%;top:89.9%;--rw:32%"></i>'+STPT.map(P=>`<i class="st-ring" style="left:${P.x}%;top:${P.y}%;--rw:${P.k<1?18.6:20.4}%"></i>`).join(''):''}<div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i style="width:${S.hp/maxHp()*100}%;background:var(--moss)"></i></span><small>${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
