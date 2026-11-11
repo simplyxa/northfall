@@ -785,5 +785,10 @@
   "v": "1.26.30",
   "t": "Арена: если сервер теряет бой (обрыв связи, перезапуск), страница больше не зависает: через 15 секунд тишины клиент сам выходит из боя и сообщает об этом.",
   "te": "Arena: if the server loses a fight (connection drop, restart), the page no longer hangs: after 15 seconds of silence the client leaves the fight by itself and says so."
+ },
+ {
+  "v": "1.26.31",
+  "t": "Арена: бой переживает кратковременный обрыв связи (на телефоне при смене сети): сервер держит бой 25 секунд, клиент переподключается и продолжает. Если связь не вернулась, бой засчитывается как поражение.",
+  "te": "Arena: the fight survives a short connection drop (for example when the phone switches networks): the server holds the fight for 25 seconds, the client reconnects and continues. If the connection does not return, the fight counts as a defeat."
  }
 ]
