@@ -835,5 +835,10 @@
   "v": "1.26.40",
   "t": "Кузнец: созданные в ремесле вещи усиливаются только вещью того же качества (эпическую нельзя усилить редкой).",
   "te": "Blacksmith: crafted items can only be upgraded with an item of the same quality (an epic can't be upgraded with a rare)."
+ },
+ {
+  "v": "1.26.41",
+  "t": "Рейд: бой теперь идёт на сцене, как на охоте — герой, питомец, слуги и босс на поле, анимации ударов и умений.",
+  "te": "Raid: fights now play out on the hunt-style scene — hero, pet, servants and boss on the field, with strike and skill animations."
  }
 ]

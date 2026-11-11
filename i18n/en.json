@@ -2953,5 +2953,6 @@
   " (если выпадет)</div><b>": " (if rolled)</div><b>",
   "</small></div></div><p style=\"margin:0 0 6px;font-size:14px;color:var(--mute)\">Какие статы могут выпасть при ковке. Чем выше редкость, тем больше значения; редкая вещь получает 1 дополнительный стат, эпическая 2, легендарная 3.</p>": "</small></div></div><p style=\"margin:0 0 6px;font-size:14px;color:var(--mute)\">Stats that can roll when forging. The higher the rarity, the larger the values; a rare item gets 1 extra stat, an epic 2, a legendary 3.</p>",
   "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">Шанс редкости при твоём уровне профессии: обычная ": "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">Rarity chances at your profession level: common ",
-  ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Закрыть</button></div>": ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Close</button></div>"
+  ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Закрыть</button></div>": ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Close</button></div>",
+  "</div><div class=\"panel\"><h3>Группа</h3>": "</div><div class=\"panel\"><h3>Party</h3>"
 }
