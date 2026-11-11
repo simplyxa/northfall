@@ -865,5 +865,10 @@
   "v": "1.26.46",
   "t": "Рейд: питомец меньше и стоит рядом с героем, слуги стоят на земле, босс бьёт с рывком, а позы умений союзников приходят с сервера и совпадают с настоящими.",
   "te": "Raid: the pet is smaller and stands next to the hero, servants stand on the ground, the boss attacks with a lunge, and allies' skill poses now come from the server and match what they really used."
+ },
+ {
+  "v": "1.26.47",
+  "t": "Рейд: у каждого босса теперь своя нарисованная поза удара — при атаке босс на миг переходит в неё.",
+  "te": "Raid: every boss now has its own drawn attack pose — it switches to it for a moment when attacking."
  }
 ]
