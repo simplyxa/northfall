@@ -453,7 +453,7 @@ function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSo
   else if(m.t==='aps'){if(typeof apvpState==='function')apvpState(m)}
   else if(m.t==='arl'){if(typeof arlState==='function')arlState(m)}
   else if(m.t==='ape'&&m.why==='noroom'){if(fight&&fight.pvp){fight=null;apvpDestroy();log('Бой на арене прерван: сервер не видит этот бой. Попробуй начать заново.','sys');render()}}
-  else if(m.t==='ape'){{log(m.why==='won'?'Этого противника ты уже победил.':m.why==='notlist'?'Этого воина нет в твоём списке противников.':'Сервер не начал бой: '+(m.why||'неизвестно'),'sys');ARL=null;if(tab==='arena')ui()}}
+  else if(m.t==='ape'){{log(m.why==='won'?'Этого противника ты уже победил.':m.why==='notlist'?'Этого воина нет в твоём списке противников.':'Сервер не начал бой: '+(m.why||'неизвестно'),'sys');ARL=null;if(tab==='arena')arRender()}}
   else if(m.t==='onl'){HUB.onl=new Set(m.u||[]);HUB.g=m.g|0;if(typeof GONL!=='undefined')GONL=HUB.g;if(typeof ui==='function')ui()}};
  ws.onclose=fail;ws.onerror=()=>{try{ws.close()}catch(x){}}}
 // подписка на живой список: через хаб, а если его нет — напрямую на запрос Firestore q
@@ -1892,7 +1892,7 @@ function apvpState(m){const s=m.st;if(!s)return;
  const e=s.e||{};REP={win,bot:e.name||'Соперник',title:'',lv:e.lv|0,s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,...(s.s||{})},dR:delta,rating,dS,srat,xp:0,gold:-lost,lvUp:0,loot:'',war:0,hp:s.hp|0,mhp:s.mhp|0};
  ARH=null;ARL=null;apvpDestroy();fight=null;save();render();repModal()}
 let ARH=null,ARHL=false,ARHT=0;
-function arHistLoad(){if(ARHL||!DB||!UID)return;ARHL=true;const me=UID;DB.collection('arhist').doc(me).get().then(sn=>{ARHL=false;ARHT=Date.now();if(UID!==me)return;ARH=sn.exists?sn.data():{a:[],d:[]};if(tab==='arena'&&!fight)ui()}).catch(()=>{ARHL=false;ARH={a:[],d:[]}})}
+function arHistLoad(){if(ARHL||!DB||!UID)return;ARHL=true;const me=UID;DB.collection('arhist').doc(me).get().then(sn=>{ARHL=false;ARHT=Date.now();if(UID!==me)return;ARH=sn.exists?sn.data():{a:[],d:[]};if(tab==='arena'&&!fight)arRender()}).catch(()=>{ARHL=false;ARH={a:[],d:[]}})}
 function arHist(){if(ARH===null||Date.now()-ARHT>30000)arHistLoad();if(ARH===null)return''
  const ago=t=>{const m=Math.max(0,Math.floor((Date.now()-t)/60000));return m<1?'только что':m<60?m+' мин. назад':m<1440?Math.floor(m/60)+' ч назад':Math.floor(m/1440)+' дн назад'};
  const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1900,19 +1900,21 @@ function arHist(){if(ARH===null||Date.now()-ARHT>30000)arHistLoad();if(ARH===nul
  const blk=(t,a,att)=>`<div class="panel"><h3>${t}</h3>${a&&a.length?a.slice(0,10).map(e=>row(e,att)).join(''):'<p style="margin:0;color:var(--mute)">Пока нет боёв.</p>'}</div>`;
  return blk('Мои атаки (последние 10)',ARH.a,true)+blk('Нападения на меня (последние 10)',ARH.d,false)}
 let ARL=null,ARLQ=0,ARCONF=0;
-const arlAsk=(t,pay)=>{if(!HUB.ws||HUB.ws.readyState!==1)return;ARLQ=Date.now();hubSend({t,pay:pay?1:0})};
-function arlState(m){if(!m.why)ARLQ=0;if(m.why){if(m.why==='nogold')log('Не хватает золота для обновления.','sys');else if(m.why==='cd')log('Обновлять бесплатно можно раз в 15 минут.','sys');ARCONF=0;if(tab==='arena'&&!fight)ui();return}
- ARL={ts:Date.now(),o:m.o||[],won:m.won||[],t:+m.lt||0,off:(m.now||Date.now())-Date.now(),cd:m.cd||900000,price:m.price||5};ARCONF=0;if(m.au!=null){S.au=m.au|0;tbPaint()}if(tab==='arena'&&!fight)ui()}
+const arRender=()=>{if(tab==='arena'&&!fight&&S)render()};
+let ARLB=0;
+const arlAsk=(t,pay)=>{if(!HUB.ws||HUB.ws.readyState!==1){if(t==='arr')log('Нет связи с сервером арены. Попробуй ещё раз через пару секунд.','sys');return}ARLQ=Date.now();if(t==='arr'){ARLB=Date.now();setTimeout(()=>{if(ARLB&&Date.now()-ARLB>=9000){ARLB=0;log('Сервер долго не отвечает. Попробуй ещё раз.','sys');if(tab==='arena'&&!fight)arRender()}},9000)}hubSend({t,pay:pay?1:0});if(t==='arr')arRender()};
+function arlState(m){ARLB=0;if(!m.why)ARLQ=0;if(m.why){if(m.why==='nogold')log('Не хватает золота для обновления.','sys');else if(m.why==='cd')log('Обновлять бесплатно можно раз в 15 минут.','sys');ARCONF=0;if(tab==='arena'&&!fight)arRender();return}
+ ARL={ts:Date.now(),o:m.o||[],won:m.won||[],t:+m.lt||0,off:(m.now||Date.now())-Date.now(),cd:m.cd||900000,price:m.price||5};ARCONF=0;if(m.au!=null){S.au=m.au|0;tbPaint()}if(tab==='arena'&&!fight)arRender()}
 const arlLeft=()=>ARL?Math.max(0,ARL.t+ARL.cd-(Date.now()+ARL.off)):0;
 const arLeftTxt=ms=>{const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0')};
 function arlRefresh(){if(!ARL||fight)return;if(arlLeft()<=0){return arlAsk('arr',0)}
  if(!ARCONF){ARCONF=1;return ui()}if(S.au<ARL.price){ARCONF=0;log('Не хватает золота для обновления.','sys');return ui()}arlAsk('arr',1)}
 let ARLT=0;
-function pvpList(){if(arlLeft()>0&&!ARLT)ARLT=setTimeout(()=>{ARLT=0;if(tab==='arena'&&!fight&&document.visibilityState==='visible')ui()},1000);if((!ARL||Date.now()-ARL.ts>3e5)&&(!ARLQ||Date.now()-ARLQ>8000))arlAsk('arl')
+function pvpList(){if(arlLeft()>0&&!ARLT)ARLT=setTimeout(()=>{ARLT=0;if(tab==='arena'&&!fight&&document.visibilityState==='visible')arRender()},1000);if((!ARL||Date.now()-ARL.ts>3e5)&&(!ARLQ||Date.now()-ARLQ>8000))arlAsk('arl')
  if(!ARL)return`<div class="panel"><h3>Противники</h3><p style="margin:0">Ищем противников…</p></div>`;
  const L=ARL.o,left=arlLeft(),free=left<=0,mins=Math.ceil(left/60000);
- const btn=`${free?'':`<small style="color:var(--mute);margin-right:6px">откат ${arLeftTxt(left)}</small>`}<button class="b alt" data-arr="1">${free?'Обновить':ARCONF?`Точно? −${ARL.price} зол.`:`Обновить · ${ARL.price} зол.`}</button>`;
- return`<div class="panel"><h3 style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span>Противники</span>${btn}</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Пять случайных воинов с ближайшим к твоему рейтингом. Бой с копией героя: его атака, защита, здоровье и крит. Победить каждого можно один раз, после победы над всеми пятью список обновится сам. После поражения можно напасть снова. ${free?'Список можно обновить бесплатно.':`Бесплатное обновление через ${mins} мин, раньше за золото.`}</p>${L.length?L.map(p=>{const q=PL.find(x=>x.id===p.id)||p,won=ARL.won.includes(p.id),diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(q.av,28,frameOf(q))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div>${won?'<span style="color:var(--ok,#4a4);font-weight:700">Побеждён</span>':`<button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button>`}</div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div>`}
+ const btn=`${free?'':`<small style="color:var(--mute);margin-right:6px">откат ${arLeftTxt(left)}</small>`}<button class="b alt" data-arr="1" ${ARLB?'disabled':''}>${ARLB?'Обновляем…':free?'Обновить':ARCONF?`Точно? −${ARL.price} зол.`:`Обновить · ${ARL.price} зол.`}</button>`;
+ return`<div class="panel"><h3 style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span>Противники</span>${btn}</h3><p style="margin:0 0 4px;color:var(--mute);font-size:15px">Пять случайных воинов с ближайшим к твоему рейтингом. Бой с копией героя: его атака, защита, здоровье и крит. Победить каждого можно один раз, после победы над всеми пятью список обновится сам. После поражения можно напасть снова. ${free?'Список можно обновить бесплатно.':`Бесплатное обновление через ${mins} мин, раньше за золото.`}</p><div style="${ARLB?'opacity:.45;transition:opacity .2s':''}">${L.length?L.map(p=>{const q=PL.find(x=>x.id===p.id)||p,won=ARL.won.includes(p.id),diff=(p.rating|0)-S.rating,rw=Math.max(8,Math.min(40,Math.round(20+diff/20)));return`<div class="row"><div data-pv="${p.id}" style="cursor:pointer">${avatar(q.av,28,frameOf(q))} <b>${esc(p.name)}</b> · ур. ${p.lvl}<small>Рейтинг ${p.rating} · атака ${p.stats.atk}, защита ${p.stats.def}, здоровье ${p.stats.hp} · победа +${rw}</small></div>${won?'<span style="color:var(--ok,#4a4);font-weight:700">Побеждён</span>':`<button class="b" data-pp="${p.id}" ${arTk()<1?'disabled':''}>Вызвать</button>`}</div>`}).join(''):'<p style="margin:0">Пока нет других воинов с сохранённым снаряжением.</p>'}</div></div>`}
 
 // ===== Рынок =====
 let MK=[],mkUn=null,MKMSG='',mkMode='',mkFor=null;const MKFEE=.05,mkC=m=>m.au?'au':'gold',mkU=m=>m.au?'зол.':'сер.';
@@ -2426,7 +2428,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.31';
+const GVER='1.26.32';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3030,7 +3032,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.31</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.32</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

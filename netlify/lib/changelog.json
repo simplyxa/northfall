@@ -790,5 +790,10 @@
   "v": "1.26.31",
   "t": "Арена: бой переживает кратковременный обрыв связи (на телефоне при смене сети): сервер держит бой 25 секунд, клиент переподключается и продолжает. Если связь не вернулась, бой засчитывается как поражение.",
   "te": "Arena: the fight survives a short connection drop (for example when the phone switches networks): the server holds the fight for 25 seconds, the client reconnects and continues. If the connection does not return, the fight counts as a defeat."
+ },
+ {
+  "v": "1.26.32",
+  "t": "Арена: новый список противников теперь появляется сразу после ответа сервера (раньше страница не перерисовывалась), кнопка показывает «Обновляем…», сервер отвечает быстрее. Так же сразу показывается история боёв и тикает откат.",
+  "te": "Arena: the new opponents list now appears as soon as the server answers (the page used to not redraw), the button shows «Refreshing…», and the server answers faster. The fight history and the cooldown also update right away."
  }
 ]

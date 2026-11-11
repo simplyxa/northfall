@@ -284,10 +284,21 @@ module.exports = function apvp(getDb) {
   // ---- список «Противники» ----
   const listing = new Set();
   const snap = (id, p) => ({ id, name: String(p.name || id).slice(0, 20), lvl: p.lvl | 0, rating: p.rating | 0, cls: p.cls || '', av: p.av || null, stats: p.stats });
+  // общий для всех кэш игроков на 60 с: читать 300 анкет из базы на каждое обновление списка слишком долго
+  let PC = null;
+  async function poolOf(db) {
+    if (PC && PC.list && Date.now() - PC.t < 60000) return PC.list;
+    if (PC && PC.p) return PC.p;
+    const p = db.collection('players').limit(300).get().then(sn => {
+      const list = sn.docs.filter(d => d.data().stats).map(d => { const x = d.data(); return { id: d.id, p: { name: x.name, lvl: x.lvl, rating: x.rating, cls: x.cls, av: x.av, stats: x.stats } }; });
+      PC = { t: Date.now(), list }; return list;
+    }).catch(e => { PC = null; throw e; });
+    PC = { t: 0, p };
+    return p;
+  }
   async function candidates(db, uid, exclude) {
     const me = await db.collection('players').doc(uid).get(); const mr = me.exists ? (me.data().rating | 0) : 1000;
-    const sn = await db.collection('players').limit(300).get();
-    let all = sn.docs.filter(d => d.id !== uid && d.data().stats).map(d => ({ id: d.id, p: d.data() }));
+    let all = (await poolOf(db)).filter(x => x.id !== uid);
     const fresh = all.filter(x => !exclude.includes(x.id));
     if (fresh.length >= LIST_N) all = fresh;
     all.sort((a, b) => Math.abs((a.p.rating | 0) - mr) - Math.abs((b.p.rating | 0) - mr));

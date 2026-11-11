@@ -2942,5 +2942,8 @@
   "откат ": "cooldown ",
   "<small style=\"color:var(--mute);margin-right:6px\">откат ": "<small style=\"color:var(--mute);margin-right:6px\">cooldown ",
   "Бой на арене прерван: сервер не видит этот бой. Попробуй начать заново.": "The arena fight was interrupted: the server cannot see this fight. Try starting again.",
-  "Нет связи с ареной: бой прерван. Если связь вернётся, результат можно увидеть в истории боёв.": "No connection to the arena: the fight was interrupted. If the connection returns, you can see the result in the fight history."
+  "Нет связи с ареной: бой прерван. Если связь вернётся, результат можно увидеть в истории боёв.": "No connection to the arena: the fight was interrupted. If the connection returns, you can see the result in the fight history.",
+  "Нет связи с сервером арены. Попробуй ещё раз через пару секунд.": "No connection to the arena server. Try again in a few seconds.",
+  "Сервер долго не отвечает. Попробуй ещё раз.": "The server is taking too long to respond. Try again.",
+  "Обновляем…": "Refreshing…"
 }
