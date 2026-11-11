@@ -272,7 +272,8 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .stage.rd .st-hero{left:17%;top:91%;height:31%}.stage.rd .st-hero::before{content:'';position:absolute;left:50%;bottom:-5%;width:120%;height:11%;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(240,200,90,.95);box-shadow:0 0 14px 3px rgba(240,200,90,.65),inset 0 0 10px rgba(240,200,90,.45);animation:rdMe 1.8s ease-in-out infinite;z-index:-1}.stage.rd .st-hero .st-fig::before{content:'▼';position:absolute;left:50%;top:-11%;transform:translateX(-50%);font-size:17px;line-height:1;color:#f0c85a;text-shadow:0 0 6px #000,0 0 10px rgba(240,200,90,.9);animation:rdArr 1.1s ease-in-out infinite;z-index:3}@keyframes rdMe{0%,100%{opacity:.75}50%{opacity:1}}@keyframes rdArr{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(4px)}}.stage.rd .st-hero:not(.full){height:auto}
 .st-foe.fig .st-img{position:relative}.st-foe.fig .st-img img.st-ba{position:absolute;height:auto;max-width:none;opacity:0;pointer-events:none}
 .hfx{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:7}
-.rcv{position:absolute;left:0;top:0;width:100%;height:auto;aspect-ratio:900/745;display:block;z-index:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.stage.rcs .st-w{aspect-ratio:900/1150}
+.rcv{position:absolute;left:0;top:0;width:100%;height:auto;aspect-ratio:900/1150;display:block;z-index:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .st-fig img.st-fa{position:absolute;height:auto;max-width:none;opacity:0;pointer-events:none}
 .stage>.st-flee.x{position:absolute;top:8px;right:8px;z-index:8;width:40px;height:40px;padding:6px;box-sizing:border-box;border-radius:50%;background:rgba(15,18,22,.7);border:1px solid #58626a;display:flex;align-items:center;justify-content:center}
 
@@ -831,13 +832,14 @@ const RSPT=[{x:61,y:55,k:.85},{x:84,y:59,k:.85},{x:60,y:82,k:1},{x:84,y:88,k:1}]
 const RBG=["/img/84925907927473.webp", "/img/9b7b7d30d6e1d5.webp", "/img/bdac0ce5fd8ac4.webp", "/img/68bb221c3b9cf4.webp", "/img/f4f15290aa0558.webp"],
  RBF=["/img/456805bacc441a.webp", "/img/64a36b5a16d853.webp", "/img/440939d74d515e.webp", "/img/6f7629521d462c.webp", "/img/0ff89e7c33702c.webp"],
  RBA=[{"a":"/img/b9a8bb742b8ab4.webp","l":0.65,"t":-0.86,"w":93.71},{"a":"/img/92d18111a72804.webp","l":-2.13,"t":1.46,"w":104.6},{"a":"/img/afc102040e4e01.webp","l":0.81,"t":0.81,"w":97.42},{"a":"/img/b34d1a1b979f8d.webp","l":-1.33,"t":1.73,"w":102.24},{"a":"/img/db375e9402471d.webp","l":-0.73,"t":1.93,"w":99.92}], // поза удара босса: картинка и её место относительно основной (в % от неё)
- RBH=[44,50,50,48,52],RBP={x:74,y:86,k:1}; // высота босса в % высоты сцены (по рейдам)
+ RBH=[44,50,50,48,52],RBP={x:74,y:80,k:1}; // высота босса в % высоты сцены (по рейдам)
 // положения союзников в рейде (в % сцены) и классы по умолчанию, если у игрока класс неизвестен
 const RALP=[{x:7,y:62},{x:26,y:58},{x:43,y:65},{x:44,y:83}],RACLS=['berserk','hunter','shaman','hunter'];
 const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}"${foe?'':' id="stpet"'} title="${esc(pa.n)}" style="left:${rd?29.5:foe?105-F.x:F.x}%;top:${rd?(F.fly?70:93):F.y}%;width:${rd?F.w*.6:F.w}%;--pp:${F.p||0}%"><div class="st-pf"${foe?' style="transform:scaleX(-1)"':''}><img class="st-pi" src="${F.s}" alt=""><img class="st-pa" src="${F.a}" alt=""></div></div>`};
 // ===== Боевая сцена рейда на канвасе: один цикл отрисовки, герои, питомец, слуги, босс и эффекты =====
 const RCN={cv:null,cx:null,W:900,H:745,sc:1,imgs:{},sil:{},fx:[],num:[],pt:[],amb:[],q:[],t:0,last:0,raf:0,sh:0,meA:null,petA:null,fa:{},al:{},fp:[],hp:null,rid:null,pend:[],hit:[],ske:{},dl:{},mid:0};
-const RCME={x:.17*900,y:.91*745,h:.31*745},RCPET={x:.295*900};
+// высокая сцена рейда: 900×1150 (портрет), фигуры крупнее
+const RCH=1150,RCS=1.42,RCME={x:175,y:1035,h:340},RCPET={x:395},RCAL=[{x:110,y:560,h:270},{x:305,y:610,h:280},{x:430,y:775,h:300},{x:300,y:910,h:318}],RCFOE=[{x:600,y:560},{x:775,y:690},{x:610,y:830},{x:775,y:975}];
 function rcImg(u){let i=RCN.imgs[u];if(!i){i=new Image();i.src=u;RCN.imgs[u]=i}return i}
 const rcOk=i=>i&&i.complete&&i.naturalWidth>0;
 function rcSil(u,col){const k=u+col;let c=RCN.sil[k];if(c)return c;const i=rcImg(u);if(!rcOk(i))return null;c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const x=c.getContext('2d');x.drawImage(i,0,0);x.globalCompositeOperation='source-in';x.fillStyle=col;x.fillRect(0,0,c.width,c.height);RCN.sil[k]=c;return c}
@@ -854,10 +856,9 @@ function rcShadow(x,y,w){const cx=RCN.cx;cx.save();cx.translate(x,y);cx.scale(1,
 function rcBar(x,y,w,h,p,col,bg){const cx=RCN.cx;p=Math.max(0,Math.min(1,p));cx.fillStyle=bg||'rgba(0,0,0,.65)';cx.fillRect(x-w/2,y,w,h);cx.fillStyle=col;cx.fillRect(x-w/2,y,w*p,h)}
 function rcText(t,x,y,sz,col,o){const cx=RCN.cx;o=o||{};cx.font=(o.b?'700 ':'')+sz+'px Alegreya,Georgia,serif';cx.textAlign=o.al||'center';cx.textBaseline='alphabetic';cx.lineWidth=o.lw||3;cx.strokeStyle='rgba(0,0,0,.85)';cx.lineJoin='round';cx.strokeText(t,x,y);cx.fillStyle=col;cx.fillText(t,x,y)}
 function rcClip(t,max,sz){const cx=RCN.cx;cx.font='700 '+sz+'px Alegreya,Georgia,serif';t=String(t);if(cx.measureText(t).width<=max)return t;while(t.length>1&&cx.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…'}
-// ----- положения всех участников (в координатах 900×745) -----
-const rcP=(P,h)=>({x:P.x/100*900,y:P.y/100*745,h:h==null?RCME.h:h});
-function rcAllyPos(i){return rcP(RALP[i])}
-function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];return{x:P.x/100*900,y:P.y/100*745,h:bf?(BHL[b]||24)*(P.k||1)/100*745:(.19*(P.k||1)*900)}}
+// ----- положения всех участников (в координатах 900×1150) -----
+function rcAllyPos(i){return RCAL[i]||RCAL[0]}
+function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?650:Q.x,y:bs?870:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.8:.98):(.19*(P.k||1)*900*1.15)}}
 function rcTarget(H){const i=H.sl.findIndex(s=>s.e&&s.e===fight.e),j=i>=0?i:H.sl.findIndex(s=>s.e&&s.e.hp>0);return j>=0?rcFoePos(H,j):{x:640,y:430,h:150}}
 // ----- эффекты -----
 function rcPart(x,y,n,col,o){o=o||{};for(let i=0;i<n;i++){const a=(o.a==null?Math.random()*6.28:o.a+(Math.random()-.5)*(o.sp||1.2)),v=(o.v||160)*(.4+Math.random()*.8);RCN.pt.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v+(o.vy||0),g:o.g==null?260:o.g,t:0,life:(o.life||.5)*(.6+Math.random()*.6),col:Array.isArray(col)?col[i%col.length]:col,sz:(o.sz||3)*(.6+Math.random()*.8)})}}
@@ -922,7 +923,7 @@ const RCAMB=[ // фоновые частицы по рейдам: пыль, ту
  {col:'235,245,255',vx:[-14,6],vy:[18,45],sz:[1.5,3.5],a:.6},{col:'235,245,255',vx:[-70,-30],vy:[25,55],sz:[1.5,3],a:.55},
  {col:'255,150,60',vx:[-10,14],vy:[-50,-18],sz:[1.5,3.5],a:.8}];
 const rcR=(a,b)=>a+Math.random()*(b-a);
-function rcAmb(b){const T=RCAMB[b]||RCAMB[0];if(RCN.amb.length!==36||RCN.ambB!==b){RCN.ambB=b;RCN.amb=Array.from({length:36},()=>({x:rcR(0,900),y:rcR(0,745),vx:rcR(T.vx[0],T.vx[1]),vy:rcR(T.vy[0],T.vy[1]),sz:rcR(T.sz[0],T.sz[1]),ph:rcR(0,6.28)}))}return T}
+function rcAmb(b){const T=RCAMB[b]||RCAMB[0];if(RCN.amb.length!==36||RCN.ambB!==b){RCN.ambB=b;RCN.amb=Array.from({length:36},()=>({x:rcR(0,900),y:rcR(0,RCH),vx:rcR(T.vx[0],T.vx[1]),vy:rcR(T.vy[0],T.vy[1]),sz:rcR(T.sz[0],T.sz[1]),ph:rcR(0,6.28)}))}return T}
 function rcPose(cl,pn,A){const q=(HEROPOSE[cl]||{})[pn];if(!A||!A.a||!q)return null;const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=1||p<0)return null;const k=Math.min(.4,.17/A.a.dur);return{u:q.a,l:q.l,t:q.t,w:q.w,k:rcEase(p,k,1-k),p}}
 // надгробие павшего союзника: камень с табличкой, в табличку вписан его аватар
 const RTOMB={u:'/img/c621bfca1fb39d.webp',ar:0.625,p:[0.2887, 0.2276, 0.7854, 0.5116]};
@@ -934,9 +935,9 @@ function rcHero(x,y,h,cl,A,o){const fig=HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A
  let dx=0;if(A&&A.a&&pn==='atk'){const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=0&&p<1)dx=Math.sin(Math.PI*p)*34}
  const hit=o.me&&RCN.t-(RCN.meHit||-9)<.28?{fl:.55*(1-(RCN.t-RCN.meHit)/.28),fc:'#ff3b2a'}:{};
  return rcFig(fig,x,y,h,{dx,dy:o.dead?0:idle*1.6,sy:o.dead?1:1+idle*.008,a:o.dead?.75:1,gray:o.dead,fl:hit.fl,fc:hit.fc},P)}
-function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx.clearRect(0,0,900,745);RCN.hit=[];
+function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx.clearRect(0,0,900,RCH);RCN.hit=[];
  const shx=RCN.sh?(Math.random()-.5)*RCN.sh:0,shy=RCN.sh?(Math.random()-.5)*RCN.sh:0;cx.save();cx.translate(shx,shy);
- const bg=rcImg(RBG[H.raid.b]||STBG);if(rcOk(bg))cx.drawImage(bg,-8,-8,916,761);else{cx.fillStyle='#0b0d10';cx.fillRect(0,0,900,745)}
+ const bg=rcImg(RBG[H.raid.b]||STBG);if(rcOk(bg)){cx.drawImage(bg,-8,-8,916,761);cx.save();cx.beginPath();cx.rect(0,745,900,RCH-745);cx.clip();cx.translate(0,RCH);cx.scale(1,-(RCH-745)/300);cx.drawImage(bg,0,445,900,300,-8,0,916,300);cx.restore();const gr=cx.createLinearGradient(0,745,0,RCH);gr.addColorStop(0,'rgba(8,10,12,0)');gr.addColorStop(1,'rgba(8,10,12,.6)');cx.fillStyle=gr;cx.fillRect(0,745,900,RCH-745)}else{cx.fillStyle='#0b0d10';cx.fillRect(0,0,900,RCH)}
  const ents=[];
  // герой
  ents.push({y:RCME.y,d:()=>{rcShadow(RCME.x,RCME.y,RCME.h*.5);const pu=.75+.25*Math.sin(RCN.t*3.4);cx.save();cx.translate(RCME.x,RCME.y);cx.scale(1,.24);cx.lineWidth=7;cx.strokeStyle='rgba(240,200,90,'+(.55+.4*pu)+')';cx.shadowColor='rgba(240,200,90,.9)';cx.shadowBlur=18;cx.beginPath();cx.arc(0,0,RCME.h*.36,0,7);cx.stroke();cx.restore();
@@ -948,8 +949,8 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
    rcText(rcClip(m.n,150,24),P.x,P.y-P.h-16,24,'#f1e6c8',{b:1});rcBar(P.x,P.y-P.h-10,92,9,dead?0:m.hp/(m.max||1),'#6fbf73')}})})}
  // питомец
  const pa=petA(),F=pa&&PETFIG[pa.k];
- if(F){const pi=rcImg(F.s);if(rcOk(pi)){const ph=F.w*.6/100*900*pi.naturalHeight/pi.naturalWidth,py=(F.fly?70:93)/100*745+(F.p||0)/100*ph,A=RCN.petA,pp=A?(RCN.t-A.t0)/A.dur:2;
-  ents.push({y:py,d:()=>{if(!F.fly)rcShadow(RCPET.x,py,F.w*.6/100*900*.9);let dx=0,dy=0,rot=0;if(pp>=0&&pp<1){const s=Math.sin(Math.PI*pp);if(F.fly){dx=s*80;dy=s*35;rot=s*.25}else dx=s*F.w*.6/100*900*.65}else if(A)RCN.petA=null;
+ if(F){const pi=rcImg(F.s);if(rcOk(pi)){const ph=F.w*.6*RCS/100*900*pi.naturalHeight/pi.naturalWidth,py=(F.fly?RCME.y-RCME.h*.8:RCME.y+8)+(F.p||0)/100*ph,A=RCN.petA,pp=A?(RCN.t-A.t0)/A.dur:2;
+  ents.push({y:py,d:()=>{if(!F.fly)rcShadow(RCPET.x,py,F.w*.6*RCS/100*900*.9);let dx=0,dy=0,rot=0;if(pp>=0&&pp<1){const s=Math.sin(Math.PI*pp);if(F.fly){dx=s*80;dy=s*35;rot=s*.25}else dx=s*F.w*.6*RCS/100*900*.65}else if(A)RCN.petA=null;
    if(F.fly)dy+=Math.sin(RCN.t*4)*6;rcFig(F.s,RCPET.x,py,ph,{dx,dy,rot},pp>=0&&pp<1?{u:F.a,l:0,t:0,w:100,k:rcEase(pp,.18,.72)}:null)}})}}
  // враги
  H.sl.forEach((s,i)=>{const e=s.e;if(!e)return;const pos=rcFoePos(H,i),b=bfBase(e.name),bf=b&&BFIG[b],A=RCN.fa[i]||{},dead=e.hp<=0,boss=!!e.rbp,tgt=fight.e===e;
@@ -965,7 +966,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
    if(!dead)RCN.hit.push({i,x0:box.x0-6,y0:box.y0-30,x1:box.x0+box.w+6,y1:box.y0+box.h+6})}})});
  ents.sort((a,b)=>a.y-b.y);RCN.hit=[];ents.forEach(en=>en.d());
  // фоновые частицы
- {const T=rcAmb(H.raid.b),dt=Math.min(.05,RCN.dtl||.016);for(const p of RCN.amb){p.x+=p.vx*dt;p.y+=p.vy*dt+Math.sin(RCN.t*1.3+p.ph)*.12;if(p.y<-10)p.y=755;if(p.y>755)p.y=-10;if(p.x<-10)p.x=910;if(p.x>910)p.x=-10;cx.fillStyle='rgba('+T.col+','+(T.a*(.6+.4*Math.sin(RCN.t*2+p.ph)))+')';cx.beginPath();cx.arc(p.x,p.y,p.sz,0,7);cx.fill()}}
+ {const T=rcAmb(H.raid.b),dt=Math.min(.05,RCN.dtl||.016);for(const p of RCN.amb){p.x+=p.vx*dt;p.y+=p.vy*dt+Math.sin(RCN.t*1.3+p.ph)*.12;if(p.y<-10)p.y=RCH+10;if(p.y>RCH+10)p.y=-10;if(p.x<-10)p.x=910;if(p.x>910)p.x=-10;cx.fillStyle='rgba('+T.col+','+(T.a*(.6+.4*Math.sin(RCN.t*2+p.ph)))+')';cx.beginPath();cx.arc(p.x,p.y,p.sz,0,7);cx.fill()}}
  // эффекты
  for(const f of RCN.fx){const p=f.t/f.life,a=1-p;cx.save();
   if(f.k==='slash'){cx.translate(f.x,f.y);cx.rotate(f.ang);for(let j=0;j<3;j++){cx.strokeStyle='rgba('+f.col+','+(a*(1-j*.28))+')';cx.lineWidth=(11-j*3.5)*a+1;cx.lineCap='round';cx.beginPath();cx.arc(0,0,f.r*(1-j*.07),-1.05+p*.5,1.05+p*.7);cx.stroke()}}
@@ -981,13 +982,13 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
  // панель героя (без тряски)
  {const w=300,hpm=maxHp();cx.fillStyle='rgba(8,10,12,.62)';cx.beginPath();if(cx.roundRect)cx.roundRect(14,14,w,78,14);else cx.rect(14,14,w,78);cx.fill();rcText(rcClip(S.name,w-30,28),28,46,28,'#f4ead0',{b:1,al:'left'});rcBar(14+w/2,58,w-28,12,S.hp/hpm,'#6fbf73');rcText(S.hp+'/'+hpm+' · ⚡'+S.en,28,86,21,'#d8dde0',{al:'left',lw:2})}}
 // ----- вход и выход -----
-function rcSize(){const cv=RCN.cv,w=cv.clientWidth||400,d=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*d);if(cv.width!==pw){cv.width=pw;cv.height=Math.round(pw*745/900)}RCN.sc=cv.width/900}
+function rcSize(){const cv=RCN.cv,w=cv.clientWidth||400,d=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*d);if(cv.width!==pw){cv.width=pw;cv.height=Math.round(pw*RCH/900)}RCN.sc=cv.width/900}
 function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)return;
  if(!fight||!fight.hunt||!fight.hunt.raid){cancelAnimationFrame(RCN.raf);RCN.raf=0;return}
  if(!RCN.cv||!RCN.cv.isConnected)return;
  const H=fight.hunt,dt=Math.min(.05,Math.max(0,(t-(RCN.last||t))/1000));RCN.last=t;RCN.dtl=dt;RCN.t+=dt;
  try{rcSize();rcUpdate(dt,H,RAID);rcDraw(H,RAID)}catch(e){if(!RCN.err){RCN.err=e;console.error('raid canvas',e)}}}
-function rcClick(e){if(!fight||!fight.hunt)return;const r=RCN.cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*900,y=(e.clientY-r.top)/r.height*745;
+function rcClick(e){if(!fight||!fight.hunt)return;const r=RCN.cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*900,y=(e.clientY-r.top)/r.height*RCH;
  for(let k=RCN.hit.length-1;k>=0;k--){const h=RCN.hit[k];if(x>=h.x0&&x<=h.x1&&y>=h.y0&&y<=h.y1){const s=fight.hunt.sl[h.i];if(s&&s.e){fight.e=s.e;render()}return}}}
 function rcMount(){if(!fight||!fight.hunt||!fight.hunt.raid)return;const w=document.getElementById('rcw');if(!w)return;
  if(!RCN.cv){const c=document.createElement('canvas');c.className='rcv';RCN.cv=c;RCN.cx=c.getContext('2d');c.addEventListener('pointerdown',rcClick)}
