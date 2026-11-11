@@ -128,7 +128,8 @@ module.exports = function apvp(getDb) {
 
   // ---- ход игрока ----
   function act(c, m, send) {
-    const R = rooms.get(c.uid); if (!R || R.st !== 'on') return;
+    const R = rooms.get(c.uid);
+    if (!R || R.st !== 'on') return send(c, { t: 'ape', rid: 'ap', why: 'noroom' });   // боя нет (рестарт сервера, обрыв): клиент должен выйти из боя
     const a = String(m.a || '');
     const now = R.clk;
     let msg = null;
@@ -155,6 +156,8 @@ module.exports = function apvp(getDb) {
     } else if (a.startsWith('sk-')) {
       msg = skill(R, a.slice(3));
       if (msg === false) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
+    } else if (a === 'sync') {
+      return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
     } else return;
     if (msg) R.log.push(msg);
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
