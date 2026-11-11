@@ -951,7 +951,7 @@ function sell(id){const it=S.inv.find(x=>x.uid===id);if(!it)return;ev('dis');con
 const statF=(slot,k,L)=>k===PRIM[slot][0]?PRIM[slot][1](L):EXTRA[k](L);
 function scaleTo(it,L){const L0=it.lv;for(const k in it.b){if(k==='crit'||k==='reg'||k==='en'){it.b[k]=Math.max(1,Math.round(it.b[k]*statF(it.slot,k,L)/statF(it.slot,k,L0)));continue}it.b[k]=Math.max(1,Math.round(it.b[k]*statF(it.slot,k,L)/statF(it.slot,k,L0)))}it.lv=L}
 const UPG=[1,2,3,4,4,4,2,3,4],upGold=it=>((it.up|0)+1)*UPG[it.tr!=null?it.tr:0],upMax=it=>it.lv+5>LVMAX;
-const upMat=it=>S.inv.filter(x=>x!==it&&x.slot===it.slot&&x.tr===it.tr).sort((a,b)=>(a.up|0)-(b.up|0)||(a.rn||[]).length-(b.rn||[]).length)[0];
+const upMat=it=>S.inv.filter(x=>x!==it&&x.slot===it.slot&&x.tr===it.tr&&(it.tr<6||(x.rar|0)===(it.rar|0))).sort((a,b)=>(a.up|0)-(b.up|0)||(a.rn||[]).length-(b.rn||[]).length)[0];
 function mastWho(){if(!S)return{};const eq=Object.values(S.eq||{}).filter(Boolean),all=[...eq,...(S.inv||[])];
  const smith=all.some(it=>!upMax(it)&&upMat(it)&&(S.au|0)>=upGold(it));
  const stones=Object.values(S.runes||{}).some(n=>n>0)&&all.some(it=>(it.rn||[]).length<sockOf(it)&&Object.entries(S.runes||{}).some(([k,n])=>n>0&&stFits(it,k)));
@@ -2450,7 +2450,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.39';
+const GVER='1.26.40';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3067,7 +3067,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.39</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.40</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

@@ -830,5 +830,10 @@
   "v": "1.26.39",
   "t": "Ремесло: при нажатии на изделие в кузнице открывается карточка с возможными статами (например, атака 29–65) и шансами редкости.",
   "te": "Crafting: tapping a forge item opens a card with its possible stats (e.g. attack 29–65) and rarity chances."
+ },
+ {
+  "v": "1.26.40",
+  "t": "Кузнец: созданные в ремесле вещи усиливаются только вещью того же качества (эпическую нельзя усилить редкой).",
+  "te": "Blacksmith: crafted items can only be upgraded with an item of the same quality (an epic can't be upgraded with a rare)."
  }
 ]
