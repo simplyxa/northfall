@@ -206,7 +206,6 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .stage.zr .st-ring::after{content:'';position:absolute;left:50%;top:-6px;width:9px;height:9px;transform:translateX(-50%) rotate(45deg);background:rgba(var(--rg),.9);box-shadow:0 0 8px rgba(var(--rg),.8)}
 .stage.zr{--rg:255,170,70}.stage.zr.hard{--rg:90,200,255}
 .fxn.big{font-size:26px;text-align:center;line-height:1.1}
-.fxk{position:fixed;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;pointer-events:none;z-index:300;background:radial-gradient(circle,var(--c) 0,transparent 70%);box-shadow:0 0 0 3px var(--c);animation:fxk .8s ease-out forwards}@keyframes fxk{from{transform:scale(.4);opacity:.95}to{transform:scale(5);opacity:0}}
 .st-w{position:relative;aspect-ratio:900/745;background:#0b0d10 var(--sbg) center/100% 100% no-repeat}
 .panel.hpn{padding-bottom:0}
 .hdet{margin:0 0 6px}.hdet summary{cursor:pointer;color:var(--mute);font-size:13px}
@@ -1018,7 +1017,7 @@ function apvpView(){
  return`<div class="panel hpn" id="fightpanel" data-ra-root><h3>Арена · ${esc(e.name)} · ур. ${e.lv}</h3><div class="stage" style="--sbg:url(${ARSTBG||STBG})"><div class="st-w">
  <div class="st-hud"><b>${esc(S.name)}</b><span class="st-bar"><i id="ahb" style="width:${Math.max(0,S.hp/maxHp()*100)}%;background:var(--moss)"></i></span><small id="ahbt">${S.hp}/${maxHp()} · ⚡${S.en}</small></div>
  <div class="st-hud" style="left:auto;right:56px;text-align:right"><b>${esc(e.name)}</b><span class="st-bar"><i id="aeb" style="width:${Math.max(0,e.hp/e.max*100)}%"></i></span><span class="st-atk"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aebt">${e.hp}/${e.max}</small><small id="aestn" ${e.stun>fight.clk?'':'hidden'}>💫 в капкане</small></div>
- <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
+ <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">${Object.entries(HEROPOSE[S.cls]||{}).map(([n,q])=>`<img class="st-fa" data-p="${n}" src="${q.a}" alt="" style="left:${q.l}%;top:${q.t}%;width:${q.w}%">`).join('')}`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
  <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div>${e.pet&&PETFIG[e.pet]?petFig({k:e.pet,n:(PETS[e.pet]||{}).n||''},1):''}</div>${arCtl()}</div></div>`;
 }
 function fightView(){
@@ -1053,11 +1052,10 @@ function arFrame(ts){APRAF=0;const f=fight;if(!f||!f.pvp||!APST||!document.body.
  const bs=R.querySelector('#bs');if(bs){const p=Math.round(pc*100);if(p!==APST.lp){APST.lp=p;bs.style.setProperty('--p',p);bs.disabled=pc<.2;bs.classList.toggle('full',pc>=1)}}
  const ac=R.querySelector('#aec');if(ac)ac.style.width=Math.round(ec*100)+'%';
  APRAF=requestAnimationFrame(arFrame)}
-const SKFX={rage:['#e5533d','L'],roar:['#f0a030','L'],skin:['#9fb4c8','L'],totem:['#5fd16a','L'],shot:['#e9d36a','F'],trap:['#c8a060','F']};
-function skFx(id,name,hero,foe){const c=SKFX[id]||['#fff','L'],onFoe=c[1]==='F',el=onFoe?foe:hero,fg=el&&el.querySelector('.st-fig');
- fxAt(el,'fxn g',name,.25);if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;
- const d=document.createElement('div');d.className='fxk';d.style.cssText=`left:${r.left+r.width/2}px;top:${r.top+r.height*.5}px;--c:${c[0]}`;fxl().appendChild(d);setTimeout(()=>d.remove(),900);
- if(fg)ANI(fg,id==='shot'||id==='trap'?[{transform:'translateX(0)'},{transform:'translateX(18px)'},{transform:'translateX(0)'}]:[{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.12)',filter:'brightness(1.8) drop-shadow(0 0 12px '+c[0]+')'},{transform:'scale(1)',filter:'brightness(1)'}],{duration:480,easing:'ease-out'})}
+// поза героя (как на охоте): спрайт позы проявляется поверх героя на время анимации
+function heroPose(hel,pn){const fg=hel&&hel.querySelector('.st-fig');if(!fg)return;const hm=pn==='atk'?430:(HPOSEMS[pn]||900),fa=fg.querySelector('.st-fa[data-p="'+pn+'"]'),pa=[];(fg._pa||[]).forEach(a=>{try{a.cancel()}catch(e){}});fg._pa=pa;
+ if(fa){const k=Math.min(.4,170/hm),k2=1-k;pa.push(ANI(fa,[{opacity:0},{opacity:1,offset:k},{opacity:1,offset:k2},{opacity:0}],{duration:hm}),ANI(fg.firstElementChild,[{opacity:1},{opacity:0,offset:k},{opacity:0,offset:k2},{opacity:1}],{duration:hm}));if(pn==='atk')pa.push(ANI(fg,[{transform:'translateX(0)'},{transform:'translateX(18px)'},{transform:'translateX(0)'}],{duration:hm,easing:'ease-out'}))}
+ else if(pn==='atk')pa.push(ANI(fg,[{transform:'translateX(0)'},{transform:'translateX(38px) rotate(5deg) scale(1.04)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'}))}
 function paintPvpFight(){
  if(!fight||!fight.pvp)return;
  const root=document.getElementById('fightpanel');if(!root)return;
@@ -1070,10 +1068,10 @@ function paintPvpFight(){
   ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(-34px) rotate(-5deg)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
  else if(fight._ph!=null&&S.hp-fight._ph>=Math.max(5,maxHp()*.05))fxAt(hero,'fxn g','+'+(S.hp-fight._ph),.25);
  if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
-  ANI(hero.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(38px) rotate(5deg) scale(1.04)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
+  if(!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn))heroPose(hero,'atk')}
  fight._ph=S.hp;fight._peh=E.hp;
- // применённое умение: событие от сервера → название, вспышка и анимация героя
- {const ev=fight.ske;if(fight._skn==null)fight._skn=ev?ev.n:0;else if(ev&&ev.n!==fight._skn){fight._skn=ev.n;const k=skOf().find(x=>x[0]===ev.id);if(k)skFx(ev.id,k[1],hero,foe)}}
+ // применённое умение: событие от сервера → поза героя (как на охоте)
+ {const ev=fight.ske;if(fight._skn==null)fight._skn=ev?ev.n:0;else if(ev&&ev.n!==fight._skn){fight._skn=ev.n;heroPose(hero,ev.id)}}
  // кнопки
  skOf().forEach((k,i)=>set('#sk'+i,x=>{const st=skSt(k[0]),l=g('#skl'+i);if(l)l.textContent=st.txt;x.style.setProperty('--p',st.p);x.classList.toggle('act',st.act);x.classList.toggle('cd',!st.act&&st.L>0);x.disabled=st.L>0}));
  set('#aestn',x=>{x.hidden=!(E.stun>now)});
@@ -2424,7 +2422,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.28';
+const GVER='1.26.29';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3028,7 +3026,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.28</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.29</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
