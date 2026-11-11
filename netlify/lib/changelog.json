@@ -780,5 +780,10 @@
   "v": "1.26.29",
   "t": "Арена: умения теперь показываются позами героя, как на охоте (вместо вспышки). Заодно вернулась обычная вспышка при победе над врагом на охоте.",
   "te": "Arena: skills are now shown with the hero's skill poses, like in the hunt (instead of a flash). The normal kill flash in the hunt is back too."
+ },
+ {
+  "v": "1.26.30",
+  "t": "Арена: если сервер теряет бой (обрыв связи, перезапуск), страница больше не зависает: через 15 секунд тишины клиент сам выходит из боя и сообщает об этом.",
+  "te": "Arena: if the server loses a fight (connection drop, restart), the page no longer hangs: after 15 seconds of silence the client leaves the fight by itself and says so."
  }
 ]
