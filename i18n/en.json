@@ -2948,5 +2948,10 @@
   "Обновляем…": "Refreshing…",
   "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">Досталось обновление</h3><p style=\"margin:0 0 12px\">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class=\"b red\" style=\"width:100%\" onclick=\"nfReload()\">Обновить игру</button></div>": "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">An update is ready</h3><p style=\"margin:0 0 12px\">A new version of the game is out. Reload to get the fresh graphics and all the fixes.</p><button class=\"b red\" style=\"width:100%\" onclick=\"nfReload()\">Update the game</button></div>",
   "Доска заданий клана очищена.": "Clan quest board cleared.",
-  "<button class=\"b alt\" data-cqr=\"1\" style=\"margin:0 0 6px\">Сбросить задания (админ)</button>": "<button class=\"b alt\" data-cqr=\"1\" style=\"margin:0 0 6px\">Reset quests (admin)</button>"
+  "<button class=\"b alt\" data-cqr=\"1\" style=\"margin:0 0 6px\">Сбросить задания (админ)</button>": "<button class=\"b alt\" data-cqr=\"1\" style=\"margin:0 0 6px\">Reset quests (admin)</button>",
+  " (всегда)</div><b>": " (always)</div><b>",
+  " (если выпадет)</div><b>": " (if rolled)</div><b>",
+  "</small></div></div><p style=\"margin:0 0 6px;font-size:14px;color:var(--mute)\">Какие статы могут выпасть при ковке. Чем выше редкость, тем больше значения; редкая вещь получает 1 дополнительный стат, эпическая 2, легендарная 3.</p>": "</small></div></div><p style=\"margin:0 0 6px;font-size:14px;color:var(--mute)\">Stats that can roll when forging. The higher the rarity, the larger the values; a rare item gets 1 extra stat, an epic 2, a legendary 3.</p>",
+  "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">Шанс редкости при твоём уровне профессии: обычная ": "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">Rarity chances at your profession level: common ",
+  ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Закрыть</button></div>": ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Close</button></div>"
 }

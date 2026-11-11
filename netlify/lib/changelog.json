@@ -825,5 +825,10 @@
   "v": "1.26.38",
   "t": "Ремесло: на созданном снаряжении теперь видно имя мастера (в карточке вещи и в списке снаряжения).",
   "te": "Crafting: crafted gear now shows its maker's name (item card and gear list)."
+ },
+ {
+  "v": "1.26.39",
+  "t": "Ремесло: при нажатии на изделие в кузнице открывается карточка с возможными статами (например, атака 29–65) и шансами редкости.",
+  "te": "Crafting: tapping a forge item opens a card with its possible stats (e.g. attack 29–65) and rarity chances."
  }
 ]

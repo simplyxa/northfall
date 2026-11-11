@@ -1,4 +1,7 @@
 [
- "Доска заданий клана очищена.",
- "<button class=\"b alt\" data-cqr=\"1\" style=\"margin:0 0 6px\">Сбросить задания (админ)</button>"
+ " (всегда)</div><b>",
+ " (если выпадет)</div><b>",
+ "</small></div></div><p style=\"margin:0 0 6px;font-size:14px;color:var(--mute)\">Какие статы могут выпасть при ковке. Чем выше редкость, тем больше значения; редкая вещь получает 1 дополнительный стат, эпическая 2, легендарная 3.</p>",
+ "<p style=\"margin:8px 0 0;font-size:14px;color:var(--mute)\">Шанс редкости при твоём уровне профессии: обычная ",
+ ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Закрыть</button></div>"
 ]
