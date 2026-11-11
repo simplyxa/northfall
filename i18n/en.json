@@ -2922,5 +2922,20 @@
   "Отбился": "Defended",
   "Проиграл": "Lost",
   "Бутылка: здоровье и энергия восстановлены полностью": "Bottle: health and energy fully restored",
-  "<p style=\"margin:0;color:var(--mute)\">Пока нет боёв.</p>": "<p style=\"margin:0;color:var(--mute)\">No fights yet.</p>"
+  "<p style=\"margin:0;color:var(--mute)\">Пока нет боёв.</p>": "<p style=\"margin:0;color:var(--mute)\">No fights yet.</p>",
+  "Не хватает золота для обновления.": "Not enough gold to refresh.",
+  "Обновлять бесплатно можно раз в 15 минут.": "You can refresh for free once every 15 minutes.",
+  "<div class=\"panel\"><h3>Противники</h3><p style=\"margin:0\">Ищем противников…</p></div>": "<div class=\"panel\"><h3>Opponents</h3><p style=\"margin:0\">Looking for opponents…</p></div>",
+  "Обновить": "Refresh",
+  "Точно? −": "Sure? −",
+  "Обновить · ": "Refresh · ",
+  "<div class=\"panel\"><h3 style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center\"><span>Противники</span>": "<div class=\"panel\"><h3 style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center\"><span>Opponents</span>",
+  "</h3><p style=\"margin:0 0 4px;color:var(--mute);font-size:15px\">Пять случайных воинов с ближайшим к твоему рейтингом. Бой с копией героя: его атака, защита, здоровье и крит. Победить каждого можно один раз, после победы над всеми пятью список обновится сам. После поражения можно напасть снова. ": "</h3><p style=\"margin:0 0 4px;color:var(--mute);font-size:15px\">Five random warriors with ratings closest to yours. You fight a copy of their hero: their attack, defense, health and crit. Each one can be beaten once; after you beat all five, the list refreshes by itself. After a defeat you can attack again. ",
+  "Список можно обновить бесплатно.": "The list can be refreshed for free.",
+  "Бесплатное обновление через ": "Free refresh in ",
+  " мин, раньше за золото.": " min; earlier for gold.",
+  "<span style=\"color:var(--ok,#4a4);font-weight:700\">Побеждён</span>": "<span style=\"color:var(--ok,#4a4);font-weight:700\">Defeated</span>",
+  ">Вызвать</button>": ">Challenge</button>",
+  "Этого противника ты уже победил.": "You have already beaten this opponent.",
+  "Этого воина нет в твоём списке противников.": "This warrior is not in your opponents list."
 }

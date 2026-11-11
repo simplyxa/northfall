@@ -760,5 +760,10 @@
   "v": "1.26.25",
   "t": "Арена: на сцене боя теперь виден питомец соперника, если он у него есть.",
   "te": "Arena: your opponent's pet is now shown on the fight stage, if they have one."
+ },
+ {
+  "v": "1.26.26",
+  "t": "Арена: «Воины других игроков» теперь «Противники». Показываются 5 случайных из самых близких по рейтингу. Победить каждого можно один раз, после поражения можно напасть снова. Список обновляется кнопкой «Обновить»: бесплатно раз в 15 минут, раньше за 5 золота, а когда побеждены все пятеро, сам.",
+  "te": "Arena: «Warriors of other players» is now «Opponents». It shows 5 random players among those closest in rating. Each can be beaten once; after a defeat you can attack again. The list is refreshed with the Refresh button: free once every 15 minutes, earlier for 5 gold, and automatically when all five are beaten."
  }
 ]

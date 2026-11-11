@@ -20,6 +20,7 @@ const TICK = 250;        // тик боя, мс
 const CH_T = 5;          // время заряда удара, с
 const E_T = 5;           // период атаки врага, с
 const FIGHT_T = 45000;   // максимум боя, мс
+const LIST_N = 5, LIST_POOL = 15, REFRESH_MS = 15 * 60000, REFRESH_AU = 5;   // «Противники»: 5 из 15 ближайших по рейтингу
 const BCD = 90000;       // перезарядка бутылки, мс (как на охоте)
 const SKQ = { rage: [2, 2.2, 2.4, 2.7, 3], roar: [40, 45, 50, 55, 60], shot: [1.2, 1.4, 1.6, 1.85, 2.2], trap: [4, 4.5, 5, 6, 7], totem: [25, 30, 35, 42, 50], skin: [6, 7, 8, 9, 10] };
 const SKCD = [1, .95, .9, .85, .8];
@@ -75,6 +76,10 @@ module.exports = function apvp(getDb) {
         if (!S) { out = { why: 'nosave' }; return; }
         const on = await tx.get(oref); const O = on.exists ? on.data() : null;
         if (!O || !O.stats || oid === c.uid) { out = { why: 'noopp' }; return; }
+        // нападать можно только на тех, кто в списке «Противники», и не на побеждённых
+        const ln = await tx.get(db.collection('arlist').doc(c.uid)); const L = ln.exists ? ln.data() : null;
+        if (!L || !(L.o || []).some(x => x.id === oid)) { out = { why: 'notlist' }; return; }
+        if ((L.won || []).includes(oid)) { out = { why: 'won' }; return; }
         // билет: без него бой не начинается
         const st = ARENA.readState(S, now);
         if (st.atk < 1) { out = { why: 'noticket' }; return; }
@@ -197,6 +202,7 @@ module.exports = function apvp(getDb) {
         const mn = await tx.get(db.collection('players').doc(R.uid)); const M = mn.exists ? mn.data() : null;
         const h1 = await tx.get(db.collection('arhist').doc(R.uid));
         const h2 = await tx.get(db.collection('arhist').doc(R.oid));
+        const ln = await tx.get(db.collection('arlist').doc(R.uid)); const L = ln.exists ? ln.data() : null;
         if (!S) return;
         const st = ARENA.readState(S, now);
         const orat = O ? (O.rating | 0) : 1000;
@@ -220,6 +226,7 @@ module.exports = function apvp(getDb) {
         tx.set(db.collection('players').doc(R.uid), {
           rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose
         }, { merge: true });
+        if (win === 1 && L && !(L.won || []).includes(R.oid)) tx.set(db.collection('arlist').doc(R.uid), Object.assign({}, L, { won: (L.won || []).concat(R.oid) }));
         // история боёв: последние 10 как нападающий и как защитник
         const myName = String((M && M.name) || R.uid).slice(0, 20);
         const keep = (a, e) => [e].concat(Array.isArray(a) ? a : []).slice(0, 10);
@@ -250,8 +257,57 @@ module.exports = function apvp(getDb) {
     setTimeout(() => tick(R, c, send), TICK).unref();
   }
 
+  // ---- список «Противники» ----
+  const listing = new Set();
+  const snap = (id, p) => ({ id, name: String(p.name || id).slice(0, 20), lvl: p.lvl | 0, rating: p.rating | 0, cls: p.cls || '', av: p.av || null, stats: p.stats });
+  async function candidates(db, uid, exclude) {
+    const me = await db.collection('players').doc(uid).get(); const mr = me.exists ? (me.data().rating | 0) : 1000;
+    const sn = await db.collection('players').limit(300).get();
+    let all = sn.docs.filter(d => d.id !== uid && d.data().stats).map(d => ({ id: d.id, p: d.data() }));
+    const fresh = all.filter(x => !exclude.includes(x.id));
+    if (fresh.length >= LIST_N) all = fresh;
+    all.sort((a, b) => Math.abs((a.p.rating | 0) - mr) - Math.abs((b.p.rating | 0) - mr));
+    const pool = all.slice(0, LIST_POOL);
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, LIST_N).map(x => snap(x.id, x.p));
+  }
+  async function listMsg(c, m, send) {
+    const db = D(); if (!db || !c.uid || listing.has(c.uid)) return;
+    listing.add(c.uid);
+    try {
+      const now = Date.now(), uid = c.uid, ref = db.collection('arlist').doc(uid), wref = db.collection('wallet').doc(uid);
+      const pre = await ref.get(); const P = pre.exists ? pre.data() : { o: [], won: [], t: 0 };
+      const manual = m.t === 'arr', allWon = (P.o || []).length && P.o.every(x => (P.won || []).includes(x.id));
+      let out = null;
+      if (manual || !(P.o || []).length || allWon) {
+        const cand = await candidates(db, uid, (P.o || []).map(x => x.id));
+        await db.runTransaction(async tx => {
+          const sn = await tx.get(ref); const L = sn.exists ? sn.data() : { o: [], won: [], t: 0 };
+          const ws = await tx.get(wref);
+          const aw = (L.o || []).length && L.o.every(x => (L.won || []).includes(x.id));
+          let t = +L.t || 0, au = null;
+          if (manual) {
+            if (now - t < REFRESH_MS) {
+              if (!m.pay) { out = { why: 'cd', lt: t }; return; }
+              if (!ws.exists || (ws.data().au | 0) < REFRESH_AU) { out = { why: 'nogold', lt: t }; return; }
+              au = (ws.data().au | 0) - REFRESH_AU;
+              tx.update(wref, { au }); tx.set(wref.collection('log').doc(now.toString(36) + 'r'), { op: 'pay', n: -REFRESH_AU, why: 'arl', ts: now });
+            }
+            t = now;
+          } else if ((L.o || []).length && !aw) { out = { o: L.o, won: L.won || [], lt: t, au }; return; }   // кто-то успел обновить раньше
+          if (!cand.length) { out = { o: [], won: [], lt: t, au }; return; }
+          const nl = { o: cand, won: [], t };
+          tx.set(ref, nl); out = { o: nl.o, won: [], lt: t, au };
+        });
+      } else out = { o: P.o, won: P.won || [], lt: +P.t || 0 };
+      send(c, Object.assign({ t: 'arl', now: Date.now(), cd: REFRESH_MS, price: REFRESH_AU }, out || { why: 'db' }));
+    } catch (e) { console.error('apvp list', e.message); send(c, { t: 'arl', why: 'db' }); }
+    finally { listing.delete(c.uid); }
+  }
+
   function onMsg(c, m, send) {
     if (!c.uid) return;
+    if (m.t === 'arl' || m.t === 'arr') return listMsg(c, m, send);
     if (m.t === 'apvp') return start(c, m, send);
     if (m.t === 'apa') return act(c, m, send);
   }
