@@ -837,7 +837,7 @@ const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?
 // ===== Боевая сцена рейда на канвасе: один цикл отрисовки, герои, питомец, слуги, босс и эффекты =====
 const RCN={cv:null,cx:null,W:900,H:745,sc:1,imgs:{},sil:{},fx:[],num:[],pt:[],amb:[],q:[],t:0,last:0,raf:0,sh:0,meA:null,petA:null,fa:{},al:{},fp:[],hp:null,rid:null,pend:[],hit:[],ske:{},dl:{},mid:0};
 // высокая сцена рейда: 900×1150 (портрет), фигуры крупнее
-const RCH=1150,RCS=1.42,RCME={x:175,y:1035,h:340},RCPET={x:395},RCAL=[{x:110,y:560,h:270},{x:305,y:610,h:280},{x:430,y:775,h:300},{x:300,y:910,h:318}],RCFOE=[{x:600,y:560},{x:775,y:690},{x:610,y:830},{x:775,y:975}];
+const RCH=1150,RCS=1.0,RCME={x:200,y:1010,h:235},RCPET={x:335},RCAL=[{x:95,y:600,h:200},{x:250,y:660,h:205},{x:120,y:820,h:215},{x:300,y:890,h:222}],RCFOE=[{x:650,y:540},{x:750,y:665},{x:640,y:815},{x:750,y:965}];
 function rcImg(u){let i=RCN.imgs[u];if(!i){i=new Image();i.src=u;RCN.imgs[u]=i}return i}
 const rcOk=i=>i&&i.complete&&i.naturalWidth>0;
 function rcSil(u,col){const k=u+col;let c=RCN.sil[k];if(c)return c;const i=rcImg(u);if(!rcOk(i))return null;c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const x=c.getContext('2d');x.drawImage(i,0,0);x.globalCompositeOperation='source-in';x.fillStyle=col;x.fillRect(0,0,c.width,c.height);RCN.sil[k]=c;return c}
@@ -856,7 +856,7 @@ function rcText(t,x,y,sz,col,o){const cx=RCN.cx;o=o||{};cx.font=(o.b?'700 ':'')+
 function rcClip(t,max,sz){const cx=RCN.cx;cx.font='700 '+sz+'px Alegreya,Georgia,serif';t=String(t);if(cx.measureText(t).width<=max)return t;while(t.length>1&&cx.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…'}
 // ----- положения всех участников (в координатах 900×1150) -----
 function rcAllyPos(i){return RCAL[i]||RCAL[0]}
-function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?650:Q.x,y:bs?870:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.8:.98):(.19*(P.k||1)*900*1.15)}}
+function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?680:Q.x,y:bs?840:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.52:.66):(.19*(P.k||1)*900*.8)}}
 function rcTarget(H){const i=H.sl.findIndex(s=>s.e&&s.e===fight.e),j=i>=0?i:H.sl.findIndex(s=>s.e&&s.e.hp>0);return j>=0?rcFoePos(H,j):{x:640,y:430,h:150}}
 // ----- эффекты -----
 function rcPart(x,y,n,col,o){o=o||{};for(let i=0;i<n;i++){const a=(o.a==null?Math.random()*6.28:o.a+(Math.random()-.5)*(o.sp||1.2)),v=(o.v||160)*(.4+Math.random()*.8);RCN.pt.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v+(o.vy||0),g:o.g==null?260:o.g,t:0,life:(o.life||.5)*(.6+Math.random()*.6),col:Array.isArray(col)?col[i%col.length]:col,sz:(o.sz||3)*(.6+Math.random()*.8)})}}
