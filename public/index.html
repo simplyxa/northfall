@@ -829,7 +829,7 @@ const RSPT=[{x:61,y:55,k:.85},{x:84,y:59,k:.85},{x:60,y:82,k:1},{x:84,y:88,k:1}]
 const RBG=["/img/84925907927473.webp", "/img/9b7b7d30d6e1d5.webp", "/img/bdac0ce5fd8ac4.webp", "/img/68bb221c3b9cf4.webp", "/img/f4f15290aa0558.webp"],
  RBF=["/img/456805bacc441a.webp", "/img/64a36b5a16d853.webp", "/img/440939d74d515e.webp", "/img/6f7629521d462c.webp", "/img/0ff89e7c33702c.webp"],
  RBA=[{"a":"/img/b9a8bb742b8ab4.webp","l":0.65,"t":-0.86,"w":93.71},{"a":"/img/92d18111a72804.webp","l":-2.13,"t":1.46,"w":104.6},{"a":"/img/afc102040e4e01.webp","l":0.81,"t":0.81,"w":97.42},{"a":"/img/b34d1a1b979f8d.webp","l":-1.33,"t":1.73,"w":102.24},{"a":"/img/db375e9402471d.webp","l":-0.73,"t":1.93,"w":99.92}], // поза удара босса: картинка и её место относительно основной (в % от неё)
- RBH=[44,50,50,48,52],RBP={x:74,y:86,k:1}; // высота босса в % высоты сцены (по рейдам)
+ RBH=[44,50,50,48,52],RBP={x:74,y:80,k:1}; // высота босса в % высоты сцены (по рейдам)
 // положения союзников в рейде (в % сцены) и классы по умолчанию, если у игрока класс неизвестен
 const RALP=[{x:7,y:62},{x:26,y:58},{x:43,y:65},{x:44,y:83}],RACLS=['berserk','hunter','shaman','hunter'];
 const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?' fly':''}"${foe?'':' id="stpet"'} title="${esc(pa.n)}" style="left:${rd?29.5:foe?105-F.x:F.x}%;top:${rd?(F.fly?70:93):F.y}%;width:${rd?F.w*.6:F.w}%;--pp:${F.p||0}%"><div class="st-pf"${foe?' style="transform:scaleX(-1)"':''}><img class="st-pi" src="${F.s}" alt=""><img class="st-pa" src="${F.a}" alt=""></div></div>`};
