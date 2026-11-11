@@ -9,6 +9,7 @@ const BOTHIT = 5000;          // наёмник бьёт раз в 5 с
 const RBOTK = 0.18;          // наёмник наносит ~18% атаки в секунду (как в клиенте)
 const PERSIST = 30000, TICK = 1000, CAST = 250;
 // общие волны: все игроки группы бьют одних и тех же слуг (здоровье — на сервере)
+const RWHPK = 3;              // запас здоровья слуг волн: волны падали слишком быстро
 const RWV = 3, RWN = 4, RLV = [10, 20, 30, 45, 60];
 const RMOB = [['Лесной волк', 'Дикий кабан', 'Вожак стаи'], ['Драугр', 'Болотная крыса', 'Разбойник с тракта'], ['Тролль-подросток', 'Снежный барс', 'Горный медведь'], ['Снежный барс', 'Драугр', 'Тролль-подросток'], ['Драугр', 'Тролль-подросток', 'Вожак стаи']];
 const humans = R => Object.values(R.mem).filter(x => !x.bot);
@@ -23,7 +24,7 @@ function spawn(R, n) {
   const k = 0.45 + 0.05 * n + 0.03 * R.b, cnt = RWN + (n === RWV ? 1 : 0), mul = Math.max(1, 0.8 * alive), L = RMOB[R.b] || RMOB[0];
   for (let i = 0; i < cnt; i++) {
     const ld = n === RWV && i === cnt - 1 ? 1 : 0;
-    const max = Math.round((28 + lv * 13 * k) * mul * (ld ? 1.8 : 1));
+    const max = Math.round((28 + lv * 13 * k) * mul * RWHPK * (ld ? 1.8 : 1));
     R.mobs.push({ n: L[(i + n) % L.length], lv, k, ld, hp: max, max });
   }
   for (const m of Object.values(R.mem)) m.wv = Math.max(m.wv | 0, n - 1);
