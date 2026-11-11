@@ -875,5 +875,10 @@
   "v": "1.26.48",
   "t": "Админ: на экране рейдов появилась кнопка сброса отката рейдов для тестирования.",
   "te": "Admin: a reset button for raid cooldowns on the raids screen for testing."
+ },
+ {
+  "v": "1.26.49",
+  "t": "Рейды рисуются на канвасе: герои, питомец, слуги и босс на одной сцене с эффектами; на охоте — слой эффектов; павший союзник — надгробие с аватаром",
+  "te": "Raids are drawn on a canvas: heroes, pet, minions and boss on one scene with effects; hunts get an effects layer; a fallen ally becomes a tombstone with their avatar"
  }
 ]
