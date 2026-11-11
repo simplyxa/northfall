@@ -2945,5 +2945,6 @@
   "Нет связи с ареной: бой прерван. Если связь вернётся, результат можно увидеть в истории боёв.": "No connection to the arena: the fight was interrupted. If the connection returns, you can see the result in the fight history.",
   "Нет связи с сервером арены. Попробуй ещё раз через пару секунд.": "No connection to the arena server. Try again in a few seconds.",
   "Сервер долго не отвечает. Попробуй ещё раз.": "The server is taking too long to respond. Try again.",
-  "Обновляем…": "Refreshing…"
+  "Обновляем…": "Refreshing…",
+  "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">Досталось обновление</h3><p style=\"margin:0 0 12px\">Вышла новая версия игры. Перезагрузи — и получишь свежую графику и все правки.</p><button class=\"b red\" style=\"width:100%\" onclick=\"nfReload()\">Обновить игру</button></div>": "<div class=\"mbox\" style=\"text-align:center\"><h3 style=\"margin:0 0 8px\">An update is ready</h3><p style=\"margin:0 0 12px\">A new version of the game is out. Reload to get the fresh graphics and all the fixes.</p><button class=\"b red\" style=\"width:100%\" onclick=\"nfReload()\">Update the game</button></div>"
 }
