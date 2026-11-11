@@ -850,5 +850,10 @@
   "v": "1.26.43",
   "t": "Рейд: все пятеро игроков одного размера и расставлены по левой части поля; босс стоит справа крупно. Добавлена поддержка своего фона и фигуры босса для каждого рейда.",
   "te": "Raid: all five players are the same size and spread across the left of the field; the boss stands large on the right. Added support for a per-raid background and boss figure."
+ },
+ {
+  "v": "1.26.44",
+  "t": "Рейды: у каждого рейда своя сцена и свой босс в полный рост (Медведь-шатун, Конунг драугров, Горный тролль, Ледяной змей, Сурт Огненный).",
+  "te": "Raids: every raid now has its own scene and a full-body boss (Bear, Draugr King, Mountain Troll, Ice Serpent, Surtr)."
  }
 ]

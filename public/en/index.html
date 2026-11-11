@@ -827,7 +827,9 @@ const HEROPOSE={berserk:{atk:{a:'/img/2f382b5e57cc8e.webp',l:-27.69,t:-2.42,w:14
 const PETFIG={lynx:{s:'/img/d782352b9cd13d.webp',a:'/img/54c3f93db30266.webp',w:23.5,x:41.0,y:94.0,p:4.2},bear:{s:'/img/37e5a544955fd2.webp',a:'/img/023b4694d16fcf.webp',w:23.2,x:38.1,y:95.0,p:3.8},wolf:{s:'/img/a6554ddb3d7a16.webp',a:'/img/ad0fed1ee01e22.webp',w:21.7,x:41.0,y:94.0,p:0.9},raven:{s:'/img/0a0ca14b9c9c00.webp',a:'/img/20c693dccb241f.webp',w:19.3,x:43.1,y:62.0,p:0.0,fly:1}};
 // союзники в рейде: все пятеро на сцене одновременно (ты — крупно слева, остальные поменьше на заднем плане)
 // картинки рейдов: фон сцены и босс в полный рост (по номеру рейда); пусто — стандартная поляна и круглый портрет
-const RBG=['','','','',''],RBF=['','','','',''],RBP={x:74,y:86,k:1};
+const RBG=["/img/84925907927473.webp", "/img/9b7b7d30d6e1d5.webp", "/img/bdac0ce5fd8ac4.webp", "/img/68bb221c3b9cf4.webp", "/img/f4f15290aa0558.webp"],
+ RBF=["/img/456805bacc441a.webp", "/img/64a36b5a16d853.webp", "/img/440939d74d515e.webp", "/img/6f7629521d462c.webp", "/img/0ff89e7c33702c.webp"],
+ RBH=[44,50,50,48,52],RBP={x:74,y:86,k:1}; // высота босса в % высоты сцены (по рейдам)
 const RALP=[{x:8,y:64},{x:27,y:60},{x:45,y:67},{x:37,y:86}],RACLS=['berserk','hunter','shaman','hunter'];
 function rAllies(){const R=RAID;if(!R||!R.mem)return'';return Object.entries(R.mem).filter(([id])=>id!==UID).sort((a,b)=>a[1].o-b[1].o).slice(0,4).map(([id,m],i)=>{const P=RALP[i],f=HEROFIG[m.cls]||HEROFIG[RACLS[i%4]],dead=m.dead||m.hp<=0;
  return`<div class="st-al${dead?' dead':''}" style="left:${P.x}%;top:${P.y}%;z-index:${Math.round(P.y)}" title="${esc(m.n)}"><div class="st-an"><b>${esc(m.n)}</b><span class="st-bar"><i style="width:${dead?0:Math.max(0,Math.min(100,m.hp/(m.max||1)*100))}%;background:var(--moss)"></i></span></div><img src="${f}" alt=""></div>`}).join('')}
@@ -1466,7 +1468,7 @@ const RAIDS=[
  {n:'Mountain troll',d:'Cave under the glacier',lv:30,cd:8,ic:'🪨',aoe:'brings down a rockfall'},
  {n:'Ice serpent',d:'Fjord of Jörmungandr',lv:45,cd:12,ic:'🐍',aoe:'breathes an ice storm'},
  {n:'Surtr the Fiery',d:'Gates of Muspelheim',lv:60,cd:24,ic:'🔥',aoe:'unleashes the flames of Muspelheim'}];
-RAIDS.forEach((B,i)=>{if(RBF[i]){const k=B.n.toLowerCase();BFIG[k]=RBF[i];BHL[k]=56}});
+RAIDS.forEach((B,i)=>{if(RBF[i]){const k=B.n.toLowerCase();BFIG[k]=RBF[i];BHL[k]=RBH[i]}});
 const RIMG=["/img/17debd21df959e.webp", "/img/d09d7c54d48f8c.webp", "/img/1760f8a1a7b104.webp", "/img/35f3148008c84a.webp", "/img/83f14d90d69482.webp"];
 const rIc=(b,z)=>`<img src="${RIMG[b]}" alt="" width="${z}" height="${z}" style="flex:0 0 auto;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))">`;
 const RSIZE=5,RTURN=10000,RSTALE=300000,RMAXR=30,RMERC=300000,MERCN=['Halfdan','Thorgrim','Sven','Ingrid','Eyvind','Gunnar','Ranveig','Thorstein'];
@@ -2456,7 +2458,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.43';
+const GVER='1.26.44';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3073,7 +3075,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.43</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.44</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
