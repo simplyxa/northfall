@@ -910,6 +910,12 @@ const RCAMB=[ // фоновые частицы по рейдам: пыль, ту
 const rcR=(a,b)=>a+Math.random()*(b-a);
 function rcAmb(b){const T=RCAMB[b]||RCAMB[0];if(RCN.amb.length!==36||RCN.ambB!==b){RCN.ambB=b;RCN.amb=Array.from({length:36},()=>({x:rcR(0,900),y:rcR(0,745),vx:rcR(T.vx[0],T.vx[1]),vy:rcR(T.vy[0],T.vy[1]),sz:rcR(T.sz[0],T.sz[1]),ph:rcR(0,6.28)}))}return T}
 function rcPose(cl,pn,A){const q=(HEROPOSE[cl]||{})[pn];if(!A||!A.a||!q)return null;const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=1||p<0)return null;const k=Math.min(.4,.17/A.a.dur);return{u:q.a,l:q.l,t:q.t,w:q.w,k:rcEase(p,k,1-k),p}}
+// надгробие павшего союзника: камень с табличкой, в табличку вписан его аватар
+const RTOMB={u:'/img/c621bfca1fb39d.webp',ar:0.625,p:[0.2887, 0.2276, 0.7854, 0.5116]};
+function rcTomb(x,y,h,m){const cx=RCN.cx;const im=rcImg(RTOMB.u);if(!rcOk(im))return;const th=h*1.02,tw=th*RTOMB.ar,x0=x-tw/2,y0=y+6-th;rcShadow(x,y+2,tw*.5);cx.drawImage(im,x0,y0,tw,th);
+ const p=RTOMB.p,px=x0+p[0]*tw,py=y0+p[1]*th,pw=(p[2]-p[0])*tw,ph=(p[3]-p[1])*th,av=rcImg(AVS);
+ if(rcOk(av)){const cw=av.naturalWidth/AVN,s=((((m.av&&m.av.s)|0)%AVN)+AVN)%AVN,sz=Math.min(pw,ph)*.8,ax=px+(pw-sz)/2,ay=py+ph*.08;cx.save();cx.globalAlpha=.82;cx.drawImage(av,s*cw,0,cw,av.naturalHeight,ax,ay,sz,sz);cx.fillStyle='rgba(18,22,26,.38)';cx.fillRect(ax,ay,sz,sz);cx.restore()}
+ rcText('RIP',px+pw/2,py+ph*.93,Math.max(14,ph*.17),'#b9b2a0',{b:1})}
 function rcHero(x,y,h,cl,A,o){const fig=HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A.a.pn:'',P=pn?rcPose(cl,pn,A):null,idle=Math.sin(RCN.t*2.2+(o.ph||0));
  let dx=0;if(A&&A.a&&pn==='atk'){const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=0&&p<1)dx=Math.sin(Math.PI*p)*34}
  const hit=o.me&&RCN.t-(RCN.meHit||-9)<.28?{fl:.55*(1-(RCN.t-RCN.meHit)/.28),fc:'#ff3b2a'}:{};
@@ -924,7 +930,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
   cx.save();cx.fillStyle='#f0c85a';cx.shadowColor='rgba(0,0,0,.9)';cx.shadowBlur=6;cx.font='26px sans-serif';cx.textAlign='center';cx.fillText('▼',RCME.x,RCME.y-RCME.h-6+Math.sin(RCN.t*5)*5);cx.restore()}});
  // союзники
  if(R&&R.mem){const L=Object.entries(R.mem).filter(([id])=>id!==UID).sort((a,b)=>a[1].o-b[1].o).slice(0,4);L.forEach(([id,m],i)=>{const P=rcAllyPos(i),cl=HEROPOSE[m.cls]?m.cls:RACLS[i%4],dead=m.dead||m.hp<=0,A=RCN.al[id];
-  ents.push({y:P.y,d:()=>{rcShadow(P.x,P.y,P.h*.5);rcHero(P.x,P.y,P.h,cl,A,{ph:i*1.3,dead});if(A&&A.a&&RCN.t-A.a.t0>A.a.dur)A.a=null;
+  ents.push({y:P.y,d:()=>{if(dead){rcTomb(P.x,P.y,P.h,m);rcText(rcClip(m.n,150,24),P.x,P.y-P.h-16,24,'#a9a498',{b:1});return}rcShadow(P.x,P.y,P.h*.5);rcHero(P.x,P.y,P.h,cl,A,{ph:i*1.3,dead});if(A&&A.a&&RCN.t-A.a.t0>A.a.dur)A.a=null;
    rcText(rcClip(m.n,150,24),P.x,P.y-P.h-16,24,'#f1e6c8',{b:1});rcBar(P.x,P.y-P.h-10,92,9,dead?0:m.hp/(m.max||1),'#6fbf73')}})})}
  // питомец
  const pa=petA(),F=pa&&PETFIG[pa.k];
