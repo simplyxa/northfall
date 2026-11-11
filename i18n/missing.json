@@ -1,3 +1,4 @@
 [
- "</div><div class=\"panel\"><h3>Группа</h3>"
+ "<button class=\"b alt\" data-rd=\"rcd\" style=\"width:100%;margin-bottom:8px\">Сбросить откат рейдов (админ)</button>",
+ "Откат всех рейдов сброшен (админ)."
 ]

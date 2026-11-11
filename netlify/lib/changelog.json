@@ -870,5 +870,10 @@
   "v": "1.26.47",
   "t": "Рейд: у каждого босса теперь своя нарисованная поза удара — при атаке босс на миг переходит в неё.",
   "te": "Raid: every boss now has its own drawn attack pose — it switches to it for a moment when attacking."
+ },
+ {
+  "v": "1.26.48",
+  "t": "Админ: на экране рейдов появилась кнопка сброса отката рейдов для тестирования.",
+  "te": "Admin: a reset button for raid cooldowns on the raids screen for testing."
  }
 ]
