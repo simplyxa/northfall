@@ -840,5 +840,10 @@
   "v": "1.26.41",
   "t": "Рейд: бой теперь идёт на сцене, как на охоте — герой, питомец, слуги и босс на поле, анимации ударов и умений.",
   "te": "Raid: fights now play out on the hunt-style scene — hero, pet, servants and boss on the field, with strike and skill animations."
+ },
+ {
+  "v": "1.26.42",
+  "t": "Рейд: на сцене видны все пятеро игроков сразу — у каждого имя и полоса здоровья, павшие затемнены.",
+  "te": "Raid: all five players are visible on the scene at once, each with a name and health bar; fallen ones are dimmed."
  }
 ]
