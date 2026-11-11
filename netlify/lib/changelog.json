@@ -800,5 +800,10 @@
   "v": "1.26.33",
   "t": "Кнопка «Обновить игру»: сразу меняется на «Обновляем…», сохраняет игру, сбрасывает устаревшую копию страницы из кэша и перезагружает в обход кэша.",
   "te": "The «Update the game» button now immediately turns into «Refreshing…», saves the game, drops the stale cached copy of the page and reloads bypassing the cache."
+ },
+ {
+  "v": "1.26.34",
+  "t": "Арена: питомец теперь атакует в бою (раз в 6 секунд, как на охоте) с анимацией; горный тролль снижает входящий урон.",
+  "te": "Arena: your pet now attacks in the fight (every 6 seconds, like in the hunt) with an animation; the mountain troll reduces incoming damage."
  }
 ]

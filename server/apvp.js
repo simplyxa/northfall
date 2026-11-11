@@ -19,6 +19,8 @@ const CQ = require('./cq.js');
 const TICK = 250;        // тик боя, мс
 const CH_T = 5;          // время заряда удара, с
 const E_T = 5;           // период атаки врага, с
+const PETD = { wolf: ['Волчонок Фенрира', .35], raven: ['Хугин', .22], bear: ['Горный тролль', .18], lynx: ['Дракончик Нидхёгг', .28] };   // питомцы: имя и доля атаки героя, как в игре
+const PET_T = 6;         // питомец бьёт раз в 6 с
 const GRACE_MS = 25000;  // сколько бой ждёт переподключения клиента (обрыв связи на телефоне)
 const FIGHT_T = 45000;   // максимум боя, мс
 const LIST_N = 5, LIST_POOL = 15, REFRESH_MS = 15 * 60000, REFRESH_AU = 5;   // «Противники»: 5 из 15 ближайших по рейтингу
@@ -58,7 +60,7 @@ module.exports = function apvp(getDb) {
       pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: clamp(R.ech, 0, 1),
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
       e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, pet: R.e.pet || '', stun: R.e.stun | 0 },
-      s: R.s, log: withLog ? R.log : undefined, sk: R.sk, ske: R.ske || null, rage: R.rage || 0, weak: R.weak | 0, skin: R.skin | 0, res: R.res || null
+      s: R.s, log: withLog ? R.log : undefined, sk: R.sk, ske: R.ske || null, pe: R.pe || null, rage: R.rage || 0, weak: R.weak | 0, skin: R.skin | 0, res: R.res || null
     };
   }
 
@@ -108,6 +110,7 @@ module.exports = function apvp(getDb) {
           uid: c.uid, oid, cls: String(S.cls || 'berserk'), lvl: S.lvl | 0, t0: now, clk: 0, ch: 0, ech: 0, guardUntil: 0, gcd: 0, pcd: 0,
           hp: Math.max(1, Math.min(h.mhp, S.hp || h.mhp)), mhp: h.mhp, atk: h.atk, def: h.def, crit: h.crit,
           e, st: 'on', win: 0, log: [], sk: {}, pots: Object.assign({}, S.pt || {}),
+          pet: (S.pet && S.pets && S.pets[S.pet] && PETD[S.pet]) ? { k: S.pet, lvl: clamp(S.pets[S.pet].lvl | 0, 1, 20), n: PETD[S.pet][0], dm: PETD[S.pet][1] } : null, pt: 0, pe: null,
           rage: 0, weak: 0, weakv: 1, skin: 0, q: (S.skq || {}), s: { r: 0, dealt: 0, taken: 0, crit: 0, ecrit: 0, pots: 0 }
         };
         out = { R, orat: O.rating | 0, myrat: st.rt | 0, skq: S.skq || {} };
@@ -199,6 +202,7 @@ module.exports = function apvp(getDb) {
   function enemyTurn(R) {
     let d = Math.max(1, Math.round(rnd(.8, 1.2) * R.e.atk - R.def * .6));
     if (R.e.crit && Math.random() * 100 < R.e.crit) { d = Math.round(d * 1.6); R.s.ecrit++; }
+    if (R.pet && R.pet.k === 'bear') d = Math.max(1, Math.round(d * (1 - Math.min(25, 8 + R.pet.lvl) / 100)));   // тролль принимает часть урона
     if (R.clk < R.skin) d = Math.max(1, Math.round(d * (1 - 60 / 100)));
     if (R.clk < R.weak) d = Math.max(1, Math.round(d * R.weakv));
     R.hp = Math.max(0, R.hp - d); R.s.taken += d;
@@ -273,6 +277,17 @@ module.exports = function apvp(getDb) {
     R.ch = Math.min(1, R.ch + dt / CH_T);
     // заряд атаки врага не растёт, пока он в капкане (как на охоте)
     if (!(R.e.stun > R.clk)) R.ech += dt / E_T;
+    // питомец атакует сам раз в PET_T секунд
+    if (R.pet && R.e.hp > 0) {
+      R.pt += dt / PET_T;
+      if (R.pt >= 1) {
+        R.pt = 0;
+        const d = Math.max(1, Math.round(R.atk * R.pet.dm * (1 + R.pet.lvl * .05) * rnd(.85, 1.15) - R.e.def * .3));
+        R.e.hp = Math.max(0, R.e.hp - d); R.s.dealt += d;
+        R.pe = { n: ((R.pe && R.pe.n) | 0) + 1, d };
+        R.log.push(`${R.pet.n}: ${d} урона.`);
+      }
+    }
     if (R.ech >= 1) { R.ech = 0; enemyTurn(R); }
     if (R.hp <= 0) return end(R, 0, k.c, k.send);
     if (R.e.hp <= 0) return end(R, 1, k.c, k.send);
