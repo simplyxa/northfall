@@ -19,6 +19,7 @@ const CQ = require('./cq.js');
 const TICK = 250;        // тик боя, мс
 const CH_T = 5;          // время заряда удара, с
 const E_T = 5;           // период атаки врага, с
+const GRACE_MS = 25000;  // сколько бой ждёт переподключения клиента (обрыв связи на телефоне)
 const FIGHT_T = 45000;   // максимум боя, мс
 const LIST_N = 5, LIST_POOL = 15, REFRESH_MS = 15 * 60000, REFRESH_AU = 5;   // «Противники»: 5 из 15 ближайших по рейтингу
 const BCD = 90000;       // перезарядка бутылки, мс (как на охоте)
@@ -114,9 +115,10 @@ module.exports = function apvp(getDb) {
     } catch (e) { console.error('apvp start', e.message); return send(c, { t: 'ape', rid: 'ap', why: 'db' }); }
     if (!out || !out.R) return send(c, { t: 'ape', rid: 'ap', why: (out && out.why) || 'no' });
     const R = out.R;
+    R.conn = { c, send };
     rooms.set(c.uid, R);
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
-    tick(R, c, send);
+    tick(R);
   }
 
   async function start(c, m, send) {
@@ -128,7 +130,9 @@ module.exports = function apvp(getDb) {
 
   // ---- ход игрока ----
   function act(c, m, send) {
-    const R = rooms.get(c.uid); if (!R || R.st !== 'on') return;
+    const R = rooms.get(c.uid);
+    if (!R || R.st !== 'on') return send(c, { t: 'ape', rid: 'ap', why: 'noroom' });   // боя нет (рестарт сервера, обрыв): клиент должен выйти из боя
+    if (R.conn.c !== c) R.conn = { c, send };   // клиент переподключился: бой продолжается на новом соединении
     const a = String(m.a || '');
     const now = R.clk;
     let msg = null;
@@ -155,6 +159,8 @@ module.exports = function apvp(getDb) {
     } else if (a.startsWith('sk-')) {
       msg = skill(R, a.slice(3));
       if (msg === false) return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
+    } else if (a === 'sync') {
+      return send(c, { t: 'aps', rid: 'ap', st: pub(R) });
     } else return;
     if (msg) R.log.push(msg);
     send(c, { t: 'aps', rid: 'ap', st: pub(R) });
@@ -250,12 +256,16 @@ module.exports = function apvp(getDb) {
     } catch (e) { console.error('apvp end', e.message); }
     rooms.delete(R.uid);
     if (R.res && R.res.win === 1) CQ.add(db, R.uid, 'arena', 1);   // клановое задание «Арена клана»
-    send(c, { t: 'aps', rid: 'ap', st: pub(R) });
+    const k = R.conn || { c, send };   // итог получает тот, кто сейчас подключён
+    if (k.c && k.c.open) k.send(k.c, { t: 'aps', rid: 'ap', st: pub(R) });
   }
 
   // ---- тик боя ----
-  function tick(R, c, send) {
-    if (!R || R.st !== 'on' || rooms.get(R.uid) !== R || !c.open) return;
+  function tick(R) {
+    if (!R || R.st !== 'on' || rooms.get(R.uid) !== R) return;
+    const k = R.conn, live = !!(k && k.c.open);
+    // клиент пропал (обрыв связи): бой идёт дальше и ждёт возвращения, но не дольше GRACE_MS
+    if (!live) { if (!R.det) R.det = Date.now(); if (Date.now() - R.det > GRACE_MS) { R.log.push('Связь потеряна.'); return end(R, 0, k && k.c, k && k.send); } } else R.det = 0;
     const now = Date.now(), prev = R.clk;
     R.clk = now - R.t0;
     // заряды растут по реальному времени (setTimeout «уплывает», клиент считает по часам)
@@ -264,11 +274,11 @@ module.exports = function apvp(getDb) {
     // заряд атаки врага не растёт, пока он в капкане (как на охоте)
     if (!(R.e.stun > R.clk)) R.ech += dt / E_T;
     if (R.ech >= 1) { R.ech = 0; enemyTurn(R); }
-    if (R.hp <= 0) return end(R, 0, c, send);
-    if (R.e.hp <= 0) return end(R, 1, c, send);
-    if (R.clk >= FIGHT_T) { R.log.push('Время вышло.'); return end(R, R.hp > 0 && R.hp / R.mhp > R.e.hp / R.e.max ? 1 : 0, c, send); }   // по времени побеждает тот, у кого больше доля здоровья
-    send(c, { t: 'aps', rid: 'ap', st: pub(R) });
-    setTimeout(() => tick(R, c, send), TICK).unref();
+    if (R.hp <= 0) return end(R, 0, k.c, k.send);
+    if (R.e.hp <= 0) return end(R, 1, k.c, k.send);
+    if (R.clk >= FIGHT_T) { R.log.push('Время вышло.'); return end(R, R.hp > 0 && R.hp / R.mhp > R.e.hp / R.e.max ? 1 : 0, k.c, k.send); }   // по времени побеждает тот, у кого больше доля здоровья
+    if (live) k.send(k.c, { t: 'aps', rid: 'ap', st: pub(R) });
+    setTimeout(() => tick(R), TICK).unref();
   }
 
   // ---- список «Противники» ----
@@ -325,8 +335,8 @@ module.exports = function apvp(getDb) {
     if (m.t === 'apvp') return start(c, m, send);
     if (m.t === 'apa') return act(c, m, send);
   }
-  // обрыв связи посреди боя = поражение (иначе можно было бы уйти от проигрыша, закрыв вкладку)
-  function onClose(c) { const R = rooms.get(c.uid); if (R) { if (R.st === 'on') end(R, 0, c, () => {}); else { R.st = 'closed'; rooms.delete(c.uid); } } }
+  // обрыв связи посреди боя: бой не бросаем, ждём переподключения (GRACE_MS), потом поражение
+  function onClose(c) { const R = rooms.get(c.uid); if (R && R.st !== 'on') { R.st = 'closed'; rooms.delete(c.uid); } }
 
   return { onMsg, onClose, stats: () => ({ rooms: rooms.size }) };
 };

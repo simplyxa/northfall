@@ -439,7 +439,7 @@ function hubHello(){if(!HUB.ok)return;const who=UID||('g:'+(typeof GUEST!=='unde
 function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws')}catch(e){HUB.dead=true;return}
  HUB.ws=ws;const fail=()=>{if(HUB.ws!==ws)return;HUB.ws=null;HUB.ok=false;HUB.who=null;HUB.onl=null;try{NFDB.onClose()}catch(e){}for(const k in HUB.L)hubFs(k);DHUB=null;if(typeof dHubFallback==='function')dHubFallback();HUB.n++;
   if(HUB.n>8&&!HUB.everOk){HUB.dead=true;return}clearTimeout(HUB.tm);HUB.tm=setTimeout(hubStart,Math.min(30000,1500*HUB.n))};
- ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;try{NFDB.attach(hubSend);NFDB.wsOpen()}catch(e){}hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}try{dHubJoin()}catch(e){}},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
+ ws.onopen=()=>{HUB.ok=true;HUB.everOk=true;HUB.n=0;HUB.who=null;try{NFDB.attach(hubSend);NFDB.wsOpen()}catch(e){}hubHello();setTimeout(()=>{try{rHubJoin()}catch(e){}try{dHubJoin()}catch(e){}if(fight&&fight.pvp)hubSend({t:'apa',a:'sync'})},400);const c=Object.keys(HUB.L).filter(k=>HUB.L[k].cbs.size);if(c.length)hubSend({t:'sub',c})};
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
   if(m.t==='snap'){const L=HUB.L[m.c];if(!L)return;L.data=m.d;if(L.fs){try{L.fs()}catch(x){}L.fs=null}const sn=()=>hubSn(m.d);for(const x of L.cbs)try{x.cb(sn())}catch(er){console.error(er)}}
   else if(m.t==='upd'){const L=HUB.L[m.c];if(!L||!L.data)return;const by=new Map();for(const x of L.data)by.set(x.id,x);for(const d of (m.u||[]))by.set(d.id,d);for(const id of (m.r||[]))by.delete(id);let arr=[...by.values()];if(m.o){const pos=new Map();m.o.forEach((id,i)=>pos.set(id,i));arr=arr.filter(x=>pos.has(x.id)).sort((a,b)=>pos.get(a.id)-pos.get(b.id));}L.data=arr;const sn=()=>hubSn(arr);for(const x of L.cbs)try{x.cb(sn())}catch(er){console.error(er)}}
@@ -452,6 +452,7 @@ function hubStart(){if(HUB.ws||HUB.dead||!hubOn())return;let ws;try{ws=new WebSo
   else if(m.t==='wbs'||m.t==='wbc'||m.t==='hunts'||m.t==='wars'||m.t==='warc'||m.t==='clans'||m.t==='wbe'||m.t==='hunte'||m.t==='ware'||m.t==='clane'){if(typeof cycState==='function')cycState(m)}
   else if(m.t==='aps'){if(typeof apvpState==='function')apvpState(m)}
   else if(m.t==='arl'){if(typeof arlState==='function')arlState(m)}
+  else if(m.t==='ape'&&m.why==='noroom'){if(fight&&fight.pvp){fight=null;apvpDestroy();log('Бой на арене прерван: сервер не видит этот бой. Попробуй начать заново.','sys');render()}}
   else if(m.t==='ape'){{log(m.why==='won'?'Этого противника ты уже победил.':m.why==='notlist'?'Этого воина нет в твоём списке противников.':'Сервер не начал бой: '+(m.why||'неизвестно'),'sys');ARL=null;if(tab==='arena')ui()}}
   else if(m.t==='onl'){HUB.onl=new Set(m.u||[]);HUB.g=m.g|0;if(typeof GONL!=='undefined')GONL=HUB.g;if(typeof ui==='function')ui()}};
  ws.onclose=fail;ws.onerror=()=>{try{ws.close()}catch(x){}}}
@@ -1043,6 +1044,9 @@ function apvpDestroy(){if(APRAF){cancelAnimationFrame(APRAF);APRAF=0}APST=null}
 const arClamp=v=>Math.max(0,Math.min(1,+v||0));
 // «живые» полоски: заряд удара и атаки врага плавно растёт между сообщениями сервера
 function arFrame(ts){APRAF=0;const f=fight;if(!f||!f.pvp||!APST||!document.body.contains(APST.root))return;
+ // сторож: сервер молчит дольше 5 секунд — спрашиваем состояние; молчит дольше 15 — выходим из боя, чтобы страница не «висела»
+ {const q=performance.now()-(f.pn||0);if(q>5000&&performance.now()-(f._wd||0)>5000){f._wd=performance.now();hubSend({t:'apa',a:'sync'})}
+  if(q>25000){fight=null;apvpDestroy();log('Нет связи с ареной: бой прерван. Если связь вернётся, результат можно увидеть в истории боёв.','sys');render();return}}
  const el=Math.max(0,Math.min(5000,ts-APST.t))/1000,R=APST.root;
  // сервер присылает заряд раз в 250 мс с задержкой сети: небольшие скачки назад гасим, чтобы полоса не дёргалась
  const sm=(v,k)=>{const o=APST[k];APST[k]=(o!=null&&o<=1&&v<o&&o-v<.12&&v>0)?o:v;return APST[k]};
@@ -2422,7 +2426,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.29';
+const GVER='1.26.31';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3026,7 +3030,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.29</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.31</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
