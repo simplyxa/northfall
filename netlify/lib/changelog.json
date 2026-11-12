@@ -890,5 +890,10 @@
   "v": "1.26.51",
   "t": "Новые фоны охоты (Опушка, Глухой лес, Чаща) и арены в стиле 2.5D; в рейде картинки босса загружаются заранее, чтобы экран не подвисал перед его появлением.",
   "te": "New 2.5D backgrounds for hunting (Glade, Deep Forest, Thicket) and the arena; raid boss images now preload so the screen no longer stalls before the boss appears."
+ },
+ {
+  "v": "1.26.52",
+  "t": "Герои и питомцы перерисованы в 2.5D: новые фигуры волчонка, ворона, горного тролля и дракончика, новые позы атаки у питомцев и у трёх классов. Размеры героев и зверей на охоте и арене теперь как в рейде.",
+  "te": "Heroes and pets redrawn in 2.5D: new wolf cub, raven, mountain troll and dragon hatchling, new attack poses for pets and all three classes. Hero and beast sizes in hunts and the arena now match raids."
  }
 ]
