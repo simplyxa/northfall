@@ -900,5 +900,10 @@
   "v": "1.26.53",
   "t": "Шаман атакует энергетическими шарами, которые вылетают из кристалла на посохе: на охоте, в рейдах и у шаманов-союзников.",
   "te": "The shaman now attacks with energy orbs launched from the staff crystal: in hunts, raids and for allied shamans."
+ },
+ {
+  "v": "1.26.54",
+  "t": "Шаман выпускает один энергетический шар, урон проходит в момент, когда шар достигает цели.",
+  "te": "The shaman now fires a single energy orb, and damage lands the moment the orb reaches its target."
  }
 ]
