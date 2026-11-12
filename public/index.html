@@ -1173,7 +1173,7 @@ function doUpOld(key){const it=key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.fi
  ev('upa');if(Math.random()*100<UPC[it.up]){it.up++;if(it.up>=5){S.cnt=S.cnt||{};S.cnt.u5=1;achCheck()}log(`Усиление удалось: ${it.name} +${it.up}.`,'hit')}else log(`Усиление не удалось: ${it.name}. Железо потеряно.`,'dmg');save();render()}
 let LASTDROP=null;
 const autoOn=()=>S.autodis&&S.lvl>=30;
-function autoDis(it){if(!autoOn()||it.rar>=4||(it.rn||[]).length||it.en)return 0;const cur=curOf(it);if(!cur||score(it)>score(cur))return 0;const g=dis(it);S.iron=(S.iron|0)+g;S.dust=(S.dust|0)+dustOf(it);S.adc=(S.adc|0)+1;S.adi=(S.adi|0)+g;log(`Авторазбор: «${it.name}» → +${g} железа.`,'sys');return g}
+function autoDis(it){if(!autoOn()||it.rar>=4||(it.rn||[]).length||it.en)return 0;const cur=curOf(it);if(!cur||score(it)>score(cur))return 0;const g=dis(it);S.iron=(S.iron|0)+g;S.dust=(S.dust|0)+dustOf(it);S.adc=(S.adc|0)+1;S.adi=(S.adi|0)+g;ev('dis');log(`Авторазбор: «${it.name}» → +${g} железа.`,'sys');return g}
 function drop(L,arena){
  LASTDROP=null;if(Math.random()>(arena?.12:.08))return'';const r=Math.random()*100,w=arena?[50,85,97]:[70,94,99];
  const rar=r<w[0]?0:r<w[1]?1:r<w[2]?2:3,it=gen(Object.keys(SL)[Math.floor(rnd(0,Object.keys(SL).length))],Math.max(1,L),rar);
