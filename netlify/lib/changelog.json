@@ -940,5 +940,10 @@
   "v": "1.26.61",
   "t": "Шаман: каменная кожа теперь — щит из каменных плит перед героем; удары врагов разбиваются о камень (охота, рейды, арена).",
   "te": "Shaman: Stone Skin is now a shield of stone slabs in front of the hero; enemy hits shatter against the stone (hunts, raids, arena)."
+ },
+ {
+  "v": "1.26.62",
+  "t": "Шаман: каменная кожа — щит из рунных каменных плит, удары разбиваются о камень. Умение охотника «Меткий выстрел» теперь называется «Огненная стрела». Ремесло: сообщения («Работа начата», не хватает материалов, лимит) показываются рядом с нажатой кнопкой.",
+  "te": "Shaman: Stone Skin is a shield of rune-carved stone slabs that enemy hits shatter against. The hunter skill \"Aimed Shot\" is now \"Fire Arrow\". Crafting: messages (work started, not enough materials, limit reached) now appear next to the button you pressed."
  }
 ]
