@@ -964,7 +964,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
  // питомец
  const pa=petA(),F=pa&&PETFIG[pa.k];
  if(F){const pi=rcImg(F.s);if(rcOk(pi)){const ph=F.w*.6*RCS/100*900*pi.naturalHeight/pi.naturalWidth,py=(F.fly?RCME.y-RCME.h*.8:RCME.y+8)+(F.p||0)/100*ph,A=RCN.petA,pp=A?(RCN.t-A.t0)/A.dur:2;
-  ents.push({y:py,d:()=>{if(!F.fly)rcShadow(RCPET.x,py,F.w*.6*RCS/100*900*.9);let dx=0,dy=0,rot=0;if(pp>=0&&pp<1){const s=Math.sin(Math.PI*pp);if(F.fly){dx=s*80;dy=s*35;rot=s*.25}else dx=s*F.w*.6*RCS/100*900*.65}else if(A)RCN.petA=null;
+  ents.push({y:99999,d:()=>{if(!F.fly)rcShadow(RCPET.x,py,F.w*.6*RCS/100*900*.9);let dx=0,dy=0,rot=0;if(pp>=0&&pp<1){const s=Math.sin(Math.PI*pp);if(F.fly){dx=s*80;dy=s*35;rot=s*.25}else dx=s*F.w*.6*RCS/100*900*.65}else if(A)RCN.petA=null;
    if(F.fly)dy+=Math.sin(RCN.t*4)*6;rcFig(F.s,RCPET.x,py,ph,{dx,dy,rot},pp>=0&&pp<1?{u:F.a,l:0,t:0,w:100,k:rcEase(pp,.18,.72)}:null)}})}}
  // враги
  H.sl.forEach((s,i)=>{const e=s.e;if(!e)return;const pos=rcFoePos(H,i),b=bfBase(e.name),bf=b&&BFIG[b],A=RCN.fa[i]||{},dead=e.hp<=0,boss=!!e.rbp,tgt=fight.e===e;
