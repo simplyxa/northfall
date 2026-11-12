@@ -960,5 +960,10 @@
   "v": "1.26.65",
   "t": "Рейды: опыт за победу теперь равен всему нанесённому тобой урону (по боссу и слугам волн), умноженному на 1,1.",
   "te": "Raids: the XP reward for a win is now all the damage you dealt (to the boss and wave minions) multiplied by 1.1."
+ },
+ {
+  "v": "1.26.66",
+  "t": "Страница героя: рядом с «Набрано опыта» показано, сколько опыта набрано на текущем уровне из нужного.",
+  "te": "Hero page: next to \"XP earned\" it now shows how much XP you have on the current level out of what is needed."
  }
 ]
