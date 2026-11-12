@@ -925,5 +925,10 @@
   "v": "1.26.58",
   "t": "Рейды: исправлено замирание экрана в 3-й волне перед боссом (пятый слуга не помещался в сцену).",
   "te": "Raids: fixed the screen freezing in wave 3 before the boss (the fifth minion did not fit in the scene)."
+ },
+ {
+  "v": "1.26.59",
+  "t": "Позы умений героев перерисованы в 2.5D: ярость и рёв берсерка, меткий выстрел и ловушка охотника, тотем и шкура шамана.",
+  "te": "Hero skill poses redrawn in 2.5D: berserk rage and roar, hunter aimed shot and trap, shaman totem and skin."
  }
 ]
