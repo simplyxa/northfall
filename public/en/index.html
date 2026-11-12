@@ -409,7 +409,10 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const maxHp=()=>Math.round((40+S.st.hp*8+S.lvl*10+EQ().hp));
 const maxEn=()=>Math.round((15+S.st.en*3+EQ().en+(typeof cbl==='function'?cbl('tent'):0)));
-const LVMAX=60,need=()=>{const L=S.lvl,m=L<=10?.3:Math.min(1,.3+.07*(L-10));return Math.round((20*L*L+.8*L*L*L)*m)};
+// опыт на уровень: 20·L²+0,8·L³, на первых 20 уровнях мягче (m), с 30-го плавно жёстче: ×1 на 30, ×2 на 60
+const XPHARD=L=>L<=30?1:1+(Math.min(60,L)-30)/30;
+const xpCurve=L=>{const m=L<=10?.3:Math.min(1,.3+.07*(L-10));return Math.round((20*L*L+.8*L*L*L)*m*XPHARD(L))};
+const LVMAX=60,need=()=>xpCurve(S.lvl|0);
 const cb=k=>{const c=S&&S.clan&&CLN.find(x=>x.id===S.clan);return c&&c.b?c.b[k]|0:0};
 const atk=()=>Math.round((S.st.str*2+EQ().atk+(typeof petAtk==='function'?petAtk():0))*(1+.03*cb('bar')+(typeof cbl==='function'?.02*cbl('rack'):0)));
 const def=()=>Math.round((S.st.arm+EQ().def+cb('wall')));
@@ -1382,7 +1385,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 let PV=null,PVB='top';
 const inEx=p=>p&&(p.id===UID&&S?!!(S.ex&&S.ex.end>Date.now()):+p.ex>Date.now());
 // ===== Статистика героя в профиле =====
-const xpNeedL=L=>{const m=L<=10?.3:Math.min(1,.3+.07*(L-10));return Math.round((20*L*L+.8*L*L*L)*m)};
+const xpNeedL=L=>xpCurve(L|0);
 const xpTot=(lv,xp)=>{let t=xp|0;for(let L=1;L<(lv|0);L++)t+=xpNeedL(L);return t};
 const cntPub=()=>{const c=S.cnt||{};return{k:c.k|0,aw:c.aw|0,rb:c.rb|0,bs:c.bs|0,df:c.df|0,dmg:Math.round(c.dmg||0)}};
 const dDays=t=>t?Math.max(0,Math.floor((Date.now()-t)/864e5)):null;

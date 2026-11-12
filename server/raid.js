@@ -14,7 +14,6 @@ const RWV = 3, RWN = 4, RLV = [10, 20, 30, 45, 60];
 const RMOB = [['Лесной волк', 'Дикий кабан', 'Вожак стаи'], ['Драугр', 'Болотная крыса', 'Разбойник с тракта'], ['Тролль-подросток', 'Снежный барс', 'Горный медведь'], ['Снежный барс', 'Драугр', 'Тролль-подросток'], ['Драугр', 'Тролль-подросток', 'Вожак стаи']];
 const humans = R => Object.values(R.mem).filter(x => !x.bot);
 // опыт до следующего уровня — та же формула, что в игре
-const xpNeed = L => { const m = L <= 10 ? .3 : Math.min(1, .3 + .07 * (L - 10)); return Math.round((20 * L * L + .8 * L * L * L) * m); };
 function spawn(R, n) {
   R.mobs = [];
   if (n > RWV) { R.wv = RWV + 1; if (!R.bon) R.bon = Date.now(); for (const m of Object.values(R.mem)) m.wv = RWV; return; }
