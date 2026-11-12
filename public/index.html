@@ -988,9 +988,12 @@ function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)retu
  try{rcSize();rcUpdate(dt,H,RAID);rcDraw(H,RAID)}catch(e){if(!RCN.err){RCN.err=e;console.error('raid canvas',e)}}}
 function rcClick(e){if(!fight||!fight.hunt)return;const r=RCN.cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*900,y=(e.clientY-r.top)/r.height*RCH;
  for(let k=RCN.hit.length-1;k>=0;k--){const h=RCN.hit[k];if(x>=h.x0&&x<=h.x1&&y>=h.y0&&y<=h.y1){const s=fight.hunt.sl[h.i];if(s&&s.e){fight.e=s.e;render()}return}}}
+// заранее грузим и декодируем картинки босса, чтобы в момент его появления сцена не подвисала
+function rcWarm(b){const ba=RBA[b]||{},L=[RBF[b],ba.a,RBG[b]];L.forEach((u,i)=>{if(!u)return;const m=rcImg(u);setTimeout(()=>{const go=()=>{try{(RCN.wc=RCN.wc||document.createElement('canvas')).getContext('2d').drawImage(m,0,0,1,1)}catch(e){}};if(m.decode)m.decode().then(go,()=>{});else if(m.complete)go()},400*i)});
+ [RBF[b]].forEach((u,i)=>{if(!u)return;setTimeout(()=>{try{rcSil(u,'#fff');rcSil(u,'#05070a')}catch(e){}},2500+i*400)})}
 function rcMount(){if(!fight||!fight.hunt||!fight.hunt.raid)return;const w=document.getElementById('rcw');if(!w)return;
  if(!RCN.cv){const c=document.createElement('canvas');c.className='rcv';RCN.cv=c;RCN.cx=c.getContext('2d');c.addEventListener('pointerdown',rcClick)}
- if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null}
+ if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null;rcWarm(fight.hunt.raid.b)}
  if(RCN.cv.parentNode!==w)w.insertBefore(RCN.cv,w.firstChild);
  if(!RCN.raf){RCN.last=0;RCN.raf=requestAnimationFrame(rcLoop)}}
 function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})"><div class="st-w" id="rcw"></div>${huntCtl(H)}</div>`}
