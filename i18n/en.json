@@ -2700,6 +2700,7 @@
   "Вытачивает камни для гнёзд: от обычных до легендарных.": "Carves stones for sockets: from common to legendary.",
   "<div class=\"panel\"><h3>Ремесло</h3><p style=\"margin:0\">": "<div class=\"panel\"><h3>Crafting</h3><p style=\"margin:0\">",
   "<br>Материалы падают с обычной охоты: шкуры и травы с опушки, руда и кости в глубине леса и на высокой сложности.</p>": "<br>Materials drop on regular hunts: hides and herbs at the forest edge, ore and bones deeper in the forest and on higher difficulty.</p>",
+  "<br>Материалы падают с обычной охоты: шкуры и травы с опушки, руда и кости в глубине леса и на высокой сложности.</p></div>": "<br>Materials drop on regular hunts: hides and herbs at the forest edge, ore and bones deeper in the forest and on higher difficulty.</p></div>",
   "Новая профессия": "New profession",
   "Выбери профессию": "Choose a profession",
   "</h3><p style=\"margin:0 0 6px\">У героя может быть только одна. Потом её можно сменить за 5000 серебра, но опыт профессии сбросится.</p>": "</h3><p style=\"margin:0 0 6px\">A hero can have only one. You can change it later for 5000 silver, but profession experience resets.</p>",
