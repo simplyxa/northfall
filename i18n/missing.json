@@ -1,5 +1,4 @@
 [
- "Выйти в город? Бой на арене будет засчитан как поражение.",
- "Сдаться",
- "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Вернуться в бой</button>"
+ "<div class=\"panel\"><h3 style=\"margin:0 0 4px\">Охота · ",
+ "</h3><p style=\"margin:0;color:var(--mute);font-size:15px\">Убито: <b>"
 ]

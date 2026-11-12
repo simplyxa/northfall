@@ -2966,5 +2966,7 @@
   "<span class=\"lv\">ур. ": "<span class=\"lv\">lv. ",
   "Выйти в город? Бой на арене будет засчитан как поражение.": "Leave for the city? The arena fight will count as a loss.",
   "Сдаться": "Surrender",
-  "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Вернуться в бой</button>": "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Back to the fight</button>"
+  "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Вернуться в бой</button>": "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Back to the fight</button>",
+  "<div class=\"panel\"><h3 style=\"margin:0 0 4px\">Охота · ": "<div class=\"panel\"><h3 style=\"margin:0 0 4px\">Hunt · ",
+  "</h3><p style=\"margin:0;color:var(--mute);font-size:15px\">Убито: <b>": "</h3><p style=\"margin:0;color:var(--mute);font-size:15px\">Killed: <b>"
 }

@@ -207,8 +207,8 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .stage.zr .st-ring::after{content:'';position:absolute;left:50%;top:-6px;width:9px;height:9px;transform:translateX(-50%) rotate(45deg);background:rgba(var(--rg),.9);box-shadow:0 0 8px rgba(var(--rg),.8)}
 .stage.zr{--rg:255,170,70}.stage.zr.hard{--rg:90,200,255}
 .fxn.big{font-size:26px;text-align:center;line-height:1.1}
-.st-w{position:relative;aspect-ratio:900/1000;background:#0b0d10 var(--sbg) center/100% 100% no-repeat}
-.panel.hpn{padding:0}.hpn .stage{margin-bottom:0}.hpn>p{margin-left:12px!important;margin-right:12px!important}.hpn .st-ui{margin-bottom:-1.2%}.hpn>:not(.stage){margin-left:12px;margin-right:12px}.hpn>:last-child{margin-bottom:10px}
+.hpn{padding:0;overflow:hidden}.hpn .stage{margin:0;border-top:0;border-radius:0;background:transparent}.hpn .st-w{background-color:#0b0d10}.hpn .st-ui{margin-bottom:0}.st-w{position:relative;aspect-ratio:900/1000;background:#0b0d10 var(--sbg) center/100% 100% no-repeat}
+.panel
 .hdet{margin:0 0 6px}.hdet summary{cursor:pointer;color:var(--mute);font-size:13px}
 .st-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px}
 .st-flee{flex:0 0 auto;background:rgba(22,26,30,.92);color:#e8ecee;border:1px solid #58626a;border-radius:14px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -260,7 +260,7 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .sq img{width:100%;height:100%}
 .st-ui .sq[data-ah]{left:8px;bottom:94px}.st-ui .sq[data-hx2]{left:8px;bottom:42px}
 /* расстановка кнопок боя: одна каменная панель, кнопки встают в её гнёзда (проценты от размера панели) */
-.st-ui{height:auto;aspect-ratio:2142/689;margin-top:-24%;background:url(/img/161a752ec370ce.webp) center/100% 100% no-repeat}
+.st-ui{height:auto;aspect-ratio:2142/689;margin-top:-24%;background:url(/img/903481ee877e37.webp) center/100% 100% no-repeat}
 .st-ui .sq,.st-ui .sk,.st-ui #bpb,.st-ui .strk{position:absolute;right:auto;bottom:auto;height:auto;aspect-ratio:1/1;transform:translate(-50%,-50%);min-height:0;padding:0;margin:0}
 .st-ui .sq::after,.st-ui .sk::after,.st-ui #bpb::after{content:'';position:absolute;inset:-9px}
 .st-ui .sq[data-ah]{left:12.28%;top:44.70%;width:9.94%}.st-ui .sq[data-hx2]{left:12.32%;top:79.97%;width:10.18%}
@@ -1128,9 +1128,8 @@ function stageFx(){if(!fight||!fight.hunt||fight.hunt.raid)return;const H=fight.
  fight.lc=0}
 function noEn(){const el=document.querySelector('.stage .st-w')||document.querySelector('.stage');if(el)fxAt(el,'fxn h big','Not enough energy',.5)}
 function huntView(){const H=fight.hunt,pc=Math.round(fight.ch*100);queueMicrotask(H.raid?rcMount:stageFx);const NQ=S.nb&&!S.nb.done&&NBQ[S.nb.i],nq=NQ&&NQ.t==='kill'?`<div class="panel" style="border-left:4px solid var(--gold);padding:10px 14px"><div class="lbl"><span style="color:var(--gold);font-weight:700">Quest “${NQ.h}”</span><span><b>killed ${Math.min(NQ.n,S.nb.p|0)}/${NQ.n}</b></span></div>${bar(Math.min(NQ.n,S.nb.p|0),NQ.n,'--gold')}</div>`:'';
- return`<div class="panel hpn">${H.raid?rcStageHtml(H):stageHtml(H)}
- ${H.raid?rHead():`<h3 style="margin-top:8px">Hunt · ${HKN[H.kind]}</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Killed: <b>${H.kills}</b> · XP +${H.xp} · silver +${H.gold}${H.loot.length?` · trophies ${H.loot.length}`:''}.</p>
- `}</div>${nq}${H.raid?`<div class="panel"><h3>Group</h3>${rGroup()}</div>`:''}`}
+ return`<div class="panel hpn">${H.raid?rcStageHtml(H):stageHtml(H)}</div>
+ ${H.raid?`<div class="panel">${rHead()}</div>`:`<div class="panel"><h3 style="margin:0 0 4px">Hunt · ${HKN[H.kind]}</h3><p style="margin:0;color:var(--mute);font-size:15px">Killed: <b>${H.kills}</b> · XP +${H.xp} · silver +${H.gold}${H.loot.length?` · trophies ${H.loot.length}`:''}.</p></div>`}${nq}${H.raid?`<div class="panel"><h3>Group</h3>${rGroup()}</div>`:''}`}
 function hrepView(){const H=HREP;if(H.hunt)return`<div class="panel" style="border-left:4px solid var(${H.why==='dead'?'--blood':'--moss'})"><h3>Hunt over${H.why==='dead'?': you fell':H.why==='out'?': out of strength':''}</h3><p style="margin:0 0 4px">Beasts killed: <b>${H.kills}</b> · XP <b class="g">+${H.xp}</b> · silver <b class="g">+${H.gold}</b></p>${H.loot.length?`<p style="margin:6px 0 4px">Trophies:</p><div class="loot">${H.loot.map(l=>l.rune?`<div class="lt" title="${rName(l.rune)}">${stIc(l.rune,48)}<small style="color:var(${RAR[rR(l.rune)][1]})">${rName(l.rune)}</small></div>`:`<div class="lt" title="${esc(l.it.name)}">${itemIcon(l.it,48)}<small style="color:var(${RAR[l.it.rar][1]})">${esc(l.it.name)}</small>${l.dis?`<small>salvaged: +${l.g} iron</small>`:l.mail?'<small>in mail</small>':''}</div>`).join('')}</div>`:''}<p style="margin:0;color:var(--mute);font-size:15px">Now you have ${S.gold} silver, XP ${S.xp}.</p><button class="b alt" data-a="hrclose" style="margin-top:8px">Close</button></div>`;
  return`<div class="panel" style="border-left:4px solid var(--moss)"><h3>Victory: ${esc(HREP.n)}</h3><p style="margin:0 0 4px">XP <b class="g">+${HREP.xp}</b> · silver <b class="g">+${HREP.gold}</b>${HREP.lv?` · new level ${HREP.L}`:''}</p>${HREP.lt?`<p style="margin:0 0 4px">Trophy: ${esc(HREP.lt)}</p>`:''}<p style="margin:0;color:var(--mute);font-size:15px">Now you have ${S.gold} silver, XP ${S.xp}.${UID?' '+(CLOUD.err?'Cloud: save error ('+esc(CLOUD.err)+').':CLOUD.ok?'Cloud: saved.':'Cloud: saving…'):''}</p><button class="b alt" data-a="hrclose" style="margin-top:8px">Close</button></div>`}
 function startFight(kind,botId){
@@ -1296,10 +1295,10 @@ function arCtl(){const L=arBl();
  return`<div class="st-ui"><button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${Math.round(fight.ch*100)}" ${fight.ch<.2?'disabled':''} aria-label="Strike"><img src="${HCI.fist}" alt=""></button>${skRound()}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Bottle" title="Bottle" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 function apvpView(){
  const e=fight.e,fig=HEROFIG[S.cls],efig=HEROFIG[e.cls]||HEROFIG.berserk,pa=petA();queueMicrotask(paintPvpFight);
- return`<div class="panel hpn" id="fightpanel" data-ra-root><div class="stage" style="--sbg:url(${ARSTBG||STBG})"><div class="st-w">
+ return`<div id="fightpanel" data-ra-root><div class="panel hpn"><div class="stage" style="--sbg:url(${ARSTBG||STBG})"><div class="st-w">
  ${hudBox()}
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">${Object.entries(HEROPOSE[S.cls]||{}).map(([n,q])=>`<img class="st-fa" data-p="${n}" src="${q.a}" alt="" style="left:${q.l}%;top:${q.t}%;width:${q.w}%">`).join('')}`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
- <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div>${e.pet&&PETFIG[e.pet]?petFig({k:e.pet,n:(PETS[e.pet]||{}).n||''},1):''}</div>${arCtl()}</div><div class="aratk" style="margin:6px 0 4px"><span class="st-atk" style="display:block;height:6px;border-radius:3px"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aestn" ${e.stun>fight.clk?'':'hidden'}>💫 trapped</small></div><h3 style="margin:4px 0 6px">Arena · ${esc(e.name)} · lv. ${e.lv}</h3></div>`;
+ <div class="st-hero full" id="stenemy" style="left:76.7%"><div class="st-fig"><img src="${efig}" alt="" style="transform:scaleX(-1)"></div></div>${e.pet&&PETFIG[e.pet]?petFig({k:e.pet,n:(PETS[e.pet]||{}).n||''},1):''}</div>${arCtl()}</div></div><div class="panel"><div class="aratk" style="margin:6px 0 4px"><span class="st-atk" style="display:block;height:6px;border-radius:3px"><i id="aec" style="width:${Math.round(fight.ech*100)}%"></i></span><small id="aestn" ${e.stun>fight.clk?'':'hidden'}>💫 trapped</small></div><h3 style="margin:4px 0 6px">Arena · ${esc(e.name)} · lv. ${e.lv}</h3></div></div>`;
 }
 function fightExit(){const F=fight;if(!F)return;CHP=null;
  if(F.arena&&F.pvp){return ask('Leave for the city? The arena fight will count as a loss.',()=>{if(fight!==F)return;F._fc=Date.now();tab='home';act('flee')},'Surrender')}
