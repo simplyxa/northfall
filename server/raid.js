@@ -68,7 +68,7 @@ module.exports = function raids(getDb) {
         D.hp = Math.min(D.hp, R.hp);
         for (const [id, m] of Object.entries(R.mem)) {
           const x = D.mem[id]; if (!x) continue;
-          x.dealt = Math.max(x.dealt | 0, m.dealt | 0); x.wv = Math.max(x.wv | 0, m.wv | 0);
+          x.dealt = Math.max(x.dealt | 0, m.dealt | 0); x.wd = Math.max(x.wd | 0, m.wd | 0); x.wv = Math.max(x.wv | 0, m.wv | 0);
           x.bs = Math.max(x.bs | 0, m.bs | 0); x.dead = Math.max(x.dead | 0, m.dead | 0);
         }
         if (R.bon && !D.bon) D.bon = R.bon;
@@ -97,7 +97,8 @@ module.exports = function raids(getDb) {
             const sref = db.collection('saves').doc(id);
             const sn = await tx.get(sref); const S = sn.exists ? sn.data() : null;
             if (!S) continue;
-            const xp = Math.round(xpNeed(S.lvl | 0) * [.25, .25, .3, .3, .35][t] * mf);
+            // опыт = весь нанесённый игроком урон (по боссу и по слугам волн) × 1,1
+            const xp = Math.round(((x.dealt | 0) + (x.wd | 0)) * 1.1);
             const aw = Object.assign({}, S._aw || {}, {
               g: (S._aw && S._aw.g || 0) + g, i: (S._aw && S._aw.i || 0) + ir,
               d: (S._aw && S._aw.d || 0) + du, x: (S._aw && S._aw.x || 0) + xp
@@ -108,7 +109,7 @@ module.exports = function raids(getDb) {
         }
         tx.set(ref, D);
         R.hp = D.hp; R.st = D.st;
-        for (const [id, x] of Object.entries(D.mem)) if (R.mem[id]) Object.assign(R.mem[id], { dealt: x.dealt, wv: x.wv, bs: x.bs, dead: x.dead });
+        for (const [id, x] of Object.entries(D.mem)) if (R.mem[id]) Object.assign(R.mem[id], { dealt: x.dealt, wd: x.wd, wv: x.wv, bs: x.bs, dead: x.dead });
       });
     } catch (e) { console.error('raid persist', rid, e.message); }
     if (winIds) for (const id of winIds) CQ.add(db, id, 'raid', 1);

@@ -1889,7 +1889,7 @@ function raidFinish(){const R=RAID;if(!R||R.st==='on'||!RAIDID||!S)return;S.rdon
  S.cnt=S.cnt||{};S.cnt.rb=(S.cnt.rb|0)+1;
  S.rcd=S.rcd||{};S.rcd[t]=Date.now()+RAIDS[t].cd*3600000;
  // серебро, железо, пыль и опыт начисляет сервер (он же решил, что рейд выигран)
- const hum=Object.values(R.mem).filter(x=>!x.bot).length,mf=hum<RSIZE?.7:1;const g=Math.round([150,400,900,1800,3500][t]*mf),ir=Math.round([20,40,70,110,160][t]*mf),du=Math.round([3,6,10,15,25][t]*mf),xp=Math.round(xpNeedL(S.lvl)*[.25,.25,.3,.3,.35][t]*mf),rk=rndRune(t+1);
+ const hum=Object.values(R.mem).filter(x=>!x.bot).length,mf=hum<RSIZE?.7:1;const g=Math.round([150,400,900,1800,3500][t]*mf),ir=Math.round([20,40,70,110,160][t]*mf),du=Math.round([3,6,10,15,25][t]*mf),xp=Math.round(((me.dealt|0)+(me.wd|0))*1.1),rk=rndRune(t+1);
  addRune(rk);let it=null;const ks=Object.keys(SL),sl=ks[Math.floor(Math.random()*ks.length)];
  if(t===4&&Math.random()<.1)it=gen(sl,30,4,null,5);else if(Math.random()<[.5,.55,.6,.6,.6][t])it=gen(sl,SETLV[t],t,null,t);
  if(it){it.pb=0;it.boss=1}if(it&&!autoDis(it)){if(S.inv.length<INV_MAX)S.inv.push(it);else{S.chest=S.chest||[];S.chest.push(it)}}
