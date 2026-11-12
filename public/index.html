@@ -258,14 +258,26 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .sq.on{opacity:1;filter:drop-shadow(0 0 7px rgba(255,255,255,.35))}
 .st-ui .sq img{width:100%;height:100%}
 .st-ui .sq[data-ah]{left:8px;bottom:94px}.st-ui .sq[data-hx2]{left:8px;bottom:42px}
-/* расстановка кнопок боя: слева автобой и ×2, три места умений в ряд, под ними зелья, справа большой «Удар» */
-.st-ui .strk{right:10px;bottom:14px;width:96px;height:96px}
-.st-ui .sk{width:62px;height:62px}
-.st-ui .sk0{left:64px;right:auto;bottom:70px}.st-ui .sk1{left:136px;right:auto;bottom:70px}.st-ui .sk2{left:208px;right:auto;bottom:70px}
-.st-ui .sthint{position:absolute;right:6px;top:14px;margin:0;font-size:13px;text-align:right;max-width:126px;line-height:1.15}
-.st-ui .st-cap{position:absolute;left:64px;right:112px;top:6px}
-.st-ui .sk.emp{position:absolute;width:62px;height:62px;border-radius:50%;border:2px dashed rgba(150,140,120,.35);background:rgba(8,10,12,.5);pointer-events:none;box-sizing:border-box}
-.st-ui #bpb{left:64px;bottom:12px;width:50px;height:50px}
+/* расстановка кнопок боя: одна каменная панель, кнопки встают в её гнёзда (проценты от размера панели) */
+.st-ui{height:auto;aspect-ratio:2140/679;margin-top:-10.8%;background:url(/img/71a5c5815311e3.webp) center/100% 100% no-repeat}
+.st-ui .sq,.st-ui .sk,.st-ui #bpb,.st-ui .strk{position:absolute;right:auto;bottom:auto;height:auto;aspect-ratio:1/1;transform:translate(-50%,-50%);min-height:0;padding:0;margin:0}
+.st-ui .sq::after,.st-ui .sk::after,.st-ui #bpb::after{content:'';position:absolute;inset:-9px}
+.st-ui .sq[data-ah]{left:12.48%;top:53.31%;width:6.92%}.st-ui .sq[data-hx2]{left:12.34%;top:82.03%;width:7.1%}
+.st-ui .sk0{left:31.73%;top:51.25%;width:9.63%}.st-ui .sk1{left:44.91%;top:51.84%;width:9.25%}.st-ui .sk2{left:57.62%;top:51.4%;width:9.49%}
+.st-ui #bpb{left:36.17%;top:83.21%;width:5.98%}
+.st-ui .strk{left:83.55%;top:47.57%;width:24.02%}
+.st-ui .sk,.st-ui #bpb{border:0;background:none!important;overflow:visible;box-shadow:none}
+.st-ui .sk>span:first-child{display:block!important;width:100%!important;height:100%!important;border-radius:50%!important}
+.st-ui .sq img,.st-ui #bpb img{width:100%;height:100%;padding:0}
+.st-ui .sk .skc,.st-ui #bpb .skc{border-radius:50%;font-size:13px}
+.st-ui .sk.act{box-shadow:0 0 0 2px #ffd36a,0 0 10px 2px rgba(255,200,90,.7)}
+.st-ui #bpb .bn{right:-30%;bottom:-30%;min-width:16px;height:16px;font-size:10px;border-width:1px;border-radius:8px}
+.st-ui .strk{border:0;background:none!important;overflow:visible;box-shadow:none}
+.st-ui .strk::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#e8a93a calc(var(--p)*1%),rgba(255,255,255,.08) 0);-webkit-mask:radial-gradient(farthest-side,transparent 84%,#000 85%);mask:radial-gradient(farthest-side,transparent 84%,#000 85%)}
+.st-ui .strk.full::before{background:#ffb347;filter:drop-shadow(0 0 5px rgba(255,170,60,.9))}
+.st-ui .strk img{position:absolute;left:50%;top:50%;width:78.4%;height:78.4%;transform:translate(-50%,-50%);border-radius:50%}
+.st-ui .sthint{left:58.5%;right:auto;top:63%;width:12%;font-size:11px;text-align:center;line-height:1.1;text-shadow:0 1px 3px #000,0 0 6px #000}
+.st-ui .st-cap{left:4%;right:30%;top:4%}
 
 .st-pt{position:absolute;transform:translate(-50%,calc(-100% + var(--pp,0%)));z-index:91;pointer-events:none}
 .st-pt:not(.fly)::after{content:'';position:absolute;left:50%;bottom:-4%;width:80%;height:9%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);z-index:-1}
@@ -833,7 +845,7 @@ function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<butt
  const ahx=ah.replace('class="sq"','class="sq'+(S.ahunt?' on':'')+'"').replace('class="sq" data-hx2','class="sq'+(S.hx2?' on':'')+'" data-hx2');
  return`<button class="st-flee x${S.en<1?' low':''}" data-a="flee" aria-label="Отступить" title="Отступить"><img src="${HCI.flee}" alt=""></button><div class="st-ui">${fight.hint?'<div class="sthint">👇 Жми «Удар»!</div>':S.lvl<3?'<p class="st-cap">Нажми на зверя — и герой ударит его.</p>':''}<button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" title="${fight.e?esc(fight.e.name):''}" ${fight.ch<.2||!fight.e?'disabled':''} aria-label="Удар"><img src="${HCI.fist}" alt=""></button>${skRound()}${ahx}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Бутылка" title="Бутылка" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 
-const skRound=()=>{const A=skOf(),H=A.map((k,i)=>{const st=skSt(k[0]);return`<button class="b alt sk rg sk${i} ${st.cls}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" style="--p:${st.p}" ${st.L>0?'disabled':''}>${skImg(k[0],52)}<span id="skl${i}" class="skc">${st.txt}</span></button>`}).join('');let E='';for(let i=A.length;A.length&&i<3;i++)E+=`<span class="sk emp sk${i}" aria-hidden="true"></span>`;return H+E};
+const skRound=()=>{const A=skOf(),H=A.map((k,i)=>{const st=skSt(k[0]);return`<button class="b alt sk rg sk${i} ${st.cls}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" style="--p:${st.p}" ${st.L>0?'disabled':''}>${skImgP(k[0])}<span id="skl${i}" class="skc">${st.txt}</span></button>`}).join('');return H};
 const HPOSEMS={rage:900,roar:1000,shot:600,trap:700,totem:1200,skin:1200};
 const HEROPOSE={berserk:{atk:{a:'/img/c77e933190f8f6.webp',l:-29.32,t:13.28,w:148.41},rage:{a:'/img/e09e4923703a5d.webp',l:-34.27,t:2.5,w:138.15},roar:{a:'/img/cc97c968987942.webp',l:-50.65,t:7.97,w:162.62}},hunter:{atk:{a:'/img/d2e27659b8fbfb.webp',l:-8.22,t:-2.34,w:130.05},shot:{a:'/img/5de7668e5b5802.webp',l:-42.85,t:0.94,w:159.4},trap:{a:'/img/ca628e617e8928.webp',l:-35.87,t:5.78,w:137.86}},shaman:{atk:{a:'/img/b06e8c0aaf263e.webp',l:-12.13,t:12.34,w:157.35},totem:{a:'/img/33f8a7d4337c38.webp',l:-61.13,t:1.41,w:134.47},skin:{a:'/img/5cc9da5d5886b9.webp',l:-17.99,t:3.28,w:91.52}}}; // позы атаки и умений в 2.5D
 const PETFIG={wolf:{s:'/img/2b22918a7a26da.webp',a:'/img/6ff0a6edb7dcec.webp',w:17.7,x:41.0,y:94.0,p:0},raven:{s:'/img/90d3444aa13776.webp',a:'/img/3d645bc1268e10.webp',w:16.3,x:43.1,y:62.0,p:0,fly:1},bear:{s:'/img/4ef9b7e3ea8346.webp',a:'/img/45f2d0b3d24e7f.webp',w:25.2,x:41.0,y:95.0,p:0},lynx:{s:'/img/844e8ce594863b.webp',a:'/img/202d0db55be3de.webp',w:22.4,x:41.0,y:94.0,p:0}};
@@ -1604,6 +1616,7 @@ function skillsView(){skInit();const B=`<div class="panel"><h3>Умения · $
   ${n?`<div style="padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin-bottom:8px"><small style="color:var(--mute)">${SKRN[n]} качество:</small><br><span style="color:var(${RAR[n][1]})">${skDesc(id,n)} · перезарядка ${nf(skCd(k,n))} с</span></div><button class="b" data-ku="${id}" style="width:100%" ${ok?'':'disabled'}>${lock?`Улучшение с ${SKLV[n]} уровня`:`Улучшить: ${c.s?c.s+' серебра':c.au+' золота'}`}</button>`:'<p style="margin:0;color:var(--moss);font-weight:700">Максимальное качество</p>'}</div>`}).join('')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ku]');if(!b||b.disabled)return;e.preventDefault();skUp(b.dataset.ku)});
 const SKSPR='/img/57c0e49fbd818c.webp',SKI=['rage','roar','shot','trap','totem','skin'];
+const skImgP=id=>`<span aria-hidden="true" style="display:block;width:100%;height:100%;border-radius:50%;background:url(${SKSPR}) no-repeat;background-size:600% 100%;background-position:${Math.max(0,SKI.indexOf(id))*20}% 0"></span>`;
 const skImg=(id,z)=>`<span aria-hidden="true" style="display:inline-block;flex:0 0 auto;width:${z}px;height:${z}px;border-radius:6px;vertical-align:middle;background:url(${SKSPR}) no-repeat;background-size:${6*z}px ${z}px;background-position:-${Math.max(0,SKI.indexOf(id))*z}px 0"></span>`;
 function skLeft(id){return Math.max(0,((fight.sk||{})[id]||0)-fight.clk)}
 // состояние умения: активный эффект (зелёное кольцо убывает) или перезарядка (золотое кольцо заполняется)
