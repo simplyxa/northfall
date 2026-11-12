@@ -990,7 +990,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
 function rcSize(){const cv=RCN.cv,w=cv.clientWidth||400,d=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*d);if(cv.width!==pw){cv.width=pw;cv.height=Math.round(pw*RCH/900)}RCN.sc=cv.width/900}
 // отладка рейда: добавь ?dbg=raid к адресу, и поверх сцены появятся метки времени (где именно случается пауза перед боссом)
 const RDG={on:/[?&]dbg=raid/.test(location.search),L:[],t0:0,sb:0,ad:0,bd:0,wv:0,el:null};
-function rdg(k){if(!RDG.on)return;const n=performance.now();if(!RDG.t0)RDG.t0=n;RDG.L.push(((n-RDG.t0)/1000).toFixed(2)+'s  '+k);if(RDG.L.length>16)RDG.L.shift();
+function rdg(k){if(!RDG.on)return;const n=performance.now();if(!RDG.t0)RDG.t0=n;RDG.L.push(((n-RDG.t0)/1000).toFixed(2)+'s  '+k);if(RDG.L.length>22)RDG.L.shift();
  if(!RDG.el){RDG.el=document.createElement('pre');RDG.el.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;margin:0;padding:4px 6px;background:rgba(0,0,0,.75);color:#9fe;font:10px/1.3 monospace;pointer-events:none;max-width:92vw;white-space:pre-wrap';document.body.appendChild(RDG.el)}RDG.el.textContent=RDG.L.join('\n')}
 function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)return;if(RDG.on&&RCN.last&&t-RCN.last>400)rdg('FRAME PAUSE '+Math.round(t-RCN.last)+' ms');
  if(!fight||!fight.hunt||!fight.hunt.raid){cancelAnimationFrame(RCN.raf);RCN.raf=0;return}
@@ -1004,7 +1004,7 @@ function rcWarm(b){const ba=RBA[b]||{},L=[RBF[b],ba.a,RBG[b]];L.forEach((u,i)=>{
  [RBF[b]].forEach((u,i)=>{if(!u)return;setTimeout(()=>{try{rcSil(u,'#fff');rcSil(u,'#05070a')}catch(e){}},2500+i*400)})}
 function rcMount(){if(!fight||!fight.hunt||!fight.hunt.raid)return;const w=document.getElementById('rcw');if(!w)return;
  if(!RCN.cv){const c=document.createElement('canvas');c.className='rcv';RCN.cv=c;RCN.cx=c.getContext('2d');c.addEventListener('pointerdown',rcClick)}
- if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null;rcWarm(fight.hunt.raid.b);RDG.L=[];RDG.t0=0;RDG.sb=RDG.ad=RDG.bd=RDG.wv=0}
+ if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null;rcWarm(fight.hunt.raid.b);RDG.L=[];RDG.t0=0;RDG.sb=RDG.ad=RDG.bd=RDG.wv=0;RDG.mk=''}
  if(RCN.cv.parentNode!==w)w.insertBefore(RCN.cv,w.firstChild);
  if(!RCN.raf){RCN.last=0;RCN.raf=requestAnimationFrame(rcLoop)}}
 function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})"><div class="st-w" id="rcw"></div>${huntCtl(H)}</div>`}
@@ -1771,7 +1771,7 @@ function rRunStart(){const R=RAID;if(!R||!R.w||R.st!=='on'||fight||!S)return;con
  rWave((me.wv|0)+1);save();render();window.scrollTo(0,0)}
 // общие волны: состояние слуг приходит с сервера, свои удары — сразу на сервер
 function rSync(){const X=rX(),R=RAID;if(!X||!X.sh||!R||R.st!=='on')return false;const H=fight.hunt;
- if(RDG.on){if((R.wv|0)!==RDG.wv){RDG.wv=R.wv|0;rdg('server wave '+RDG.wv)}if(!X.boss&&X.wave===RWV&&H.sl.length&&H.sl.every(s=>!s.e)&&!RDG.ad){RDG.ad=1;rdg('all wave-3 mobs dead (local)')}}
+ if(RDG.on){if((R.wv|0)!==RDG.wv){RDG.wv=R.wv|0;rdg('server wave '+RDG.wv)}if(R.wv===RWV&&R.mobs){const k=R.mobs.map(m=>Math.round(m.hp/m.max*100)).join('/');if(k!==RDG.mk){RDG.mk=k;rdg('srv mobs % '+k)}}if(!X.boss&&X.wave===RWV&&H.sl.length&&H.sl.every(s=>!s.e)&&!RDG.ad){RDG.ad=1;rdg('all wave-3 mobs dead (local)')}}
  if((R.wv|0)>RWV){if(!X.boss){rBossPhase();return true}return false}
  let ch=false;if(X.wave!==R.wv){if(X.wave)log(`Wave ${R.wv} of ${RWV}: fight the servants together with the group!`,'sys');X.wave=R.wv;H.sl=[];X.kd={};X.ph=[];fight.e=null;ch=true}
  const q=(R.mem[UID]||{}).q|0;X.ph=X.ph.filter(p=>p.q>q);
@@ -1781,7 +1781,7 @@ function rSync(){const X=rX(),R=RAID;if(!X||!X.sh||!R||R.st!=='on')return false;
   if(!s.e){if(X.kd[X.wave+':'+i]&&m.hp>0)delete X.kd[X.wave+':'+i];const e=mkEnemy(typeof T==='function'?T(m.n):m.n,m.lv,m.k);e.atk*=.55;e.xp*=.5;e.gold=0;if(m.ld){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.atk*=1.2}s.e=e;ch=true}
   if(s.e.hp!==hp||s.e.max!==m.max)ch=true;s.e.max=m.max;s.e.hp=hp;s.lh=hp});
  if(fight.e&&!H.sl.some(s=>s.e===fight.e))fight.e=null;retarget();return ch}
-function rKill(s,i){const X=rX(),H=fight.hunt,k=X.wave+':'+i;if(!X.kd[k]){X.kd[k]=1;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);log(`${s.e.name} is defeated.`,'hit')}if(fight.e===s.e)fight.e=null;s.e=null}
+function rKill(s,i){rdg('kill local #'+i);const X=rX(),H=fight.hunt,k=X.wave+':'+i;if(!X.kd[k]){X.kd[k]=1;H.kills++;S.win++;ev('kill');fx('kill');petXp(1);log(`${s.e.name} is defeated.`,'hit')}if(fight.e===s.e)fight.e=null;s.e=null}
 function rWave(n){const H=fight.hunt,X=H.raid;if(n>RWV)return rBossPhase();X.wave=n;const L=RMOB[X.b],lv=Math.max(RAIDS[X.b].lv,S.lvl),k=RWN+(n===RWV?1:0);H.sl=[];
  for(let i=0;i<k;i++){const e=mkEnemy(L[(i+n)%L.length],lv,.45+.05*n+.03*X.b);e.atk*=.55;e.xp*=.5;e.gold=0;
   if(n===RWV&&i===k-1){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.hp=e.max=Math.round(e.max*1.8);e.atk*=1.2}
@@ -1815,7 +1815,7 @@ function rRunTick(){const X=rX(),R=RAID;if(!R||RAIDID!==X.rid){rRunEnd('lost');r
  if(Date.now()>R.dl+2000&&!rHub()){rTimeout();}
  return false}
 function rCheck(){const H=fight.hunt,X=H.raid;if(S.hp<=0)return rRunEnd('dead');
- if(X.sh&&!X.boss){H.sl.forEach((s,i)=>{if(!s||!s.e)return;const loc=Math.round(s.lh-s.e.hp);if(loc>0){X.q=(X.q|0)+1;X.ph.push({q:X.q,i,d:loc});hubSend({t:'rh',rid:X.rid,w:X.wave,i,d:loc,q:X.q});s.lh=s.e.hp}if(s.e.hp<=0)rKill(s,i)});retarget();return}
+ if(X.sh&&!X.boss){H.sl.forEach((s,i)=>{if(!s||!s.e)return;const loc=Math.round(s.lh-s.e.hp);if(loc>0){X.q=(X.q|0)+1;X.ph.push({q:X.q,i,d:loc});hubSend({t:'rh',rid:X.rid,w:X.wave,i,d:loc,q:X.q});rdg('hit sent #'+i+' '+loc);s.lh=s.e.hp}if(s.e.hp<=0)rKill(s,i)});retarget();return}
  if(X.boss){const e=H.sl[0]&&H.sl[0].e;if(e){const loc=X.lastHp-e.hp;if(loc>0){X.pend+=loc;X.lastHp=e.hp}if(e.hp<=0)rFlush();if(e.hp<=0)e.hp=1}return}
  for(const s of H.sl)if(s.e&&s.e.hp<=0){H.kills++;S.win++;ev('kill');fx('kill');petXp(1);log(`${s.e.name} is defeated.`,'hit');s.e=null;s.at=null}
  retarget();if(H.sl.every(s=>!s.e)){const n=X.wave;rMem({wv:n});if(n<RWV)log(`Wave ${n} cleared!`,'hit');rWave(n+1)}}
