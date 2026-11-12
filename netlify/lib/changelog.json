@@ -895,5 +895,10 @@
   "v": "1.26.52",
   "t": "Герои и питомцы перерисованы в 2.5D: новые фигуры волчонка, ворона, горного тролля и дракончика, новые позы атаки у питомцев и у трёх классов. Размеры героев и зверей на охоте и арене теперь как в рейде.",
   "te": "Heroes and pets redrawn in 2.5D: new wolf cub, raven, mountain troll and dragon hatchling, new attack poses for pets and all three classes. Hero and beast sizes in hunts and the arena now match raids."
+ },
+ {
+  "v": "1.26.53",
+  "t": "Шаман атакует энергетическими шарами, которые вылетают из кристалла на посохе: на охоте, в рейдах и у шаманов-союзников.",
+  "te": "The shaman now attacks with energy orbs launched from the staff crystal: in hunts, raids and for allied shamans."
  }
 ]
