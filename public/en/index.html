@@ -964,7 +964,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
    if(bf){const ba=boss&&H.raid&&RBA[H.raid.b],P=atk&&ba?{u:ba.a,l:ba.l,t:ba.t,w:ba.w,k:rcEase(ap,.22,.78)}:null,bob=Math.sin(RCN.t*1.8+i);
     box=rcFig(bf,pos.x,pos.y,pos.h,{flip:0,dx:-s1*(boss?(P?45:80):42),dy:bob*1.5,sy:1+bob*.008+(atk&&!P?s1*.12:0),sx:1+(atk&&!P?s1*.12:0),rot:atk&&boss&&!P?-s1*.12:0,a:dead?.35:1,fl,gray:dead},P)}
    else{const d=pos.h,im=rcImg(e.img||mobImg(e.name));box={x0:pos.x-d/2,y0:pos.y-d*.88,w:d,h:d};cx.save();cx.translate(-s1*40,0);cx.globalAlpha=dead?.35:1;cx.beginPath();cx.arc(pos.x,pos.y-d*.38,d/2,0,7);cx.save();cx.clip();cx.fillStyle='rgba(0,0,0,.4)';cx.fillRect(pos.x-d/2,pos.y-d*.88,d,d);if(rcOk(im)){const r=Math.max(d/im.naturalWidth,d/im.naturalHeight);cx.drawImage(im,pos.x-im.naturalWidth*r*.5,pos.y-d*.38-im.naturalHeight*r*.5,im.naturalWidth*r,im.naturalHeight*r)}cx.restore();cx.lineWidth=4;cx.strokeStyle=tgt?'#f0c85a':'rgba(255,190,120,.6)';cx.stroke();if(fl>0){cx.fillStyle='rgba(255,255,255,'+fl+')';cx.fill()}cx.restore()}
-   if(RDG.on&&boss&&box&&!RDG.bd){RDG.bd=1;rdg('босс нарисован')}
+   if(RDG.on&&boss&&box&&!RDG.bd){RDG.bd=1;rdg('boss drawn')}
    if(!box)return;const w=Math.max(120,Math.min(box.w*.9,boss?300:190)),ty=box.y0-(boss?14:10);
    rcText(rcClip(e.name,w+30,boss?28:22),pos.x,ty-18,boss?28:22,tgt?'#ffe9a8':'#f4ead0',{b:1});rcBar(pos.x,ty-12,w,boss?12:10,e.hp/e.max,'#c8452f');if(!boss)rcBar(pos.x,ty,w,5,s.ech,'#e0a040');
    if(e.stun>fight.clk)rcText('💫',pos.x,box.y0+26,30,'#fff');
@@ -990,9 +990,9 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
 function rcSize(){const cv=RCN.cv,w=cv.clientWidth||400,d=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*d);if(cv.width!==pw){cv.width=pw;cv.height=Math.round(pw*RCH/900)}RCN.sc=cv.width/900}
 // отладка рейда: добавь ?dbg=raid к адресу, и поверх сцены появятся метки времени (где именно случается пауза перед боссом)
 const RDG={on:/[?&]dbg=raid/.test(location.search),L:[],t0:0,sb:0,ad:0,bd:0,wv:0,el:null};
-function rdg(k){if(!RDG.on)return;const n=performance.now();if(!RDG.t0)RDG.t0=n;RDG.L.push(((n-RDG.t0)/1000).toFixed(2)+' с  '+k);if(RDG.L.length>16)RDG.L.shift();
+function rdg(k){if(!RDG.on)return;const n=performance.now();if(!RDG.t0)RDG.t0=n;RDG.L.push(((n-RDG.t0)/1000).toFixed(2)+'s  '+k);if(RDG.L.length>16)RDG.L.shift();
  if(!RDG.el){RDG.el=document.createElement('pre');RDG.el.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;margin:0;padding:4px 6px;background:rgba(0,0,0,.75);color:#9fe;font:10px/1.3 monospace;pointer-events:none;max-width:92vw;white-space:pre-wrap';document.body.appendChild(RDG.el)}RDG.el.textContent=RDG.L.join('\n')}
-function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)return;if(RDG.on&&RCN.last&&t-RCN.last>400)rdg('ПАУЗА кадра '+Math.round(t-RCN.last)+' мс');
+function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)return;if(RDG.on&&RCN.last&&t-RCN.last>400)rdg('FRAME PAUSE '+Math.round(t-RCN.last)+' ms');
  if(!fight||!fight.hunt||!fight.hunt.raid){cancelAnimationFrame(RCN.raf);RCN.raf=0;return}
  if(!RCN.cv||!RCN.cv.isConnected)return;
  const H=fight.hunt,dt=Math.min(.05,Math.max(0,(t-(RCN.last||t))/1000));RCN.last=t;RCN.dtl=dt;RCN.t+=dt;
@@ -1771,7 +1771,7 @@ function rRunStart(){const R=RAID;if(!R||!R.w||R.st!=='on'||fight||!S)return;con
  rWave((me.wv|0)+1);save();render();window.scrollTo(0,0)}
 // общие волны: состояние слуг приходит с сервера, свои удары — сразу на сервер
 function rSync(){const X=rX(),R=RAID;if(!X||!X.sh||!R||R.st!=='on')return false;const H=fight.hunt;
- if(RDG.on){if((R.wv|0)!==RDG.wv){RDG.wv=R.wv|0;rdg('сервер: волна '+RDG.wv)}if(!X.boss&&X.wave===RWV&&H.sl.length&&H.sl.every(s=>!s.e)&&!RDG.ad){RDG.ad=1;rdg('у тебя убиты все слуги 3-й волны')}}
+ if(RDG.on){if((R.wv|0)!==RDG.wv){RDG.wv=R.wv|0;rdg('server wave '+RDG.wv)}if(!X.boss&&X.wave===RWV&&H.sl.length&&H.sl.every(s=>!s.e)&&!RDG.ad){RDG.ad=1;rdg('all wave-3 mobs dead (local)')}}
  if((R.wv|0)>RWV){if(!X.boss){rBossPhase();return true}return false}
  let ch=false;if(X.wave!==R.wv){if(X.wave)log(`Wave ${R.wv} of ${RWV}: fight the servants together with the group!`,'sys');X.wave=R.wv;H.sl=[];X.kd={};X.ph=[];fight.e=null;ch=true}
  const q=(R.mem[UID]||{}).q|0;X.ph=X.ph.filter(p=>p.q>q);
