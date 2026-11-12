@@ -2963,5 +2963,8 @@
   "<h3 style=\"margin-top:8px\">Охота · ": "<h3 style=\"margin-top:8px\">Hunt · ",
   ">💫 в капкане</small></div><h3 style=\"margin:4px 0 6px\">Арена · ": ">💫 trapped</small></div><h3 style=\"margin:4px 0 6px\">Arena · ",
   "</span><span class=\"lv\">ур. ": "</span><span class=\"lv\">lv. ",
-  "<span class=\"lv\">ур. ": "<span class=\"lv\">lv. "
+  "<span class=\"lv\">ур. ": "<span class=\"lv\">lv. ",
+  "Выйти в город? Бой на арене будет засчитан как поражение.": "Leave for the city? The arena fight will count as a loss.",
+  "Сдаться": "Surrender",
+  "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Вернуться в бой</button>": "<button class=\"b red\" data-a=\"fback\" style=\"width:100%;margin:0 0 10px\">⚔ Back to the fight</button>"
 }
