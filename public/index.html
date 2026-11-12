@@ -1125,7 +1125,7 @@ function act(a){
  settle();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render();
 }
 function fightTick(){
- if(!fight)return;if(fight.arena&&fight.pvp)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&!fight.hunt.raid&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
+ if(!fight)return;if(fight.arena&&fight.pvp)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
  fight.ch=Math.min(1,fight.ch+dt/(fight.chs||5));if(fight.hunt)return huntTick(dt);if(!(fight.e&&fight.e.stun>fight.clk))fight.ech+=dt/((fight.e&&fight.e.spd)||5);
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
@@ -1268,14 +1268,17 @@ function paintPvpFight(){
  const E=fight.e,now=fight.clk,g=s=>root.querySelector(s),hero=g('#sthero'),foe=g('#stenemy');if(!hero||!foe)return;
  const set=(id,fn)=>{const x=g(id);if(x)fn(x)};
  set('#ahb',x=>x.style.width=Math.max(0,S.hp/maxHp()*100)+'%');set('#ahbt',x=>x.textContent=S.hp+'/'+maxHp()+' · ⚡'+S.en);
- set('#aeb',x=>x.style.width=Math.max(0,E.hp/E.max*100)+'%');set('#aebt',x=>x.textContent=E.hp+'/'+E.max);
+ const mine=!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn)&&!(fight.pe&&fight._pen!=null&&fight.pe.n!==fight._pen),ow=fight._orbT&&performance.now()<fight._orbT,st0=fight._peh!=null&&E.hp<fight._peh&&S.cls==='shaman'&&mine&&!fight._orbDone,eh=(ow||st0)&&fight._peh!=null?fight._peh:E.hp;
+ set('#aeb',x=>x.style.width=Math.max(0,eh/E.max*100)+'%');set('#aebt',x=>x.textContent=eh+'/'+E.max);
  // удары: числа над героями и короткие рывки, как на охоте
  if(fight._ph!=null&&S.hp<fight._ph){fxAt(hero,'fxn h','−'+(fight._ph-S.hp),.25);ANI(hero.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(1)'},{transform:'translateX(-8px)',filter:'brightness(1.6) sepia(1) hue-rotate(-30deg) saturate(4)'},{transform:'translateX(4px)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:300});
   ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(-34px) rotate(-5deg)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
  else if(fight._ph!=null&&S.hp-fight._ph>=Math.max(5,maxHp()*.05))fxAt(hero,'fxn g','+'+(S.hp-fight._ph),.25);
- if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
-  if(!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn)&&!(fight.pe&&fight._pen!=null&&fight.pe.n!==fight._pen))heroPose(hero,'atk')}
- fight._ph=S.hp;fight._peh=E.hp;
+ let hold=false;
+ if(st0){hold=true;if(!ow){fight._orbT=performance.now()+330;hfxArrow(hero,foe,0,1);heroPose(hero,'atk');setTimeout(()=>{fight._orbT=0;fight._orbDone=1;if(fight&&fight.pvp)paintPvpFight()},340)}}
+ else if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
+  if(mine&&!fight._orbDone)heroPose(hero,'atk');fight._orbDone=0}
+ fight._ph=S.hp;if(!hold)fight._peh=E.hp;
 
  // атака питомца: событие от сервера → рывок питомца
  {const pe=fight.pe;if(fight._pen==null)fight._pen=pe?pe.n:0;else if(pe&&pe.n!==fight._pen){fight._pen=pe.n;petLunge()}}
