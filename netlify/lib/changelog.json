@@ -955,5 +955,10 @@
   "v": "1.26.64",
   "t": "Охотник: капкан захлопывается под целью и держит её, пока она оглушена. Берсерк: ярость окружает героя пламенем до удара, боевой рёв пускает волны и отбрасывает врагов (охота, рейды, арена).",
   "te": "Hunter: the trap snaps shut under the target and holds it while stunned. Berserker: Rage wraps the hero in flames until the next strike, Battle Roar sends out shockwaves and knocks enemies back (hunts, raids, arena)."
+ },
+ {
+  "v": "1.26.65",
+  "t": "Рейды: опыт за победу теперь равен всему нанесённому тобой урону (по боссу и слугам волн), умноженному на 1,1.",
+  "te": "Raids: the XP reward for a win is now all the damage you dealt (to the boss and wave minions) multiplied by 1.1."
  }
 ]
