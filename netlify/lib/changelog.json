@@ -945,5 +945,10 @@
   "v": "1.26.62",
   "t": "Шаман: каменная кожа — щит из рунных каменных плит, удары разбиваются о камень. Умение охотника «Меткий выстрел» теперь называется «Огненная стрела». Ремесло: сообщения («Работа начата», не хватает материалов, лимит) показываются рядом с нажатой кнопкой.",
   "te": "Shaman: Stone Skin is a shield of rune-carved stone slabs that enemy hits shatter against. The hunter skill \"Aimed Shot\" is now \"Fire Arrow\". Crafting: messages (work started, not enough materials, limit reached) now appear next to the button you pressed."
+ },
+ {
+  "v": "1.26.63",
+  "t": "Рейды: питомец рисуется перед всеми союзниками. Охотник: исправлены позы умений (Боевой рёв, Огненная стрела, Капкан), урон проходит, когда стрела долетела до цели.",
+  "te": "Raids: the pet is drawn in front of all allies. Hunter: fixed skill poses (Battle Roar, Fire Arrow, Trap); damage now lands when the arrow reaches the target."
  }
 ]
