@@ -257,7 +257,15 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .sq{background:none!important;border:0!important;box-shadow:none!important;width:42px;height:42px;opacity:.9;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:opacity .15s,filter .15s}
 .st-ui .sq.on{opacity:1;filter:drop-shadow(0 0 7px rgba(255,255,255,.35))}
 .st-ui .sq img{width:100%;height:100%}
-.st-ui .sq[data-hx2]{left:8px;bottom:150px}.st-ui .sq[data-ah]{left:8px;bottom:104px}
+.st-ui .sq[data-ah]{left:8px;bottom:94px}.st-ui .sq[data-hx2]{left:8px;bottom:42px}
+/* расстановка кнопок боя: слева автобой и ×2, три места умений в ряд, под ними зелья, справа большой «Удар» */
+.st-ui .strk{right:10px;bottom:14px;width:96px;height:96px}
+.st-ui .sk{width:62px;height:62px}
+.st-ui .sk0{left:64px;right:auto;bottom:70px}.st-ui .sk1{left:136px;right:auto;bottom:70px}.st-ui .sk2{left:208px;right:auto;bottom:70px}
+.st-ui .sthint{position:absolute;right:6px;top:14px;margin:0;font-size:13px;text-align:right;max-width:126px;line-height:1.15}
+.st-ui .st-cap{position:absolute;left:64px;right:112px;top:6px}
+.st-ui .sk.emp{position:absolute;width:62px;height:62px;border-radius:50%;border:2px dashed rgba(150,140,120,.35);background:rgba(8,10,12,.5);pointer-events:none;box-sizing:border-box}
+.st-ui #bpb{left:64px;bottom:12px;width:50px;height:50px}
 
 .st-pt{position:absolute;transform:translate(-50%,calc(-100% + var(--pp,0%)));z-index:91;pointer-events:none}
 .st-pt:not(.fly)::after{content:'';position:absolute;left:50%;bottom:-4%;width:80%;height:9%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);z-index:-1}
@@ -285,7 +293,7 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 @keyframes fleeLow{50%{box-shadow:0 0 0 2px rgba(240,176,96,.5),0 0 14px 4px rgba(240,176,96,.75)}}
 .stage>.st-flee.x img{width:100%;height:100%;object-fit:contain;pointer-events:none}
 
-.st-ui .sthint,.st-ui .st-cap{position:absolute;left:0;right:0;top:30px;margin:0;text-align:center}
+.st-ui .sthint,.st-ui .st-cap{position:absolute;margin:0}
 </style>
 <link rel="alternate" hreflang="ru" href="https://playnorthfall.online/"><link rel="alternate" hreflang="en" href="https://playnorthfall.online/en/"><link rel="alternate" hreflang="x-default" href="https://playnorthfall.online/">
 </head>
@@ -825,7 +833,7 @@ function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<butt
  const ahx=ah.replace('class="sq"','class="sq'+(S.ahunt?' on':'')+'"').replace('class="sq" data-hx2','class="sq'+(S.hx2?' on':'')+'" data-hx2');
  return`<button class="st-flee x${S.en<1?' low':''}" data-a="flee" aria-label="Отступить" title="Отступить"><img src="${HCI.flee}" alt=""></button><div class="st-ui">${fight.hint?'<div class="sthint">👇 Жми «Удар»!</div>':S.lvl<3?'<p class="st-cap">Нажми на зверя — и герой ударит его.</p>':''}<button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" title="${fight.e?esc(fight.e.name):''}" ${fight.ch<.2||!fight.e?'disabled':''} aria-label="Удар"><img src="${HCI.fist}" alt=""></button>${skRound()}${ahx}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Бутылка" title="Бутылка" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 
-const skRound=()=>skOf().map((k,i)=>{const st=skSt(k[0]);return`<button class="b alt sk rg sk${i} ${st.cls}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" style="--p:${st.p}" ${st.L>0?'disabled':''}>${skImg(k[0],52)}<span id="skl${i}" class="skc">${st.txt}</span></button>`}).join('');
+const skRound=()=>{const A=skOf(),H=A.map((k,i)=>{const st=skSt(k[0]);return`<button class="b alt sk rg sk${i} ${st.cls}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" style="--p:${st.p}" ${st.L>0?'disabled':''}>${skImg(k[0],52)}<span id="skl${i}" class="skc">${st.txt}</span></button>`}).join('');let E='';for(let i=A.length;A.length&&i<3;i++)E+=`<span class="sk emp sk${i}" aria-hidden="true"></span>`;return H+E};
 const HPOSEMS={rage:900,roar:1000,shot:600,trap:700,totem:1200,skin:1200};
 const HEROPOSE={berserk:{atk:{a:'/img/c77e933190f8f6.webp',l:-29.32,t:13.28,w:148.41},rage:{a:'/img/e09e4923703a5d.webp',l:-34.27,t:2.5,w:138.15},roar:{a:'/img/cc97c968987942.webp',l:-50.65,t:7.97,w:162.62}},hunter:{atk:{a:'/img/d2e27659b8fbfb.webp',l:-8.22,t:-2.34,w:130.05},shot:{a:'/img/5de7668e5b5802.webp',l:-42.85,t:0.94,w:159.4},trap:{a:'/img/ca628e617e8928.webp',l:-35.87,t:5.78,w:137.86}},shaman:{atk:{a:'/img/b06e8c0aaf263e.webp',l:-12.13,t:12.34,w:157.35},totem:{a:'/img/33f8a7d4337c38.webp',l:-61.13,t:1.41,w:134.47},skin:{a:'/img/5cc9da5d5886b9.webp',l:-17.99,t:3.28,w:91.52}}}; // позы атаки и умений в 2.5D
 const PETFIG={wolf:{s:'/img/2b22918a7a26da.webp',a:'/img/6ff0a6edb7dcec.webp',w:17.7,x:41.0,y:94.0,p:0},raven:{s:'/img/90d3444aa13776.webp',a:'/img/3d645bc1268e10.webp',w:16.3,x:43.1,y:62.0,p:0,fly:1},bear:{s:'/img/4ef9b7e3ea8346.webp',a:'/img/45f2d0b3d24e7f.webp',w:25.2,x:41.0,y:95.0,p:0},lynx:{s:'/img/844e8ce594863b.webp',a:'/img/202d0db55be3de.webp',w:22.4,x:41.0,y:94.0,p:0}};
