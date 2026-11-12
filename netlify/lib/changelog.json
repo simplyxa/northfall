@@ -990,5 +990,10 @@
   "v": "1.26.71",
   "t": "Бой: активное нижнее меню, кнопка «Отступить» убрана. «Главная» завершает бой с окном отчёта, другие вкладки оставляют бой идти с кнопкой «Вернуться в бой». Срезана тёмная кромка панели, блок информации об охоте больше не перекрывается сценой.",
   "te": "Combat: bottom menu is active during fights and the Retreat button is gone. Home ends the fight with a report popup; other tabs keep the fight running with a Back to the fight button. Trimmed the dark edge of the panel; the hunt info block is no longer covered by the scene."
+ },
+ {
+  "v": "1.26.72",
+  "t": "Бой: нижняя кромка панели кнопок прозрачная, информация об охоте, арене и рейде — отдельная карточка под сценой.",
+  "te": "Combat: the bottom edge of the button panel is transparent; hunt, arena and raid info now sits in its own card under the scene."
  }
 ]
