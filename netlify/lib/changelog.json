@@ -950,5 +950,10 @@
   "v": "1.26.63",
   "t": "Рейды: питомец рисуется перед всеми союзниками. Охотник: исправлены позы умений (Боевой рёв, Огненная стрела, Капкан), урон проходит, когда стрела долетела до цели.",
   "te": "Raids: the pet is drawn in front of all allies. Hunter: fixed skill poses (Battle Roar, Fire Arrow, Trap); damage now lands when the arrow reaches the target."
+ },
+ {
+  "v": "1.26.64",
+  "t": "Охотник: капкан захлопывается под целью и держит её, пока она оглушена. Берсерк: ярость окружает героя пламенем до удара, боевой рёв пускает волны и отбрасывает врагов (охота, рейды, арена).",
+  "te": "Hunter: the trap snaps shut under the target and holds it while stunned. Berserker: Rage wraps the hero in flames until the next strike, Battle Roar sends out shockwaves and knocks enemies back (hunts, raids, arena)."
  }
 ]
