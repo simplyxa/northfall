@@ -1127,7 +1127,7 @@ function act(a){
  settle();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render();
 }
 function fightTick(){
- if(!fight)return;if(fight.arena&&fight.pvp)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&!fight.hunt.raid&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
+ if(!fight)return;if(fight.arena&&fight.pvp)return;const pn=performance.now();let dt=(pn-fight.pn)/1000;fight.pn=pn;if(!(dt>0))dt=.1;dt=Math.min(.5,dt);if(fight.hunt&&S.hx2&&ahOk())dt*=2;fight.clk+=dt*1000;
  fight.ch=Math.min(1,fight.ch+dt/(fight.chs||5));if(fight.hunt)return huntTick(dt);if(!(fight.e&&fight.e.stun>fight.clk))fight.ech+=dt/((fight.e&&fight.e.spd)||5);
  if(fight.pois&&fight.clk<fight.pois.until){fight.pacc=(fight.pacc||0)+fight.pois.dps*dt;if(fight.pacc>=1){const n=Math.floor(fight.pacc);fight.pacc-=n;S.hp=Math.max(0,S.hp-n);fight.s.taken+=n;if(S.hp<=0){settle();save();return fight&&fight.arena&&!fight.pvp?fightRefresh():render()}}}
  if(fight.dun&&fight.clk>=DUNT){dunEnd('time');save();return render()}
@@ -1175,7 +1175,7 @@ function doUpOld(key){const it=key.startsWith('eq:')?S.eq[key.slice(3)]:S.inv.fi
  ev('upa');if(Math.random()*100<UPC[it.up]){it.up++;if(it.up>=5){S.cnt=S.cnt||{};S.cnt.u5=1;achCheck()}log(`Upgrade succeeded: ${it.name} +${it.up}.`,'hit')}else log(`Upgrade failed: ${it.name}. The iron is lost.`,'dmg');save();render()}
 let LASTDROP=null;
 const autoOn=()=>S.autodis&&S.lvl>=30;
-function autoDis(it){if(!autoOn()||it.rar>=4||(it.rn||[]).length||it.en)return 0;const cur=curOf(it);if(!cur||score(it)>score(cur))return 0;const g=dis(it);S.iron=(S.iron|0)+g;S.dust=(S.dust|0)+dustOf(it);S.adc=(S.adc|0)+1;S.adi=(S.adi|0)+g;log(`Auto-salvage: “${it.name}» → +${g} iron.`,'sys');return g}
+function autoDis(it){if(!autoOn()||it.rar>=4||(it.rn||[]).length||it.en)return 0;const cur=curOf(it);if(!cur||score(it)>score(cur))return 0;const g=dis(it);S.iron=(S.iron|0)+g;S.dust=(S.dust|0)+dustOf(it);S.adc=(S.adc|0)+1;S.adi=(S.adi|0)+g;ev('dis');log(`Auto-salvage: “${it.name}» → +${g} iron.`,'sys');return g}
 function drop(L,arena){
  LASTDROP=null;if(Math.random()>(arena?.12:.08))return'';const r=Math.random()*100,w=arena?[50,85,97]:[70,94,99];
  const rar=r<w[0]?0:r<w[1]?1:r<w[2]?2:3,it=gen(Object.keys(SL)[Math.floor(rnd(0,Object.keys(SL).length))],Math.max(1,L),rar);
@@ -1270,14 +1270,17 @@ function paintPvpFight(){
  const E=fight.e,now=fight.clk,g=s=>root.querySelector(s),hero=g('#sthero'),foe=g('#stenemy');if(!hero||!foe)return;
  const set=(id,fn)=>{const x=g(id);if(x)fn(x)};
  set('#ahb',x=>x.style.width=Math.max(0,S.hp/maxHp()*100)+'%');set('#ahbt',x=>x.textContent=S.hp+'/'+maxHp()+' · ⚡'+S.en);
- set('#aeb',x=>x.style.width=Math.max(0,E.hp/E.max*100)+'%');set('#aebt',x=>x.textContent=E.hp+'/'+E.max);
+ const mine=!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn)&&!(fight.pe&&fight._pen!=null&&fight.pe.n!==fight._pen),ow=fight._orbT&&performance.now()<fight._orbT,st0=fight._peh!=null&&E.hp<fight._peh&&S.cls==='shaman'&&mine&&!fight._orbDone,eh=(ow||st0)&&fight._peh!=null?fight._peh:E.hp;
+ set('#aeb',x=>x.style.width=Math.max(0,eh/E.max*100)+'%');set('#aebt',x=>x.textContent=eh+'/'+E.max);
  // удары: числа над героями и короткие рывки, как на охоте
  if(fight._ph!=null&&S.hp<fight._ph){fxAt(hero,'fxn h','−'+(fight._ph-S.hp),.25);ANI(hero.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(1)'},{transform:'translateX(-8px)',filter:'brightness(1.6) sepia(1) hue-rotate(-30deg) saturate(4)'},{transform:'translateX(4px)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:300});
   ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(-34px) rotate(-5deg)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
  else if(fight._ph!=null&&S.hp-fight._ph>=Math.max(5,maxHp()*.05))fxAt(hero,'fxn g','+'+(S.hp-fight._ph),.25);
- if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
-  if(!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn)&&!(fight.pe&&fight._pen!=null&&fight.pe.n!==fight._pen))heroPose(hero,'atk')}
- fight._ph=S.hp;fight._peh=E.hp;
+ let hold=false;
+ if(st0){hold=true;if(!ow){fight._orbT=performance.now()+330;hfxArrow(hero,foe,0,1);heroPose(hero,'atk');setTimeout(()=>{fight._orbT=0;fight._orbDone=1;if(fight&&fight.pvp)paintPvpFight()},340)}}
+ else if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
+  if(mine&&!fight._orbDone)heroPose(hero,'atk');fight._orbDone=0}
+ fight._ph=S.hp;if(!hold)fight._peh=E.hp;
 
  // атака питомца: событие от сервера → рывок питомца
  {const pe=fight.pe;if(fight._pen==null)fight._pen=pe?pe.n:0;else if(pe&&pe.n!==fight._pen){fight._pen=pe.n;petLunge()}}
@@ -2650,7 +2653,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.54';
+const GVER='1.26.55';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3267,7 +3270,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.54</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.55</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

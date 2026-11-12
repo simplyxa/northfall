@@ -905,5 +905,10 @@
   "v": "1.26.54",
   "t": "Шаман выпускает один энергетический шар, урон проходит в момент, когда шар достигает цели.",
   "te": "The shaman now fires a single energy orb, and damage lands the moment the orb reaches its target."
+ },
+ {
+  "v": "1.26.55",
+  "t": "Арена: шар шамана и урон в момент попадания. В рейдах работает скорость x2. Вещи, разобранные авторазбором, теперь засчитываются в задания и достижения на разбор.",
+  "te": "Arena: shaman orb and damage on impact. Speed x2 now works in raids. Items dismantled by auto-dismantle now count toward dismantle quests and achievements."
  }
 ]
