@@ -915,5 +915,10 @@
   "v": "1.26.56",
   "t": "Рейды: добавлена отладка паузы перед боссом (открой игру с ?dbg=raid, и поверх сцены появятся метки времени).",
   "te": "Raids: added a debug overlay for the pause before the boss (open the game with ?dbg=raid to see timing marks over the scene)."
+ },
+ {
+  "v": "1.26.57",
+  "t": "Рейды: расширена отладка (?dbg=raid): метки убийств слуг, ударов и здоровья слуг на сервере в 3-й волне.",
+  "te": "Raids: extended debug overlay (?dbg=raid): marks for mob kills, hits and server-side mob health during wave 3."
  }
 ]
