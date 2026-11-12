@@ -985,5 +985,10 @@
   "v": "1.26.70",
   "t": "Бой: сцена сразу после полосы опыта, вверху HUD героя и выбранного соперника (портрет, уровень, здоровье); при потере здоровья красная полоса падает сразу, жёлтый след догоняет плавно. Фигуры и панель кнопок подняты.",
   "te": "Combat: the scene now follows the XP bar directly, with a top HUD for the hero and the selected opponent (portrait, level, health); on damage the red bar drops at once and a yellow trail catches up. Figures and button panel raised."
+ },
+ {
+  "v": "1.26.71",
+  "t": "Бой: активное нижнее меню, кнопка «Отступить» убрана. «Главная» завершает бой с окном отчёта, другие вкладки оставляют бой идти с кнопкой «Вернуться в бой». Срезана тёмная кромка панели, блок информации об охоте больше не перекрывается сценой.",
+  "te": "Combat: bottom menu is active during fights and the Retreat button is gone. Home ends the fight with a report popup; other tabs keep the fight running with a Back to the fight button. Trimmed the dark edge of the panel; the hunt info block is no longer covered by the scene."
  }
 ]
