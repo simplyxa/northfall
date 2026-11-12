@@ -970,5 +970,10 @@
   "v": "1.26.67",
   "t": "Охота: новые каменные иконки для «Ускорение ×2» и «Автобой» с подсветкой, когда режим включён. Опыт на уровень с 30 до 60 уровня плавно растёт: множитель сложности от ×1 до ×10.",
   "te": "Hunt: new stone icons for \"Speed x2\" and \"Auto-battle\" that light up when the mode is on. XP per level now scales up smoothly from level 30 to 60: a difficulty multiplier from x1 to x10."
+ },
+ {
+  "v": "1.26.68",
+  "t": "Охота и арена: новые высокие сцены (Опушка, Глухой лес, Чаща, арена) 900×1000. Бой: единая каменная панель с гнёздами для умений, зелий, автобоя, ×2 и кнопки «Удар», шкала заряда удара идёт по кольцу вокруг неё.",
+  "te": "Hunt and arena: new tall 900×1000 scenes (Clearing, Deep Forest, Thicket, arena). Combat: one stone control panel with sockets for skills, potions, auto-battle, x2 and the Strike button; the strike charge bar runs around its ring."
  }
 ]
