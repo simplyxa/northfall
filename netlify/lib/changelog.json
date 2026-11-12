@@ -980,5 +980,10 @@
   "v": "1.26.69",
   "t": "Бой: обновлена каменная панель кнопок (мох, папоротник), крупнее гнёзда автобоя и ×2.",
   "te": "Combat: updated stone button panel (moss, ferns), larger auto-battle and x2 sockets."
+ },
+ {
+  "v": "1.26.70",
+  "t": "Бой: сцена сразу после полосы опыта, вверху HUD героя и выбранного соперника (портрет, уровень, здоровье); при потере здоровья красная полоса падает сразу, жёлтый след догоняет плавно. Фигуры и панель кнопок подняты.",
+  "te": "Combat: the scene now follows the XP bar directly, with a top HUD for the hero and the selected opponent (portrait, level, health); on damage the red bar drops at once and a yellow trail catches up. Figures and button panel raised."
  }
 ]
