@@ -839,7 +839,7 @@ const petFig=(pa,foe,rd)=>{const F=PETFIG[pa.k];return`<div class="st-pt${F.fly?
 // ===== Боевая сцена рейда на канвасе: один цикл отрисовки, герои, питомец, слуги, босс и эффекты =====
 const RCN={cv:null,cx:null,W:900,H:745,sc:1,imgs:{},sil:{},fx:[],num:[],pt:[],amb:[],q:[],t:0,last:0,raf:0,sh:0,meA:null,petA:null,fa:{},al:{},fp:[],hp:null,rid:null,pend:[],hit:[],ske:{},dl:{},mid:0};
 // высокая сцена рейда: 900×1150 (портрет), фигуры крупнее
-const RCH=1000,RCS=1.0,RCME={x:200,y:880,h:215},RCPET={x:335},RCAL=[{x:95,y:520,h:185},{x:250,y:575,h:190},{x:120,y:715,h:198},{x:300,y:775,h:205}],RCFOE=[{x:700,y:400},{x:790,y:510},{x:650,y:610},{x:760,y:735}];
+const RCH=1000,RCS=1.0,RCME={x:200,y:880,h:215},RCPET={x:335},RCAL=[{x:95,y:520,h:185},{x:250,y:575,h:190},{x:120,y:715,h:198},{x:300,y:775,h:205}],RCFOE=[{x:700,y:395},{x:805,y:500},{x:640,y:575},{x:775,y:690},{x:610,y:770}];
 function rcImg(u){let i=RCN.imgs[u];if(!i){i=new Image();i.src=u;RCN.imgs[u]=i}return i}
 const rcOk=i=>i&&i.complete&&i.naturalWidth>0;
 function rcSil(u,col){const k=u+col;let c=RCN.sil[k];if(c)return c;const i=rcImg(u);if(!rcOk(i))return null;c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const x=c.getContext('2d');x.drawImage(i,0,0);x.globalCompositeOperation='source-in';x.fillStyle=col;x.fillRect(0,0,c.width,c.height);RCN.sil[k]=c;return c}
@@ -858,7 +858,7 @@ function rcText(t,x,y,sz,col,o){const cx=RCN.cx;o=o||{};cx.font=(o.b?'700 ':'')+
 function rcClip(t,max,sz){const cx=RCN.cx;cx.font='700 '+sz+'px Alegreya,Georgia,serif';t=String(t);if(cx.measureText(t).width<=max)return t;while(t.length>1&&cx.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…'}
 // ----- положения всех участников (в координатах 900×1150) -----
 function rcAllyPos(i){return RCAL[i]||RCAL[0]}
-function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?690:Q.x,y:bs?650:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.52:.66):(.19*(P.k||1)*900*.8)}}
+function rcFoePos(H,i){const s=H.sl[i],e=s&&s.e,b=e&&bfBase(e.name),P=H.raid&&e&&e.rbp?RBP:RSPT[i]||RSPT[RSPT.length-1],bf=b&&BFIG[b];const bs=e&&e.rbp;const Q=RCFOE[i]||RCFOE[0];return{x:bs?690:Q.x,y:bs?650:Q.y,h:bf?(BHL[b]||24)*(P.k||1)/100*RCH*(bs?.52:.66):(.19*(P.k||1)*900*.8)}}
 function rcTarget(H){const i=H.sl.findIndex(s=>s.e&&s.e===fight.e),j=i>=0?i:H.sl.findIndex(s=>s.e&&s.e.hp>0);return j>=0?rcFoePos(H,j):{x:640,y:430,h:150}}
 // ----- эффекты -----
 function rcPart(x,y,n,col,o){o=o||{};for(let i=0;i<n;i++){const a=(o.a==null?Math.random()*6.28:o.a+(Math.random()-.5)*(o.sp||1.2)),v=(o.v||160)*(.4+Math.random()*.8);RCN.pt.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v+(o.vy||0),g:o.g==null?260:o.g,t:0,life:(o.life||.5)*(.6+Math.random()*.6),col:Array.isArray(col)?col[i%col.length]:col,sz:(o.sz||3)*(.6+Math.random()*.8)})}}
@@ -2659,7 +2659,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.57';
+const GVER='1.26.58';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3276,7 +3276,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.57</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.58</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
