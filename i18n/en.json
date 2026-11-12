@@ -2959,5 +2959,9 @@
   ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Закрыть</button></div>": ".</p><button class=\"b\" data-a=\"mclose\" style=\"width:100%;margin-top:10px\">Close</button></div>",
   "</div><div class=\"panel\"><h3>Группа</h3>": "</div><div class=\"panel\"><h3>Party</h3>",
   "<button class=\"b alt\" data-rd=\"rcd\" style=\"width:100%;margin-bottom:8px\">Сбросить откат рейдов (админ)</button>": "<button class=\"b alt\" data-rd=\"rcd\" style=\"width:100%;margin-bottom:8px\">Reset raid cooldowns (admin)</button>",
-  "Откат всех рейдов сброшен (админ).": "All raid cooldowns reset (admin)."
+  "Откат всех рейдов сброшен (админ).": "All raid cooldowns reset (admin).",
+  "<h3 style=\"margin-top:8px\">Охота · ": "<h3 style=\"margin-top:8px\">Hunt · ",
+  ">💫 в капкане</small></div><h3 style=\"margin:4px 0 6px\">Арена · ": ">💫 trapped</small></div><h3 style=\"margin:4px 0 6px\">Arena · ",
+  "</span><span class=\"lv\">ур. ": "</span><span class=\"lv\">lv. ",
+  "<span class=\"lv\">ур. ": "<span class=\"lv\">lv. "
 }
