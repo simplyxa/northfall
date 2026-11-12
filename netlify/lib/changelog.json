@@ -930,5 +930,10 @@
   "v": "1.26.59",
   "t": "Позы умений героев перерисованы в 2.5D: ярость и рёв берсерка, меткий выстрел и ловушка охотника, тотем и шкура шамана.",
   "te": "Hero skill poses redrawn in 2.5D: berserk rage and roar, hunter aimed shot and trap, shaman totem and skin."
+ },
+ {
+  "v": "1.26.60",
+  "t": "Шаман: тотем исцеления пускает вверх зелёные плюсики, каменная кожа окружает героя синей аурой до конца действия умения (охота, рейды, арена).",
+  "te": "Shaman: Healing Totem releases rising green pluses, Stone Skin wraps the hero in a blue aura until the skill ends (hunts, raids, arena)."
  }
 ]
