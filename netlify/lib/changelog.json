@@ -880,5 +880,10 @@
   "v": "1.26.49",
   "t": "Рейды рисуются на канвасе: герои, питомец, слуги и босс на одной сцене с эффектами; на охоте — слой эффектов; павший союзник — надгробие с аватаром",
   "te": "Raids are drawn on a canvas: heroes, pet, minions and boss on one scene with effects; hunts get an effects layer; a fallen ally becomes a tombstone with their avatar"
+ },
+ {
+  "v": "1.26.50",
+  "t": "Рейды: высокая сцена с видом 2.5D, новые фоны и герои, боты бьют раз в 5 секунд, волны монстров крепче, у охотника летящие стрелы, «Меткий выстрел» стреляет огненной стрелой, босс стоит по центру группы.",
+  "te": "Raids: tall 2.5D scene, new backgrounds and heroes, bots strike every 5 seconds, tougher monster waves, flying arrows for the hunter, Aimed Shot fires a fiery arrow, boss stands centered on the party."
  }
 ]
