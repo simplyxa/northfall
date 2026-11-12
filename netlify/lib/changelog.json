@@ -885,5 +885,10 @@
   "v": "1.26.50",
   "t": "Рейды: высокая сцена с видом 2.5D, новые фоны и герои, боты бьют раз в 5 секунд, волны монстров крепче, у охотника летящие стрелы, «Меткий выстрел» стреляет огненной стрелой, босс стоит по центру группы.",
   "te": "Raids: tall 2.5D scene, new backgrounds and heroes, bots strike every 5 seconds, tougher monster waves, flying arrows for the hunter, Aimed Shot fires a fiery arrow, boss stands centered on the party."
+ },
+ {
+  "v": "1.26.51",
+  "t": "Новые фоны охоты (Опушка, Глухой лес, Чаща) и арены в стиле 2.5D; в рейде картинки босса загружаются заранее, чтобы экран не подвисал перед его появлением.",
+  "te": "New 2.5D backgrounds for hunting (Glade, Deep Forest, Thicket) and the arena; raid boss images now preload so the screen no longer stalls before the boss appears."
  }
 ]
