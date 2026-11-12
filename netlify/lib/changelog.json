@@ -910,5 +910,10 @@
   "v": "1.26.55",
   "t": "Арена: шар шамана и урон в момент попадания. В рейдах работает скорость x2. Вещи, разобранные авторазбором, теперь засчитываются в задания и достижения на разбор.",
   "te": "Arena: shaman orb and damage on impact. Speed x2 now works in raids. Items dismantled by auto-dismantle now count toward dismantle quests and achievements."
+ },
+ {
+  "v": "1.26.56",
+  "t": "Рейды: добавлена отладка паузы перед боссом (открой игру с ?dbg=raid, и поверх сцены появятся метки времени).",
+  "te": "Raids: added a debug overlay for the pause before the boss (open the game with ?dbg=raid to see timing marks over the scene)."
  }
 ]

@@ -964,6 +964,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
    if(bf){const ba=boss&&H.raid&&RBA[H.raid.b],P=atk&&ba?{u:ba.a,l:ba.l,t:ba.t,w:ba.w,k:rcEase(ap,.22,.78)}:null,bob=Math.sin(RCN.t*1.8+i);
     box=rcFig(bf,pos.x,pos.y,pos.h,{flip:0,dx:-s1*(boss?(P?45:80):42),dy:bob*1.5,sy:1+bob*.008+(atk&&!P?s1*.12:0),sx:1+(atk&&!P?s1*.12:0),rot:atk&&boss&&!P?-s1*.12:0,a:dead?.35:1,fl,gray:dead},P)}
    else{const d=pos.h,im=rcImg(e.img||mobImg(e.name));box={x0:pos.x-d/2,y0:pos.y-d*.88,w:d,h:d};cx.save();cx.translate(-s1*40,0);cx.globalAlpha=dead?.35:1;cx.beginPath();cx.arc(pos.x,pos.y-d*.38,d/2,0,7);cx.save();cx.clip();cx.fillStyle='rgba(0,0,0,.4)';cx.fillRect(pos.x-d/2,pos.y-d*.88,d,d);if(rcOk(im)){const r=Math.max(d/im.naturalWidth,d/im.naturalHeight);cx.drawImage(im,pos.x-im.naturalWidth*r*.5,pos.y-d*.38-im.naturalHeight*r*.5,im.naturalWidth*r,im.naturalHeight*r)}cx.restore();cx.lineWidth=4;cx.strokeStyle=tgt?'#f0c85a':'rgba(255,190,120,.6)';cx.stroke();if(fl>0){cx.fillStyle='rgba(255,255,255,'+fl+')';cx.fill()}cx.restore()}
+   if(RDG.on&&boss&&box&&!RDG.bd){RDG.bd=1;rdg('босс нарисован')}
    if(!box)return;const w=Math.max(120,Math.min(box.w*.9,boss?300:190)),ty=box.y0-(boss?14:10);
    rcText(rcClip(e.name,w+30,boss?28:22),pos.x,ty-18,boss?28:22,tgt?'#ffe9a8':'#f4ead0',{b:1});rcBar(pos.x,ty-12,w,boss?12:10,e.hp/e.max,'#c8452f');if(!boss)rcBar(pos.x,ty,w,5,s.ech,'#e0a040');
    if(e.stun>fight.clk)rcText('💫',pos.x,box.y0+26,30,'#fff');
@@ -987,7 +988,11 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
  {const w=300,hpm=maxHp();cx.fillStyle='rgba(8,10,12,.62)';cx.beginPath();if(cx.roundRect)cx.roundRect(14,14,w,78,14);else cx.rect(14,14,w,78);cx.fill();rcText(rcClip(S.name,w-30,28),28,46,28,'#f4ead0',{b:1,al:'left'});rcBar(14+w/2,58,w-28,12,S.hp/hpm,'#6fbf73');rcText(S.hp+'/'+hpm+' · ⚡'+S.en,28,86,21,'#d8dde0',{al:'left',lw:2})}}
 // ----- вход и выход -----
 function rcSize(){const cv=RCN.cv,w=cv.clientWidth||400,d=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*d);if(cv.width!==pw){cv.width=pw;cv.height=Math.round(pw*RCH/900)}RCN.sc=cv.width/900}
-function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)return;
+// отладка рейда: добавь ?dbg=raid к адресу, и поверх сцены появятся метки времени (где именно случается пауза перед боссом)
+const RDG={on:/[?&]dbg=raid/.test(location.search),L:[],t0:0,sb:0,ad:0,bd:0,wv:0,el:null};
+function rdg(k){if(!RDG.on)return;const n=performance.now();if(!RDG.t0)RDG.t0=n;RDG.L.push(((n-RDG.t0)/1000).toFixed(2)+' с  '+k);if(RDG.L.length>16)RDG.L.shift();
+ if(!RDG.el){RDG.el=document.createElement('pre');RDG.el.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;margin:0;padding:4px 6px;background:rgba(0,0,0,.75);color:#9fe;font:10px/1.3 monospace;pointer-events:none;max-width:92vw;white-space:pre-wrap';document.body.appendChild(RDG.el)}RDG.el.textContent=RDG.L.join('\n')}
+function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)return;if(RDG.on&&RCN.last&&t-RCN.last>400)rdg('ПАУЗА кадра '+Math.round(t-RCN.last)+' мс');
  if(!fight||!fight.hunt||!fight.hunt.raid){cancelAnimationFrame(RCN.raf);RCN.raf=0;return}
  if(!RCN.cv||!RCN.cv.isConnected)return;
  const H=fight.hunt,dt=Math.min(.05,Math.max(0,(t-(RCN.last||t))/1000));RCN.last=t;RCN.dtl=dt;RCN.t+=dt;
@@ -999,7 +1004,7 @@ function rcWarm(b){const ba=RBA[b]||{},L=[RBF[b],ba.a,RBG[b]];L.forEach((u,i)=>{
  [RBF[b]].forEach((u,i)=>{if(!u)return;setTimeout(()=>{try{rcSil(u,'#fff');rcSil(u,'#05070a')}catch(e){}},2500+i*400)})}
 function rcMount(){if(!fight||!fight.hunt||!fight.hunt.raid)return;const w=document.getElementById('rcw');if(!w)return;
  if(!RCN.cv){const c=document.createElement('canvas');c.className='rcv';RCN.cv=c;RCN.cx=c.getContext('2d');c.addEventListener('pointerdown',rcClick)}
- if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null;rcWarm(fight.hunt.raid.b)}
+ if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null;rcWarm(fight.hunt.raid.b);RDG.L=[];RDG.t0=0;RDG.sb=RDG.ad=RDG.bd=RDG.wv=0}
  if(RCN.cv.parentNode!==w)w.insertBefore(RCN.cv,w.firstChild);
  if(!RCN.raf){RCN.last=0;RCN.raf=requestAnimationFrame(rcLoop)}}
 function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})"><div class="st-w" id="rcw"></div>${huntCtl(H)}</div>`}
@@ -1766,6 +1771,7 @@ function rRunStart(){const R=RAID;if(!R||!R.w||R.st!=='on'||fight||!S)return;con
  rWave((me.wv|0)+1);save();render();window.scrollTo(0,0)}
 // общие волны: состояние слуг приходит с сервера, свои удары — сразу на сервер
 function rSync(){const X=rX(),R=RAID;if(!X||!X.sh||!R||R.st!=='on')return false;const H=fight.hunt;
+ if(RDG.on){if((R.wv|0)!==RDG.wv){RDG.wv=R.wv|0;rdg('сервер: волна '+RDG.wv)}if(!X.boss&&X.wave===RWV&&H.sl.length&&H.sl.every(s=>!s.e)&&!RDG.ad){RDG.ad=1;rdg('у тебя убиты все слуги 3-й волны')}}
  if((R.wv|0)>RWV){if(!X.boss){rBossPhase();return true}return false}
  let ch=false;if(X.wave!==R.wv){if(X.wave)log(`Wave ${R.wv} of ${RWV}: fight the servants together with the group!`,'sys');X.wave=R.wv;H.sl=[];X.kd={};X.ph=[];fight.e=null;ch=true}
  const q=(R.mem[UID]||{}).q|0;X.ph=X.ph.filter(p=>p.q>q);
@@ -1781,7 +1787,7 @@ function rWave(n){const H=fight.hunt,X=H.raid;if(n>RWV)return rBossPhase();X.wav
   if(n===RWV&&i===k-1){e.tr='leader';e.name=TRAITS.leader[0]+' '+e.name.toLowerCase();e.hp=e.max=Math.round(e.max*1.8);e.atk*=1.2}
   H.sl.push({e,ech:Math.random()*.5,at:null})}
  fight.e=null;retarget();log(`Wave ${n} of ${RWV}: servants come at you — ${RAIDS[X.b].n} waits ahead.`,'sys')}
-function rBossPhase(){const H=fight.hunt,X=H.raid,R=RAID,B=RAIDS[X.b];X.boss=true;X.wave=RWV+1;X.d0=R.mem&&R.mem[UID]?R.mem[UID].dealt|0:0;X.sent=0;X.fl=[];
+function rBossPhase(){rdg('rBossPhase');const H=fight.hunt,X=H.raid,R=RAID,B=RAIDS[X.b];X.boss=true;X.wave=RWV+1;X.d0=R.mem&&R.mem[UID]?R.mem[UID].dealt|0:0;X.sent=0;X.fl=[];
  const e={name:B.n,lv:Math.max(B.lv,S.lvl),hp:R.hp,max:R.max,atk:Math.max(1,R.bAtk*.45),def:R.bDef,xp:0,gold:0,rbp:RBPCT[X.b],img:RIMG[X.b],guard:false};X.lastHp=e.hp;X.ft=fight.clk;
  H.sl=[{e,ech:0,at:null}];fight.e=e;log(`${B.ic} ${B.n}! Fight together with the group — everyone's damage adds up.`,'hit');rMem({wv:RWV,bs:1},true)}
 // записать своё состояние в рейд (волна, босс, гибель)
@@ -2653,7 +2659,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.55';
+const GVER='1.26.56';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3270,7 +3276,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.55</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.56</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
