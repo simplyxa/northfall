@@ -824,7 +824,7 @@ function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<butt
 
 const skRound=()=>skOf().map((k,i)=>{const st=skSt(k[0]);return`<button class="b alt sk rg sk${i} ${st.cls}" id="sk${i}" data-a="sk-${k[0]}" title="${k[1]}: ${k[2]}" aria-label="${k[1]}" style="--p:${st.p}" ${st.L>0?'disabled':''}>${skImg(k[0],52)}<span id="skl${i}" class="skc">${st.txt}</span></button>`}).join('');
 const HPOSEMS={rage:900,roar:1000,shot:600,trap:700,totem:1200,skin:1200};
-const HEROPOSE={berserk:{atk:{a:'/img/c77e933190f8f6.webp',l:-29.32,t:13.28,w:148.41},rage:{a:'/img/e09e4923703a5d.webp',l:-34.27,t:2.5,w:138.15},roar:{a:'/img/4dd955740c64f2.webp',l:-63.49,t:0.31,w:199.98}},hunter:{atk:{a:'/img/d2e27659b8fbfb.webp',l:-8.22,t:-2.34,w:130.05},shot:{a:'/img/ca628e617e8928.webp',l:-35.87,t:5.78,w:137.86},trap:{a:'/img/bac20b05bff1c2.webp',l:-32.61,t:8.44,w:129.84}},shaman:{atk:{a:'/img/b06e8c0aaf263e.webp',l:-12.13,t:12.34,w:157.35},totem:{a:'/img/33f8a7d4337c38.webp',l:-61.13,t:1.41,w:134.47},skin:{a:'/img/5cc9da5d5886b9.webp',l:-17.99,t:3.28,w:91.52}}}; // позы атаки и умений в 2.5D
+const HEROPOSE={berserk:{atk:{a:'/img/c77e933190f8f6.webp',l:-29.32,t:13.28,w:148.41},rage:{a:'/img/e09e4923703a5d.webp',l:-34.27,t:2.5,w:138.15},roar:{a:'/img/cc97c968987942.webp',l:-50.65,t:7.97,w:162.62}},hunter:{atk:{a:'/img/d2e27659b8fbfb.webp',l:-8.22,t:-2.34,w:130.05},shot:{a:'/img/5de7668e5b5802.webp',l:-42.85,t:0.94,w:159.4},trap:{a:'/img/ca628e617e8928.webp',l:-35.87,t:5.78,w:137.86}},shaman:{atk:{a:'/img/b06e8c0aaf263e.webp',l:-12.13,t:12.34,w:157.35},totem:{a:'/img/33f8a7d4337c38.webp',l:-61.13,t:1.41,w:134.47},skin:{a:'/img/5cc9da5d5886b9.webp',l:-17.99,t:3.28,w:91.52}}}; // позы атаки и умений в 2.5D
 const PETFIG={wolf:{s:'/img/2b22918a7a26da.webp',a:'/img/6ff0a6edb7dcec.webp',w:17.7,x:41.0,y:94.0,p:0},raven:{s:'/img/90d3444aa13776.webp',a:'/img/3d645bc1268e10.webp',w:16.3,x:43.1,y:62.0,p:0,fly:1},bear:{s:'/img/4ef9b7e3ea8346.webp',a:'/img/45f2d0b3d24e7f.webp',w:25.2,x:41.0,y:95.0,p:0},lynx:{s:'/img/844e8ce594863b.webp',a:'/img/202d0db55be3de.webp',w:22.4,x:41.0,y:94.0,p:0}};
 const RSPT=[{x:61,y:55,k:.85},{x:84,y:59,k:.85},{x:60,y:82,k:1},{x:84,y:88,k:1}]; // слуги в рейде: стоят на земле, а не в воздухе
 const RBG=["/img/41c0b2c018e5ea.webp", "/img/f636a13b486338.webp", "/img/3cdae0f5612c53.webp", "/img/33de58c1674e90.webp", "/img/2994261532875e.webp"],
@@ -1142,7 +1142,7 @@ function act(a){
   const c=Math.random()*100<crit();if(c)d*=1.8;if(fight.rage){d*=(+fight.rage>1?+fight.rage:2);fight.rage=false}if(e.tr==='armor')d*=.5;d=Math.max(1,Math.round(d));if(fight.hunt&&fb1())d=Math.max(d,e.hp);if(fight.hint&&!S.th1){S.th1=1;try{trk('h1')}catch(_){}}fight.hint=0;fight.lunge=1;
   const dmg=()=>{fx(c?'crit':'hit');fight.lc=c;const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);if(c)fight.s.crit++;log(`${c?'Меткий удар! ':''}Удар на ${Math.round(k*100)}%: ${d} урона.`,'hit')};
   // шаман: урон проходит, когда шар долетает до цели
-  if(S.cls==='shaman'&&fight.hunt){const F0=fight;setTimeout(()=>{if(fight!==F0||e.hp<=0)return;dmg();settle();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render()},470);save();render();return}
+  if((S.cls==='shaman'||S.cls==='hunter')&&fight.hunt){const F0=fight;setTimeout(()=>{if(fight!==F0||e.hp<=0)return;dmg();settle();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render()},S.cls==='hunter'?440:470);save();render();return}
   dmg();
  }
  settle();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render();
@@ -1291,14 +1291,14 @@ function paintPvpFight(){
  const E=fight.e,now=fight.clk,g=s=>root.querySelector(s),hero=g('#sthero'),foe=g('#stenemy');if(!hero||!foe)return;
  const set=(id,fn)=>{const x=g(id);if(x)fn(x)};
  set('#ahb',x=>x.style.width=Math.max(0,S.hp/maxHp()*100)+'%');set('#ahbt',x=>x.textContent=S.hp+'/'+maxHp()+' · ⚡'+S.en);
- const mine=!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn)&&!(fight.pe&&fight._pen!=null&&fight.pe.n!==fight._pen),ow=fight._orbT&&performance.now()<fight._orbT,st0=fight._peh!=null&&E.hp<fight._peh&&S.cls==='shaman'&&mine&&!fight._orbDone,eh=(ow||st0)&&fight._peh!=null?fight._peh:E.hp;
+ const mine=!(fight.ske&&fight._skn!=null&&fight.ske.n!==fight._skn)&&!(fight.pe&&fight._pen!=null&&fight.pe.n!==fight._pen),ow=fight._orbT&&performance.now()<fight._orbT,st0=fight._peh!=null&&E.hp<fight._peh&&(S.cls==='shaman'||S.cls==='hunter')&&mine&&!fight._orbDone,eh=(ow||st0)&&fight._peh!=null?fight._peh:E.hp;
  set('#aeb',x=>x.style.width=Math.max(0,eh/E.max*100)+'%');set('#aebt',x=>x.textContent=eh+'/'+E.max);
  // удары: числа над героями и короткие рывки, как на охоте
  if(fight._ph!=null&&S.hp<fight._ph){fxAt(hero,'fxn h','−'+(fight._ph-S.hp),.25);if(hfxSk())hfxShieldHit(hero);else ANI(hero.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(1)'},{transform:'translateX(-8px)',filter:'brightness(1.6) sepia(1) hue-rotate(-30deg) saturate(4)'},{transform:'translateX(4px)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:300});
   ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)'},{transform:'translateX(-34px) rotate(-5deg)'},{transform:'translateX(0)'}],{duration:260,easing:'ease-out'})}
  else if(fight._ph!=null&&S.hp-fight._ph>=Math.max(5,maxHp()*.05))fxAt(hero,'fxn g','+'+(S.hp-fight._ph),.25);
  let hold=false;
- if(st0){hold=true;if(!ow){fight._orbT=performance.now()+330;hfxArrow(hero,foe,0,1);heroPose(hero,'atk');setTimeout(()=>{fight._orbT=0;fight._orbDone=1;if(fight&&fight.pvp)paintPvpFight()},340)}}
+ if(st0){hold=true;if(!ow){fight._orbT=performance.now()+330;hfxArrow(hero,foe,0,S.cls==='shaman'?1:0);heroPose(hero,'atk');setTimeout(()=>{fight._orbT=0;fight._orbDone=1;if(fight&&fight.pvp)paintPvpFight()},340)}}
  else if(fight._peh!=null&&E.hp<fight._peh){fxAt(foe,'fxs',null,.35);fxAt(foe,'fxn','−'+(fight._peh-E.hp),.3);ANI(foe.querySelector('.st-fig'),[{transform:'translateX(0)',filter:'brightness(2.4)'},{transform:'translateX(7px)',filter:'brightness(1.4)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:280});
   if(mine&&!fight._orbDone)heroPose(hero,'atk');fight._orbDone=0}
  fight._ph=S.hp;if(!hold)fight._peh=E.hp;
@@ -1589,8 +1589,10 @@ function useSkill(id){if(!fight)return;const sk=skOf().find(x=>x[0]===id);if(!sk
  else if(id==='skin'){fight.skin=now+skV('skin')*1000;log('Каменная кожа: урон по тебе снижен.','hit')}
  else if(id==='totem'){const h=Math.round(maxHp()*skV('totem')/100);S.hp=Math.min(maxHp(),S.hp+h);log(`Тотем исцеления: +${h} здоровья.`,'hit')}
  else if(id==='trap'){e.stun=now+skV('trap')*1000;fight.trapE=e;log(`${e.name} попал в капкан.`,'hit')}
- else if(id==='shot'){let d=Math.round(atk()*skV('shot')*rnd(.9,1.1));const c=Math.random()*100<crit();if(c){d=Math.round(d*1.8);fx('crit')}else fx('hit');if(e.tr==='armor')d=Math.round(d*.5);
-  const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Меткий ':''}Выстрел: ${d} урона.`,'hit');settle()}
+ else if(id==='shot'){let d=Math.round(atk()*skV('shot')*rnd(.9,1.1));const c=Math.random()*100<crit();if(c)d=Math.round(d*1.8);if(e.tr==='armor')d=Math.round(d*.5);
+  const hit=()=>{fx(c?'crit':'hit');const hb=e.hp;e.hp=Math.max(0,e.hp-d);hitRew(hb-e.hp,e);fight.s.dealt+=d;ev('dmg',d);if(S.clan)S.cxq=(S.cxq|0)+cxOf(d);log(`${c?'Меткий ':''}Выстрел: ${d} урона.`,'hit');settle()};
+  // урон проходит, когда стрела долетает до цели
+  if(fight.hunt){const F0=fight;setTimeout(()=>{if(fight!==F0||e.hp<=0)return;hit();save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render()},440)}else hit()}
  save();if(fight&&fight.arena&&!fight.pvp)fightRefresh();else render()}
 const skRaw=()=>skOf().map((k,i)=>{const L=skLeft(k[0]);return`<button class="b alt sk" id="sk${i}" data-a="sk-${k[0]}" title="${k[2]}" ${L>0?'disabled':''} style="display:inline-flex;align-items:center;justify-content:center;gap:6px">${skImg(k[0],26)}<span id="skl${i}">${k[1]}${L>0?' '+Math.ceil(L/1000)+' с':''}</span></button>`}).join(''),skBtns=()=>`<div class="skr">${skRaw()}</div>`;
 const TRAITS={poison:['Ядовитый','яд: урон со временем'],armor:['Бронированный','получает вдвое меньше урона'],leader:['Вожак','пока жив, остальные бьют на 30% сильнее'],fast:['Быстрый','атакует каждые 3 секунды']};
