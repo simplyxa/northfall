@@ -935,5 +935,10 @@
   "v": "1.26.60",
   "t": "Шаман: тотем исцеления пускает вверх зелёные плюсики, каменная кожа окружает героя синей аурой до конца действия умения (охота, рейды, арена).",
   "te": "Shaman: Healing Totem releases rising green pluses, Stone Skin wraps the hero in a blue aura until the skill ends (hunts, raids, arena)."
+ },
+ {
+  "v": "1.26.61",
+  "t": "Шаман: каменная кожа теперь — щит из каменных плит перед героем; удары врагов разбиваются о камень (охота, рейды, арена).",
+  "te": "Shaman: Stone Skin is now a shield of stone slabs in front of the hero; enemy hits shatter against the stone (hunts, raids, arena)."
  }
 ]
