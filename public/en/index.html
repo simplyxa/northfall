@@ -255,10 +255,10 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .sq img{width:30px;height:30px;object-fit:contain;pointer-events:none}
 
 .st-ui .sk>span:first-child{border-radius:50%!important}
-.st-ui .sq{background:none!important;border:0!important;box-shadow:none!important;width:32px;height:32px;opacity:.45;filter:grayscale(.6);transition:opacity .15s,filter .15s}
-.st-ui .sq.on{opacity:1;filter:drop-shadow(0 0 6px rgba(111,220,125,.85))}
+.st-ui .sq{background:none!important;border:0!important;box-shadow:none!important;width:42px;height:42px;opacity:.9;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:opacity .15s,filter .15s}
+.st-ui .sq.on{opacity:1;filter:drop-shadow(0 0 7px rgba(255,255,255,.35))}
 .st-ui .sq img{width:100%;height:100%}
-.st-ui .sq[data-hx2]{left:10px;bottom:142px}.st-ui .sq[data-ah]{left:10px;bottom:106px}
+.st-ui .sq[data-hx2]{left:8px;bottom:150px}.st-ui .sq[data-ah]{left:8px;bottom:104px}
 
 .st-pt{position:absolute;transform:translate(-50%,calc(-100% + var(--pp,0%)));z-index:91;pointer-events:none}
 .st-pt:not(.fly)::after{content:'';position:absolute;left:50%;bottom:-4%;width:80%;height:9%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);z-index:-1}
@@ -822,8 +822,8 @@ const BFIG={};for(const k in BEASTFIG)BFIG[k.toLowerCase()]=BEASTFIG[k];
 const bfBase=n=>{const w=String(n||'').split(' ');for(let i=0;i<w.length;i++){const k=w.slice(i).join(' ').toLowerCase();if(BFIG[k])return k}return''},bfKey=n=>BFIG[bfBase(n)]||'',BHL={};for(const k in BEASTH)BHL[k.toLowerCase()]=BEASTH[k];
 // точки рунных кругов на фоне (в % сцены): задний ряд мельче, передний крупнее
 const STPT=[{x:59.9,y:37.4,k:.85},{x:84.1,y:42.6,k:.85},{x:60.6,y:75,k:1},{x:84.8,y:81.5,k:1}];
-const HCI={"fist": "/img/d2f8e6f7ba06c3.webp", "x2": "/img/ca6ecc18199f27.webp", "auto": "/img/d8acb6162d0867.webp", "flee": "/img/200eab86923d7a.webp"};
-function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<button class="sq" data-ah="1" title="Auto-strike" aria-label="Auto-strike ${S.ahunt?'on':'off'}"><img src="${HCI.auto}" alt=""></button><button class="sq" data-hx2="1" title="Speed x2" aria-label="Speed x2 ${S.hx2?'on':'off'}"><img src="${HCI.x2}" alt=""></button>`:'';
+const HCI={"fist": "/img/d2f8e6f7ba06c3.webp", "x2": "/img/1e0ffc2a347d4f.webp", "x2on": "/img/d003cb6afa955c.webp", "auto": "/img/a21ad592d5f35d.webp", "autoon": "/img/444b9cff10765f.webp", "flee": "/img/200eab86923d7a.webp"};
+function huntCtl(H){const pc=Math.round(fight.ch*100),L=bleft(),ah=ahOk()?`<button class="sq" data-ah="1" title="Auto-strike" aria-label="Auto-strike ${S.ahunt?'on':'off'}"><img src="${S.ahunt?HCI.autoon:HCI.auto}" alt=""></button><button class="sq" data-hx2="1" title="Speed x2" aria-label="Speed x2 ${S.hx2?'on':'off'}"><img src="${S.hx2?HCI.x2on:HCI.x2}" alt=""></button>`:'';
  const ahx=ah.replace('class="sq"','class="sq'+(S.ahunt?' on':'')+'"').replace('class="sq" data-hx2','class="sq'+(S.hx2?' on':'')+'" data-hx2');
  return`<button class="st-flee x${S.en<1?' low':''}" data-a="flee" aria-label="Retreat" title="Retreat"><img src="${HCI.flee}" alt=""></button><div class="st-ui">${fight.hint?'<div class="sthint">👇 Press “Strike”!</div>':S.lvl<3?'<p class="st-cap">Tap a beast — and the hero will strike it.</p>':''}<button class="b strk ${fight.ch>=1?'full':''}${fight.hint?' hint':''}" id="bs" data-a="strike" style="--p:${pc}" title="${fight.e?esc(fight.e.name):''}" ${fight.ch<.2||!fight.e?'disabled':''} aria-label="Strike"><img src="${HCI.fist}" alt=""></button>${skRound()}${ahx}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Bottle" title="Bottle" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 
@@ -2716,7 +2716,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.66';
+const GVER='1.26.67';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3333,7 +3333,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.66</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.67</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
