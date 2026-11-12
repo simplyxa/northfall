@@ -1401,7 +1401,7 @@ function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
  ${row(sic('skull')+'Ударов по мировому боссу',fmt(k.bs))}
  ${(k.df|0)?row(sic('stairs')+'Этаж подземелья клана',k.df):''}
  ${(p.dn|0)?row(sic('duel')+'Побед на лайв-арене',fmt(p.dw)+` <small style="display:inline;color:var(--mute)">из ${fmt(p.dn)}</small>`):''}
- ${row(sic('star')+'Набрано опыта',fmt(p.xpt!=null?p.xpt:xpTot(p.lvl,0)))}
+ ${(()=>{const L=p.lvl|0,tot=p.xpt!=null?p.xpt:xpTot(L,0),cur=Math.max(0,tot-xpTot(L,0));return row(sic('star')+'Набрано опыта',fmt(tot)+(L<LVMAX?` <small style="display:inline;color:var(--mute)">· на уровне ${fmt(cur)} / ${fmt(xpNeedL(L))}</small>`:''))})()}
  ${gd!=null?row(sic('cal')+'Дней в игре',dWord(gd)):''}
  ${c&&cd!=null?row(sic('shield')+`Дней в клане «${esc(c.name)}»`,dWord(cd)):''}
  <h3 style="margin:10px 0 4px">Рейтинги</h3>

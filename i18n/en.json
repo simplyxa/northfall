@@ -590,6 +590,7 @@
   "Побед на лайв-арене": "Live arena wins",
   " <small style=\"display:inline;color:var(--mute)\">из ": " <small style=\"display:inline;color:var(--mute)\">of ",
   "Набрано опыта": "XP earned",
+  " <small style=\"display:inline;color:var(--mute)\">· на уровне ": " <small style=\"display:inline;color:var(--mute)\">· this level ",
   "Дней в игре": "Days in the game",
   "Дней в клане «": "Days in clan «",
   "\n <h3 style=\"margin:10px 0 4px\">Рейтинги</h3>\n ": "\n <h3 style=\"margin:10px 0 4px\">Ratings</h3>\n ",

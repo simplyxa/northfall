@@ -1403,7 +1403,7 @@ function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
  ${row(sic('skull')+'Strikes on the world boss',fmt(k.bs))}
  ${(k.df|0)?row(sic('stairs')+'Clan dungeon floor',k.df):''}
  ${(p.dn|0)?row(sic('duel')+'Live arena wins',fmt(p.dw)+` <small style="display:inline;color:var(--mute)">of ${fmt(p.dn)}</small>`):''}
- ${row(sic('star')+'XP earned',fmt(p.xpt!=null?p.xpt:xpTot(p.lvl,0)))}
+ ${(()=>{const L=p.lvl|0,tot=p.xpt!=null?p.xpt:xpTot(L,0),cur=Math.max(0,tot-xpTot(L,0));return row(sic('star')+'XP earned',fmt(tot)+(L<LVMAX?` <small style="display:inline;color:var(--mute)">· this level ${fmt(cur)} / ${fmt(xpNeedL(L))}</small>`:''))})()}
  ${gd!=null?row(sic('cal')+'Days in the game',dWord(gd)):''}
  ${c&&cd!=null?row(sic('shield')+`Days in clan “${esc(c.name)}»`,dWord(cd)):''}
  <h3 style="margin:10px 0 4px">Ratings</h3>
