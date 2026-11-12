@@ -3,7 +3,7 @@
 // Каждый раунд записывается в Firestore одной транзакцией: так игроки без сокета тоже видят дуэль.
 'use strict';
 const DTURN = 15000, DMAXR = 15;
-const DSK = { berserk: 'Ярость', hunter: 'Меткий выстрел', shaman: 'Исцеление духов' };
+const DSK = { berserk: 'Ярость', hunter: 'Огненная стрела', shaman: 'Исцеление духов' };
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 function dRound(R, acts) {

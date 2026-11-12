@@ -1554,7 +1554,7 @@ function settingsView(){const fr=!S.nickN,cf=Math.max(0,CLSFREE-(S.clsN|0));
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cs]');if(!b||b.disabled)return;e.preventDefault();clsDo(b.dataset.cs)});
 // ===== Умения классов, свойства зверей, бонусы наборов, звук =====
 const SKL={berserk:[['rage','Ярость','Следующий удар наносит двойной урон',20],['roar','Боевой рёв','Враги бьют на 40% слабее 6 секунд',25]],
- hunter:[['shot','Меткий выстрел','Мгновенный выстрел на 120% атаки, без заряда, сквозь броню',15],['trap','Капкан','Цель оглушена на 4 секунды',20]],
+ hunter:[['shot','Огненная стрела','Мгновенный выстрел на 120% атаки, без заряда, сквозь броню',15],['trap','Капкан','Цель оглушена на 4 секунды',20]],
  shaman:[['totem','Тотем исцеления','Мгновенно лечит 25% здоровья',25],['skin','Каменная кожа','Входящий урон −60% на 6 секунд',30]]};
 const skAll=()=>SKL[S.cls]||SKL.berserk;
 // качество умений: 0 обычное … 4 мифическое; открываются после пути новичка
@@ -1890,7 +1890,7 @@ const rankOf2=p=>{const r=drOf(p);let k=DRANK[0];for(const x of DRANK)if(r>=x[0]
 const DFR=[{u:'/img/1919272cea5ca9.webp',w:426,h:411,hx:75,hy:50,hw:270,hh:267},{u:'/img/fa58e9087d9e02.webp',w:435,h:416,hx:79,hy:52,hw:275,hh:262},{u:'/img/5183696a9d4f25.webp',w:489,h:428,hx:110,hy:53,hw:263,hh:255},{u:'/img/f77de66307dc40.webp',w:481,h:443,hx:102,hy:64,hw:275,hh:245},{u:'/img/0632cfd9203f24.webp',w:504,h:494,hx:117,hy:114,hw:267,hh:236}];
 const frameOf=p=>{if(dnOf(p)<=0)return'';const k=rankOf2(p);return'fr:'+DRANK.indexOf(k)+'|'+k[2]};
 const meP=()=>({dr:S.dr==null?1000:S.dr,dn:S.dn|0});
-const DSK={berserk:['Ярость','удар ×1,6, щит не спасает'],hunter:['Меткий выстрел','удар ×1,3 и всегда крит'],shaman:['Исцеление духов','+25% здоровья и слабый удар']};
+const DSK={berserk:['Ярость','удар ×1,6, щит не спасает'],hunter:['Огненная стрела','удар ×1,3 и всегда крит'],shaman:['Исцеление духов','+25% здоровья и слабый удар']};
 const ddLeft=()=>{const d=DAY(),x=S.dd||{};return x.d===d?Math.max(0,DDAY-(x.n|0)):DDAY};
 let DUEL=null,DUELID=null,DUU=null,DUU2=null,DACT={},DRES=null,DBUSY=false,DQT=0,APLOG=0,APLOGVIEW=0;
 const dq=()=>RQ.duel||{m:[]},dqLive=()=>((dq().m)||[]).filter(x=>Date.now()-(+x.ts||0)<DSTALE),inDQ=()=>dqLive().some(x=>x.id===UID);
