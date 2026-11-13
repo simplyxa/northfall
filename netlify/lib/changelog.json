@@ -1010,5 +1010,10 @@
   "v": "1.26.75",
   "t": "Охота: звери ещё крепче — держат 2 / 6 / 12 базовых ударов героя (Опушка / Глухой лес / Чаща) и бьют сильнее. Награда за зверя прежняя.",
   "te": "Hunt: beasts are tougher still — they take 2 / 6 / 12 of the hero's base hits (Glade / Deep Forest / Thicket) and hit harder. Reward per beast is unchanged."
+ },
+ {
+  "v": "1.26.76",
+  "t": "Победы на арене считаются отдельно от убитых зверей (начальное значение оценено по накопленному). Сравнение вещи с надетой учитывает только базовые параметры, без усиления +N, чар и камней.",
+  "te": "Arena wins are now counted separately from beast kills (the starting value is estimated from existing stats). Item comparison with the equipped one uses base stats only, without +N upgrades, enchants and gems."
  }
 ]
