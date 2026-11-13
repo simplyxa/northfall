@@ -1,5 +1,3 @@
 [
- "<footer class=\"ft\"><div class=\"ft5\"><button class=\"lnk\" data-lg=\"terms\">Соглашение</button> · <button class=\"lnk\" data-lg=\"privacy\">Конфиденциальность</button> · <button class=\"lnk\" data-lg=\"refund\">Возвраты</button> · <button class=\"lnk\" data-lg=\"contacts\">Контакты</button></div></footer>",
- "\" alt=\"Northfall: Barbarians\"></div><div style=\"text-align:center;line-height:1.3\"><span class=\"beta\" style=\"font-size:12px;background:rgba(10,12,14,.6)\">Открытый бета-тест</span><div style=\"font-size:13px;color:#d9d0bd;margin-top:4px;text-shadow:0 1px 4px #000\">Игра в разработке: возможны ошибки, баланс может меняться</div></div></div><div class=\"spl-bot\"><p class=\"spl-tag\">Охоться. Сражайся. Властвуй.</p>",
- "<p class=\"spl-note\">Бесплатно, без регистрации и скачивания</p><div class=\"spl-acc\"><span>У меня уже есть аккаунт</span><button class=\"spl-in\" data-sc=\"login\">Войти</button></div>"
+ "<div class=\"modal\" id=\"lgm\" role=\"dialog\" aria-modal=\"true\"><div class=\"mbox\" style=\"max-width:360px;position:relative\"><button class=\"lnk\" data-sc=\"gnew\" aria-label=\"Закрыть\" style=\"position:absolute;right:8px;top:4px;font-size:26px;line-height:1;opacity:.8\">×</button>"
 ]
