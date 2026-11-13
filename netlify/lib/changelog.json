@@ -1050,5 +1050,10 @@
   "v": "1.26.83",
   "t": "Для героинь появились женские аватары: десять новых портретов в выборе образа.",
   "te": "Heroines now have their own avatars: ten new portraits in the avatar picker."
+ },
+ {
+  "v": "1.26.84",
+  "t": "Пол героя можно менять сколько угодно раз: каждая смена стоит 5 золота (карандаш у аватара в карточке героя).",
+  "te": "You can change your hero's gender as many times as you like: each change costs 5 gold (pencil by the avatar in the hero card)."
  }
 ]

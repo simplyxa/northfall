@@ -2983,5 +2983,10 @@
  "л": "л",
  "ла": "ла",
  "лась": "лась",
- "\" role=\"img\" aria-label=\"Аватар\" style=\"display:inline-block;flex:0 0 auto;vertical-align:middle;width:": "\" role=\"img\" aria-label=\"Avatar\" style=\"display:inline-block;flex:0 0 auto;vertical-align:middle;width:"
+ "\" role=\"img\" aria-label=\"Аватар\" style=\"display:inline-block;flex:0 0 auto;vertical-align:middle;width:": "\" role=\"img\" aria-label=\"Avatar\" style=\"display:inline-block;flex:0 0 auto;vertical-align:middle;width:",
+ "<div class=\"panel\"><h3>Пол</h3>": "<div class=\"panel\"><h3>Gender</h3>",
+ "<p style=\"margin:4px 0 10px;color:var(--mute);font-size:14px\">Смена пола стоит ": "<p style=\"margin:4px 0 10px;color:var(--mute);font-size:14px\">Changing gender costs ",
+ " золота, менять можно сколько угодно раз.</p>": " gold; you can change it as many times as you like.</p>",
+ "Для смены пола нужно ": "Changing gender needs ",
+ "Сменить пол героя? Стоит ": "Change your hero's gender? It costs "
 }
