@@ -1005,5 +1005,10 @@
   "v": "1.26.74",
   "t": "Охота: звери стали крепче и бьют ощутимо, а не по 1 урону. Здоровье и удар зверя подстраиваются под базовые характеристики героя без снаряжения, награда за зверя повышена.",
   "te": "Hunt: beasts are tougher and hit noticeably instead of for 1 damage. Beast health and damage scale with the hero's base stats without gear; the reward per beast is higher."
+ },
+ {
+  "v": "1.26.75",
+  "t": "Охота: звери ещё крепче — держат 2 / 6 / 12 базовых ударов героя (Опушка / Глухой лес / Чаща) и бьют сильнее. Награда за зверя прежняя.",
+  "te": "Hunt: beasts are tougher still — they take 2 / 6 / 12 of the hero's base hits (Glade / Deep Forest / Thicket) and hit harder. Reward per beast is unchanged."
  }
 ]
