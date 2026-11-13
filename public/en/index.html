@@ -277,7 +277,7 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .st-ui .strk::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#e8a93a calc(var(--p)*1%),rgba(255,255,255,.08) 0);-webkit-mask:radial-gradient(farthest-side,transparent 93%,#000 94%);mask:radial-gradient(farthest-side,transparent 93%,#000 94%)}
 .st-ui .strk.full::before{background:#ffb347;filter:drop-shadow(0 0 5px rgba(255,170,60,.9))}
 .st-ui .strk img{position:absolute;left:50%;top:50%;width:91.6%;height:91.6%;transform:translate(-50%,-50%);border-radius:50%}
-.stage.rcs .st-ui{margin-top:-10.9%}
+
 .st-ui .sthint{left:58.5%;right:auto;top:63%;width:12%;font-size:11px;text-align:center;line-height:1.1;text-shadow:0 1px 3px #000,0 0 6px #000}
 .st-ui .st-cap{left:4%;right:30%;top:4%}
 
@@ -988,10 +988,11 @@ function rcHero(x,y,h,cl,A,o){const fig=HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A
  let dx=0;if(A&&A.a&&pn==='atk'){const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=0&&p<1)dx=Math.sin(Math.PI*p)*34}
  const hit=o.me&&RCN.t-(RCN.meHit||-9)<.28?{fl:.55*(1-(RCN.t-RCN.meHit)/.28),fc:'#ff3b2a'}:{};
  return rcFig(fig,x,y,h,{dx,dy:o.dead?0:idle*1.6,sy:o.dead?1:1+idle*.008,a:o.dead?.75:1,gray:o.dead,fl:hit.fl,fc:hit.fc},P)}
+const RCUP=105;   // фигуры подняты: панель кнопок теперь перекрывает низ сцены так же, как на охоте
 function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx.clearRect(0,0,900,RCH);RCN.hit=[];
  const shx=RCN.sh?(Math.random()-.5)*RCN.sh:0,shy=RCN.sh?(Math.random()-.5)*RCN.sh:0;cx.save();cx.translate(shx,shy);
  const bg=rcImg(RBG[H.raid.b]||STBG);if(rcOk(bg)){cx.drawImage(bg,-6,-6,912,RCH+12)}else{cx.fillStyle='#0b0d10';cx.fillRect(0,0,900,RCH)}
- const ents=[];
+ cx.translate(0,-RCUP);const ents=[];
  // герой
  ents.push({y:RCME.y,d:()=>{rcShadow(RCME.x,RCME.y,RCME.h*.5);const skOn=fight.clk<(fight.skin||0);if(skOn)rcSkinAura(RCME.x,RCME.y,RCME.h);if(fight.rage)rcRageAura(RCME.x,RCME.y,RCME.h);if(RCN.rgOn&&!fight.rage){rcPart(RCME.x,RCME.y-RCME.h*.5,22,['#ff7a3a','#ffc060','#ff4a2a','#fff0c0'],{v:230,life:.5,sz:4});rcFx({k:'ring',x:RCME.x+RCME.h*.5,y:RCME.y-RCME.h*.4,r0:10,r1:120,col:'255,110,50',life:.35,w:5})}RCN.rgOn=!!fight.rage;if(RCN.skOn&&!skOn){rcCrumble(RCME.x,RCME.y,RCME.h);RCN.cr=1}RCN.skOn=skOn;const pu=.75+.25*Math.sin(RCN.t*3.4);cx.save();cx.translate(RCME.x,RCME.y);cx.scale(1,.24);cx.lineWidth=7;cx.strokeStyle='rgba(240,200,90,'+(.55+.4*pu)+')';cx.shadowColor='rgba(240,200,90,.9)';cx.shadowBlur=18;cx.beginPath();cx.arc(0,0,RCME.h*.36,0,7);cx.stroke();cx.restore();
   const b=rcHero(RCME.x,RCME.y,RCME.h,S.cls,RCN.meA?{a:RCN.meA}:null,{me:1});if(skOn)drawStoneShield(cx,RCME.x,RCME.y,RCME.h,RCN.t,RCN.shk||0,0);else if(RCN.cr>0)drawStoneShield(cx,RCME.x,RCME.y,RCME.h,RCN.t,0,RCN.cr);if(RCN.meA&&RCN.t-RCN.meA.t0>RCN.meA.dur)RCN.meA=null;
@@ -1034,7 +1035,7 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
  for(const n of RCN.num){const a=1-n.t*n.t;cx.save();cx.globalAlpha=Math.max(0,a);const sz=n.big?46:32,y=n.y-n.t*70;rcText(n.txt,n.x,y,sz*(n.t<.12?1+.5*(1-n.t/.12):1),n.col,{b:1,lw:5});cx.restore()}
  cx.restore();
  // панель героя (без тряски)
- {const w=300,hpm=maxHp();cx.fillStyle='rgba(8,10,12,.62)';cx.beginPath();if(cx.roundRect)cx.roundRect(14,14,w,78,14);else cx.rect(14,14,w,78);cx.fill();rcText(rcClip(S.name,w-30,28),28,46,28,'#f4ead0',{b:1,al:'left'});rcBar(14+w/2,58,w-28,12,S.hp/hpm,'#6fbf73');rcText(S.hp+'/'+hpm+' · ⚡'+S.en,28,86,21,'#d8dde0',{al:'left',lw:2})}}
+ rcHud()}
 // ----- вход и выход -----
 function rcSize(){const cv=RCN.cv,w=cv.clientWidth||400,d=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*d);if(cv.width!==pw){cv.width=pw;cv.height=Math.round(pw*RCH/900)}RCN.sc=cv.width/900}
 // отладка рейда: добавь ?dbg=raid к адресу, и поверх сцены появятся метки времени (где именно случается пауза перед боссом)
@@ -1046,7 +1047,7 @@ function rcLoop(t){RCN.raf=requestAnimationFrame(rcLoop);if(document.hidden)retu
  if(!RCN.cv||!RCN.cv.isConnected)return;
  const H=fight.hunt,dt=Math.min(.05,Math.max(0,(t-(RCN.last||t))/1000));RCN.last=t;RCN.dtl=dt;RCN.t+=dt;
  try{rcSize();rcUpdate(dt,H,RAID);rcDraw(H,RAID)}catch(e){if(!RCN.err){RCN.err=e;console.error('raid canvas',e)}}}
-function rcClick(e){if(!fight||!fight.hunt)return;const r=RCN.cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*900,y=(e.clientY-r.top)/r.height*RCH;
+function rcClick(e){if(!fight||!fight.hunt)return;const r=RCN.cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*900,y=(e.clientY-r.top)/r.height*RCH+RCUP;
  for(let k=RCN.hit.length-1;k>=0;k--){const h=RCN.hit[k];if(x>=h.x0&&x<=h.x1&&y>=h.y0&&y<=h.y1){const s=fight.hunt.sl[h.i];if(s&&s.e){fight.e=s.e;render()}return}}}
 // заранее грузим и декодируем картинки босса, чтобы в момент его появления сцена не подвисала
 function rcWarm(b){const ba=RBA[b]||{},L=[RBF[b],ba.a,RBG[b]];L.forEach((u,i)=>{if(!u)return;const m=rcImg(u);setTimeout(()=>{const go=()=>{try{(RCN.wc=RCN.wc||document.createElement('canvas')).getContext('2d').drawImage(m,0,0,1,1)}catch(e){}};if(m.decode)m.decode().then(go,()=>{});else if(m.complete)go()},400*i)});
@@ -1056,7 +1057,8 @@ function rcMount(){if(!fight||!fight.hunt||!fight.hunt.raid)return;const w=docum
  if(RCN.fid!==fight){RCN.fid=fight;RCN.fp=[];RCN.fa={};RCN.hp=null;RCN.q=[];RCN.fx=[];RCN.num=[];RCN.pt=[];RCN.pend=[];RCN.al={};RCN.meA=null;RCN.petA=null;RCN.sh=0;RCN.err=null;rcWarm(fight.hunt.raid.b);RDG.L=[];RDG.t0=0;RDG.sb=RDG.ad=RDG.bd=RDG.wv=0;RDG.mk=''}
  if(RCN.cv.parentNode!==w)w.insertBefore(RCN.cv,w.firstChild);
  if(!RCN.raf){RCN.last=0;RCN.raf=requestAnimationFrame(rcLoop)}}
-function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})"><div class="st-w" id="rcw"></div>${huntCtl(H)}</div>`}
+let RCHT=0;function rcHud(){const n=performance.now();if(n-RCHT<90)return;RCHT=n;hudUpd()}
+function rcStageHtml(H){return`<div class="stage rd rcs" style="--sbg:url(${RBG[H.raid.b]||STBG})">${hudBox()}<div class="st-w" id="rcw"></div>${huntCtl(H)}</div>`}
 
 const HPT={};let HPE=null,HPEN=0;const HPEI=new WeakMap();
 function hudW(o,n){if(!o)return null;const e=n-o.t;return e<350?o.a:e<900?o.a+(o.b-o.a)*(e-350)/550:o.b}
