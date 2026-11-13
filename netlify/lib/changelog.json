@@ -1020,5 +1020,10 @@
   "v": "1.26.77",
   "t": "Новый стартовый экран: заставка на весь экран, девиз, большая кнопка «В бой!», «У меня уже есть аккаунт · Войти». Вход открывается во всплывающем окне.",
   "te": "New start screen: full-screen key art, tagline, big Play button and \"I already have an account · Sign in\". Sign-in opens in a popup."
+ },
+ {
+  "v": "1.26.78",
+  "t": "Новый логотип игры в стиле заставки.",
+  "te": "New game logo matching the new key art."
  }
 ]
