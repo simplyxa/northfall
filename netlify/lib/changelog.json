@@ -995,5 +995,10 @@
   "v": "1.26.72",
   "t": "Бой: нижняя кромка панели кнопок прозрачная, информация об охоте, арене и рейде — отдельная карточка под сценой.",
   "te": "Combat: the bottom edge of the button panel is transparent; hunt, arena and raid info now sits in its own card under the scene."
+ },
+ {
+  "v": "1.26.73",
+  "t": "Территории: показываются названия кланов, а не имена игроков, владелец не теряет название при смене недели. Рейд: верхняя плашка как на охоте (аватар игрока, босс/цель с красной и жёлтой полосой), панель кнопок и фигуры на своих местах.",
+  "te": "Territories: clan names are shown instead of player names, and owners keep their name across the weekly rollover. Raid: top HUD like the hunt (player avatar, boss/target with red and yellow bar), button panel and figures in place."
  }
 ]
