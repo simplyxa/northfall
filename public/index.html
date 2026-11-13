@@ -2315,7 +2315,7 @@ function wqClaim(){const c=CLN.find(x=>x.id===S.clan);if(!canMng(c))return;
  hubSend({t:'clan',k:'quest'})}
 let TER={},terUn=null;const TERN={easy:'Опушка',mid:'Глухой лес',hard:'Чаща'},TERB=.15;
 function terSub(){if(!DB||terUn)return;terUn=HS('terr',DB.collection('terr').limit(10),sn=>{TER={};sn.docs.forEach(d=>{TER[d.id]=JSON.parse(JSON.stringify(d.data()))});if(['hunt','clan'].includes(tab)&&!fight)ui()},()=>{})}
-const terOwner=k=>{const t=TER[k];if(!t)return null;if(t.wk===curS())return t.owner?{id:t.owner,name:t.oname}:null;const e=Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1])[0];return e?{id:e[0],name:(t.names||{})[e[0]]||cname(e[0])}:null};
+const terOwner=k=>{const t=TER[k];if(!t)return null;if(t.wk===curS())return t.owner?{id:t.owner,name:t.oname||cname(t.owner)}:null;const e=Object.entries(t.pts||{}).sort((a,b)=>b[1]-a[1])[0];return e?{id:e[0],name:(t.names||{})[e[0]]||cname(e[0])}:null};
 // охота: пойманные звери и набежавший урон. Очки на территории, опыт клана и
 // недельное задание начисляет сервер — и ограничивает частоту, чтобы нельзя
 // было набить очки десятками записей.

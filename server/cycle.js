@@ -223,8 +223,9 @@ module.exports = function cycle(getDb) {
           const T = it.T;
           if (T.wk !== wk) {   // новая неделя: очки обнуляются, владелец сохраняется
             const e = Object.entries(T.pts || {}).sort((a, b) => (b[1] | 0) - (a[1] | 0))[0];
+            const prevNames = T.names || {};   // имена прошлой недели читаем ДО обнуления (раньше владелец оставался без названия)
             T.wk = wk; T.pts = {}; T.names = {};
-            T.owner = e ? e[0] : (T.owner || ''); T.oname = e ? ((T.names || {})[e[0]] || '') : (T.oname || '');
+            T.owner = e ? e[0] : (T.owner || ''); T.oname = e ? (prevNames[e[0]] || '') : (T.oname || '');
           }
           T.pts = T.pts || {}; T.names = T.names || {};
           const share = Math.max(1, Math.round(it.n * take / kills));
