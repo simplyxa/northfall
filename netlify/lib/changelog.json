@@ -1000,5 +1000,10 @@
   "v": "1.26.73",
   "t": "Территории: показываются названия кланов, а не имена игроков, владелец не теряет название при смене недели. Рейд: верхняя плашка как на охоте (аватар игрока, босс/цель с красной и жёлтой полосой), панель кнопок и фигуры на своих местах.",
   "te": "Territories: clan names are shown instead of player names, and owners keep their name across the weekly rollover. Raid: top HUD like the hunt (player avatar, boss/target with red and yellow bar), button panel and figures in place."
+ },
+ {
+  "v": "1.26.74",
+  "t": "Охота: звери стали крепче и бьют ощутимо, а не по 1 урону. Здоровье и удар зверя подстраиваются под базовые характеристики героя без снаряжения, награда за зверя повышена.",
+  "te": "Hunt: beasts are tougher and hit noticeably instead of for 1 damage. Beast health and damage scale with the hero's base stats without gear; the reward per beast is higher."
  }
 ]
