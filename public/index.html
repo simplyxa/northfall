@@ -980,14 +980,14 @@ const RCAMB=[ // фоновые частицы по рейдам: пыль, ту
  {col:'255,150,60',vx:[-10,14],vy:[-50,-18],sz:[1.5,3.5],a:.8}];
 const rcR=(a,b)=>a+Math.random()*(b-a);
 function rcAmb(b){const T=RCAMB[b]||RCAMB[0];if(RCN.amb.length!==36||RCN.ambB!==b){RCN.ambB=b;RCN.amb=Array.from({length:36},()=>({x:rcR(0,900),y:rcR(0,RCH),vx:rcR(T.vx[0],T.vx[1]),vy:rcR(T.vy[0],T.vy[1]),sz:rcR(T.sz[0],T.sz[1]),ph:rcR(0,6.28)}))}return T}
-function rcPose(cl,pn,A){const q=(HEROPOSE[cl]||{})[pn];if(!A||!A.a||!q)return null;const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=1||p<0)return null;const k=Math.min(.4,.17/A.a.dur);return{u:q.a,l:q.l,t:q.t,w:q.w,k:rcEase(p,k,1-k),p}}
+function rcPose(cl,pn,A,f){const q=((f&&HEROPOSE_F[cl])||HEROPOSE[cl]||{})[pn];if(!A||!A.a||!q)return null;const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=1||p<0)return null;const k=Math.min(.4,.17/A.a.dur);return{u:q.a,l:q.l,t:q.t,w:q.w,k:rcEase(p,k,1-k),p}}
 // надгробие павшего союзника: камень с табличкой, в табличку вписан его аватар
 const RTOMB={u:'/img/c621bfca1fb39d.webp',ar:0.625,p:[0.2887, 0.2276, 0.7854, 0.5116]};
 function rcTomb(x,y,h,m){const cx=RCN.cx;const im=rcImg(RTOMB.u);if(!rcOk(im))return;const th=h*1.02,tw=th*RTOMB.ar,x0=x-tw/2,y0=y+6-th;rcShadow(x,y+2,tw*.5);cx.drawImage(im,x0,y0,tw,th);
  const p=RTOMB.p,px=x0+p[0]*tw,py=y0+p[1]*th,pw=(p[2]-p[0])*tw,ph=(p[3]-p[1])*th,av=rcImg(AVS);
  if(rcOk(av)){const cw=av.naturalWidth/AVN,s=((((m.av&&m.av.s)|0)%AVN)+AVN)%AVN,sz=Math.min(pw,ph)*.8,ax=px+(pw-sz)/2,ay=py+ph*.08;cx.save();cx.globalAlpha=.82;cx.drawImage(av,s*cw,0,cw,av.naturalHeight,ax,ay,sz,sz);cx.fillStyle='rgba(18,22,26,.38)';cx.fillRect(ax,ay,sz,sz);cx.restore()}
  rcText('RIP',px+pw/2,py+ph*.93,Math.max(14,ph*.17),'#b9b2a0',{b:1})}
-function rcHero(x,y,h,cl,A,o){const fig=HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A.a.pn:'',P=pn?rcPose(cl,pn,A):null,idle=Math.sin(RCN.t*2.2+(o.ph||0));
+function rcHero(x,y,h,cl,A,o){const fig=(o.f&&HEROFIG_F[cl])||HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A.a.pn:'',P=pn?rcPose(cl,pn,A,o.f):null,idle=Math.sin(RCN.t*2.2+(o.ph||0));
  let dx=0;if(A&&A.a&&pn==='atk'){const p=(RCN.t-A.a.t0)/A.a.dur;if(p>=0&&p<1)dx=Math.sin(Math.PI*p)*34}
  const hit=o.me&&RCN.t-(RCN.meHit||-9)<.28?{fl:.55*(1-(RCN.t-RCN.meHit)/.28),fc:'#ff3b2a'}:{};
  return rcFig(fig,x,y,h,{dx,dy:o.dead?0:idle*1.6,sy:o.dead?1:1+idle*.008,a:o.dead?.75:1,gray:o.dead,fl:hit.fl,fc:hit.fc},P)}
@@ -998,11 +998,11 @@ function rcDraw(H,R){const cx=RCN.cx,sc=RCN.sc;cx.setTransform(sc,0,0,sc,0,0);cx
  cx.translate(0,-RCUP);const ents=[];
  // герой
  ents.push({y:RCME.y,d:()=>{rcShadow(RCME.x,RCME.y,RCME.h*.5);const skOn=fight.clk<(fight.skin||0);if(skOn)rcSkinAura(RCME.x,RCME.y,RCME.h);if(fight.rage)rcRageAura(RCME.x,RCME.y,RCME.h);if(RCN.rgOn&&!fight.rage){rcPart(RCME.x,RCME.y-RCME.h*.5,22,['#ff7a3a','#ffc060','#ff4a2a','#fff0c0'],{v:230,life:.5,sz:4});rcFx({k:'ring',x:RCME.x+RCME.h*.5,y:RCME.y-RCME.h*.4,r0:10,r1:120,col:'255,110,50',life:.35,w:5})}RCN.rgOn=!!fight.rage;if(RCN.skOn&&!skOn){rcCrumble(RCME.x,RCME.y,RCME.h);RCN.cr=1}RCN.skOn=skOn;const pu=.75+.25*Math.sin(RCN.t*3.4);cx.save();cx.translate(RCME.x,RCME.y);cx.scale(1,.24);cx.lineWidth=7;cx.strokeStyle='rgba(240,200,90,'+(.55+.4*pu)+')';cx.shadowColor='rgba(240,200,90,.9)';cx.shadowBlur=18;cx.beginPath();cx.arc(0,0,RCME.h*.36,0,7);cx.stroke();cx.restore();
-  const b=rcHero(RCME.x,RCME.y,RCME.h,S.cls,RCN.meA?{a:RCN.meA}:null,{me:1});if(skOn)drawStoneShield(cx,RCME.x,RCME.y,RCME.h,RCN.t,RCN.shk||0,0);else if(RCN.cr>0)drawStoneShield(cx,RCME.x,RCME.y,RCME.h,RCN.t,0,RCN.cr);if(RCN.meA&&RCN.t-RCN.meA.t0>RCN.meA.dur)RCN.meA=null;
+  const b=rcHero(RCME.x,RCME.y,RCME.h,S.cls,RCN.meA?{a:RCN.meA}:null,{me:1,f:isF()});if(skOn)drawStoneShield(cx,RCME.x,RCME.y,RCME.h,RCN.t,RCN.shk||0,0);else if(RCN.cr>0)drawStoneShield(cx,RCME.x,RCME.y,RCME.h,RCN.t,0,RCN.cr);if(RCN.meA&&RCN.t-RCN.meA.t0>RCN.meA.dur)RCN.meA=null;
   cx.save();cx.fillStyle='#f0c85a';cx.shadowColor='rgba(0,0,0,.9)';cx.shadowBlur=6;cx.font='26px sans-serif';cx.textAlign='center';cx.fillText('▼',RCME.x,RCME.y-RCME.h-6+Math.sin(RCN.t*5)*5);cx.restore()}});
  // союзники
  if(R&&R.mem){const L=Object.entries(R.mem).filter(([id])=>id!==UID).sort((a,b)=>a[1].o-b[1].o).slice(0,4);L.forEach(([id,m],i)=>{const P=rcAllyPos(i),cl=HEROPOSE[m.cls]?m.cls:RACLS[i%4],dead=m.dead||m.hp<=0,A=RCN.al[id];
-  ents.push({y:P.y,d:()=>{if(dead){rcTomb(P.x,P.y,P.h,m);rcText(rcClip(m.n,150,24),P.x,P.y-P.h-16,24,'#a9a498',{b:1});return}rcShadow(P.x,P.y,P.h*.5);const aSk=A&&A.sk>RCN.t;if(aSk)rcSkinAura(P.x,P.y,P.h);rcHero(P.x,P.y,P.h,cl,A,{ph:i*1.3,dead});if(aSk)drawStoneShield(cx,P.x,P.y,P.h,RCN.t,0,0);if(A&&A.a&&RCN.t-A.a.t0>A.a.dur)A.a=null;
+  ents.push({y:P.y,d:()=>{if(dead){rcTomb(P.x,P.y,P.h,m);rcText(rcClip(m.n,150,24),P.x,P.y-P.h-16,24,'#a9a498',{b:1});return}rcShadow(P.x,P.y,P.h*.5);const aSk=A&&A.sk>RCN.t;if(aSk)rcSkinAura(P.x,P.y,P.h);rcHero(P.x,P.y,P.h,cl,A,{ph:i*1.3,dead,f:!!(m.av&&m.av.x)});if(aSk)drawStoneShield(cx,P.x,P.y,P.h,RCN.t,0,0);if(A&&A.a&&RCN.t-A.a.t0>A.a.dur)A.a=null;
    rcText(rcClip(m.n,150,24),P.x,P.y-P.h-16,24,'#f1e6c8',{b:1});rcBar(P.x,P.y-P.h-10,92,9,dead?0:m.hp/(m.max||1),'#6fbf73')}})})}
  // питомец
  const pa=petA(),F=pa&&PETFIG[pa.k];
@@ -1071,7 +1071,7 @@ function hudSet(k,pct){pct=Math.max(0,Math.min(100,pct));const f=document.getEle
  if(!o||o.b!==pct)o=HPT[k]={a:w,b:pct,t:n};const e=n-o.t;t.style.width=w+'%';void t.offsetWidth;if(e>=900){t.style.width=pct+'%';t.style.transition='';return}t.style.transition=`width ${Math.max(0,900-Math.max(e,350))}ms linear ${Math.max(0,350-e)}ms`;t.style.width=pct+'%'}
 function hudFoeId(e){let n=HPEI.get(e);if(!n){n=++HPEN;HPEI.set(e,n)}return n}
 function hudHero(){return`<div class="hs"><span class="pw"><span class="pt av">${avatar(S.av,52,frameOf(meP()))}</span><span class="lv">ур. ${S.lvl}</span></span><span class="tx"><b>${esc(S.name)}</b>${hudBar('h',S.hp/maxHp()*100,1)}<small id="hth">${Math.max(0,Math.ceil(S.hp))}/${maxHp()} · ⚡${S.en}</small></span></div>`}
-function hudFoe(){const e=fight&&fight.e;if(!e)return'';if(HPE!==e){HPE=e;delete HPT.e}let im='';const bf=BFIG[bfBase(e.name)],ig=e.pvp||fight.pvp?HEROFIG[e.cls]||HEROFIG.berserk:bf,bi=e.img||mobImg(e.name);im=ig?`<img class="z" src="${ig}" alt="">`:bi?`<img src="${bi}" alt="">`:'';return`<div class="hs r" data-id="${hudFoeId(e)}"><span class="pw"><span class="pt">${im}</span>${e.lv!=null?`<span class="lv">ур. ${e.lv}</span>`:''}</span><span class="tx"><b>${esc(e.name)}</b>${hudBar('e',e.hp/e.max*100)}<small id="hte">${Math.max(0,Math.ceil(e.hp))}/${e.max}${e.stun>fight.clk?' · 💫':''}</small></span></div>`}
+function hudFoe(){const e=fight&&fight.e;if(!e)return'';if(HPE!==e){HPE=e;delete HPT.e}let im='';const bf=BFIG[bfBase(e.name)],ig=e.pvp||fight.pvp?(e.sx&&HEROFIG_F[e.cls])||HEROFIG[e.cls]||HEROFIG.berserk:bf,bi=e.img||mobImg(e.name);im=ig?`<img class="z" src="${ig}" alt="">`:bi?`<img src="${bi}" alt="">`:'';return`<div class="hs r" data-id="${hudFoeId(e)}"><span class="pw"><span class="pt">${im}</span>${e.lv!=null?`<span class="lv">ур. ${e.lv}</span>`:''}</span><span class="tx"><b>${esc(e.name)}</b>${hudBar('e',e.hp/e.max*100)}<small id="hte">${Math.max(0,Math.ceil(e.hp))}/${e.max}${e.stun>fight.clk?' · 💫':''}</small></span></div>`}
 function hudBox(){return`<div class="hud2"><div id="hudH" style="display:contents">${hudHero()}</div><div id="hudE" style="display:contents">${hudFoe()}</div></div>`}
 function hudUpd(hpE){if(!fight)return;const h=document.getElementById('hth');if(h)h.textContent=Math.max(0,Math.ceil(S.hp))+'/'+maxHp()+' · ⚡'+S.en;hudSet('h',S.hp/maxHp()*100);const E=document.getElementById('hudE');if(!E||!fight.e)return;const d=E.firstElementChild;if(!d||+d.dataset.id!==hudFoeId(fight.e)){E.innerHTML=hudFoe()}const e=fight.e,hp=hpE!=null?hpE:e.hp;hudSet('e',hp/e.max*100);const t=document.getElementById('hte');if(t)t.textContent=Math.max(0,Math.ceil(hp))+'/'+e.max+(e.stun>fight.clk?' · 💫':'')}
 function stageHtml(H){const pa=petA(),fig=hfig(S.cls);
@@ -1304,7 +1304,7 @@ const arBl=()=>Math.max(0,((fight&&fight.pcd)|0)-((fight&&fight.clk)|0));   // �
 function arCtl(){const L=arBl();
  return`<div class="st-ui"><button class="b strk ${fight.ch>=1?'full':''}" id="bs" data-a="strike" style="--p:${Math.round(fight.ch*100)}" ${fight.ch<.2?'disabled':''} aria-label="Удар"><img src="${HCI.fist}" alt=""></button>${skRound()}<button class="b alt fcd rbt" id="bpb" data-a="pot-b" style="--p:${Math.round(100-L/BCD*100)}" aria-label="Бутылка" title="Бутылка" ${S.pt.b<1||L>0?'disabled':''}><img src="${RIC.bottle}" alt=""><span class="bn">${S.pt.b}</span><span class="skc">${L>0?Math.ceil(L/1000):''}</span></button></div>`}
 function apvpView(){
- const e=fight.e,fig=hfig(S.cls),efig=HEROFIG[e.cls]||HEROFIG.berserk,pa=petA();queueMicrotask(paintPvpFight);
+ const e=fight.e,fig=hfig(S.cls),efig=(e.sx&&HEROFIG_F[e.cls])||HEROFIG[e.cls]||HEROFIG.berserk,pa=petA();queueMicrotask(paintPvpFight);
  return`<div id="fightpanel" data-ra-root><div class="panel hpn"><div class="stage" style="--sbg:url(${ARSTBG||STBG})"><div class="st-w">
  ${hudBox()}
  <div class="st-hero${fig?' full':''}" id="sthero"><div class="st-fig">${fig?`<img src="${fig}" alt="">${Object.entries(hpose(S.cls)||{}).map(([n,q])=>`<img class="st-fa" data-p="${n}" src="${q.a}" alt="" style="left:${q.l}%;top:${q.t}%;width:${q.w}%">`).join('')}`:avatar(S.av,96)}</div></div>${pa&&PETFIG[pa.k]?petFig(pa):''}
@@ -2761,7 +2761,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.81';
+const GVER='1.26.82';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3387,7 +3387,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.81</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.82</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

@@ -59,7 +59,7 @@ module.exports = function apvp(getDb) {
     return {
       pid: R.oid, st: R.st, win: R.win, clk: R.clk, ch: R.ch, ech: clamp(R.ech, 0, 1),
       guardUntil: R.guardUntil, gcd: R.gcd, pcd: R.pcd, hp: R.hp, mhp: R.mhp,
-      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, pet: R.e.pet || '', stun: R.e.stun | 0 },
+      e: { name: R.e.name, lv: R.e.lv, hp: R.e.hp, max: R.e.max, atk: R.e.atk, def: R.e.def, crit: R.e.crit, cls: R.e.cls, sx: R.e.sx | 0, pet: R.e.pet || '', stun: R.e.stun | 0 },
       s: R.s, log: withLog ? R.log : undefined, sk: R.sk, ske: R.ske || null, pe: R.pe || null, rage: R.rage || 0, weak: R.weak | 0, skin: R.skin | 0, res: R.res || null
     };
   }
@@ -104,6 +104,7 @@ module.exports = function apvp(getDb) {
           hp: Math.max(1, O.stats.hp | 0), max: Math.max(1, O.stats.hp | 0),
           atk: Math.round((O.stats.atk | 0) * .9), def: O.stats.def | 0, crit: Math.min(40, O.stats.crit | 0),
           pet: ['wolf', 'bear', 'lynx', 'raven'].includes(O.pet) ? O.pet : '',   // питомец соперника: только для вида
+          sx: O.av && O.av.x ? 1 : 0,   // пол соперника: чтобы клиент нарисовал героиню
           cls: ['berserk', 'hunter', 'shaman'].includes(O.cls) ? O.cls : 'berserk'   // чтобы клиент нарисовал соперника в рост по классу
         };
         const R = {

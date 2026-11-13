@@ -1040,5 +1040,10 @@
   "v": "1.26.81",
   "t": "Героини выглядят по-женски: новые рисунки берсерка, охотницы и шаманки в полный рост, а также их атаки и умения. Аватары-портреты пока прежние.",
   "te": "Heroines now look female: new full-body art for the berserker, hunter and shaman, plus their attacks and skills. Portrait avatars are unchanged for now."
+ },
+ {
+  "v": "1.26.82",
+  "t": "Героини теперь видны как героини везде: в рейде (ты и союзники) и в бою на арене соперница рисуется женским рисунком.",
+  "te": "Heroines are now drawn as heroines everywhere: in raids (you and allies) and as arena opponents."
  }
 ]
