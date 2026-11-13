@@ -1045,5 +1045,10 @@
   "v": "1.26.82",
   "t": "Героини теперь видны как героини везде: в рейде (ты и союзники) и в бою на арене соперница рисуется женским рисунком.",
   "te": "Heroines are now drawn as heroines everywhere: in raids (you and allies) and as arena opponents."
+ },
+ {
+  "v": "1.26.83",
+  "t": "Для героинь появились женские аватары: десять новых портретов в выборе образа.",
+  "te": "Heroines now have their own avatars: ten new portraits in the avatar picker."
  }
 ]

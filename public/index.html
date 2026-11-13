@@ -984,7 +984,7 @@ function rcPose(cl,pn,A,f){const q=((f&&HEROPOSE_F[cl])||HEROPOSE[cl]||{})[pn];i
 // надгробие павшего союзника: камень с табличкой, в табличку вписан его аватар
 const RTOMB={u:'/img/c621bfca1fb39d.webp',ar:0.625,p:[0.2887, 0.2276, 0.7854, 0.5116]};
 function rcTomb(x,y,h,m){const cx=RCN.cx;const im=rcImg(RTOMB.u);if(!rcOk(im))return;const th=h*1.02,tw=th*RTOMB.ar,x0=x-tw/2,y0=y+6-th;rcShadow(x,y+2,tw*.5);cx.drawImage(im,x0,y0,tw,th);
- const p=RTOMB.p,px=x0+p[0]*tw,py=y0+p[1]*th,pw=(p[2]-p[0])*tw,ph=(p[3]-p[1])*th,av=rcImg(AVS);
+ const p=RTOMB.p,px=x0+p[0]*tw,py=y0+p[1]*th,pw=(p[2]-p[0])*tw,ph=(p[3]-p[1])*th,av=rcImg(m&&m.av&&m.av.x&&AVSF?AVSF:AVS);
  if(rcOk(av)){const cw=av.naturalWidth/AVN,s=((((m.av&&m.av.s)|0)%AVN)+AVN)%AVN,sz=Math.min(pw,ph)*.8,ax=px+(pw-sz)/2,ay=py+ph*.08;cx.save();cx.globalAlpha=.82;cx.drawImage(av,s*cw,0,cw,av.naturalHeight,ax,ay,sz,sz);cx.fillStyle='rgba(18,22,26,.38)';cx.fillRect(ax,ay,sz,sz);cx.restore()}
  rcText('RIP',px+pw/2,py+ph*.93,Math.max(14,ph*.17),'#b9b2a0',{b:1})}
 function rcHero(x,y,h,cl,A,o){const fig=(o.f&&HEROFIG_F[cl])||HEROFIG[cl]||HEROFIG.berserk,pn=A&&A.a?A.a.pn:'',P=pn?rcPose(cl,pn,A,o.f):null,idle=Math.sin(RCN.t*2.2+(o.ph||0));
@@ -2761,7 +2761,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.82';
+const GVER='1.26.83';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3297,7 +3297,7 @@ function ui(){if(!S||fight||!['top','clan','admin','home','friends','mail','pl',
 const AVC=['#C0392B','#D2A24C','#3FB3A6','#8B63D6','#6FA85A','#6FA3D0'];
 let avN=0;
 // пол героя: S.av.x (0 — мужской, 1 — женский); женские рисунки подключаются, когда появятся (пока — мужские)
-const HEROFIG_F={berserk:'/img/ca8444fb8ffd1c.webp',hunter:'/img/2fab4a29d1142a.webp',shaman:'/img/c8f12aba1b87a0.webp'},HEROPOSE_F={berserk:{atk:{a:'/img/a6e9be91800f7d.webp',l:-27.13,t:-20.47,w:144.37},rage:{a:'/img/3dd7edc98f85b0.webp',l:-22.79,t:-9.06,w:143.0},roar:{a:'/img/995727e0cffa5f.webp',l:-35.81,t:-8.44,w:162.12}},hunter:{atk:{a:'/img/4b27c2f9c2ecf9.webp',l:-28.65,t:-13.91,w:159.37},shot:{a:'/img/4a3fad7d0f1cf1.webp',l:-16.11,t:1.56,w:145.53},trap:{a:'/img/a8b7c4fa32ee2a.webp',l:-37.81,t:8.59,w:150.14}},shaman:{atk:{a:'/img/bc2354d278600c.webp',l:-35.14,t:2.81,w:163.43},totem:{a:'/img/64bef42cccaa0a.webp',l:-25.14,t:0.62,w:118.0},skin:{a:'/img/d8efcbce81b1a4.webp',l:-13.21,t:-2.5,w:101.43}}},AVSF='';
+const HEROFIG_F={berserk:'/img/ca8444fb8ffd1c.webp',hunter:'/img/2fab4a29d1142a.webp',shaman:'/img/c8f12aba1b87a0.webp'},HEROPOSE_F={berserk:{atk:{a:'/img/a6e9be91800f7d.webp',l:-27.13,t:-20.47,w:144.37},rage:{a:'/img/3dd7edc98f85b0.webp',l:-22.79,t:-9.06,w:143.0},roar:{a:'/img/995727e0cffa5f.webp',l:-35.81,t:-8.44,w:162.12}},hunter:{atk:{a:'/img/4b27c2f9c2ecf9.webp',l:-28.65,t:-13.91,w:159.37},shot:{a:'/img/4a3fad7d0f1cf1.webp',l:-16.11,t:1.56,w:145.53},trap:{a:'/img/a8b7c4fa32ee2a.webp',l:-37.81,t:8.59,w:150.14}},shaman:{atk:{a:'/img/bc2354d278600c.webp',l:-35.14,t:2.81,w:163.43},totem:{a:'/img/64bef42cccaa0a.webp',l:-25.14,t:0.62,w:118.0},skin:{a:'/img/d8efcbce81b1a4.webp',l:-13.21,t:-2.5,w:101.43}}},AVSF='/img/eaa507a8cb53f0.webp';
 const isF=()=>!!(S&&S.av&&S.av.x);
 const hfig=c=>(isF()&&HEROFIG_F[c])||HEROFIG[c];
 const hpose=c=>(isF()&&HEROPOSE_F[c])||HEROPOSE[c];
@@ -3309,7 +3309,7 @@ function avatar(a,z,fr){a=a||{s:0};let FI=null;if(fr&&String(fr).startsWith('fr:
  if(FI){const s=z/Math.max(FI.w,FI.h),W=FI.w*s,Hh=FI.h*s,ox=(z-W)/2,oy=(z-Hh)/2,az=Math.round(Math.min(FI.hw,FI.hh)*s*1.08),ax=ox+(FI.hx+FI.hw/2)*s-az/2,ay=oy+(FI.hy+FI.hh/2)*s-az/2;return`<span style="position:relative;display:inline-block;flex:0 0 auto;vertical-align:middle;width:${z}px;height:${z}px"><span style="position:absolute;left:${ax.toFixed(1)}px;top:${ay.toFixed(1)}px;line-height:0">${avatar(a,az)}</span><img src="${FI.u}" alt="" style="position:absolute;left:${ox.toFixed(1)}px;top:${oy.toFixed(1)}px;width:${W.toFixed(1)}px;height:${Hh.toFixed(1)}px;pointer-events:none;max-width:none"></span>`}
  const s=((a.s|0)%AVN+AVN)%AVN;return`<span class="avi${a.x&&AVSF?' f':''}" role="img" aria-label="Аватар" style="display:inline-block;flex:0 0 auto;vertical-align:middle;width:${z}px;height:${z}px;border-radius:18%;background-repeat:no-repeat;background-size:${AVN*100}% 100%;background-position:${s*100/(AVN-1)}% 0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6)${fr?`,0 0 0 2px ${fr},0 0 7px ${fr}`:''}"></span>`}
 const sexBtns=x=>`<div style="display:flex;gap:8px"><button class="cls ${x?'':'on'}" data-a="sex0" style="flex:1;text-align:center"><b>Мужчина</b></button><button class="cls ${x?'on':''}" data-a="sex1" style="flex:1;text-align:center"><b>Женщина</b></button></div>`;
-const avPicker=a=>`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 0 12px">${Array.from({length:AVN},(_,i)=>`<button class="av ${((a.s|0)%AVN)===i?'on':''}" data-av="s${i}" aria-label="Образ ${i+1}" style="padding:0;line-height:0">${avatar({s:i},56)}</button>`).join('')}</div>`;
+const avPicker=a=>`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 0 12px">${Array.from({length:AVN},(_,i)=>`<button class="av ${((a.s|0)%AVN)===i?'on':''}" data-av="s${i}" aria-label="Образ ${i+1}" style="padding:0;line-height:0">${avatar({s:i,x:a.x},56)}</button>`).join('')}</div>`;
 function pickAv(code){const t=S?S.av:av,i=+code.slice(1);if(code[0]==='s')t.s=i;else t.c=i;if(S)save();render()}
 const avCard=()=>{const chip=(ic,v,l,c)=>`<div class="chip" style="color:var(${c})"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${ic}</svg><b>${v}</b><small>${l}</small></div>`;
  const HI='<path d="M12 21S3 15.500 3 8.800C3 5.600 5.400 4 7.600 4c1.800 0 3.400 1 4.400 2.700C13 5 14.600 4 16.400 4 18.600 4 21 5.600 21 8.800 21 15.500 12 21 12 21z"/>',BI='<path d="M13 2L4 14h6l-1 8 9-12h-6z"/>',GI='<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.500" fill="none" stroke="var(--panel)" stroke-width="1.600"/>',II='<path d="M5 9l3-4h8l3 4-7 11z"/>';
@@ -3387,7 +3387,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.82</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.83</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
