@@ -23,7 +23,7 @@ const hasOnly = (arr, allowed) => arr.every(k => allowed.includes(k));
 const hasAny = (arr, list) => arr.some(k => list.includes(k));
 const str = (v, max) => typeof v === 'string' && v.length <= max;
 
-const PROT = ['rating', 'srat', 'win', 'lose', 'sid', 'psid', 'psrat', 'lvl', 'dr', 'dw', 'dn'];   // поля карточки игрока: только сервер
+const PROT = ['rating', 'srat', 'win', 'arw', 'lose', 'sid', 'psid', 'psrat', 'lvl', 'dr', 'dw', 'dn'];   // поля карточки игрока: только сервер
 const CLAN_SRV = ['xp', 'wq', 'dq', 'cq', 'b', 'spent'];
 
 // op: 'read' | 'create' | 'update' | 'delete'. segs — путь документа. existing — данные до записи (или null),

@@ -610,6 +610,8 @@ function save(){if(STALE)return;if(S)S.ts=Date.now();try{localStorage.setItem(KE
 function load(){try{const r=localStorage.getItem(KEY);if(r){LOC=JSON.parse(r);if(!LOC.acc)LEG=LOC}}catch(e){LOC=null}}
 function fixNum(){
  const f=(v,d)=>typeof v==='number'&&isFinite(v)?v:d;
+ // победы на арене раньше смешивались с убитыми зверями (S.win): оцениваем по счётчику боёв с ботами и остатку общих побед, дальше считаем отдельно
+ if(S&&S.arw==null){const c=S.cnt||{};S.arw=Math.max(0,Math.min(S.win|0,Math.max(c.aw|0,(S.win|0)-(c.k|0))))}
  const fi=it=>{if(!it||typeof it!=='object')return;it.up=Math.max(0,Math.min(5,f(it.up,0)));it.lv=Math.max(1,f(it.lv,1));it.rar=Math.max(0,f(it.rar,0));if(!it.b||typeof it.b!=='object')it.b={};for(const k in it.b)it.b[k]=f(it.b[k],0)};
  S.inv=(S.inv||[]).filter(x=>x&&typeof x==='object');S.inv.forEach(fi);S.chest=(S.chest||[]).filter(x=>x&&typeof x==='object');S.chest.forEach(fi);S.eq=S.eq||{};for(const ok of ['n2','r2']){if(S.eq[ok]){const x=S.eq[ok];delete S.eq[ok];if(x&&typeof x==='object')S.inv.push(x)}}for(const k in S.eq){if(!S.eq[k])delete S.eq[k];else fi(S.eq[k])}
  S.st=S.st||{};['str','hp','arm','reg','en'].forEach(k=>S.st[k]=f(S.st[k],1));
@@ -738,7 +740,7 @@ function regen(){
 
 function create(name){
  CRE++;const c=CL[pick];
- S={regb:1,pbv:2,name:name||'Безымянный',cls:pick,lvl:1,xp:0,gold:30,au:0,st:{...c.s},pts:0,hp:0,en:20,t:Date.now(),pt:{b:2},inv:[],eq:{},stock:null,stockLv:0,win:0,lose:0,rating:1000,clan:'',sid:Math.floor(Date.now()/604800000),srat:0,psid:0,psrat:0,sclaim:Math.floor(Date.now()/604800000),war:'',wp:0,wclaim:[],applied:[],av:{...av}};
+ S={regb:1,pbv:2,name:name||'Безымянный',cls:pick,lvl:1,xp:0,gold:30,au:0,st:{...c.s},pts:0,hp:0,en:20,t:Date.now(),pt:{b:2},inv:[],eq:{},stock:null,stockLv:0,win:0,arw:0,lose:0,rating:1000,clan:'',sid:Math.floor(Date.now()/604800000),srat:0,psid:0,psrat:0,sclaim:Math.floor(Date.now()/604800000),war:'',wp:0,wclaim:[],applied:[],av:{...av}};
  S.reg=Date.now();S.rd=DAY();S.old=0;S.src=srcNow();S.act=[0];S.eq={w:gen('w',1,0),a:gen('a',1,0)};S.hp=maxHp();S.en=maxEn();log('Ты вышел из метели к костру племени. Здесь начинается твой путь.','sys');S.acc=UID||'';S._k=Math.random().toString(36).slice(2,6);tab='home';save();render();
 }
 
@@ -1173,7 +1175,7 @@ function settle(){
  if(fight.dun){if(e.hp<=0||S.hp<=0)dunEnd(e.hp<=0?'kill':'dead');return}
  if(fight.wb){if(e.hp<=0||S.hp<=0)wbEnd(e.hp<=0?'kill':'dead');return}
  if(e.hp<=0){
-  log(`${e.name} повержен.`,'hit');const r0=S.rating,sr0=S.srat,wp0=S.wp|0;if(fight.arena){arenaRes(true);ev('arena')}S.win++;petXp(2);const gg=fight.arena?null:gain(e.xp,e.gold),lt=fight.arena?'':drop(e.lv,false);if(!fight.arena)HREP={n:e.name,xp:gg.xp,gold:gg.gold,lv:gg.lv,lt:lt,G:S.gold,X:S.xp,L:S.lvl,k:S._k};if(fight.arena){mkRep(true,gg,lt,r0,sr0,wp0,0);setTimeout(repModal,250)}fight=null;
+  log(`${e.name} повержен.`,'hit');const r0=S.rating,sr0=S.srat,wp0=S.wp|0;if(fight.arena){arenaRes(true);ev('arena');S.arw=(S.arw|0)+1}S.win++;petXp(2);const gg=fight.arena?null:gain(e.xp,e.gold),lt=fight.arena?'':drop(e.lv,false);if(!fight.arena)HREP={n:e.name,xp:gg.xp,gold:gg.gold,lv:gg.lv,lt:lt,G:S.gold,X:S.xp,L:S.lvl,k:S._k};if(fight.arena){mkRep(true,gg,lt,r0,sr0,wp0,0);setTimeout(repModal,250)}fight=null;
  }else if(S.hp<=0){
   const lost=Math.floor(S.gold*.1);S.gold-=lost;S.lose++;S.hp=1;const r0=S.rating,sr0=S.srat;if(fight.arena){arenaRes(false);mkRep(false,null,'',r0,sr0,S.wp|0,lost);setTimeout(repModal,250)}
   log(`Ты теряешь сознание. Соплеменники вытаскивают тебя из боя (−${lost} серебра).`,'dmg');fight=null;
@@ -1442,7 +1444,7 @@ function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
  const row=(t,v)=>`<div class="row" style="padding:6px 0"><div>${t}</div><b>${v}</b></div>`,fmt=n=>(n|0).toLocaleString('ru-RU');
  return`<div class="panel"><h3 style="margin:0 0 4px">Статистика</h3>
  ${row(sic('paw')+'Убито зверей на охоте',fmt(k.k))}
- ${row(sic('swords')+'Побед на арене',fmt(p.win)+(p.lose!=null?` <small style="display:inline;color:var(--mute)">/ поражений ${fmt(p.lose)}</small>`:''))}
+ ${row(sic('swords')+'Побед на арене',(p.arw!=null?fmt(p.arw):p.id===UID?fmt(S.arw|0):'—')+(p.lose!=null?` <small style="display:inline;color:var(--mute)">/ поражений ${fmt(p.lose)}</small>`:''))}
  ${row(sic('dragon')+'Побеждено боссов в рейдах',fmt(k.rb))}
  ${row(sic('skull')+'Ударов по мировому боссу',fmt(k.bs))}
  ${(k.df|0)?row(sic('stairs')+'Этаж подземелья клана',k.df):''}
@@ -1456,7 +1458,7 @@ function statBlock(p,c){const k=p.cnt||{},me=p.id===UID,cur=curS();
  ${row('Лайв-арена',`<span style="color:${rankOf2(p)[2]}">${rankOf2(p)[1]}</span> · ${drOf(p)}`+((p.dn|0)?plc(rD):''))}
  ${p.ssum!=null||me?row('Сумма статов',fmt(me?statSum():p.ssum)+plc(rT)):''}
  ${!me&&p.cnt==null?'<p style="margin:6px 0 0;font-size:13px;color:var(--mute)">Часть статистики появится, когда игрок зайдёт в новую версию.</p>':''}</div>`}
-const selfP=()=>({cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||(S.clan?Date.now():0),reg:S.reg||S.t,srat:S.srat,sid:S.sid,ssum:statSum(),dw:S.dw,dr:S.dr,dn:S.dn,id:UID,title:S.title,name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,lose:S.lose,rating:S.rating,clan:S.clan,av:S.av,eq:S.eq,stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}});
+const selfP=()=>({cnt:cntPub(),xpt:xpTot(S.lvl,S.xp),cjt:S.cjt||(S.clan?Date.now():0),reg:S.reg||S.t,srat:S.srat,sid:S.sid,ssum:statSum(),dw:S.dw,dr:S.dr,dn:S.dn,id:UID,title:S.title,name:S.name,cls:S.cls,lvl:S.lvl,win:S.win,arw:S.arw,lose:S.lose,rating:S.rating,clan:S.clan,av:S.av,eq:S.eq,stats:{atk:atk(),def:def(),hp:maxHp(),crit:crit()}});
 // когда игрок был в игре (для чужой страницы героя)
 function seenTxt(p){if(!p||!p.seen)return'';if(isOn(p))return'<span class="pcls" style="color:var(--moss)">● сейчас в игре</span>';const m=Math.floor((Date.now()-p.seen)/60000),d=new Date(p.seen),t=new Date(),y=new Date(t);y.setDate(t.getDate()-1);
  const hm=d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});const w=m<60?`${Math.max(1,m)} мин. назад`:d.toDateString()===t.toDateString()?`сегодня в ${hm}`:d.toDateString()===y.toDateString()?`вчера в ${hm}`:d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',...(d.getFullYear()!==t.getFullYear()?{year:'numeric'}:{})})+` в ${hm}`;
@@ -1466,7 +1468,7 @@ function plView(){const p=PV===UID&&S?selfP():PL.find(x=>x.id===PV);
  const c=p.clan&&CLN.find(x=>x.id===p.clan),eq=p.eq||{},st=p.stats;
  const slot=(k,t)=>{const it=eq[k];return`<div class="pvs">${it?itemIcon(it,52):`<span class="pve">${SL[t]}</span>`}<small>${it?esc(it.name)+(it.up?' +'+it.up:''):SL[t]}</small></div>`};
  return`<div class="panel pcard"><div class="phead"><span style="position:relative;display:inline-block;line-height:0;margin:0 12px 12px 0">${avatar(p.av,120,frameOf(p))}<span class="lvb">${p.lvl}</span></span><div class="pinfo"><b class="pname">${esc(p.name)}${p.id===UID?' (ты)':''}</b>${titleOf(p)?`<span class="ptl">${esc(titleOf(p))}</span>`:''}<span class="pcls">${CL[p.cls]?CL[p.cls].n:''} · ${p.lvl} уровень</span>${inEx(p)?'<span class="pcls" style="color:var(--moss);font-weight:700">в походе</span>':''}${p.id!==UID?seenTxt(p):''}${c?`<b class="pclan" data-cpv="${c.id}" style="cursor:pointer;text-decoration:underline">«${esc(c.name)}»</b><span class="pcls">Ранг: ${rankOf(c,p.id)}</span>`:'<b class="pclan">Без клана</b>'}</div></div>
- <div class="pstat"><span>Побед <b>${p.win|0}</b></span><span>Поражений <b>${p.lose|0}</b></span><span>Рейтинг <b>${p.rating}</b></span></div></div>
+ <div class="pstat"><span>Побед <b>${p.arw!=null?p.arw|0:p.id===UID?S.arw|0:'—'}</b></span><span>Поражений <b>${p.lose|0}</b></span><span>Рейтинг <b>${p.rating}</b></span></div></div>
  ${st?`<div class="panel"><h3>Характеристики</h3><div class="pstat" style="border:0;padding:0;margin:0"><span>Атака <b>${st.atk}</b></span><span>Защита <b>${st.def}</b></span><span>Здоровье <b>${st.hp}</b></span><span>Крит <b>${st.crit}%</b></span></div></div>`:''}
  <div class="panel"><h3>Снаряжение</h3>${p.eq?`<div class="pvg">${GK.map(([k,t])=>slot(k,t)).join('')}</div><p style="color:var(--mute);font-size:13px;margin:8px 0 0">Нажми на вещь, чтобы увидеть подробности.</p>`:'<p style="margin:0;color:var(--mute)">Игрок ещё не заходил в новую версию игры, снаряжение пока не видно.</p>'}</div>
  ${statBlock(p,c)}
@@ -1486,7 +1488,7 @@ function tabView(){
  if(tab==='top')return topView();if(tab==='clan')return clanView();
  if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
  <button class="b" data-a="rest" ${S.hp>=maxHp()||S.gold<S.lvl*2?'disabled':''}>Отдохнуть у костра (${S.lvl*2} сер.)</button>
- <p style="color:var(--mute);font-size:15px">Побед: ${S.win} · Поражений: ${S.lose}</p></div>`+sagaView()+campBuildView();
+ <p style="color:var(--mute);font-size:15px">Побед: ${S.arw|0} · Поражений: ${S.lose}</p></div>`+sagaView()+campBuildView();
  if(tab==='hunt')return`<div class="dban"><img src="${HUNTI}" alt="Охотничьи угодья" style="aspect-ratio:3/1"><div class="dbt"><b>Охотничьи угодья</b><span>Медведи, волки и оборотни ждут в чаще</span></div></div><div class="panel"><h3>Охота</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Бесконечная битва: сразу выходят 4 зверя (каждый — 1 энергия). Убил одного, и через несколько секунд из чащи приходит другой. Каждый твой удар стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.</p>
  <div class="row"><div>Опушка<small>Слабые звери, меньше награды${terTag('easy')}</small></div><button class="b" data-a="h-easy" ${S.en<1?'disabled':''}>На охоту</button></div>
  <div class="row"><div>Глухой лес<small>Звери твоего уровня${terTag('mid')}</small></div><button class="b" data-a="h-mid" ${S.en<1?'disabled':''}>На охоту</button></div>
@@ -2205,7 +2207,7 @@ function apvpState(m){const s=m.st;if(!s)return;
  S.rating=rating;S.srat=srat;
  if(rs.atk!=null){S.atk=rs.atk;S.atkt=rs.atkt}
  const lost=rs.lost|0;
- if(win){S.win++;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${delta}. Новый рейтинг: ${rating}.`,'hit')}
+ if(win){S.win++;S.arw=(S.arw|0)+1;S.hp=Math.max(1,S.hp);log(`Победа! Рейтинг +${delta}. Новый рейтинг: ${rating}.`,'hit')}
  else{S.lose++;S.gold=Math.max(0,(S.gold|0)-lost);S.hp=1;log(`Поражение. Рейтинг ${delta}. Новый рейтинг: ${rating}.`,'dmg')}
  const e=s.e||{};REP={win,bot:e.name||'Соперник',title:'',lv:e.lv|0,s:{r:0,dealt:0,taken:0,crit:0,ecrit:0,pots:0,...(s.s||{})},dR:delta,rating,dS,srat,xp:0,gold:-lost,lvUp:0,loot:'',war:0,hp:s.hp|0,mhp:s.mhp|0};
  ARH=null;ARL=null;apvpDestroy();fight=null;save();render();repModal()}

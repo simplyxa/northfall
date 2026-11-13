@@ -145,6 +145,11 @@ module.exports = function saves(admin) {
     const wc = ARENA.clampWins(prev, now, dt);
     s.win = wc.win + Math.min(Math.max(0, (s.win | 0) - wc.win), wc.max);
     s.lose = wc.lose + Math.min(Math.max(0, (s.lose | 0) - wc.lose), wc.max);
+    // победы на арене (отдельно от убитых зверей): первая запись принимается как оценка, но не больше общих побед; дальше рост ограничен как у win
+    if (s.arw != null) {
+      const pa = prev && prev.arw != null ? (prev.arw | 0) : null;
+      s.arw = pa == null ? Math.max(0, Math.min(s.arw | 0, s.win | 0)) : pa + Math.min(Math.max(0, (s.arw | 0) - pa), wc.max);
+    }
 
     // вещи: проверяем копию; при ITEM_CLAMP — правим в самом сохранении и сообщаем игре
     let items = null;
@@ -201,8 +206,9 @@ module.exports = function saves(admin) {
         const ssum = statSum(s), prevSsum = prev ? statSum(prev) : null;
         // Карточку игрока пишет сервер: рейтинг, сезон, характеристики и счётчики — его данные.
         const card = { lvl: s.lvl, ssum, rating: s.rating, srat: s.srat, win: s.win, lose: s.lose, sid: s.sid, psid: s.psid, psrat: s.psrat, dr: s.dr, dn: s.dn, dw: s.dw, seen: Date.now() };
+        if (s.arw != null) card.arw = s.arw | 0;
         const changed = !prev || prev._pubStats !== 1 || card.rating !== (prev.rating | 0) || card.srat !== (prev.srat | 0)
-          || card.win !== (prev.win | 0) || card.lose !== (prev.lose | 0) || card.sid !== (prev.sid | 0)
+          || (s.arw != null && card.arw !== (prev.arw == null ? -1 : prev.arw | 0)) || card.win !== (prev.win | 0) || card.lose !== (prev.lose | 0) || card.sid !== (prev.sid | 0)
           || card.lvl !== (prev.lvl | 0) || ssum !== prevSsum || card.dr !== (prev.dr | 0) || card.dn !== (prev.dn | 0)
           || card.dw !== (prev.dw | 0);
         if (changed) tx.set(db.collection('players').doc(uid), card, { merge: true });

@@ -244,9 +244,10 @@ module.exports = function apvp(getDb) {
           hp: win === 1 ? Math.max(1, Math.min(R.mhp, R.hp | 0)) : 1, gold: Math.max(0, (S.gold | 0) - lost),
           win: (S.win | 0) + (win === 1 ? 1 : 0), lose: (S.lose | 0) + (win === 0 ? 1 : 0)
         });
+        if (S.arw != null) ns.arw = (S.arw | 0) + (win === 1 ? 1 : 0);
         tx.set(sref, ns);
         tx.set(db.collection('players').doc(R.uid), {
-          rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose
+          rating: st.rt, srat: st.srt, win: ns.win, lose: ns.lose, ...(ns.arw != null ? { arw: ns.arw } : {})
         }, { merge: true });
         if (win === 1 && L && !(L.won || []).includes(R.oid)) tx.set(db.collection('arlist').doc(R.uid), Object.assign({}, L, { won: (L.won || []).concat(R.oid) }));
         // история боёв: последние 10 как нападающий и как защитник
