@@ -1030,5 +1030,10 @@
   "v": "1.26.79",
   "t": "Исправлен чат в бою: от критического удара он больше не уезжает влево. Кнопка «В бой!» на стартовом экране поднята, всё помещается без прокрутки.",
   "te": "Fixed the in-fight chat sliding left on critical hits. The Play button on the start screen is raised so everything fits without scrolling."
+ },
+ {
+  "v": "1.26.80",
+  "t": "Можно выбрать пол героя: мужчина или женщина. Выбор — при создании героя; у уже созданных героев пол можно один раз бесплатно сменить в карточке героя (карандаш у аватара). В сообщениях игры героиня теперь «пала», «вышла» и так далее.",
+  "te": "You can now choose your hero's gender: male or female. Pick it when creating a hero; existing heroes can change it once for free in the hero card (pencil by the avatar)."
  }
 ]
