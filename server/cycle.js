@@ -207,7 +207,7 @@ module.exports = function cycle(getDb) {
         }
         let C = null;
         const cref = cid ? dbx.collection('clans').doc(cid) : null;
-        if (cref && takeD > 0) { const csn = await tx.get(cref); C = csn.exists ? csn.data() : null; }
+        let CN = ''; if (cref && (takeD > 0 || terrs.length)) { const csn = await tx.get(cref); const cd = csn.exists ? csn.data() : null; CN = (cd && cd.name) || ''; if (takeD > 0) C = cd; }
         // задание дня: если этим ударом оно выполняется, заранее читаем документ казны (чтения — до записей)
         let dq = null, dqRef = null, dqSn = null;
         if (C) {
@@ -230,7 +230,7 @@ module.exports = function cycle(getDb) {
           T.pts = T.pts || {}; T.names = T.names || {};
           const share = Math.max(1, Math.round(it.n * take / kills));
           T.pts[cid] = (T.pts[cid] | 0) + share;
-          T.names[cid] = String(S.name || cid).slice(0, 20);
+          T.names[cid] = String(CN || cid).slice(0, 30);   // название КЛАНА (раньше писалось имя игрока)
           tx.set(it.ref, T);
         }
         // 2. опыт клана и недельное задание
