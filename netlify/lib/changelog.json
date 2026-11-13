@@ -1035,5 +1035,10 @@
   "v": "1.26.80",
   "t": "Можно выбрать пол героя: мужчина или женщина. Выбор — при создании героя; у уже созданных героев пол можно один раз бесплатно сменить в карточке героя (карандаш у аватара). В сообщениях игры героиня теперь «пала», «вышла» и так далее.",
   "te": "You can now choose your hero's gender: male or female. Pick it when creating a hero; existing heroes can change it once for free in the hero card (pencil by the avatar)."
+ },
+ {
+  "v": "1.26.81",
+  "t": "Героини выглядят по-женски: новые рисунки берсерка, охотницы и шаманки в полный рост, а также их атаки и умения. Аватары-портреты пока прежние.",
+  "te": "Heroines now look female: new full-body art for the berserker, hunter and shaman, plus their attacks and skills. Portrait avatars are unchanged for now."
  }
 ]

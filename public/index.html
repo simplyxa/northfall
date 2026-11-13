@@ -2761,7 +2761,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.80';
+const GVER='1.26.81';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3297,7 +3297,7 @@ function ui(){if(!S||fight||!['top','clan','admin','home','friends','mail','pl',
 const AVC=['#C0392B','#D2A24C','#3FB3A6','#8B63D6','#6FA85A','#6FA3D0'];
 let avN=0;
 // пол героя: S.av.x (0 — мужской, 1 — женский); женские рисунки подключаются, когда появятся (пока — мужские)
-const HEROFIG_F={},HEROPOSE_F={},AVSF='';
+const HEROFIG_F={berserk:'/img/ca8444fb8ffd1c.webp',hunter:'/img/2fab4a29d1142a.webp',shaman:'/img/c8f12aba1b87a0.webp'},HEROPOSE_F={berserk:{atk:{a:'/img/a6e9be91800f7d.webp',l:-27.13,t:-20.47,w:144.37},rage:{a:'/img/3dd7edc98f85b0.webp',l:-22.79,t:-9.06,w:143.0},roar:{a:'/img/995727e0cffa5f.webp',l:-35.81,t:-8.44,w:162.12}},hunter:{atk:{a:'/img/4b27c2f9c2ecf9.webp',l:-28.65,t:-13.91,w:159.37},shot:{a:'/img/4a3fad7d0f1cf1.webp',l:-16.11,t:1.56,w:145.53},trap:{a:'/img/a8b7c4fa32ee2a.webp',l:-37.81,t:8.59,w:150.14}},shaman:{atk:{a:'/img/bc2354d278600c.webp',l:-35.14,t:2.81,w:163.43},totem:{a:'/img/64bef42cccaa0a.webp',l:-25.14,t:0.62,w:118.0},skin:{a:'/img/d8efcbce81b1a4.webp',l:-13.21,t:-2.5,w:101.43}}},AVSF='';
 const isF=()=>!!(S&&S.av&&S.av.x);
 const hfig=c=>(isF()&&HEROFIG_F[c])||HEROFIG[c];
 const hpose=c=>(isF()&&HEROPOSE_F[c])||HEROPOSE[c];
@@ -3387,7 +3387,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.80</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.81</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
