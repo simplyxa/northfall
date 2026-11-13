@@ -1015,5 +1015,10 @@
   "v": "1.26.76",
   "t": "Победы на арене считаются отдельно от убитых зверей (начальное значение оценено по накопленному). Сравнение вещи с надетой учитывает только базовые параметры, без усиления +N, чар и камней.",
   "te": "Arena wins are now counted separately from beast kills (the starting value is estimated from existing stats). Item comparison with the equipped one uses base stats only, without +N upgrades, enchants and gems."
+ },
+ {
+  "v": "1.26.77",
+  "t": "Новый стартовый экран: заставка на весь экран, девиз, большая кнопка «В бой!», «У меня уже есть аккаунт · Войти». Вход открывается во всплывающем окне.",
+  "te": "New start screen: full-screen key art, tagline, big Play button and \"I already have an account · Sign in\". Sign-in opens in a popup."
  }
 ]
