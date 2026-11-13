@@ -786,7 +786,9 @@ const HMON={easy:['Лесной волк','Дикий кабан','Лиса-об
 // ===== Картинки зверей охоты (фон карточек) =====
 const MOBI={'Лесной волк':'/img/ff6743cb4d864c.webp','Дикий кабан':'/img/bb89dcd9f8c376.webp','Лиса-оборотень':'/img/93099805f67dd9.webp','Ворон-падальщик':'/img/d869a53efa1400.webp','Болотная крыса':'/img/123c5d93738eee.webp','Горный медведь':'/img/d7a23d84e74605.webp','Снежный барс':'/img/3ceee67319ad5d.webp','Разбойник с тракта':'/img/4873c07415e5f7.webp','Вожак стаи':'/img/e9342a4c7d91e9.webp','Драугр':'/img/108e0049c02010.webp','Тролль-подросток':'/img/d969fadc988baa.webp'};
 const mobImg=n=>{n=String(n||'').toLowerCase();for(const k in MOBI)if(n.endsWith(k.toLowerCase()))return MOBI[k];return''};
-function hMon(kind){const n=HMON[kind],e=mkEnemy(n[Math.floor(Math.random()*n.length)],Math.max(1,S.lvl+(kind==='hard'?1:0)),HM[kind]);e.atk*=.6*(nbOn()?.45:1);if(!nbOn()&&Math.random()<.3){const ks=Object.keys(TRAITS),t=ks[Math.floor(Math.random()*ks.length)];e.tr=t;e.name=TRAITS[t][0]+' '+e.name.toLowerCase();e.xp*=1.5;e.gold*=1.5;if(t==='armor'){e.hp=e.max=Math.round(e.max*1.2)}}return{e,ech:Math.random()*.6,at:null}}
+// охота: зверь держит ~N полных ударов героя (по виду охоты) и бьёт не меньше доли его здоровья (раньше урон падал до 1 из-за брони)
+const HHIT={easy:2,mid:3,hard:4},HHPC={easy:.012,mid:.017,hard:.021};
+function hMon(kind){const n=HMON[kind],e=mkEnemy(n[Math.floor(Math.random()*n.length)],Math.max(1,S.lvl+(kind==='hard'?1:0)),HM[kind]);e.atk*=.6*(nbOn()?.45:1);if(!nbOn()){const N=HHIT[kind]||3,avg=Math.max(1,atk()-e.def*.5);e.hp=e.max=Math.max(e.max,Math.round(avg*N*rnd(.9,1.1)));e.hpct=HHPC[kind]||.017;e.xp*=N*.75;e.gold*=N*.75}if(!nbOn()&&Math.random()<.3){const ks=Object.keys(TRAITS),t=ks[Math.floor(Math.random()*ks.length)];e.tr=t;e.name=TRAITS[t][0]+' '+e.name.toLowerCase();e.xp*=1.5;e.gold*=1.5;if(t==='armor'){e.hp=e.max=Math.round(e.max*1.2)}}return{e,ech:Math.random()*.6,at:null}}
 // самая первая охота новичка (задание «убей 2»): удар сразу готов, звери падают с одного удара, кнопка подсвечена
 const fb1=()=>{if(S&&!S.nb&&typeof nbInit==='function')nbInit();return!!(S&&S.nb&&!S.nb.done&&S.nb.i===0)};
 function startHunt(kind){
@@ -1147,6 +1149,7 @@ function startFight(kind,botId){
 function enemyTurn(e){
  e=e||fight.e;
  let d=Math.max(1,Math.round(rnd(.8,1.2)*e.atk-def()*.6));
+ if(e.hpct){const red=Math.min(.4,def()/(def()+300));d=Math.max(d,Math.round(maxHp()*e.hpct*rnd(.85,1.15)*(1-red)))}
  if(fight.wb||e.rbp){const red=Math.min(.4,def()/(def()+300));d=Math.max(d,Math.round(maxHp()*(e.rbp||WBPCT*(e.wbm||1))*rnd(.85,1.15)*(1-red)))}
  if(e.crit&&Math.random()*100<e.crit){d=Math.round(d*1.6);fight.s.ecrit++;log(`${e.name} наносит удар в уязвимое место!`,'dmg')}
  if(fight.clk<fight.guardUntil){d=Math.max(1,Math.round(d*.4));log('Блок смягчает удар.')}
