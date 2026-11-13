@@ -2761,7 +2761,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.84';
+const GVER='1.26.85';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3303,7 +3303,7 @@ const hfig=c=>(isF()&&HEROFIG_F[c])||HEROFIG[c];
 const hpose=c=>(isF()&&HEROPOSE_F[c])||HEROPOSE[c];
 // женские формы глаголов в обращении «Ты …» (только русский; в английской версии текст не меняется)
 function gx(s){if(!isF()||typeof s!=='string')return s;return s.replace(/([Тт]ы\s+(?:уже\s+|не\s+)?(?:вы|во|до|при|у|на|по|про|за|пере|об|от)ш)(ёл|ел)(?![а-яё])/g,'$1\u043b\u0430').replace(/([Тт]ы\s+(?:уже\s+|не\s+|успел\s+)?[а-яё]+)(лся|л)(?![а-яё])/g,(m,a,b)=>a+(b==='\u043b'?'\u043b\u0430':'\u043b\u0430\u0441\u044c'))}
-const AVS='/img/067254a419e1f2.webp',AVN=10;
+const AVS='/img/829dd448c8cf80.webp',AVN=10;
 try{const st=document.createElement('style');st.textContent='.avi{background-image:url('+AVS+')}'+(AVSF?'.avi.f{background-image:url('+AVSF+')}':'');document.head.appendChild(st)}catch(e){}
 function avatar(a,z,fr){a=a||{s:0};let FI=null;if(fr&&String(fr).startsWith('fr:')){const [i,c]=String(fr).slice(3).split('|');fr=c;if(z>=44&&typeof DFR!=='undefined')FI=DFR[+i]}
  if(FI){const s=z/Math.max(FI.w,FI.h),W=FI.w*s,Hh=FI.h*s,ox=(z-W)/2,oy=(z-Hh)/2,az=Math.round(Math.min(FI.hw,FI.hh)*s*1.08),ax=ox+(FI.hx+FI.hw/2)*s-az/2,ay=oy+(FI.hy+FI.hh/2)*s-az/2;return`<span style="position:relative;display:inline-block;flex:0 0 auto;vertical-align:middle;width:${z}px;height:${z}px"><span style="position:absolute;left:${ax.toFixed(1)}px;top:${ay.toFixed(1)}px;line-height:0">${avatar(a,az)}</span><img src="${FI.u}" alt="" style="position:absolute;left:${ox.toFixed(1)}px;top:${oy.toFixed(1)}px;width:${W.toFixed(1)}px;height:${Hh.toFixed(1)}px;pointer-events:none;max-width:none"></span>`}
@@ -3387,7 +3387,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.84</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.85</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

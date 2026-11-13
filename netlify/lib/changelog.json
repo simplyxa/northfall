@@ -1055,5 +1055,10 @@
   "v": "1.26.84",
   "t": "Пол героя можно менять сколько угодно раз: каждая смена стоит 5 золота (карандаш у аватара в карточке героя).",
   "te": "You can change your hero's gender as many times as you like: each change costs 5 gold (pencil by the avatar in the hero card)."
+ },
+ {
+  "v": "1.26.85",
+  "t": "Новые мужские аватары: десять портретов воинов вместо прежних, где затесались две женщины.",
+  "te": "New male avatars: ten warrior portraits replace the old set, which included two women."
  }
 ]
