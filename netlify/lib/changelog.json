@@ -1025,5 +1025,10 @@
   "v": "1.26.78",
   "t": "Новый логотип игры в стиле заставки.",
   "te": "New game logo matching the new key art."
+ },
+ {
+  "v": "1.26.79",
+  "t": "Исправлен чат в бою: от критического удара он больше не уезжает влево. Кнопка «В бой!» на стартовом экране поднята, всё помещается без прокрутки.",
+  "te": "Fixed the in-fight chat sliding left on critical hits. The Play button on the start screen is raised so everything fits without scrolling."
  }
 ]
