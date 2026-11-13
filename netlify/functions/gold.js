@@ -119,6 +119,21 @@ exports.handler = async (event) => {
         logOp(tx, uid, { op: 'mbuy', n: -price, lot: mref.id }); logOp(tx, m.seller, { op: 'msell', n: g, lot: mref.id });
         return { au: me.w.au - price, item: m.item };
       }
+      if (a === 'story') { // золото за шаги сюжета «Тропа без следов»: фиксированные суммы, раз на шаг, и только если шаг уже достигнут в сохранении
+        const id = String(q.id || ''), STORY = { s6: [2, 5, 1], s13: [3, 12, 10], s20: [5, 19, 20] }, sd = STORY[id];
+        if (!sd) fail(400, 'Неверные данные');
+        const cref = W(uid).collection('claims').doc('nb_' + id), cs = await tx.get(cref);
+        if (cs.exists) fail(409, 'Награда уже получена');
+        const sv = await tx.get(db.collection('saves').doc(uid));
+        if (!sv.exists) fail(409, 'Нет сохранения');
+        const sg = sv.data(), nb = sg.nb || {};
+        if (!(nb.done || (nb.i | 0) >= sd[1]) || (sg.lvl | 0) < sd[2]) fail(409, 'Шаг ещё не пройден');
+        const { ref, w } = await ensure(tx, uid);
+        tx.update(ref, { au: (w.au | 0) + sd[0] }); tx.set(cref, { ts: Date.now(), g: sd[0] });
+        logOp(tx, uid, { op: 'story', n: sd[0], id });
+        return { au: (w.au | 0) + sd[0] };
+      }
+
       if (a === 'boss') { // золото за рейд (Ледяной змей, Сурт) и мирового босса — с дневным лимитом
         const k = String(q.k || ''), id = String(q.id || '');
         if (!/^[A-Za-z0-9_]{1,40}$/.test(id)) fail(400, 'Неверные данные');
