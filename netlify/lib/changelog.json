@@ -1145,5 +1145,10 @@
   "v": "1.31.3",
   "t": "Новые иконки нижней панели: Главная, Клан, Рюкзак, Чат.",
   "te": "New bottom bar icons: Home, Clan, Bag, Chat."
+ },
+ {
+  "v": "1.32.0",
+  "t": "Музыка и звуки в бою теперь выключаются отдельно: в настройках два переключателя, рог на главной управляет музыкой.",
+  "te": "Music and battle sounds can now be turned off separately: two switches in settings, and the horn on the home screen controls the music."
  }
 ]

@@ -1,4 +1,7 @@
 [
- "\" style=\"margin:0\">Отказаться</button><button class=\"b\" data-qg=\"",
- "\" style=\"margin:0\">Перейти</button></span>"
+ "><span><b>Звуки в бою</b></span></label><label class=\"tgl\"><input type=\"checkbox\" data-a=\"mmute\" ",
+ "><span><b>Музыка на главной</b></span></label></div>",
+ "Музыка выключена",
+ "Музыка включена",
+ "\" aria-label=\"Музыка\"><img src=\""
 ]
