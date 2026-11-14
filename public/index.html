@@ -308,6 +308,94 @@ nav.bnav button,nav.bnav button.on{background:none;border:0;border-radius:0;marg
 .stage>.st-flee.x img{width:100%;height:100%;object-fit:contain;pointer-events:none}
 
 .st-ui .sthint,.st-ui .st-cap{position:absolute;margin:0}
+/* ===== Главная-сцена ===== */
+body.hsmode{overflow:hidden;background:#0c0e12}
+#hsbg{display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);z-index:18;overflow:hidden;background:#0c0e12}
+body.hsmode #hsbg{display:block}
+#hsbg .bgl{position:absolute;inset:0;background-position:center bottom;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity 1.8s ease}
+#hsbg .bgl.on{opacity:1}
+#hsbg canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#hsbg:after{content:"";position:absolute;inset:0;background:linear-gradient(#0007,#0000 18%,#0000 80%,#0008);pointer-events:none}
+.hs{--panel:#10141b;--ink:#f3ead2;--mute:#b9b19c;--line:#4a3c20;--gold:#d9b45a;--blood:#e0705a;--moss:#8fc16a;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);z-index:19;font-family:inherit;color:var(--ink);pointer-events:none}
+.hs>*{pointer-events:auto}
+.hs button{font-family:inherit}
+.hs-xp{position:absolute;left:0;right:0;top:0;height:6px;background:#0b0e13;z-index:3}.hs-xp u{display:block;height:100%;background:#e0a02a}
+.hs-t{position:absolute;left:0;right:0;top:calc(15px + env(safe-area-inset-top,0px));z-index:3;display:flex;align-items:center;gap:5px;padding:0 6px}
+.hs-xp{top:env(safe-area-inset-top,0px)}
+.hs-gp{position:relative;height:40px;width:calc(40px*3.34);flex:none;padding:0;border:0;background:none;filter:drop-shadow(0 3px 5px #000a)}
+.hs-gp .pb{position:absolute;inset:0;width:100%;height:100%}
+.hs-gp .co{position:absolute;left:14.1%;top:50.5%;width:13.6%;aspect-ratio:1;transform:translate(-50%,-50%);filter:drop-shadow(0 1px 1.5px #000)}
+.hs-gp .am{position:absolute;left:29.5%;width:49%;top:0;bottom:0;display:flex;align-items:center;justify-content:center;border:0;background:none;color:#f3ead2;font-weight:700;font-size:13px;line-height:1;font-family:inherit;text-shadow:0 1px 2px #000;font-variant-numeric:tabular-nums;padding:0;cursor:pointer}
+.hs-gp .plus{position:absolute;left:89.8%;top:49.9%;width:20%;aspect-ratio:1;transform:translate(-50%,-50%);border:0;border-radius:50%;background:transparent;padding:0;cursor:pointer}
+.hs-gp .plus:active{background:#ffffff33}
+.hs-st{flex:1 1 0;display:flex;justify-content:center;gap:4px;min-width:0}
+.hs-s{position:relative;width:30px;height:30px;flex:none;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#3a4252,#12161d);border:2px solid #8a7340;box-shadow:0 3px 8px #000a;cursor:pointer;color:#f3ead2;animation:hspop .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes hspop{from{transform:scale(0)}}
+.hs-s img{width:20px;height:20px}.hs-s svg{width:17px;height:17px}
+.hs-s.r{border-color:#d4604a;color:#ff9a86;animation:hspop .45s cubic-bezier(.3,1.6,.5,1) both,hsrg 1.8s 1s infinite}.hs-s.v{border-color:#7fc15a;color:#a8e47c}.hs-s.g{border-color:#e6c673}
+@keyframes hsrg{50%{box-shadow:0 0 12px #d4604acc,0 3px 8px #000a}}
+.hs-s i{position:absolute;right:-5px;top:-5px;min-width:16px;height:16px;border-radius:8px;background:#d4604a;border:1px solid #fff3d8;color:#fff;font-weight:700;font-size:10px;line-height:14px;font-family:inherit;font-style:normal;text-align:center;padding:0 3px}
+.hs-rt{display:flex;gap:2px}.hs-rt button{width:36px;height:36px;padding:0;border:0;background:none;border-radius:50%;filter:drop-shadow(0 3px 5px #000a);cursor:pointer}.hs-rt img{display:block;width:100%;height:100%;object-fit:contain}.hs-rt button:active{transform:scale(.94)}
+.hs-logo{position:absolute;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(44%,200px);z-index:2;pointer-events:none}.hs-logo img{display:block;width:100%;filter:drop-shadow(0 2px 8px #000)}
+.hs-ev{position:absolute;left:10px;top:max(19%,calc(142px + env(safe-area-inset-top,0px)));z-index:4;display:grid;grid-template-rows:repeat(4,76px);grid-auto-flow:column;grid-auto-columns:64px;gap:8px;transition:opacity .25s}
+.hs.sd .hs-ev{opacity:.25}
+.hs-e{position:relative;width:64px;height:76px;display:flex;flex-direction:column;align-items:center;padding:0;border:0;background:none;cursor:pointer;animation:hsevin .5s both}
+@keyframes hsevin{from{opacity:0;transform:translateX(-30px)}}
+.hs-e img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 3px 5px #000c);transition:filter .2s,transform .2s;animation:hsfl 3.2s ease-in-out infinite}
+.hs-e .em{width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:36px;filter:drop-shadow(0 3px 5px #000c)}
+.hs-e:hover img,.hs-e.on img{filter:drop-shadow(0 0 7px #f0b43c) drop-shadow(0 3px 5px #000c);transform:scale(1.06)}
+.hs-e.hot img{filter:drop-shadow(0 0 7px #d4402a) drop-shadow(0 3px 5px #000c)}
+.hs-e small{margin-top:2px;font-weight:700;font-size:11px;line-height:1.3;font-family:inherit;color:#f0c46a;background:#10141bee;border:1px solid #7a6a3c;border-radius:8px;padding:1px 6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hs-e .dot{position:absolute;top:-2px;right:2px;width:11px;height:11px;border-radius:50%;background:#d4604a;box-shadow:0 0 8px #d4604a;animation:hspl 1.6s infinite}
+@keyframes hspl{50%{transform:scale(1.35);opacity:.7}}
+@keyframes hsfl{50%{transform:translateY(-3px) rotate(-4deg)}}
+.hs-det{position:absolute;left:10px;top:max(19%,calc(142px + env(safe-area-inset-top,0px)));width:min(62%,260px);max-height:calc(100% - 300px);overflow:auto;z-index:6;background:#10141bf2;border:2px solid #7a6a3c;border-radius:8px;padding:12px;box-shadow:0 6px 22px #000c;animation:hsdin .25s cubic-bezier(.3,.8,.3,1) both;transform-origin:0 0}
+@keyframes hsdin{from{transform:scale(.3);opacity:0}}
+.hs-det .h{display:flex;align-items:center;gap:10px;margin-bottom:6px}.hs-det .h img{width:48px;height:48px;object-fit:contain}.hs-det .h .em{font-size:34px;width:48px;text-align:center}
+.hs-det .h b{font-size:17px;display:block}.hs-det .h small{color:#d9b45a;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.hs-det .panel{background:transparent;border:0;box-shadow:none;padding:0;margin:6px 0 0}
+.hs-det p{font-size:14px;color:#cfc6b0;margin:6px 0}
+.hs-det .b{width:100%}
+.hs-m{position:absolute;right:10px;top:max(19%,calc(142px + env(safe-area-inset-top,0px)));z-index:5;display:flex;flex-direction:column;gap:10px}
+.hs-c{position:relative;width:62px;height:62px;padding:0;border:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:hsmin .5s both}
+.hs-c:nth-child(2){animation-delay:.08s}.hs-c:nth-child(3){animation-delay:.16s}.hs-c:nth-child(4){animation-delay:.24s}
+@keyframes hsmin{from{opacity:0;transform:translateX(40px)}}
+.hs-c:before{content:"";position:absolute;inset:-5.9%;background:var(--hsf0) center/100% 100% no-repeat;pointer-events:none;filter:drop-shadow(0 3px 6px #000a);transition:filter .2s}
+.hs-c.on:before{background-image:var(--hsf1);filter:drop-shadow(0 0 7px #f0b43c) drop-shadow(0 3px 6px #000a)}
+.hs-c img{position:relative;width:40px;height:40px;filter:drop-shadow(0 2px 3px #000);animation:hsfl 3.2s ease-in-out infinite}
+.hs-c:nth-child(2) img{animation-delay:.5s}.hs-c:nth-child(3) img{animation-delay:1s}.hs-c:nth-child(4) img{animation-delay:1.5s}
+.hs-c .dot{position:absolute;z-index:3;top:-6px;right:-6px;width:11px;height:11px;border-radius:50%;background:#d4604a;box-shadow:0 0 8px #d4604a;animation:hspl 1.6s infinite}
+.hs-sub{position:absolute;right:82px;top:max(19%,calc(142px + env(safe-area-inset-top,0px)));width:min(62%,250px);max-height:calc(100% - 260px);overflow:auto;z-index:6;display:flex;flex-direction:column;gap:6px;background:#10141bf2;border:2px solid #7a6a3c;border-radius:8px;padding:8px;box-shadow:0 6px 22px #000c;animation:hssin .25s cubic-bezier(.3,.8,.3,1) both;transform-origin:100% 0}
+@keyframes hssin{from{transform:scaleX(.2);opacity:0}}
+.hs-sub .sh{font-weight:700;font-size:15px;line-height:1;font-family:inherit;letter-spacing:.07em;text-transform:uppercase;color:#d9b45a;padding:2px 2px 4px;text-shadow:0 1px 3px #000}
+.hs-sub .mi{display:flex;align-items:center;gap:9px;padding:6px 9px;margin:0;border:1.5px solid #6d5f3a;border-radius:5px;background:#1a1f29ee;color:#f3ead2;text-align:left;cursor:pointer;width:100%;position:relative}
+.hs-sub .mi .mic{width:28px;height:28px}.hs-sub .mi svg{width:24px;height:24px;flex:none;color:#d9b45a}
+.hs-sub .mi b{font-size:15px;flex:1}.hs-sub .mi small{display:block;width:100%;font-size:11px;color:#b9b19c;font-weight:400}
+.hs-sub .mi .ch{display:none}
+.hs-sub .mi{flex-wrap:wrap}.hs-sub .mi b{flex:1 1 40%}.hs-sub .mi small{order:3;margin-left:37px;margin-top:-4px}
+.hs-ov{position:absolute;left:8px;right:8px;top:max(19%,calc(142px + env(safe-area-inset-top,0px)));z-index:8;max-height:calc(100% - 240px);overflow:auto}
+.hs-ov .panel{background:#10141bf2;border-color:#7a6a3c;color:#f3ead2}
+.hs-back{position:absolute;left:10px;right:10px;bottom:calc(min(100vw,520px)/5.3366 + 8px + env(safe-area-inset-bottom,0px));z-index:7}
+/* нижнее меню */
+#bnav{position:fixed;bottom:env(safe-area-inset-bottom,0px);left:50%;transform:translateX(-50%);width:min(520px,100%);aspect-ratio:5.3366;height:auto;display:block;background:none;border:0;border-radius:0;padding:0;margin:0;box-shadow:none;container-type:inline-size;z-index:30}
+#bnav::after{background:#1b1006;top:calc(100% - 2px);height:200px}
+#bnav .nbg{position:absolute;inset:0;width:100%;height:100%;display:block;filter:drop-shadow(0 -4px 10px #000a);pointer-events:none}
+#bnav button.ns,#bnav button.nc{position:absolute;transform:translate(-50%,-50%);padding:0;margin:0;border:0;background:none;box-shadow:none;max-width:none;min-height:0;height:auto;aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#bnav button.ns{width:13.1%;border-radius:50%}
+#bnav button.ns img{width:84%;height:84%;object-fit:contain;filter:drop-shadow(0 2px 3px #000);transition:transform .2s;opacity:1}
+#bnav button.ns:active img{transform:scale(.9)}
+#bnav button.ns.on{background:radial-gradient(circle,#e6a83c44,#e6a83c00 70%);box-shadow:0 0 0 2px #ffe08acc,0 0 14px #e6a83ccc}
+#bnav button.nc{width:13.77%;border-radius:50%;overflow:hidden;color:inherit}
+#bnav button.nc .avi{width:100%!important;height:100%!important;border-radius:50%!important;box-shadow:none!important;display:block}
+#bnav button.nc.on{box-shadow:0 0 0 2px #ffe08acc,0 0 14px #e6a83ccc}
+#bnav .nlv{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:3.4cqw;line-height:1;font-family:inherit;color:#f3d98a;text-shadow:0 1px 2px #000,0 0 4px #000;pointer-events:none;letter-spacing:.03em}
+#bnav .bdg{position:absolute;right:-4%;top:-4%;left:auto;min-width:3.2cqw;height:3.2cqw;padding:0 .8cqw;border-radius:2cqw;background:#d4604a;border:1px solid #fff3d8;color:#fff;font:700 2.2cqw/2.9cqw sans-serif;text-align:center;font-style:normal;z-index:2}
+#bnav .nx{position:absolute;right:1%;top:-4.5cqw;z-index:2;display:flex;gap:6px}
+#bnav .nx button{position:static;transform:none;width:auto;height:auto;aspect-ratio:auto;padding:4px 10px;border-radius:12px;background:#10141bee;border:1.5px solid #8a7340;color:#f3ead2;font-weight:700;font-size:12px;line-height:1.2;font-family:inherit}
+.nbhl{outline:3px solid #f0b43c;outline-offset:2px;border-radius:50%}
+body.hasnav #app{padding-bottom:calc(min(100vw,520px)/5.3366 + 14px + env(safe-area-inset-bottom,0px))}
+.chs{bottom:calc(min(100vw,520px)/5.3366 + env(safe-area-inset-bottom,0px))!important}
+
 </style>
 <link rel="alternate" hreflang="ru" href="https://playnorthfall.online/"><link rel="alternate" hreflang="en" href="https://playnorthfall.online/en/"><link rel="alternate" hreflang="x-default" href="https://playnorthfall.online/">
 </head>
@@ -1488,7 +1576,7 @@ function tabView(){
  if(tab==='mypets')return heroPets();if(tab==='pl')return plView();if(tab==='cpub')return clanPubView();if(tab==='quest')return questView();if(tab==='boss')return bossView();if(tab==='raid')return raidView();if(tab==='duel')return duelView();if(tab==='skills')return skillsView();if(tab==='settings')return settingsView();if(tab==='mail')return mailView();if(tab==='give')return giveView();if(tab==='exped')return expedView();if(tab==='pets')return petView();if(tab==='invite')return inviteView();if(tab==='discord')return discordView();if(tab==='install')return installView();if(tab==='gold')return goldView();if(tab==='gchat')return gchatView();if(tab==='online')return onlineView();if(tab==='about')return aboutView();if(tab==='bank')return bankView();if(tab==='friends')return friendsView();if(tab==='dm')return dmView();if(tab==='forum')return forumView();if(tab==='market')return marketView();if(tab==='ach')return achView();
  if(tab==='admin')return admView();
  if(tab==='top')return topView();if(tab==='clan')return clanView();
- if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Лагерь у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Лагерь племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
+ if(tab==='camp')return`<div class="dban"><img src="${CAMPI}" alt="Таверна у костра" style="aspect-ratio:1200/480"><div class="dbt"><b>Таверна племени</b><span>Снег скрипит под ногами, у костра точат клинки</span></div></div><div class="panel"><p style="margin-top:0">Отсюда уходят на охоту и на арену.</p>
  <button class="b" data-a="rest" ${S.hp>=maxHp()||S.gold<S.lvl*2?'disabled':''}>Отдохнуть у костра (${S.lvl*2} сер.)</button>
  <p style="color:var(--mute);font-size:15px">Побед: ${S.arw|0} · Поражений: ${S.lose}</p></div>`+sagaView()+campBuildView();
  if(tab==='hunt')return`<div class="dban"><img src="${HUNTI}" alt="Охотничьи угодья" style="aspect-ratio:3/1"><div class="dbt"><b>Охотничьи угодья</b><span>Медведи, волки и оборотни ждут в чаще</span></div></div><div class="panel"><h3>Охота</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Бесконечная битва: сразу выходят 4 зверя (каждый — 1 энергия). Убил одного, и через несколько секунд из чащи приходит другой. Каждый твой удар стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.</p>
@@ -2700,7 +2788,7 @@ function bankView(){const bt=(d,n)=>{const ok=d==='buy'?S.gold>=n*XR&&n<=xLeft()
  `<div class="panel"><h3>Купить золото</h3><p style="margin:0 0 8px;color:var(--mute);font-size:14px">Не больше ${XLIM} золота в день. Сегодня осталось: <b class="g">${xLeft()}</b>.${xLeft()?'':' Новый лимит завтра.'}</p><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,2,3,5].map(n=>bt('buy',n)).join('')}</div></div>`+
  `<div class="panel"><h3>Продать золото</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${[1,10,50,100].map(n=>bt('sell',n)).join('')}</div></div>`}
 
-// ===== Лагерь: сказитель и обустройство =====
+// ===== Таверна: сказитель и обустройство =====
 const SAGA=[
  ['Глаз за мудрость','У корней Иггдрасиля бьёт источник Мимира, и кто изопьёт из него, узнает всё, что было и будет. Один пришёл к источнику, но Мимир потребовал платы. Всеотец не торговался.','Что отдал Один за глоток из источника Мимира?',['свой глаз','копьё Гунгнир','коня Слейпнира']],
  ['Молот грома','Локи поспорил на свою голову, что гномы-кузнецы не скуют ничего лучше уже сделанных даров. Братья Брокк и Эйтри раздули горн, и из огня вышел молот с короткой рукоятью, которым Тор с тех пор крушит великанов.','Кто выковал Мьёльнир?',['гномы-кузнецы','валькирии','великан Имир']],
@@ -2738,9 +2826,9 @@ function sagaView(){const T=sgToday(),[t,txt,q]=SAGA[T.i],sd=S.saga&&S.saga.day=
 const CAMPB={tent:['Шатёр из шкур','+1 к макс. энергии',L=>`+${L} энергии`],bed:['Ложе у очага','+1 к регенерации',L=>`+${L} регенерации`],rack:['Оружейная стойка','+2% к атаке',L=>`+${2*L}% атаки`],pen:['Загон для зверя','питомец растёт быстрее: +15% шанс двойного опыта',L=>`+${15*L}% шанс`],smoke:['Коптильня','+3% опыта и серебра с боёв',L=>`+${3*L}% добычи`]};
 const CMAX=5,CREQ=[1,5,10,15,20],cbl=k=>(S&&S.camp?S.camp[k]|0:0),ccost=n=>({g:150*(n+1)*(n+1),i:10*(n+1)});
 function campUp(k){if(!CAMPB[k])return;S.camp=S.camp||{};const l=S.camp[k]|0;if(l>=CMAX)return;const c=ccost(l);if(S.lvl<CREQ[l]||S.gold<c.g||(S.iron|0)<c.i)return;
- S.gold-=c.g;S.iron-=c.i;S.camp[k]=l+1;clampV();log(`Лагерь: ${CAMPB[k][0]}, уровень ${l+1}.`,'sys');save();render()}
+ S.gold-=c.g;S.iron-=c.i;S.camp[k]=l+1;clampV();log(`Таверна: ${CAMPB[k][0]}, уровень ${l+1}.`,'sys');save();render()}
 function campBuildView(){const tot=Object.keys(CAMPB).reduce((t,k)=>t+cbl(k),0);
- return`<div class="panel"><h3>🏕 Обустройство лагеря</h3><p style="margin:0 0 4px;color:var(--mute);font-size:14px">Улучшай стоянку за серебро и железо, и бонусы будут действовать всегда. Каждое улучшение до ${CMAX} уровня, следующие уровни открываются по мере роста героя. Построено: ${tot}/${CMAX*Object.keys(CAMPB).length}.</p>`+
+ return`<div class="panel"><h3>🏕 Обустройство таверны</h3><p style="margin:0 0 4px;color:var(--mute);font-size:14px">Улучшай стоянку за серебро и железо, и бонусы будут действовать всегда. Каждое улучшение до ${CMAX} уровня, следующие уровни открываются по мере роста героя. Построено: ${tot}/${CMAX*Object.keys(CAMPB).length}.</p>`+
  Object.keys(CAMPB).map(k=>{const [n,d,f]=CAMPB[k],l=cbl(k),c=ccost(l),lk=l<CMAX&&S.lvl<CREQ[l],ok=l<CMAX&&!lk&&S.gold>=c.g&&(S.iron|0)>=c.i;
   return`<div class="row"><div><b>${n}</b> · ур. ${l}/${CMAX}<small style="display:block">${d} за уровень${l?` · сейчас <b style="color:var(--moss)">${f(l)}</b>`:''}</small>${l<CMAX?`<small style="display:block;color:var(--mute)">${lk?`Откроется на ${CREQ[l]} уровне героя`:`Следующий: ${c.g} сер. и ${c.i} жел.`}</small>`:''}</div>${l>=CMAX?'<span style="color:var(--moss);font-weight:700">Макс.</span>':`<button class="b" data-cb="${k}" ${ok?'':'disabled'} style="margin:0">Улучшить</button>`}</div>`}).join('')+`</div>`}
 
@@ -2770,7 +2858,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.88';
+const GVER='1.27.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2806,7 +2894,7 @@ function onlineView(){const L=onlineList().sort((a,b)=>b.lvl-a.lvl);
 function aboutView(){const li=a=>`<ul style="margin:4px 0 0;padding-left:20px">${a.map(x=>`<li style="margin:3px 0">${x}</li>`).join('')}</ul>`;
  return`<div class="panel"><h3>Об игре</h3><p style="margin:0"><b>Northfall: Barbarians</b> — браузерная ролевая игра о варварах сурового Севера. Здесь нет загрузок и установки: играй в браузере на телефоне или компьютере, прогресс хранится на сервере.</p></div>
  <div class="panel"><h3>Три пути воина</h3>${li(['<b>Берсерк</b> — сила и здоровье, бьёт тяжело и долго стоит на ногах.','<b>Охотник</b> — энергия и регенерация, больше боёв подряд.','<b>Шаман</b> — броня и лечение, его трудно убить.'])}</div>
- <div class="panel"><h3>Чем заняться</h3>${li(['<b>Охота</b> на зверей и разбойников: опыт за каждый удар, трофеи и камни.','<b>Арена</b> — бои за рейтинг и сезонные награды.','<b>Кланы</b>: общий чат, казна, постройки, войны за территории и клановое подземелье.','<b>Мировой босс</b> — каждый день новый, награда по доле урона.','<b>Поход наёмника</b> — охотится за тебя, даже когда ты не в игре.','<b>Питомцы</b> из северных легенд сражаются рядом с тобой.','<b>Лагерь</b>: сказитель с загадками и обустройство стоянки.','<b>Снаряжение</b> пяти редкостей, кузнец, камни, рынок между игроками.'])}</div>
+ <div class="panel"><h3>Чем заняться</h3>${li(['<b>Охота</b> на зверей и разбойников: опыт за каждый удар, трофеи и камни.','<b>Арена</b> — бои за рейтинг и сезонные награды.','<b>Кланы</b>: общий чат, казна, постройки, войны за территории и клановое подземелье.','<b>Мировой босс</b> — каждый день новый, награда по доле урона.','<b>Поход наёмника</b> — охотится за тебя, даже когда ты не в игре.','<b>Питомцы</b> из северных легенд сражаются рядом с тобой.','<b>Таверна</b>: сказитель с загадками и обустройство стоянки.','<b>Снаряжение</b> пяти редкостей, кузнец, камни, рынок между игроками.'])}</div>
  <div class="panel"><h3>Монеты Севера</h3><p style="margin:0"><span class="sv">Серебро</span> — основная монета: добывается в боях и заданиях. <span class="g">Золото</span> — редкая монета для питомцев, похода и рынка. 1 золото = 100 серебра.</p></div>
  <div class="panel"><h3>Сообщество</h3><p style="margin:0">Вопросы, идеи и найденные ошибки пиши на <button class="lnk" data-t="forum" style="padding:0">форуме</button>, общайся в <button class="lnk" data-t="gchat" style="padding:0">общем чате</button> и зови друзей в игру.</p><p style="margin:8px 0 0;color:var(--mute);font-size:14px">Версия игры: ${GVER}</p></div>`}
 
@@ -3396,7 +3484,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.88</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.27.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3535,7 +3623,7 @@ async function adminDeleteClan(id){
  }
 }
 const IC={camp:'<path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 2 1 2 0-3 0-5 1-7z"/>',hunt:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',arena:'<path d="M5 5l14 14M19 5L5 19M5 5h4M5 5v4M19 5h-4M19 5v4"/>',clan:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 14.5c3-.5 6 1.5 6 5.5"/>',top:'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 20h8"/>',forge:'<path d="M14 4l6 6-3 3-6-6zM12 9l-8 8 3 3 8-8"/>',craft:'<path d="M14 4l6 6-3 3-6-6z"/><path d="M11 7L3 15l3 3 8-8"/><path d="M4 21h9"/>',shop:'<circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.500 9.500q2.500-2 5 0M9.500 14.500q2.500 2 5 0"/>',bag:'<path d="M8 8a4 4 0 0 1 8 0M6 8h12v12H6zM9 14h6"/>',hero:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',admin:'<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/>'};
-const MENU=[['camp','Лагерь','Отдых у костра и восстановление сил','--gold'],['hunt','Охота','Звери и разбойники, 3 энергии','--moss'],['arena','Арена','Бои с воинами кланов за рейтинг','--blood'],['clan','Клан','Чат, участники и войны','--gold'],['top','Рейтинг','Лучшие воины и кланы сезона','--moss'],['shop','Магазин','Снаряжение и бутылки','--gold'],['forge','Кузница','Усиление снаряжения за железо','--blood'],['hero','Герой','Статы и очки умений','--moss']];
+const MENU=[['camp','Таверна','Отдых у костра и восстановление сил','--gold'],['hunt','Охота','Звери и разбойники, 3 энергии','--moss'],['arena','Арена','Бои с воинами кланов за рейтинг','--blood'],['clan','Клан','Чат, участники и войны','--gold'],['top','Рейтинг','Лучшие воины и кланы сезона','--moss'],['shop','Магазин','Снаряжение и бутылки','--gold'],['forge','Кузница','Усиление снаряжения за железо','--blood'],['hero','Герой','Статы и очки умений','--moss']];
 const curOf=it=>S.eq[it.slot==='n'?'n1':it.slot];
 const GK=[['h','h'],['g','g'],['c','c'],['a','a'],['r','r'],['n1','n'],['p','p'],['b','b'],['w','w'],['o','o']];
 const HTI={stats:['Статы','<path d="M4 20V11M10 20V5M16 20v-7M2 20h20"/>'],gear:['Снаряжение','<path d="M12 3l8 3v6c0 5-3.500 8-8 9-4.500-1-8-4-8-9V6z"/>'],bag:['Рюкзак','<path d="M9 6V4.500a3 3 0 0 1 6 0V6"/><path d="M5 10a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 11.500c2 1 4.500 1.500 7 1.500s5-.5 7-1.500"/><rect x="8.500" y="14.500" width="7" height="4.500" rx="1.500"/><path d="M12 12.500v3"/>'],chest:['Сундук','<path d="M3 11h18v9H3z"/><path d="M3 11c0-4 4-6 9-6s9 2 9 6"/><path d="M11 13h2v3h-2zM3 14h8M13 14h8"/>']};
@@ -3582,7 +3670,7 @@ const ri=k=>`<img src="${RIC[k]}" width="22" height="22" alt="" style="vertical-
 const MIC={hunt:'/img/e064f812a3bddb.webp',exped:'/img/dfce4135c9ad0f.webp',arena:'/img/e3f3a34dc901e8.webp',duel:'/img/17cf96ccce470f.webp',boss:'/img/8a72186d6334fb.webp',raid:'/img/8743249c50403c.webp',camp:'/img/38fb28c024f448.webp',top:'/img/745a4fd7af88c7.webp',invite:'/img/37ddf203c333a2.webp',gold:'/img/9fad9ab058bdfe.webp',shop:'/img/c0b3807065c45a.webp',bank:'/img/27348e69e5e17d.webp',forge:'/img/9ea70b9de0c340.webp',quest:'/img/e29cbbe2fa9c1a.webp',pets:'/img/6faf7880352b6b.webp',market:'/img/53d78656887a59.webp',craft:'/img/5eee57f813dd7f.webp',ach:'/img/4ec5ae8134d4df.webp'};
 MIC.discord='/img/bfa4e9522cfb36.webp';
 const MI=(k,t,sub)=>`<button class="mi" data-t="${k}">${MIC[k]?`<img class="mic" src="${MIC[k]}" width="36" height="36" alt="" aria-hidden="true">`:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`}<b>${t}</b>${sub?`<small>${sub}</small>`:''}<span class="ch">›</span></button>`;
-function menuView(){return`<div class="menu"><div class="mh">Лагерь</div>${MI('camp','Лагерь','отдых у костра…')}${MI('quest','Задания',(()=>{dqEnsure();loginCheck();const n=S.dq.list.filter(q=>!q.c&&q.p>=q.n).length+(S.login.got?0:1);return n?`<b style="color:var(--blood)">можно забрать: ${n}</b>`:'ежедневные и награда за вход'})())}${MI('ach','Достижения','титулы и награды')}${MI('craft','Профессии',crMenuSub())}<div class="mh">Сражения</div>${MI('hunt','Охота','бесконечная битва')}${MI('exped','Поход',S.ex?`<b style="color:var(--moss)">наёмник в походе: ${hm(S.ex.end-Date.now())}</b>`:'наёмник охотится за тебя')}${MI('arena','Арена',`поединки с копиями героев · ${tkIc(16)}${arTk()}/${ATK}`)}${MI('duel','Лайв-арена',S.lvl<DLV?'с '+DLV+' уровня':dOpenRaw()?`<b style="color:var(--blood)">открыта! до ${dLocal(DWH[1])} · ищут: ${dqLive().length}</b>`:`бои с живыми игроками · с ${dLocal(DWH[0])} до ${dLocal(DWH[1])}`)}${MI('boss','Мировой босс',S.lvl<WBLV?'с '+WBLV+' уровня':'один на весь Север')}${MI('raid','Рейды',(()=>{const b=(typeof myQ==='function'&&DB)?myQ():-1;return RAID&&RAID.st==='on'?'<b style="color:var(--blood)">идёт бой!</b>':b>=0?'<b style="color:var(--moss)">в очереди: '+rqLive(RQ['b'+b]).length+'/5</b>':'боссы на 5 воинов'})())}${MI('top','Рейтинг','')}${isApp()?'':`<div class="mh">Приложение</div>${MI('install','Установить на телефон','значок на экране, игра во весь экран')}`}<div class="mh">Общение</div>${MI('invite','Пригласи друга','по '+REFG+' золота тебе и другу')}${DISC_URL?MI('discord','Discord игры',S&&S.dsc?'новости, рейды, кланы':'вступи и получи '+DISCG+' золота'):''}<div class="mh">Магазин</div>${MI('gold','Золото Севера',PROMO()?`<b style="color:var(--blood)">🔥 акция ${pmx(PROMO().mult)}</b>`:'купить золото')}${MI('shop','Магазин','снаряжение, ресурсы и камни')}${MI('bank','Обменник','1 золото = 100 серебра')}${MI('forge',`Мастера${mastCan()?' <i class="mdot" title="Есть что улучшить"></i>':''}`,mastCan()?`<span style="color:var(--moss)">${mastCan()}</span>`:'кузнец, камни и чародей')}${MI('pets','Питомцы',petA()?`${petA().n}, ур. ${petA().lvl}`:'верные спутники в бою')}${MI('market','Рынок',(()=>{const n=MK.filter(m=>m.seller===UID&&m.sold).length;return n?`<b style="color:var(--moss)">продано: ${n}, забери выручку</b>`:'торговля между игроками'})())}</div>`}
+function menuView(){return`<div class="menu"><div class="mh">Таверна</div>${MI('camp','Таверна','отдых у костра…')}${MI('quest','Задания',(()=>{dqEnsure();loginCheck();const n=S.dq.list.filter(q=>!q.c&&q.p>=q.n).length+(S.login.got?0:1);return n?`<b style="color:var(--blood)">можно забрать: ${n}</b>`:'ежедневные и награда за вход'})())}${MI('ach','Достижения','титулы и награды')}${MI('craft','Профессии',crMenuSub())}<div class="mh">Сражения</div>${MI('hunt','Охота','бесконечная битва')}${MI('exped','Поход',S.ex?`<b style="color:var(--moss)">наёмник в походе: ${hm(S.ex.end-Date.now())}</b>`:'наёмник охотится за тебя')}${MI('arena','Арена',`поединки с копиями героев · ${tkIc(16)}${arTk()}/${ATK}`)}${MI('duel','Лайв-арена',S.lvl<DLV?'с '+DLV+' уровня':dOpenRaw()?`<b style="color:var(--blood)">открыта! до ${dLocal(DWH[1])} · ищут: ${dqLive().length}</b>`:`бои с живыми игроками · с ${dLocal(DWH[0])} до ${dLocal(DWH[1])}`)}${MI('boss','Мировой босс',S.lvl<WBLV?'с '+WBLV+' уровня':'один на весь Север')}${MI('raid','Рейды',(()=>{const b=(typeof myQ==='function'&&DB)?myQ():-1;return RAID&&RAID.st==='on'?'<b style="color:var(--blood)">идёт бой!</b>':b>=0?'<b style="color:var(--moss)">в очереди: '+rqLive(RQ['b'+b]).length+'/5</b>':'боссы на 5 воинов'})())}${MI('top','Рейтинг','')}${isApp()?'':`<div class="mh">Приложение</div>${MI('install','Установить на телефон','значок на экране, игра во весь экран')}`}<div class="mh">Общение</div>${MI('invite','Пригласи друга','по '+REFG+' золота тебе и другу')}${DISC_URL?MI('discord','Discord игры',S&&S.dsc?'новости, рейды, кланы':'вступи и получи '+DISCG+' золота'):''}<div class="mh">Магазин</div>${MI('gold','Золото Севера',PROMO()?`<b style="color:var(--blood)">🔥 акция ${pmx(PROMO().mult)}</b>`:'купить золото')}${MI('shop','Магазин','снаряжение, ресурсы и камни')}${MI('bank','Обменник','1 золото = 100 серебра')}${MI('forge',`Мастера${mastCan()?' <i class="mdot" title="Есть что улучшить"></i>':''}`,mastCan()?`<span style="color:var(--moss)">${mastCan()}</span>`:'кузнец, камни и чародей')}${MI('pets','Питомцы',petA()?`${petA().n}, ур. ${petA().lvl}`:'верные спутники в бою')}${MI('market','Рынок',(()=>{const n=MK.filter(m=>m.seller===UID&&m.sold).length;return n?`<b style="color:var(--moss)">продано: ${n}, забери выручку</b>`:'торговля между игроками'})())}</div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('.bnav [data-t]');if(b&&b.dataset.t===tab){if(tab==='hero')htab='stats';if(tab==='clan')ctab='main';window.scrollTo({top:0,behavior:'smooth'})}},true);
 const BNI={home:'/img/f501c5a402e039.webp',hero:'/img/11bdd892348999.webp',clan:'/img/b9d50fc7b75bfd.webp',admin:'/img/422fc6ef7b1e59.webp',chat:'/img/195ed4da8c653d.webp'};
 // нижнее меню не двигается свайпом (iOS тянет страницу, если провести пальцем по меню)
@@ -3602,22 +3690,125 @@ function chsView(){if(!CHP||!S)return'';const g=CHP==='g',cl=!!S.clan;
  <div id="${g?'gcbox2':'chat2'}" class="chs-b">${g?(DB?gcHtml():'<p>Чат работает только с подключённой базой данных.</p>'):chatHtml(1)}</div>
  ${g&&GCMSG?`<p style="margin:4px 10px 0;color:var(--blood);font-size:13px">${esc(GCMSG)}</p>`:''}${rpBar(g?'g':'c')}<div class="chs-f"><input id="${g?'gct2':'cm2'}" maxlength="200" placeholder="${g?'Сообщение для всех':'Сообщение клану'}" aria-label="Сообщение" autocomplete="off"><button class="b" data-a="chpsend">➤</button></div></div>`}
 IC.gsave='<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><rect x="8" y="13" width="8" height="6" rx="1"/>';
-function bnav(){const hn=S&&S.name?S.name:'Герой',it=[['home','Главная'],['hero',hn],['clan','Клан'],['chat','Чат']];if(GUEST)it.push(['gsave','Сохранить']);else if(ADM)it.push(['admin','Админка']);
- return`<nav class="bnav" id="bnav" aria-label="Основное меню">${it.map(([k,t])=>`<button class="${(k==='chat'?CHP:tab===k&&!CHP)?'on':''}${k==='home'?' bhome':''}${k==='gsave'?' bsave':''}" ${k==='chat'?'data-a="chp"':`data-t="${k}"`}aria-label="${esc(t)}" title="${esc(t)}"><span style="position:relative;line-height:0">${BNI[k]?`<img class="bni" src="${BNI[k]}" width="34" height="34" alt="" aria-hidden="true">`:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k==='home'?'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>':IC[k]}</svg>`}${k==='hero'&&S.pts?`<i class="bdg">${S.pts}</i>`:''}${k==='chat'&&chUnread()?`<i class="bdg">${chUnread()}</i>`:''}</span>${k==='gsave'?`<span class="bnt">${esc(t)}</span>`:''}</button>`).join('')}</nav>`}
+function bnav(){const full=S.inv.length>=INV_MAX,upg=S.inv.filter(it=>S.lvl>=it.lv&&(()=>{const c=curOf(it);return!c||scoreB(it)>scoreB(c)})()).length,bb=full?'!':upg||'',cu=chUnread(),s=((S.av.s|0)%AVN+AVN)%AVN,xs=[['home','Главная',12.02,BNI.home,(tab==='home'&&!CHP),'data-t="home"',''],['clan','Клан',30.99,BNI.clan,(tab==='clan'&&!CHP),'data-t="clan"',''],['bag','Рюкзак',68.88,BAGI,(tab==='hero'&&htab==='bag'&&!CHP),'data-tb="bag"',bb],['chat','Чат',88.12,BNI.chat,!!CHP,'data-a="chp"',cu||'']],hn=S&&S.name?S.name:'Герой';
+ return`<nav class="bnav" id="bnav" aria-label="Основное меню"><img class="nbg" src="${HSA.nav_bar}" alt="">${xs.slice(0,2).concat(xs.slice(2)).map(([k,t,x,img,on,at,bd])=>`<button class="ns${on?' on':''}${k==='home'?' bhome':''}" ${at} aria-label="${t}" title="${t}" style="left:${x}%;top:65.85%"><img src="${img}" alt="" aria-hidden="true">${bd?`<i class="bdg">${bd}</i>`:''}</button>`).join('')}<button class="nc${tab==='hero'&&htab!=='bag'&&!CHP?' on':''}" data-t="hero" aria-label="${esc(hn)}" title="${esc(hn)}" style="left:49.95%;top:45.45%"><span class="avi${S.av.x&&AVSF?' f':''}" role="img" aria-label="Аватар" style="background-repeat:no-repeat;background-size:${AVN*100}% 100%;background-position:${s*100/(AVN-1)}% 0"></span></button>${S.pts?`<i class="bdg" style="left:57%;top:20%;right:auto">${S.pts}</i>`:''}<span class="nlv" style="left:49.95%;top:85.75%">${S.lvl}</span>${GUEST||ADM?`<div class="nx">${GUEST?'<button data-t="gsave">Сохранить</button>':'<button data-t="admin">Админка</button>'}</div>`:''}</nav>`}
 // при открытии чата — сразу к последним сообщениям (внизу)
 let CHK='';function chatScroll(){const k=tab==='gchat'||tab==='dm'?tab+'|'+(tab==='dm'?DMW:''):'';if(k===CHK)return;CHK=k;if(!k)return;const go=()=>{const el=document.getElementById(tab==='dm'?'dmbox':'gcbox');if(el)el.scrollTop=el.scrollHeight};go();setTimeout(go,120);setTimeout(go,600)}
+// ===== Главная-сцена: фон по времени суток, эффекты, меню, события =====
+const HSA={"bg_night": "/img/4d1cac17b7522b.webp", "ar_night": 0.5269, "bg_day": "/img/f54e6e724aeafe.webp", "ar_day": 0.5266, "bg_morning": "/img/88c543be8a7999.webp", "ar_morning": 0.5275, "bg_dusk": "/img/4d6fe69d67dc6d.webp", "ar_dusk": 0.4734, "mi_battle": "/img/482beefbc9affd.webp", "mi_chat": "/img/fe397073f4ddad.webp", "mi_tavern": "/img/b8f4a44a1ac816.webp", "mi_shop": "/img/4ce28b1b7adc42.webp", "fr_n": "/img/c78dc28e931353.webp", "fr_a": "/img/11cc619a92e554.webp", "ev_boss": "/img/1d700be91466ad.webp", "ev_login": "/img/4ab34c3aa27dcf.webp", "ev_gold": "/img/357d46797940e2.webp", "ev_chest": "/img/f25554f25df76f.webp", "ui_set": "/img/57b36e6100255b.webp", "ui_snd": "/img/035f333a7e8ad5.webp", "ui_mute": "/img/d5341e133f52a5.webp", "ui_plate": "/img/aff51f7150f197.webp", "nav_bar": "/img/befa811d44475b.webp"};
+const HSIC={battle:HSA.mi_battle,chat:HSA.mi_chat,tavern:HSA.mi_tavern,shop:HSA.mi_shop};
+let HSM=-1,HSE=-1;
+const hsHm=ms=>{const m=Math.max(0,Math.floor(ms/60000)),d=Math.floor(m/1440),h=Math.floor(m/60)%24;return d?d+'д '+h+'ч':h?h+'ч '+(m%60)+'м':(m%60)+' мин'};
+function hsItems(){const d=document.createElement('div');d.innerHTML=menuView();const M={};d.querySelectorAll('.mi').forEach(b=>{M[b.dataset.t]=b.outerHTML});
+ const own=(k,t,s)=>MI(k,t,s),g=k=>M[k]||'';
+ const dm=typeof dmUnN==='function'?dmUnN():0,ren=(k,t)=>g(k).replace(/<b>[^<]*<\/b>/,'<b>'+t+'</b>');
+ return[
+  {i:HSIC.battle,n:'Сражения',dot:(typeof dOpenRaw==='function'&&S.lvl>=DLV&&dOpenRaw())||(RAID&&RAID.st==='on'),h:g('hunt')+g('exped')+g('arena')+g('duel')+g('boss')+g('raid')},
+  {i:HSIC.chat,n:'Общение',dot:dm>0,h:own('mail','Почта',dm?`<b style="color:var(--blood)">новых: ${dm}</b>`:'письма и сообщения')+own('friends','Друзья','')+g('top')+own('forum','Форум','новости, идеи, вопросы')+g('invite')+g('discord')+(isApp()?'':g('install'))},
+  {i:HSIC.tavern,n:'Таверна',dot:(()=>{try{dqEnsure();loginCheck();return S.dq.list.some(q=>!q.c&&q.p>=q.n)||!S.login.got||!!mastCan()}catch(e){return false}})(),h:ren('camp','Отдых у костра')+g('quest')+g('ach')+g('craft')+g('forge')+g('market')+g('pets')},
+  {i:HSIC.shop,n:'Магазин',dot:!!PROMO(),h:g('shop')+g('gold')+g('bank')}
+ ]}
+function hsEvents(){const L=[],ic=k=>`<img src="${k}" alt="">`;
+ try{nbInit();if(S.nb&&!S.nb.done)L.push({k:'nb',ic:ic(MIC.quest),t:'Тропа без следов',tg:'Сюжет',lab:`${(S.nb.i|0)+1}/${NBQ.length}`,h:()=>nbView()});}catch(e){}
+ try{loginCheck();if(S.login&&!S.login.got){const l=S.login,w=LRW[(l.st-1)%7],a=w[0]+S.lvl*5*l.st;L.push({k:'login',ic:ic(HSA.ev_login),t:'Бонус за вход',tg:'Ежедневно',lab:'Забрать',dot:1,h:()=>`<p>День ${l.st} подряд. Награда: +${a} серебра${w[1]?`, +${w[1]} железа`:''}${w[2]?`, бутылок: ${w[2]}`:''}.</p><button class="b" data-a="lclaim">Забрать награду</button>`})}}catch(e){}
+ const p=PROMO();if(p)L.push({k:'gold',ic:ic(HSA.ev_gold),t:'Акция золота',tg:'Акция',lab:hsHm(p.until-Date.now()),hot:1,h:()=>promoBar()});
+ if(RAID&&RAID.st==='on'&&!fight)L.push({k:'raid',ic:ic(MIC.raid),t:'Рейд',tg:'Идёт бой',lab:'в бой',hot:1,h:()=>`<p>Идёт рейд «${RAIDS[RAID.b].n}».</p><button class="b red" data-t="raid">⚔ В бой</button>`});
+ if(ANN&&ANN.msg)L.push({k:'ann',em:'📢',t:'Объявление',tg:'Новости',lab:'новое',h:()=>annView()});
+ const iv=invStrip();if(iv)L.push({k:'inv',em:'✉',t:'Приглашение',tg:'Клан',lab:'ответить',dot:1,h:()=>iv});
+ const pq=pwaQuest();if(pq)L.push({k:'pwa',em:'📲',t:'Установи игру',tg:'Награда',lab:'награда',h:()=>pq});
+ const pa=pushAsk();if(pa)L.push({k:'push',em:'🔔',t:'Уведомления',tg:'Совет',lab:'вкл?',h:()=>pa});
+ const gb=guestBar();if(gb)L.push({k:'guest',em:'💾',t:'Сохрани героя',tg:'Важно',lab:'сохранить',hot:1,h:()=>gb});
+ return L.slice(0,8)}
+function hsView(){
+ const full=S.inv.length>=INV_MAX,upg=S.inv.filter(it=>S.lvl>=it.lv&&(()=>{const c=curOf(it);return!c||scoreB(it)>scoreB(c)})()).length,dm=dmUnN(),brk=Object.values(S.eq||{}).filter(it=>it&&broken(it)).length;
+ const xpw=S.lvl>=LVMAX?100:Math.max(0,Math.min(100,S.xp/need()*100));
+ const sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+ const st=[];
+ if(full)st.push(`<button class="hs-s r" data-tb="bag" title="Рюкзак полон: ${S.inv.length}/${INV_MAX}" aria-label="Рюкзак полон"><img src="${BAGI}" alt=""></button>`);
+ if(dm)st.push(`<button class="hs-s g" data-t="mail" title="Новые сообщения: ${dm}" aria-label="Новые сообщения">${sv('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>')}<i>${dm}</i></button>`);
+ if(upg)st.push(`<button class="hs-s v" data-tb="bag" title="В рюкзаке вещи лучше надетых: ${upg}" aria-label="Вещи лучше надетых">${sv('<path d="M12 19V5M6 11l6-6 6 6" stroke-width="2.6"/>')}<i>${upg}</i></button>`);
+ if(brk)st.push(`<button class="hs-s r" data-tb="gear" title="Сломано снаряжение: ${brk}" aria-label="Сломано снаряжение">${sv('<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M13 6l-2.5 4.5 3 1.5-2.5 4.5"/>')}<i>${brk}</i></button>`);
+ const cats=hsItems(),ev=hsEvents();
+ if(HSM>3||HSE>=ev.length){HSM=Math.min(HSM,3);if(HSE>=ev.length)HSE=-1}
+ const eh=ev.map((e,i)=>`<button class="hs-e${e.hot?' hot':''}${HSE===i?' on':''}" data-hs="e${i}" title="${e.t}" aria-label="${e.t}" style="animation-delay:${i*.07}s">${e.ic||`<span class="em">${e.em}</span>`}<small>${e.lab}</small>${e.dot?'<span class="dot"></span>':''}</button>`).join('');
+ const det=HSE>=0&&ev[HSE]?`<div class="hs-det"><div class="h">${ev[HSE].ic||`<span class="em">${ev[HSE].em}</span>`}<div><small>${ev[HSE].tg}</small><b>${ev[HSE].t}</b></div></div>${ev[HSE].h()}</div>`:'';
+ const mh=cats.map((c,i)=>`<button class="hs-c${HSM===i?' on':''}" data-hs="m${i}" title="${c.n}" aria-label="${c.n}"><img src="${c.i}" alt="">${c.dot?'<span class="dot"></span>':''}</button>`).join('');
+ const sub=HSM>=0&&cats[HSM]?`<div class="hs-sub"><div class="sh">${cats[HSM].n}</div>${cats[HSM].h}</div>`:'';
+ const away=fight&&fight.away?`<div class="hs-ov"><button class="b red" data-a="fback" style="width:100%">⚔ Вернуться в бой</button></div>`:'';
+ const hr=!fight&&HREP?`<div class="hs-ov">${hrepView()}</div>`:'';
+ return`<div class="hs${HSE>=0||HSM>=0?' sd':''}" id="hs"><div class="hs-xp" role="img" aria-label="Опыт"><u style="width:${xpw}%"></u></div>
+ <div class="hs-t"><div class="hs-gp"><img class="pb" src="${HSA.ui_plate}" alt=""><img class="co" src="${RIC.gold}" alt=""><button class="am" data-t="bank" title="Золото: ${S.au|0}" aria-label="Золото">${kf(S.au|0)}</button><button class="plus" data-t="gold" title="Купить золото" aria-label="Купить золото"></button></div>
+ <div class="hs-st">${st.join('')}</div>
+ <div class="hs-rt"><button data-a="mute" title="${S.mute?'Звук выключен':'Звук включён'}" aria-label="Звук"><img src="${S.mute?HSA.ui_mute:HSA.ui_snd}" alt=""></button><button data-t="settings" title="Настройки" aria-label="Настройки"><img src="${HSA.ui_set}" alt=""></button></div></div>
+ <div class="hs-logo"><img src="${LOGO}" alt="Northfall: Barbarians"></div>
+ <div class="hs-ev">${eh}</div>${det}<div class="hs-m">${mh}</div>${sub}${away}${hr}</div>`}
+const HSON=()=>!!S&&!BAN&&tab==='home'&&!FV();
+// клики по сцене: меню/события и закрытие по тапу вне панели
+document.addEventListener('click',e=>{if(!document.body.classList.contains('hsmode'))return;const b=e.target.closest('[data-hs]');
+ if(b){const v=b.dataset.hs,k=+v.slice(1);if(v[0]==='m'){HSM=HSM===k?-1:k;HSE=-1}else{HSE=HSE===k?-1:k;HSM=-1}render();return}
+ if((HSM>=0||HSE>=0)&&!e.target.closest('.hs-sub,.hs-det')){HSM=-1;HSE=-1;render()}},true);
+// фон по времени суток + эффекты
+const HSF=(()=>{
+ const FIRE={morning:[.61,.752],day:[.60,.745],dusk:[.604,.745],night:[.60,.747]},MOON=[.69,.115],SUN=[.27,.17];
+ const CFG={morning:{glow:.25,spark:.4,smoke:1,rays:1,birds:3,dew:1,leaf:0,fog:1,rain:0,fly:0,stars:0},day:{glow:.15,spark:.2,smoke:.8,rays:0,birds:0,dew:0,leaf:14,fog:.7,rain:50,fly:0,stars:0},dusk:{glow:.6,spark:1,smoke:0,rays:0,birds:2,dew:0,leaf:5,fog:.6,rain:0,fly:6,stars:0},night:{glow:1,spark:1.8,smoke:0,rays:0,birds:0,dew:0,leaf:0,fog:.5,rain:0,fly:16,stars:46}};
+ const AR={morning:HSA.ar_morning,day:HSA.ar_day,dusk:HSA.ar_dusk,night:HSA.ar_night},FC={morning:'255,225,205',day:'210,220,225',dusk:'190,170,185',night:'90,130,170'};
+ let el=null,cv=null,cx=null,W=0,H=0,mode=null,G={},tt=0,last=0,raf=0,layers={},FT=null,TT={},sp=[],sm=[],lf=[],fl=[],rn=[],br=[],st=[],dw=[],shoot=null;
+ const DPR=Math.min(window.devicePixelRatio||1,2),RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches),rnd=(a,b)=>a+Math.random()*(b-a);
+ const byClock=()=>{const h=new Date().getHours();return h>=6&&h<10?'morning':h>=10&&h<17?'day':h>=17&&h<21?'dusk':'night'};
+ function init(){if(el)return;el=document.createElement('div');el.id='hsbg';el.setAttribute('aria-hidden','true');
+  ['morning','day','dusk','night'].forEach(k=>{const d=document.createElement('div');d.className='bgl';d.style.backgroundImage='url('+HSA['bg_'+k]+')';el.appendChild(d);layers[k]=d});
+  cv=document.createElement('canvas');el.appendChild(cv);cx=cv.getContext('2d');document.body.appendChild(el);
+  const r=document.documentElement.style;r.setProperty('--hsf0','url('+HSA.fr_n+')');r.setProperty('--hsf1','url('+HSA.fr_a+')');
+  const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');for(let i=0;i<26;i++){const px=Math.random()*512,py=50+Math.random()*28,rr=28+Math.random()*34,g=x.createRadialGradient(px,py,0,px,py,rr);g.addColorStop(0,'rgba(255,255,255,.5)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;for(let k=-1;k<=1;k++){x.setTransform(1,0,0,1,k*512,0);x.fillRect(px-rr,py-rr,rr*2,rr*2)}x.setTransform(1,0,0,1,0,0)}FT=c;
+  window.addEventListener('resize',size)}
+ function size(){if(!el)return;W=el.clientWidth;H=el.clientHeight;if(!W||!H)return;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);geo()}
+ function geo(){if(!mode)return;const ar=AR[mode];let ih=H,iw=H*ar;if(iw<W){iw=W;ih=W/ar}G={iw,ih,ox:(W-iw)/2,oy:H-ih}}
+ const P=(u,v)=>[G.ox+u*G.iw,G.oy+v*G.ih];
+ function set(m){init();if(m===mode)return;mode=m;Object.keys(layers).forEach(k=>layers[k].classList.toggle('on',k===m));size();geo();sp=[];sm=[];lf=[];fl=[];rn=[];br=[];st=[];dw=[];const c=CFG[m];
+  for(let i=0;i<c.leaf;i++)lf.push({x:rnd(0,1),y:rnd(0,1),s:rnd(3,6),v:rnd(.015,.04),ph:rnd(0,6),c:Math.random()<.6?'#d9a53a':'#b8672b'});
+  for(let i=0;i<c.fly;i++)fl.push({x:rnd(.05,.95),y:rnd(.45,.9),ph:rnd(0,6),sp:rnd(.2,.5),r:rnd(1.2,2.4)});
+  for(let i=0;i<c.rain;i++)rn.push({x:rnd(0,1),y:rnd(0,1),v:rnd(.5,.9)});
+  for(let i=0;i<c.birds;i++)br.push({x:rnd(-.3,1),y:rnd(.08,.3),v:rnd(.02,.04),ph:rnd(0,6)});
+  for(let i=0;i<c.stars;i++)st.push({x:rnd(0,1),y:rnd(0,.3),r:rnd(.4,1.3),ph:rnd(0,6)});
+  for(let i=0;i<(c.dew?28:0);i++)dw.push({x:rnd(.03,.55),y:rnd(.6,.95),ph:rnd(0,6)})}
+ function tint(t){if(TT[t])return TT[t];const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.drawImage(FT,0,0);x.globalCompositeOperation='source-in';x.fillStyle='rgb('+t+')';x.fillRect(0,0,512,128);return TT[t]=c}
+ function fog(k){const band=[[.5,.2,.012],[.64,.18,-.008],[.8,.12,.006]];for(const b of band){const off=((tt*b[2]*G.iw*.6)%G.iw+G.iw)%G.iw,y=P(0,b[0])[1],h=G.ih*b[1],ww=G.iw*1.6;cx.globalAlpha=(mode==='morning'?.55:mode==='night'?.35:.3)*k;const tc=tint(FC[mode]);for(let r=-1;r<3;r++)cx.drawImage(tc,G.ox-off+r*ww,y-h/2,ww,h)}cx.globalAlpha=1}
+ function draw(dt){const c=CFG[mode],f=FIRE[mode],fp=P(f[0],f[1]),R=G.ih;let p,x;cx.clearRect(0,0,W,H);cx.globalCompositeOperation='source-over';
+  if(mode==='night'){const mp=P(MOON[0],MOON[1]),pl=.75+.25*Math.sin(tt*.5),g=cx.createRadialGradient(mp[0],mp[1],0,mp[0],mp[1],R*.18);g.addColorStop(0,'rgba(150,200,255,'+.28*pl+')');g.addColorStop(1,'rgba(150,200,255,0)');cx.fillStyle=g;cx.fillRect(0,0,W,H);
+   for(p of st){x=P(p.x,p.y);cx.globalAlpha=.25+.75*Math.abs(Math.sin(tt*.8+p.ph));cx.fillStyle='#dfe9ff';cx.beginPath();cx.arc(x[0],x[1],p.r,0,7);cx.fill()}cx.globalAlpha=1;
+   if(!shoot&&Math.random()<dt*.07)shoot={t:0,x:rnd(.2,.8),y:rnd(.02,.12)};
+   if(shoot){shoot.t+=dt;const k=shoot.t/.9;if(k>1)shoot=null;else{const a=P(shoot.x+k*.22,shoot.y+k*.07),b=P(shoot.x+k*.22-.06,shoot.y+k*.07-.02),gr=cx.createLinearGradient(a[0],a[1],b[0],b[1]);gr.addColorStop(0,'rgba(255,255,255,'+(1-k)+')');gr.addColorStop(1,'rgba(255,255,255,0)');cx.strokeStyle=gr;cx.lineWidth=1.6;cx.beginPath();cx.moveTo(a[0],a[1]);cx.lineTo(b[0],b[1]);cx.stroke()}}}
+  if(c.rays){const s0=P(SUN[0],SUN[1]);cx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){const al=.05+.035*Math.sin(tt*.35+i*1.3);cx.save();cx.translate(s0[0],s0[1]);cx.rotate(.55+i*.17);const gr=cx.createLinearGradient(0,0,R*.9,0);gr.addColorStop(0,'rgba(255,214,150,'+al*2+')');gr.addColorStop(1,'rgba(255,214,150,0)');cx.fillStyle=gr;cx.beginPath();cx.moveTo(0,-8);cx.lineTo(R*.9,-R*.07-i*10);cx.lineTo(R*.9,R*.07+i*10);cx.lineTo(0,8);cx.fill();cx.restore()}cx.globalCompositeOperation='source-over'}
+  if(c.fog)fog(c.fog);
+  const fk=.8+.2*Math.sin(tt*9)+.12*Math.sin(tt*23+1)+.08*Math.random();
+  if(c.glow){cx.globalCompositeOperation='lighter';const g2=cx.createRadialGradient(fp[0],fp[1]-R*.01,0,fp[0],fp[1]-R*.01,R*.17*(.9+.1*fk));g2.addColorStop(0,'rgba(255,150,60,'+.55*c.glow*fk+')');g2.addColorStop(.4,'rgba(230,90,30,'+.22*c.glow*fk+')');g2.addColorStop(1,'rgba(200,60,20,0)');cx.fillStyle=g2;cx.fillRect(fp[0]-R*.2,fp[1]-R*.2,R*.4,R*.4);cx.globalCompositeOperation='source-over'}
+  if(c.smoke&&Math.random()<dt*10)sm.push({x:f[0]+rnd(-.003,.003),y:f[1]-.02,a:.45,r:R*.003});
+  for(let i=sm.length-1;i>=0;i--){p=sm[i];p.y-=dt*.04;p.x+=dt*.008*Math.sin(tt+p.y*20)+dt*.004;p.r+=dt*R*.006;p.a-=dt*.22;if(p.a<=0){sm.splice(i,1);continue}x=P(p.x,p.y);cx.fillStyle='rgba(200,205,215,'+p.a*.22*c.smoke+')';cx.beginPath();cx.arc(x[0],x[1],p.r,0,7);cx.fill()}
+  if(c.spark&&Math.random()<dt*14*c.spark)sp.push({x:f[0]+rnd(-.012,.012),y:f[1]-.012,vx:rnd(-.015,.02),vy:-rnd(.05,.11),l:rnd(1.2,2.8),t:0,r:rnd(.7,1.7)});
+  cx.globalCompositeOperation='lighter';
+  for(let i=sp.length-1;i>=0;i--){p=sp[i];p.t+=dt;if(p.t>p.l){sp.splice(i,1);continue}p.x+=(p.vx+.012*Math.sin(tt*3+i))*dt;p.y+=p.vy*dt;p.vy*=.995;x=P(p.x,p.y);const al=1-p.t/p.l;cx.fillStyle='rgba(255,'+(140+Math.floor(80*al))+',60,'+al+')';cx.beginPath();cx.arc(x[0],x[1],p.r*(.6+al*.6),0,7);cx.fill()}
+  for(p of fl){p.x+=Math.sin(tt*p.sp+p.ph)*.012*dt*4;p.y+=Math.cos(tt*p.sp*.8+p.ph)*.01*dt*4;x=P(p.x,p.y);const a2=.15+.85*Math.max(0,Math.sin(tt*.9+p.ph)),gg=cx.createRadialGradient(x[0],x[1],0,x[0],x[1],p.r*5);gg.addColorStop(0,'rgba(220,255,140,'+a2+')');gg.addColorStop(1,'rgba(220,255,140,0)');cx.fillStyle=gg;cx.fillRect(x[0]-p.r*5,x[1]-p.r*5,p.r*10,p.r*10)}
+  for(p of dw){x=P(p.x,p.y);const a3=Math.pow(Math.max(0,Math.sin(tt*.7+p.ph)),8);cx.fillStyle='rgba(255,240,210,'+a3*.9+')';cx.beginPath();cx.arc(x[0],x[1],1.3,0,7);cx.fill()}
+  cx.globalCompositeOperation='source-over';
+  for(p of lf){p.y+=p.v*dt;p.x+=Math.sin(tt*.7+p.ph)*.02*dt+.006*dt;if(p.y>1.02){p.y=-.02;p.x=rnd(0,1)}x=P(p.x,p.y);cx.save();cx.translate(x[0],x[1]);cx.rotate(Math.sin(tt+p.ph)*1.2);cx.fillStyle=p.c;cx.globalAlpha=.85;cx.beginPath();cx.ellipse(0,0,p.s,p.s*.45,0,0,7);cx.fill();cx.restore()}cx.globalAlpha=1;
+  if(rn.length){cx.strokeStyle='rgba(200,210,220,.22)';cx.lineWidth=1;cx.beginPath();for(p of rn){p.y+=p.v*dt;p.x-=p.v*dt*.08;if(p.y>1){p.y=-.03;p.x=rnd(0,1.1)}x=P(p.x,p.y);cx.moveTo(x[0],x[1]);cx.lineTo(x[0]-2,x[1]+11)}cx.stroke()}
+  cx.strokeStyle='rgba(20,18,22,.75)';cx.lineWidth=1.4;for(p of br){p.x+=p.v*dt;if(p.x>1.2){p.x=-.2;p.y=rnd(.08,.3)}x=P(p.x,p.y+Math.sin(tt*.6+p.ph)*.01);const w=Math.sin(tt*7+p.ph)*3;cx.beginPath();cx.moveTo(x[0]-7,x[1]-w);cx.quadraticCurveTo(x[0]-3,x[1]-4,x[0],x[1]);cx.quadraticCurveTo(x[0]+3,x[1]-4,x[0]+7,x[1]-w);cx.stroke()}}
+ function frame(ts){raf=requestAnimationFrame(frame);if(document.hidden||!mode||!document.body.classList.contains('hsmode'))return;const dt=Math.min((ts-last)/1000,.05);last=ts;tt+=dt;if(!W)size();draw(dt)}
+ let clk=0;
+ return{post(on){if(on){init();set(window.HSDBG||byClock());if(!raf&&!RM)raf=requestAnimationFrame(frame);else if(RM){size();draw(0)}if(!clk)clk=setInterval(()=>{if(!window.HSDBG&&document.body.classList.contains('hsmode'))set(byClock())},60000)}else if(raf){cancelAnimationFrame(raf);raf=0}},set(m){window.HSDBG=m;set(m)}}})();
+
 function render(){
  if(fight)snowPause();else snowRun();
  socMaybe();hubHello();setTimeout(chatScroll,0);
  setTimeout(nbPopCheck,60);
  IREG=[];paySub();walletSub();admSub();if(tab==='top')topFetch();if(tab==='pl'&&PV&&PV!==UID&&!PL.some(x=>x.id===PV))plFetch(PV);refSub();refCheck();frSub();mailSub();gcSub();dmSub();chatSub();clogSub();ledSub();cftSub();ftSub();fpSub();depSub();dunSub();wbSub();mkSub();terSub();accCheck();huntFlush();exBoss();
  const keep={};['gto','gtx','mlto','nnick','lg','pw','pw2','em','mymail','pwold','pwnew','pwnew2','nm','ftt','ftb','fpb','dmt','gct'].forEach(k=>{const x=$('#'+k);if(x)keep[k]=x.value});
- document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!BAN);
+ document.body.classList.toggle('auth',!S);document.body.classList.toggle('hasnav',!!S&&!BAN);document.body.classList.remove('hsmode');if(tab!=='home'){HSM=-1;HSE=-1}
  if(!S){if(!TAPON){TAPON=true;const f=()=>{if(TAPSENT||S)return;TAPSENT=true;try{trk('tap')}catch(e){}};document.addEventListener('pointerdown',f,{capture:true,passive:true});document.addEventListener('touchstart',f,{capture:true,passive:true})}if(!SCRSENT){SCRSENT=true;setTimeout(()=>{try{trk('scr')}catch(e){}},300)}$('#app').innerHTML=authView();for(const k in keep){const x=$('#'+k);if(x)x.value=keep[k]}return}
  if(BAN){$('#app').innerHTML=`<div class="panel"><h2>Доступ закрыт</h2><p>Администратор заблокировал этого героя.</p></div>`+LOGOUT;return}
- raidSub();skInit();if(S.gsw&&!GUEST&&UID){delete S.gsw;gsGift()}if(GUEST&&S.lvl>=3&&!S.gnag&&!document.querySelector('.modal')&&S.nb&&(S.nb.done||S.nb.i>=2)&&typeof gAge==='function'&&gAge()>=12*60000){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя',`Ты уже ${S.lvl} уровня! Создай логин и пароль — герой не потеряется, откроются кланы, рейды и чат.<br><br>🎁 Подарок за сохранение: ${GSGIFT}.<br><br><button class="b red" data-a="gsave" style="width:100%">Сохранить героя</button>`),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}morph($('#app'),xpbar()+(fight&&fight.away?`<button class="b red" data-a="fback" style="width:100%;margin:0 0 10px">⚔ Вернуться в бой</button>`:'')+nbStrip()+invStrip()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(FV()?fightView():tab==='home'?HBAN()+promoBar()+pwaQuest()+pushAsk()+nbView()+guestBar()+tipView()+annView()+menuView():tipView()+tabView())+
+ raidSub();skInit();if(S.gsw&&!GUEST&&UID){delete S.gsw;gsGift()}if(GUEST&&S.lvl>=3&&!S.gnag&&!document.querySelector('.modal')&&S.nb&&(S.nb.done||S.nb.i>=2)&&typeof gAge==='function'&&gAge()>=12*60000){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя',`Ты уже ${S.lvl} уровня! Создай логин и пароль — герой не потеряется, откроются кланы, рейды и чат.<br><br>🎁 Подарок за сохранение: ${GSGIFT}.<br><br><button class="b red" data-a="gsave" style="width:100%">Сохранить героя</button>`),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}morph($('#app'),HSON()?hsView()+bnav()+chsView():xpbar()+(fight&&fight.away?`<button class="b red" data-a="fback" style="width:100%;margin:0 0 10px">⚔ Вернуться в бой</button>`:'')+nbStrip()+invStrip()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(FV()?fightView():tab==='home'?HBAN()+promoBar()+pwaQuest()+pushAsk()+nbView()+guestBar()+tipView()+annView()+menuView():tipView()+tabView())+
  (!FV()?'':`<div class="panel" id="log">${logs.map(l=>`<p class="${l[1]}">${esc(l[0])}</p>`).join('')||'<p>Тишина.</p>'}</div>`)+FOOT()+bnav()+chsView());
- setTimeout(nbHl,0);
+ document.body.classList.toggle('hsmode',HSON());HSF.post(HSON());setTimeout(nbHl,0);
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
 document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();

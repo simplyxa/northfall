@@ -1075,5 +1075,10 @@
   "v": "1.26.88",
   "t": "Тропа без следов, шаг 6: для выполнения достаточно ответить на загадку сказителя, правильно или нет.",
   "te": "The Trackless Path, step 6: answering the storyteller's riddle is enough, right or wrong."
+ },
+ {
+  "v": "1.27.0",
+  "t": "Новая главная: сцена лесного лагеря с фоном по времени суток, иконки событий, компактное меню справа и новая нижняя панель с аватаром. «Лагерь» переименован в «Таверну».",
+  "te": "New home screen: a forest camp scene that changes with the time of day, event icons, a compact right menu and a new bottom bar with your avatar. «Camp» is now «Tavern»."
  }
 ]

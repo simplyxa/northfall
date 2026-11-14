@@ -1,7 +1,20 @@
 [
- "<div class=\"panel\"><h3>Пол</h3>",
- "<p style=\"margin:4px 0 10px;color:var(--mute);font-size:14px\">Смена пола стоит ",
- " золота, менять можно сколько угодно раз.</p>",
- "Для смены пола нужно ",
- "Сменить пол героя? Стоит "
+ "<div class=\"panel\"><h3>🏕 Обустройство таверны</h3><p style=\"margin:0 0 4px;color:var(--mute);font-size:14px\">Улучшай стоянку за серебро и железо, и бонусы будут действовать всегда. Каждое улучшение до ",
+ "<nav class=\"bnav\" id=\"bnav\" aria-label=\"Основное меню\"><img class=\"nbg\" src=\"",
+ "\" role=\"img\" aria-label=\"Аватар\" style=\"background-repeat:no-repeat;background-size:",
+ "<button class=\"hs-s r\" data-tb=\"bag\" title=\"Рюкзак полон: ",
+ "\" aria-label=\"Рюкзак полон\"><img src=\"",
+ "<button class=\"hs-s g\" data-t=\"mail\" title=\"Новые сообщения: ",
+ "\" aria-label=\"Новые сообщения\">",
+ "<button class=\"hs-s v\" data-tb=\"bag\" title=\"В рюкзаке вещи лучше надетых: ",
+ "\" aria-label=\"Вещи лучше надетых\">",
+ "<button class=\"hs-s r\" data-tb=\"gear\" title=\"Сломано снаряжение: ",
+ "\" aria-label=\"Сломано снаряжение\">",
+ "<div class=\"hs-ov\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Вернуться в бой</button></div>",
+ "\" id=\"hs\"><div class=\"hs-xp\" role=\"img\" aria-label=\"Опыт\"><u style=\"width:",
+ "\" alt=\"\"><button class=\"am\" data-t=\"bank\" title=\"Золото: ",
+ "\" aria-label=\"Золото\">",
+ "</button><button class=\"plus\" data-t=\"gold\" title=\"Купить золото\" aria-label=\"Купить золото\"></button></div>\n <div class=\"hs-st\">",
+ "\" aria-label=\"Звук\"><img src=\"",
+ "\" alt=\"\"></button><button data-t=\"settings\" title=\"Настройки\" aria-label=\"Настройки\"><img src=\""
 ]
