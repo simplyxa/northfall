@@ -1140,5 +1140,10 @@
   "v": "1.31.2",
   "t": "Новые иконки Почты, Друзей и Форума остались только в меню главной, на странице героя вернулись прежние.",
   "te": "The new Mail, Friends and Forum icons are now only in the home menu; the hero page has its old icons again."
+ },
+ {
+  "v": "1.31.3",
+  "t": "Новые иконки нижней панели: Главная, Клан, Рюкзак, Чат.",
+  "te": "New bottom bar icons: Home, Clan, Bag, Chat."
  }
 ]
