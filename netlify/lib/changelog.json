@@ -1090,5 +1090,10 @@
   "v": "1.28.0",
   "t": "Фоновая музыка на главной: четыре мелодии по времени суток, включается и выключается рогом.",
   "te": "Background music on the home screen: four tracks by time of day, toggled with the horn."
+ },
+ {
+  "v": "1.28.1",
+  "t": "Исправлено: музыка на главной не выключалась кнопкой звука на iPhone.",
+  "te": "Fixed: home screen music did not stop with the sound button on iPhone."
  }
 ]
