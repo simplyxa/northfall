@@ -1100,5 +1100,10 @@
   "v": "1.28.2",
   "t": "Музыка на главной гасится сразу при выключении звука.",
   "te": "Home screen music stops immediately when sound is turned off."
+ },
+ {
+  "v": "1.29.0",
+  "t": "Сюжет «Тропы без следов»: рядом с репликой показывается портрет говорящего (Астрид, Эйрик, Брокк, Руна).",
+  "te": "Trail Without Tracks story: the speaker's portrait is shown next to their line (Astrid, Eirik, Brokk, Runa)."
  }
 ]
