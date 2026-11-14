@@ -1070,5 +1070,10 @@
   "v": "1.26.87",
   "t": "Тропа без следов: за 4-й шаг теперь выдаётся вещь, которую можно разобрать на следующем шаге. Если рюкзак пуст на шаге разбора, вещь выдаётся автоматически.",
   "te": "The Trackless Path: step 4 now rewards an item you can dismantle in the next step; if your bag is empty at the dismantle step, one is given automatically."
+ },
+ {
+  "v": "1.26.88",
+  "t": "Тропа без следов, шаг 6: для выполнения достаточно ответить на загадку сказителя, правильно или нет.",
+  "te": "The Trackless Path, step 6: answering the storyteller's riddle is enough, right or wrong."
  }
 ]

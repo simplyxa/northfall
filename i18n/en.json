@@ -3005,7 +3005,6 @@
  "Разбери 1 ненужную вещь на железо у кузнеца.": "Dismantle 1 unwanted item into iron at the smithy.",
  "Узел возвращения": "The Homeward Knot",
  "Эйрик: «Когда дороги заносило, хранители вязали путь домой на чёрном шнуре. Твой узел вывернут. Прежде чем расскажу остальное, ответь на загадку. Страх делает слух слишком доверчивым».": "Eirik: “When snow buried the roads, wardens bound the way home into black cord. Your knot is reversed. Answer a riddle before I tell you more. Fear makes the ear too trusting.”",
- "Правильно ответь на 1 загадку сказителя.": "Answer 1 of the storyteller’s riddles correctly.",
  "Пока горит костёр": "While the Fire Burns",
  "Астрид: «Ворота останутся закрыты. Но людям нужны еда, дрова и работа для рук. Возьми поручение племени. Если будем всю ночь слушать лес, к утру сами начнём ему отвечать».": "Astrid: “The gates stay shut. But folk need food, firewood and work for their hands. Take a tribal errand. If we spend all night listening to the woods, by dawn we shall answer them.”",
  "Выполни 1 ежедневное задание племени и забери награду.": "Complete 1 daily tribal task and claim its reward.",
@@ -3078,5 +3077,6 @@
  "Золото за шаг Тропы не начислено: ": "Gold for the Path step was not credited: ",
  "). Ты получишь базовые умения обычного качества.</p></div>": "). You will get basic common-quality abilities.</p></div>",
  "<div class=\"panel\" style=\"border-left:4px solid var(--gold)\"><h3>Скоро откроется</h3><p style=\"margin:0\">Кланы, арена, рейды, чат и другие игроки откроются, когда пройдёшь первые задания «Тропы без следов» и сохранишь героя. Начни с главной: там написано, что делать.</p></div>": "<div class=\"panel\" style=\"border-left:4px solid var(--gold)\"><h3>Opening soon</h3><p style=\"margin:0\">Clans, arena, raids, chat and other players open up once you complete the first quests of the “The Trackless Path” and save your hero. Start from the main screen: it tells you what to do.</p></div>",
- "<div class=\"panel\" style=\"border-left:4px solid var(--gold)\"><p style=\"margin:0\">Умения откроются на шаге 8 «Свой голос» <b>Тропы без следов</b> (сейчас шаг ": "<div class=\"panel\" style=\"border-left:4px solid var(--gold)\"><p style=\"margin:0\">Skills unlock at step 8 “Your Own Voice” of <b>The Trackless Path</b> (currently step "
+ "<div class=\"panel\" style=\"border-left:4px solid var(--gold)\"><p style=\"margin:0\">Умения откроются на шаге 8 «Свой голос» <b>Тропы без следов</b> (сейчас шаг ": "<div class=\"panel\" style=\"border-left:4px solid var(--gold)\"><p style=\"margin:0\">Skills unlock at step 8 “Your Own Voice” of <b>The Trackless Path</b> (currently step ",
+ "Ответь на 1 загадку сказителя.": "Answer 1 of the storyteller’s riddles."
 }

@@ -2102,7 +2102,7 @@ const NBQ=[
  {t:'buy',n:1,np:'Руна',h:'Цена сухой кожи',s:'Руна: «В этих лохмотьях тебя прежде мертвецов добьёт ветер. Выбирай вещь по плечу. За серебро, конечно. Жалость греет плохо, а лавку и вовсе не кормит».',d:'Купи 1 вещь в магазине для выхода за пределы лагеря.',x:0.1,g:90,go:'shop',ic:'shop'},
  {t:'equip',n:1,np:'Астрид',h:'Не для сундука',s:'Астрид: «Руна продаст и снег зимой, но вещь добротная. Надевай. У старой тропы слышен рог дозора. Только рог тот висит у моего костра уже девять ночей».',d:'Надень 1 вещь перед выходом к старой тропе.',x:0.12,g:120,it:{r:0},go:'bag',ic:'forge'},
  {t:'dis',n:1,np:'Брокк',h:'Железо помнит',s:'Брокк: «Принеси ненужную вещь, разберём. Хорошее железо ещё послужит. А шнур твой поднеси к горну… Видишь иней? Огонь его не берёт. Позови Эйрика. Пусть хоть раз будет полезен до ужина».',d:'Разбери 1 ненужную вещь на железо у кузнеца.',x:0.12,g:150,go:'bag',ic:'forge'},
- {t:'saga',n:1,np:'Эйрик',h:'Узел возвращения',s:'Эйрик: «Когда дороги заносило, хранители вязали путь домой на чёрном шнуре. Твой узел вывернут. Прежде чем расскажу остальное, ответь на загадку. Страх делает слух слишком доверчивым».',d:'Правильно ответь на 1 загадку сказителя.',x:0.25,g:260,au:2,it:{r:0},go:'camp',ic:'camp'},
+ {t:'saga',n:1,np:'Эйрик',h:'Узел возвращения',s:'Эйрик: «Когда дороги заносило, хранители вязали путь домой на чёрном шнуре. Твой узел вывернут. Прежде чем расскажу остальное, ответь на загадку. Страх делает слух слишком доверчивым».',d:'Ответь на 1 загадку сказителя.',x:0.25,g:260,au:2,it:{r:0},go:'camp',ic:'camp'},
  {t:'dq',n:1,np:'Астрид',h:'Пока горит костёр',s:'Астрид: «Ворота останутся закрыты. Но людям нужны еда, дрова и работа для рук. Возьми поручение племени. Если будем всю ночь слушать лес, к утру сами начнём ему отвечать».',d:'Выполни 1 ежедневное задание племени и забери награду.',x:0.12,g:280,go:'quest',ic:'quest'},
  {t:'skill',n:3,np:'Астрид',h:'Свой голос',s:'Астрид: «Ночью из леса звучит уже твой голос. Значит, кто-то слушает нас слишком близко. В бою держись знакомых движений. Пусть руки напомнят голове, что принадлежит тебе».',d:'Используй умения класса в бою 3 раза.',x:0.15,g:310,go:'hunt',ic:'top'},
  {c:()=>S.lvl>=10,np:'Эйрик',h:'Порог дозора',s:'Эйрик: «Под лагерем лежит древний корень. На нём закреплена наша дорога домой. Чтобы подойти к нему, нужна выдержка. Набирайся сил: я не стану торопить тебя вслед за пропавшим дозором».',d:'Достигни 10 уровня, готовясь к поиску у древнего корня.',x:0.15,g:340,go:'hunt',ic:'hunt'},
@@ -2726,7 +2726,7 @@ const SAGA=[
 let SGMSG='';
 const sgToday=()=>{const d=DAY(),i=d%SAGA.length,sh=d%3;const o=SAGA[i][3].map((t,k)=>[t,k===0]);for(let k=0;k<sh;k++)o.push(o.shift());return{d,i,o}};
 const sgRew=()=>40+S.lvl*8;
-function sgAnswer(k){const T=sgToday();S.saga=S.saga||{};if(S.saga.day===T.d)return;const ok=T.o[k]&&T.o[k][1];if(ok)nbEv('saga');S.saga={day:T.d,ok,pick:k};
+function sgAnswer(k){const T=sgToday();S.saga=S.saga||{};if(S.saga.day===T.d)return;nbEv('saga');const ok=T.o[k]&&T.o[k][1];S.saga={day:T.d,ok,pick:k};
  if(ok){const g=sgRew();S.gold+=g;S.sgst=(S.sglast===T.d-1?(S.sgst|0):0)+1;S.sglast=T.d;S.sgbest=Math.max(S.sgbest|0,S.sgst);SGMSG=`Верно! Сказитель кивает: «Ты знаешь саги». +${g} серебра. Дней подряд: ${S.sgst}.`;log(`Сказитель: верный ответ, +${g} серебра.`,'hit')}
  else{S.sgst=0;SGMSG=`Сказитель качает головой: «Нет, воин. Верный ответ: ${T.o.find(x=>x[1])[0]}». Приходи завтра.`}
  achCheck();save();render()}
@@ -2770,7 +2770,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.87';
+const GVER='1.26.88';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3396,7 +3396,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.87</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.26.88</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

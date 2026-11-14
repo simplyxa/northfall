@@ -2104,7 +2104,7 @@ const NBQ=[
  {t:'buy',n:1,np:'Runa',h:'The Price of Dry Hide',s:'Runa: “In those rags, the wind will finish you before the dead can. Choose something that fits. For silver, of course. Pity gives little warmth and feeds no shop.”',d:'Buy 1 item from the shop for the journey beyond camp.',x:0.1,g:90,go:'shop',ic:'shop'},
  {t:'equip',n:1,np:'Astrid',h:'No Use in a Chest',s:'Astrid: “Runa could sell snow in winter, but the piece is sound. Put it on. The watch horn sounds by the old path. Yet that horn has hung beside my fire for nine nights.”',d:'Equip 1 item before approaching the old path.',x:0.12,g:120,it:{r:0},go:'bag',ic:'forge'},
  {t:'dis',n:1,np:'Brokk',h:'Iron Remembers',s:'Brokk: “Bring an unwanted piece. We shall salvage it. Good iron serves twice. Hold your cord near the forge… See that frost? Fire cannot touch it. Fetch Eirik. Let him earn his supper for once.”',d:'Dismantle 1 unwanted item into iron at the smithy.',x:0.12,g:150,go:'bag',ic:'forge'},
- {t:'saga',n:1,np:'Eirik',h:'The Homeward Knot',s:'Eirik: “When snow buried the roads, wardens bound the way home into black cord. Your knot is reversed. Answer a riddle before I tell you more. Fear makes the ear too trusting.”',d:'Answer 1 of the storyteller’s riddles correctly.',x:0.25,g:260,au:2,it:{r:0},go:'camp',ic:'camp'},
+ {t:'saga',n:1,np:'Eirik',h:'The Homeward Knot',s:'Eirik: “When snow buried the roads, wardens bound the way home into black cord. Your knot is reversed. Answer a riddle before I tell you more. Fear makes the ear too trusting.”',d:'Answer 1 of the storyteller’s riddles.',x:0.25,g:260,au:2,it:{r:0},go:'camp',ic:'camp'},
  {t:'dq',n:1,np:'Astrid',h:'While the Fire Burns',s:'Astrid: “The gates stay shut. But folk need food, firewood and work for their hands. Take a tribal errand. If we spend all night listening to the woods, by dawn we shall answer them.”',d:'Complete 1 daily tribal task and claim its reward.',x:0.12,g:280,go:'quest',ic:'quest'},
  {t:'skill',n:3,np:'Astrid',h:'Your Own Voice',s:'Astrid: “Last night the woods spoke with your voice. Someone is listening far too closely. Trust familiar movements in battle. Let your hands remind your mind what belongs to you.”',d:'Use class abilities 3 times in battle.',x:0.15,g:310,go:'hunt',ic:'top'},
  {c:()=>S.lvl>=10,np:'Eirik',h:'The Watch Threshold',s:'Eirik: “An ancient root lies beneath camp. Our homeward road is anchored to it. You need steadiness to approach it. Grow stronger. I shall not hurry you after the missing watch.”',d:'Reach level 10 to prepare for the search near the ancient root.',x:0.15,g:340,go:'hunt',ic:'hunt'},
@@ -2728,7 +2728,7 @@ const SAGA=[
 let SGMSG='';
 const sgToday=()=>{const d=DAY(),i=d%SAGA.length,sh=d%3;const o=SAGA[i][3].map((t,k)=>[t,k===0]);for(let k=0;k<sh;k++)o.push(o.shift());return{d,i,o}};
 const sgRew=()=>40+S.lvl*8;
-function sgAnswer(k){const T=sgToday();S.saga=S.saga||{};if(S.saga.day===T.d)return;const ok=T.o[k]&&T.o[k][1];if(ok)nbEv('saga');S.saga={day:T.d,ok,pick:k};
+function sgAnswer(k){const T=sgToday();S.saga=S.saga||{};if(S.saga.day===T.d)return;nbEv('saga');const ok=T.o[k]&&T.o[k][1];S.saga={day:T.d,ok,pick:k};
  if(ok){const g=sgRew();S.gold+=g;S.sgst=(S.sglast===T.d-1?(S.sgst|0):0)+1;S.sglast=T.d;S.sgbest=Math.max(S.sgbest|0,S.sgst);SGMSG=`Correct! The storyteller nods: “You know the sagas”. +${g} silver. Days in a row: ${S.sgst}.`;log(`Storyteller: correct answer, +${g} silver.`,'hit')}
  else{S.sgst=0;SGMSG=`The storyteller shakes his head: “No, warrior. The correct answer: ${T.o.find(x=>x[1])[0]}”. Come back tomorrow.`}
  achCheck();save();render()}
@@ -2772,7 +2772,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.87';
+const GVER='1.26.88';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3398,7 +3398,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.87</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.88</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
