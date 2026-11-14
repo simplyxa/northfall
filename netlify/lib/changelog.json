@@ -1125,5 +1125,10 @@
   "v": "1.30.0",
   "t": "Награда за вход теперь на главной как событие и рассчитана на 30 дней: сундуки на 7, 14, 21 и 28 день, легендарная вещь на 30-й. Из «Заданий» убрана.",
   "te": "The login reward is now a home screen event and runs for 30 days: chests on days 7, 14, 21 and 28, a legendary item on day 30. Removed from Quests."
+ },
+ {
+  "v": "1.31.0",
+  "t": "Задания теперь как на доске клана: в списке задания разной сложности, берёшь до 3 по силам, выполняешь и забираешь награду. Чем сложнее задание, тем больше награда.",
+  "te": "Quests now work like the clan board: a list of quests of different difficulty, take up to 3 that suit you, complete them and claim the reward. Harder quests pay more."
  }
 ]

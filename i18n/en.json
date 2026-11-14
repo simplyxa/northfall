@@ -3141,5 +3141,18 @@
  "ежедневные задания": "daily quests",
  ". Награда: +": ". Reward: +",
  ", сундук с вещью и руной": ", a chest with an item and a rune",
- "<p style=\"margin:4px 0 8px;font-size:13px;color:#b9b19c\">Заходи каждый день: на 7-й, 14-й, 21-й и 28-й дни — сундук, на 30-й — легендарная вещь. Пропустишь день — счёт начнётся заново.</p><button class=\"b\" data-a=\"lclaim\">Забрать награду</button>": "<p style=\"margin:4px 0 8px;font-size:13px;color:#b9b19c\">Come back every day: a chest on days 7, 14, 21 and 28, a legendary item on day 30. Miss a day and the count starts over.</p><button class=\"b\" data-a=\"lclaim\">Claim reward</button>"
+ "<p style=\"margin:4px 0 8px;font-size:13px;color:#b9b19c\">Заходи каждый день: на 7-й, 14-й, 21-й и 28-й дни — сундук, на 30-й — легендарная вещь. Пропустишь день — счёт начнётся заново.</p><button class=\"b\" data-a=\"lclaim\">Забрать награду</button>": "<p style=\"margin:4px 0 8px;font-size:13px;color:#b9b19c\">Come back every day: a chest on days 7, 14, 21 and 28, a legendary item on day 30. Miss a day and the count starts over.</p><button class=\"b\" data-a=\"lclaim\">Claim reward</button>",
+ "Лёгкое": "Easy",
+ "Среднее": "Medium",
+ "Тяжёлое": "Hard",
+ "<p style=\"margin:4px 0 0;font-size:14px;color:var(--moss)\">✓ Награда получена</p>": "<p style=\"margin:4px 0 0;font-size:14px;color:var(--moss)\">✓ Reward claimed</p>",
+ "Со вчерашнего дня": "From yesterday",
+ "В работе": "In progress",
+ "\" style=\"margin:0\">Забрать награду</button>": "\" style=\"margin:0\">Claim reward</button>",
+ "Уже взято ": "Already taken ",
+ " задания": " quests",
+ "</small><div style=\"font-size:15px\">Цель: ": "</small><div style=\"font-size:15px\">Goal: ",
+ "</div><small style=\"color:var(--mute)\">Награда: ": "</div><small style=\"color:var(--mute)\">Reward: ",
+ "<div class=\"panel\"><h3>Задания</h3><p style=\"margin:0 0 6px;color:var(--mute);font-size:15px\">Выбери до ": "<div class=\"panel\"><h3>Quests</h3><p style=\"margin:0 0 6px;color:var(--mute);font-size:15px\">Pick up to ",
+ " заданий по силам и выполни их: считаются только взятые задания. Когда цель достигнута, вернись и забери награду. Список обновляется каждый день. Взято: ": " quests that suit your strength and complete them: only the quests you have taken count. When the goal is reached, come back and claim the reward. The list refreshes every day. Taken: "
 }
