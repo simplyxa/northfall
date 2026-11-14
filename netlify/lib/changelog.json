@@ -1185,5 +1185,10 @@
   "v": "1.34.1",
   "t": "Исправлено: после перезахода в игру пропадала акция на золото (и другие данные от админа)",
   "te": "Fixed: the gold promotion (and other admin data) could vanish after reopening the game"
+ },
+ {
+  "v": "1.34.2",
+  "t": "Исправлено: подсказка «Жми Удар» в первом бою показывала не на кнопку удара",
+  "te": "Fixed: the \"Tap Strike\" hint in the first fight pointed away from the Strike button"
  }
 ]
