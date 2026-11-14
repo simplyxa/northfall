@@ -1110,5 +1110,10 @@
   "v": "1.29.1",
   "t": "Новые иконки событий на главной: сохранение героя, объявление, приглашение, установка игры, уведомления.",
   "te": "New home screen event icons: save hero, announcement, invite, install the game, notifications."
+ },
+ {
+  "v": "1.29.2",
+  "t": "Музыка замолкает при сворачивании игры и блокировке экрана и надёжнее выключается кнопкой звука.",
+  "te": "Music now goes quiet when the game is minimized or the screen locks, and turns off more reliably with the sound button."
  }
 ]
