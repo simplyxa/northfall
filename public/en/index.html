@@ -2881,7 +2881,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.33.0';
+const GVER='1.33.1';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3267,9 +3267,9 @@ const CTI=["/img/06a594f425b0f8.webp", "/img/e355cd8a8a1357.webp", "/img/d008ee6
 const ctabs=()=>`<div class="htab" style="grid-template-columns:repeat(5,1fr)">${[['main','Clan'],['log','Chronicle'],['dun','Dungeon'],['vault','Treasury'],['build','Buildings']].map((x,i)=>`<button class="${ctab===x[0]?'on':''}" data-ct="${x[0]}" style="padding:6px 2px;min-height:0"><img src="${CTI[i]}" alt="" width="40" height="40" style="display:block"><small style="font-size:11px">${x[1]}</small></button>`).join('')}</div>`;
 // отдельное меню клана (как на странице героя): Состав, Задания, Форум; внутри страницы — кнопка «‹ Клан»
 const csub=t=>`<div class="panel" style="padding:8px 12px"><button class="lnk" data-ct="main" style="padding:0">‹ Clan</button> <b style="margin-left:8px">${t}</b></div>`;
-const CMI=(k,ic,t,sub)=>`<button class="mi" data-ct="${k}"><span class="mic" style="font-size:26px;line-height:36px;text-align:center;filter:none;margin:-4px 0 -4px -4px">${ic}</span><b>${t}</b>${sub?`<small>${sub}</small>`:''}<span class="ch">›</span></button>`;
+const CMI=(k,ic,t,sub)=>`<button class="mi" data-ct="${k}">${String(ic).startsWith('/img/')?`<img class="mic" src="${ic}" width="36" height="36" alt="" aria-hidden="true">`:`<span class="mic" style="font-size:26px;line-height:36px;text-align:center;filter:none;margin:-4px 0 -4px -4px">${ic}</span>`}<b>${t}</b>${sub?`<small>${sub}</small>`:''}<span class="ch">›</span></button>`;
 function clanMenu(my){const d=my.dq&&my.dq.d===DAY()?my.dq:{xp:0},T=CDQT(my),pc=d.done?100:Math.min(99,Math.floor((d.xp|0)*100/T));
- return`<div class="menu">${CMI('mem','👥','Members',mem(my).length+'/'+cCap(my)+' members')}${CMI('quest','📋','Quests',d.done?'daily quest complete':'daily quest: '+pc+'%')}${CMI('forum','💬','Forum','clan topics and discussions')}</div>`}
+ return`<div class="menu">${CMI('mem','/img/dc7127f0f10947.webp','Members',mem(my).length+'/'+cCap(my)+' members')}${CMI('quest','/img/99b682d500b5b7.webp','Quests',d.done?'daily quest complete':'daily quest: '+pc+'%')}${CMI('forum','/img/825b306fa12ca0.webp','Forum','clan topics and discussions')}</div>`}
 const WKN=()=>Math.floor(Date.now()/6048e5);
 function ledLine(e){const n=esc(e.name||'Player'),g=e.g|0,i=e.i|0,s=(g?g+' silver':'')+(g&&i?' · ':'')+(i?i+' iron':'');
  if(e.k==='dep')return`💰 <b>${n}</b> deposited ${s}`;if(e.k==='bld')return`🏗️ <b>${n}</b> upgraded “${esc(e.what||'building')}»: −${s}`;
@@ -3507,7 +3507,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.33.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.33.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

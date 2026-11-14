@@ -2879,7 +2879,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.33.0';
+const GVER='1.33.1';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3265,9 +3265,9 @@ const CTI=["/img/06a594f425b0f8.webp", "/img/e355cd8a8a1357.webp", "/img/d008ee6
 const ctabs=()=>`<div class="htab" style="grid-template-columns:repeat(5,1fr)">${[['main','Клан'],['log','Летопись'],['dun','Подземелье'],['vault','Казна'],['build','Постройки']].map((x,i)=>`<button class="${ctab===x[0]?'on':''}" data-ct="${x[0]}" style="padding:6px 2px;min-height:0"><img src="${CTI[i]}" alt="" width="40" height="40" style="display:block"><small style="font-size:11px">${x[1]}</small></button>`).join('')}</div>`;
 // отдельное меню клана (как на странице героя): Состав, Задания, Форум; внутри страницы — кнопка «‹ Клан»
 const csub=t=>`<div class="panel" style="padding:8px 12px"><button class="lnk" data-ct="main" style="padding:0">‹ Клан</button> <b style="margin-left:8px">${t}</b></div>`;
-const CMI=(k,ic,t,sub)=>`<button class="mi" data-ct="${k}"><span class="mic" style="font-size:26px;line-height:36px;text-align:center;filter:none;margin:-4px 0 -4px -4px">${ic}</span><b>${t}</b>${sub?`<small>${sub}</small>`:''}<span class="ch">›</span></button>`;
+const CMI=(k,ic,t,sub)=>`<button class="mi" data-ct="${k}">${String(ic).startsWith('/img/')?`<img class="mic" src="${ic}" width="36" height="36" alt="" aria-hidden="true">`:`<span class="mic" style="font-size:26px;line-height:36px;text-align:center;filter:none;margin:-4px 0 -4px -4px">${ic}</span>`}<b>${t}</b>${sub?`<small>${sub}</small>`:''}<span class="ch">›</span></button>`;
 function clanMenu(my){const d=my.dq&&my.dq.d===DAY()?my.dq:{xp:0},T=CDQT(my),pc=d.done?100:Math.min(99,Math.floor((d.xp|0)*100/T));
- return`<div class="menu">${CMI('mem','👥','Состав',mem(my).length+'/'+cCap(my)+' участников')}${CMI('quest','📋','Задания',d.done?'задание дня выполнено':'задание дня: '+pc+'%')}${CMI('forum','💬','Форум','темы и обсуждения клана')}</div>`}
+ return`<div class="menu">${CMI('mem','/img/dc7127f0f10947.webp','Состав',mem(my).length+'/'+cCap(my)+' участников')}${CMI('quest','/img/99b682d500b5b7.webp','Задания',d.done?'задание дня выполнено':'задание дня: '+pc+'%')}${CMI('forum','/img/825b306fa12ca0.webp','Форум','темы и обсуждения клана')}</div>`}
 const WKN=()=>Math.floor(Date.now()/6048e5);
 function ledLine(e){const n=esc(e.name||'Игрок'),g=e.g|0,i=e.i|0,s=(g?g+' сер.':'')+(g&&i?' · ':'')+(i?i+' жел.':'');
  if(e.k==='dep')return`💰 <b>${n}</b> внёс ${s}`;if(e.k==='bld')return`🏗️ <b>${n}</b> улучшил «${esc(e.what||'постройку')}»: −${s}`;
@@ -3505,7 +3505,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.33.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.33.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

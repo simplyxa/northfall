@@ -1160,5 +1160,10 @@
   "v": "1.33.0",
   "t": "Экран загрузки: при запуске игра показывает логотип и полосу, пока не загрузятся фон, значки и интерфейс, и появляется сразу целиком.",
   "te": "Loading screen: the game shows the logo and a progress bar at start until the background, icons and interface are ready, then appears all at once."
+ },
+ {
+  "v": "1.33.1",
+  "t": "Иконки в клане: Состав, Задания, Форум.",
+  "te": "Clan icons: Members, Quests, Forum."
  }
 ]
