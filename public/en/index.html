@@ -2102,7 +2102,7 @@ const NBQ=[
  {t:'kill',n:3,np:'Astrid',h:'A Place by the Fire',s:'Astrid: “Sit closer. Give us your name when your tongue thaws. Beasts crowd the camp as though the woods drive them out. Help the watch. Then we shall speak of why no tracks follow you.”',d:'Kill 3 beasts on an easy hunt to drive them away from camp.',x:0.1,g:40,go:'hunt',ic:'hunt'},
  {c:()=>S.lvl>=2&&(S.pts|0)<3*(S.lvl-1),np:'Astrid',h:'The Hand Remembers',s:'Astrid: “Your legs still shake, but your hand knows its work. Trust it. There is a black cord around your wrist. Leave its knots alone. Our missing watch wore the same.”',d:'Spend 1 skill point to prepare for the search for the missing watch.',x:0.1,g:60,go:'stats',ic:'quest'},
  {t:'buy',n:1,np:'Runa',h:'The Price of Dry Hide',s:'Runa: “In those rags, the wind will finish you before the dead can. Choose something that fits. For silver, of course. Pity gives little warmth and feeds no shop.”',d:'Buy 1 item from the shop for the journey beyond camp.',x:0.1,g:90,go:'shop',ic:'shop'},
- {t:'equip',n:1,np:'Astrid',h:'No Use in a Chest',s:'Astrid: “Runa could sell snow in winter, but the piece is sound. Put it on. The watch horn sounds by the old path. Yet that horn has hung beside my fire for nine nights.”',d:'Equip 1 item before approaching the old path.',x:0.12,g:120,go:'bag',ic:'forge'},
+ {t:'equip',n:1,np:'Astrid',h:'No Use in a Chest',s:'Astrid: “Runa could sell snow in winter, but the piece is sound. Put it on. The watch horn sounds by the old path. Yet that horn has hung beside my fire for nine nights.”',d:'Equip 1 item before approaching the old path.',x:0.12,g:120,it:{r:0},go:'bag',ic:'forge'},
  {t:'dis',n:1,np:'Brokk',h:'Iron Remembers',s:'Brokk: “Bring an unwanted piece. We shall salvage it. Good iron serves twice. Hold your cord near the forge… See that frost? Fire cannot touch it. Fetch Eirik. Let him earn his supper for once.”',d:'Dismantle 1 unwanted item into iron at the smithy.',x:0.12,g:150,go:'bag',ic:'forge'},
  {t:'saga',n:1,np:'Eirik',h:'The Homeward Knot',s:'Eirik: “When snow buried the roads, wardens bound the way home into black cord. Your knot is reversed. Answer a riddle before I tell you more. Fear makes the ear too trusting.”',d:'Answer 1 of the storyteller’s riddles correctly.',x:0.25,g:260,au:2,it:{r:0},go:'camp',ic:'camp'},
  {t:'dq',n:1,np:'Astrid',h:'While the Fire Burns',s:'Astrid: “The gates stay shut. But folk need food, firewood and work for their hands. Take a tribal errand. If we spend all night listening to the woods, by dawn we shall answer them.”',d:'Complete 1 daily tribal task and claim its reward.',x:0.12,g:280,go:'quest',ic:'quest'},
@@ -2126,7 +2126,9 @@ function nbInit(){if(!S)return;
  const lv=S.lvl|0,byLv=()=>lv>=20?{done:1,v:4}:lv>=15?{i:15,p:0,v:4}:lv>=10?{i:9,p:0,v:4}:{i:0,p:0,v:4};
  if(!S.nb)S.nb=byLv();
  else if(S.nb.v!==4){if(S.nb.done)S.nb=S.nb.v===3||lv>=20?{done:1,v:4}:byLv();else{S.nb.v=4;if((S.nb.i|0)>=NBQ.length){S.nb.i=NBQ.length-1;S.nb.p=0}}}
- if(S.nb&&!S.nb.done&&(S.nb.i|0)>=7)nbSk()}
+ if(S.nb&&!S.nb.done&&(S.nb.i|0)>=7)nbSk()
+ // шаг «разбери вещь»: если в рюкзаке и сундуке пусто (кто дошёл сюда до обновления), выдаём вещь для разбора
+ if(S.nb&&!S.nb.done){const q=NBQ[S.nb.i];if(q&&q.t==='dis'&&!(S.inv&&S.inv.length)&&!(S.chest&&S.chest.length)){const it=gen(NBSLOTS[Math.floor(Math.random()*NBSLOTS.length)],S.lvl,0);S.inv=S.inv||[];S.inv.push(it)}}}
 function nbEv(t,n){if(!S||!S.nb||S.nb.done)return;const q=NBQ[S.nb.i];if(q&&q.t===t){S.nb.p=Math.min(q.n,(S.nb.p|0)+(n||1))}}
 const nbOk=()=>{const q=S.nb&&!S.nb.done&&NBQ[S.nb.i];return!!q&&(q.c?q.c():(S.nb.p|0)>=q.n)};
 // задание «Пути новичка» выполнено — сразу окно «Забрать награду»; по кнопке — на главную и награда
@@ -2770,7 +2772,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.26.86';
+const GVER='1.26.87';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3396,7 +3398,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.86</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.26.87</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
