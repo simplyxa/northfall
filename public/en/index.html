@@ -3757,7 +3757,7 @@ function hsView(){
  const det=HSE>=0&&ev[HSE]?`<div class="hs-det" id="hsdet"><div class="h">${ev[HSE].ic||`<span class="em">${ev[HSE].em}</span>`}<div><small>${ev[HSE].tg}</small><b>${ev[HSE].t}</b></div></div>${ev[HSE].h()}</div>`:'';
  const mh=cats.map((c,i)=>`<button class="hs-c${HSM===i?' on':''}" data-hs="m${i}" title="${c.n}" aria-label="${c.n}"><img src="${c.i}" alt="">${c.dot?'<span class="dot"></span>':''}</button>`).join('');
  const sub=HSM>=0&&cats[HSM]?`<div class="hs-sub" id="hssub"><div class="sh">${cats[HSM].n}</div>${cats[HSM].h}</div>`:'';
- const away=fight&&fight.away?`<div class="hs-ov" id="hsaway"><button class="b red" data-a="fback" style="width:100%">⚔ Вернуться в бой</button></div>`:'';
+ const away=fight&&fight.away?`<div class="hs-ov" id="hsaway"><button class="b red" data-a="fback" style="width:100%">⚔ Back to battle</button></div>`:'';
  const hr=!fight&&HREP?`<div class="hs-ov" id="hshr">${hrepView()}</div>`:'';
  return`<div class="hsr${HSE>=0||HSM>=0?' sd':''}" id="hs"><div class="hs-xp" role="img" aria-label="Experience"><u style="width:${xpw}%"></u></div>
  <div class="hs-t"><div class="hs-gp"><img class="pb" src="${HSA.ui_plate}" alt=""><img class="co" src="${RIC.gold}" alt=""><button class="am" data-t="bank" title="Gold: ${S.au|0}" aria-label="Gold">${kf(S.au|0)}</button><button class="plus" data-t="gold" title="Buy gold" aria-label="Buy gold"></button></div>

@@ -3161,5 +3161,6 @@
  "><span><b>Музыка на главной</b></span></label></div>": "><span><b>Home screen music</b></span></label></div>",
  "Музыка выключена": "Music off",
  "Музыка включена": "Music on",
- "\" aria-label=\"Музыка\"><img src=\"": "\" aria-label=\"Music\"><img src=\""
+ "\" aria-label=\"Музыка\"><img src=\"": "\" aria-label=\"Music\"><img src=\"",
+ "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Вернуться в бой</button></div>": "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Back to battle</button></div>"
 }
