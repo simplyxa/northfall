@@ -1195,5 +1195,10 @@
   "v": "1.34.3",
   "t": "В админке в воронке исправлена подпись: первое задание теперь «убей 3», а не 2",
   "te": "Admin funnel label fixed: the first quest is now \"kill 3\", not 2"
+ },
+ {
+  "v": "1.34.4",
+  "t": "В английской версии ник администрации теперь показывается по-английски",
+  "te": "The administration nickname now shows as \"Administration\" in the English version"
  }
 ]
