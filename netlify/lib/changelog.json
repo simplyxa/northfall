@@ -1170,5 +1170,10 @@
   "v": "1.33.2",
   "t": "Исправлено: при нажатии на событие на главной анимация появления кнопок меню больше не повторяется.",
   "te": "Fixed: tapping an event on the home screen no longer replays the menu buttons' entrance animation."
+ },
+ {
+  "v": "1.33.3",
+  "t": "Исправлено: при закрытии окна события на главной анимация меню больше не повторяется.",
+  "te": "Fixed: closing an event window on the home screen no longer replays the menu animation."
  }
 ]
