@@ -397,12 +397,14 @@ body.hsmode #hsbg{display:block}
 body.hasnav #app{padding-bottom:calc(min(100vw,520px)/5.3366 + 14px + env(safe-area-inset-bottom,0px))}
 .chs{bottom:calc(min(100vw,520px)/5.3366 + env(safe-area-inset-bottom,0px))!important}
 
+#boot{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:radial-gradient(ellipse at 50% 40%,#1c2230 0,#0b0e13 70%);transition:opacity .4s}#boot.out{opacity:0;pointer-events:none}#boot img{width:min(62vw,300px);height:auto;filter:drop-shadow(0 4px 14px #000)}#boot .bb{width:min(52vw,220px);height:4px;border-radius:2px;background:#ffffff1a;overflow:hidden}#boot .bb i{display:block;height:100%;width:40%;border-radius:2px;background:linear-gradient(90deg,#c98a2a,#f0c46a);animation:bootrun 1.1s ease-in-out infinite}@keyframes bootrun{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
 </style>
 <link rel="alternate" hreflang="ru" href="https://playnorthfall.online/"><link rel="alternate" hreflang="en" href="https://playnorthfall.online/en/"><link rel="alternate" hreflang="x-default" href="https://playnorthfall.online/">
 <link rel="alternate" hreflang="ru" href="https://playnorthfall.online/"><link rel="alternate" hreflang="en" href="https://playnorthfall.online/en/"><link rel="alternate" hreflang="x-default" href="https://playnorthfall.online/">
 </head>
 <body>
 <div id="app"></div>
+<div id="boot" aria-hidden="true"><img src="/img/c82a4e0fa55cc7.webp" alt=""><div class="bb"><i></i></div></div>
 <noscript><div style="max-width:640px;margin:40px auto;padding:0 16px;font-family:Georgia,serif"><h1>Northfall: Barbarians</h1><p>A free browser text RPG about the barbarians of the North. Choose a class — berserker, hunter or shaman — hunt in snowy forests, fight in the arena for rating, join a clan, wage war for territories, descend into clan dungeons and defeat world bosses together with other players. Tame pets, collect gear of five rarities and socket runes into it.</p><p>Enable JavaScript in your browser to play.</p></div></noscript>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -2879,7 +2881,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.32.1';
+const GVER='1.33.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3505,7 +3507,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.32.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.33.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3912,7 +3914,14 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
  
 });
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.target.id;if(i==='cm')say();else if(i==='gct2')gcSend('gct2');else if(i==='cm2')say('cm2');else if(!S&&['lg','pw','pw2','nm'].includes(i)){if(scr==='login')doLogin();else if(scr==='reg')doReg();else doNewHero()}});
-load();if(!S&&!(LEG&&!LEG.guest)&&scr==='login')scr='gnew';render();initOnline();
+let BOOTD=0;
+function bootHide(){if(BOOTD)return;BOOTD=1;const b=document.getElementById('boot');if(!b)return;b.classList.add('out');setTimeout(()=>{try{b.remove()}catch(e){}},500)}
+function bootPre(){const u=new Set(),add=x=>{if(typeof x==='string'&&/^\/img\/[A-Za-z0-9]+\.webp$/.test(x))u.add(x)};
+ try{const h=new Date().getHours(),c=h>=6&&h<10?'morning':h>=10&&h<17?'day':h>=17&&h<21?'dusk':'night';add(HSA['bg_'+c]);for(const k in HSA)if(/^(ui_|nav_|fr_|mi_|ev_)/.test(k))add(HSA[k]);for(const k in BNI)add(BNI[k]);for(const k in MIC)add(MIC[k]);add(LOGO);add(RIC.gold);add(AVS);add(AUTHBG);add(typeof VBOI==='string'?VBOI:'')}catch(e){}
+ return Promise.all([...u].map(src=>new Promise(r=>{const i=new Image();i.onload=i.onerror=()=>r();i.src=src;if(i.decode)i.decode().then(r,r)})))}
+function bootRel(){if(BOOTD)return;Promise.race([Promise.all([bootPre(),document.fonts?document.fonts.ready:0]),new Promise(r=>setTimeout(r,4000))]).then(()=>requestAnimationFrame(()=>requestAnimationFrame(bootHide)),bootHide)}
+setTimeout(bootHide,10000);
+load();if(!S&&!(LEG&&!LEG.guest)&&scr==='login')scr='gnew';render();initOnline().then(bootRel,bootRel);
 setInterval(fightTick,100);
 setInterval(()=>{if(S&&S.clan&&(S.cxq>0||S.tq)&&Date.now()-(window.__hft||0)>30000){window.__hft=Date.now();try{huntFlush()}catch(e){}}if(S){const b=S.en,h=S.hp;if(S.ex){const k0=S.ex.k;exSettle();exBoss();if(!S.ex||S.ex.k!==k0){if(!fight)render()}}regen();if(S.en!==b||S.hp!==h){save();if(!fight)render()}}},5000);
 
