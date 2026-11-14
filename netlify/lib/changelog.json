@@ -1165,5 +1165,10 @@
   "v": "1.33.1",
   "t": "Иконки в клане: Состав, Задания, Форум.",
   "te": "Clan icons: Members, Quests, Forum."
+ },
+ {
+  "v": "1.33.2",
+  "t": "Исправлено: при нажатии на событие на главной анимация появления кнопок меню больше не повторяется.",
+  "te": "Fixed: tapping an event on the home screen no longer replays the menu buttons' entrance animation."
  }
 ]

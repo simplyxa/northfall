@@ -1,7 +1,3 @@
 [
- "><span><b>Звуки в бою</b></span></label><label class=\"tgl\"><input type=\"checkbox\" data-a=\"mmute\" ",
- "><span><b>Музыка на главной</b></span></label></div>",
- "Музыка выключена",
- "Музыка включена",
- "\" aria-label=\"Музыка\"><img src=\""
+ "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Вернуться в бой</button></div>"
 ]

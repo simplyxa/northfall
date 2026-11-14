@@ -2881,7 +2881,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.33.1';
+const GVER='1.33.2';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3507,7 +3507,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.33.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.33.2</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3754,17 +3754,17 @@ function hsView(){
  const cats=hsItems(),ev=hsEvents();
  if(HSM>3||HSE>=ev.length){HSM=Math.min(HSM,3);if(HSE>=ev.length)HSE=-1}
  const eh=ev.map((e,i)=>`<button class="hs-e${e.hot?' hot':''}${HSE===i?' on':''}" data-hs="e${i}" title="${e.t}" aria-label="${e.t}" style="animation-delay:${i*.07}s">${e.ic||`<span class="em">${e.em}</span>`}<small>${e.lab}</small>${e.dot?'<span class="dot"></span>':''}</button>`).join('');
- const det=HSE>=0&&ev[HSE]?`<div class="hs-det"><div class="h">${ev[HSE].ic||`<span class="em">${ev[HSE].em}</span>`}<div><small>${ev[HSE].tg}</small><b>${ev[HSE].t}</b></div></div>${ev[HSE].h()}</div>`:'';
+ const det=HSE>=0&&ev[HSE]?`<div class="hs-det" id="hsdet"><div class="h">${ev[HSE].ic||`<span class="em">${ev[HSE].em}</span>`}<div><small>${ev[HSE].tg}</small><b>${ev[HSE].t}</b></div></div>${ev[HSE].h()}</div>`:'';
  const mh=cats.map((c,i)=>`<button class="hs-c${HSM===i?' on':''}" data-hs="m${i}" title="${c.n}" aria-label="${c.n}"><img src="${c.i}" alt="">${c.dot?'<span class="dot"></span>':''}</button>`).join('');
- const sub=HSM>=0&&cats[HSM]?`<div class="hs-sub"><div class="sh">${cats[HSM].n}</div>${cats[HSM].h}</div>`:'';
- const away=fight&&fight.away?`<div class="hs-ov"><button class="b red" data-a="fback" style="width:100%">⚔ Back to battle</button></div>`:'';
- const hr=!fight&&HREP?`<div class="hs-ov">${hrepView()}</div>`:'';
+ const sub=HSM>=0&&cats[HSM]?`<div class="hs-sub" id="hssub"><div class="sh">${cats[HSM].n}</div>${cats[HSM].h}</div>`:'';
+ const away=fight&&fight.away?`<div class="hs-ov" id="hsaway"><button class="b red" data-a="fback" style="width:100%">⚔ Вернуться в бой</button></div>`:'';
+ const hr=!fight&&HREP?`<div class="hs-ov" id="hshr">${hrepView()}</div>`:'';
  return`<div class="hsr${HSE>=0||HSM>=0?' sd':''}" id="hs"><div class="hs-xp" role="img" aria-label="Experience"><u style="width:${xpw}%"></u></div>
  <div class="hs-t"><div class="hs-gp"><img class="pb" src="${HSA.ui_plate}" alt=""><img class="co" src="${RIC.gold}" alt=""><button class="am" data-t="bank" title="Gold: ${S.au|0}" aria-label="Gold">${kf(S.au|0)}</button><button class="plus" data-t="gold" title="Buy gold" aria-label="Buy gold"></button></div>
  <div class="hs-st">${st.join('')}</div>
  <div class="hs-rt"><button data-a="mmute" title="${S.mmute?'Music off':'Music on'}" aria-label="Music"><img src="${S.mmute?HSA.ui_mute:HSA.ui_snd}" alt=""></button><button data-t="settings" title="Settings" aria-label="Settings"><img src="${HSA.ui_set}" alt=""></button></div></div>
  <div class="hs-logo"><img src="${LOGO}" alt="Northfall: Barbarians"></div>
- <div class="hs-ev">${eh}</div>${det}<div class="hs-m">${mh}</div>${sub}${away}${hr}${HSTOAST?`<div class="hs-ov"><div class="panel"><p style="margin:0">${esc(HSTOAST)}</p></div></div>`:''}</div>`}
+ <div class="hs-ev" id="hsev">${eh}</div>${det}<div class="hs-m" id="hsm">${mh}</div>${sub}${away}${hr}${HSTOAST?`<div class="hs-ov" id="hstoast"><div class="panel"><p style="margin:0">${esc(HSTOAST)}</p></div></div>`:''}</div>`}
 const HSON=()=>!!S&&!BAN&&tab==='home'&&!FV();
 // клики по сцене: меню/события и закрытие по тапу вне панели
 document.addEventListener('click',e=>{if(!document.body.classList.contains('hsmode'))return;const b=e.target.closest('[data-hs]');
