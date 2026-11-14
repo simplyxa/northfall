@@ -1080,5 +1080,10 @@
   "v": "1.27.0",
   "t": "Новая главная: сцена лесного лагеря с фоном по времени суток, иконки событий, компактное меню справа и новая нижняя панель с аватаром. «Лагерь» переименован в «Таверну».",
   "te": "New home screen: a forest camp scene that changes with the time of day, event icons, a compact right menu and a new bottom bar with your avatar. «Camp» is now «Tavern»."
+ },
+ {
+  "v": "1.27.1",
+  "t": "Исправлено: полосы здоровья героя и монстров в бою снова наверху арены.",
+  "te": "Fixed: hero and monster health bars are back at the top of the battle arena."
  }
 ]
