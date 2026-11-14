@@ -3136,5 +3136,10 @@
  "\" aria-label=\"Золото\">": "\" aria-label=\"Gold\">",
  "</button><button class=\"plus\" data-t=\"gold\" title=\"Купить золото\" aria-label=\"Купить золото\"></button></div>\n <div class=\"hs-st\">": "</button><button class=\"plus\" data-t=\"gold\" title=\"Buy gold\" aria-label=\"Buy gold\"></button></div>\n <div class=\"hs-st\">",
  "\" aria-label=\"Звук\"><img src=\"": "\" aria-label=\"Sound\"><img src=\"",
- "\" alt=\"\"></button><button data-t=\"settings\" title=\"Настройки\" aria-label=\"Настройки\"><img src=\"": "\" alt=\"\"></button><button data-t=\"settings\" title=\"Settings\" aria-label=\"Settings\"><img src=\""
+ "\" alt=\"\"></button><button data-t=\"settings\" title=\"Настройки\" aria-label=\"Настройки\"><img src=\"": "\" alt=\"\"></button><button data-t=\"settings\" title=\"Settings\" aria-label=\"Settings\"><img src=\"",
+ ", подарок за 30 дней: легендарная вещь": ", 30-day gift: a legendary item",
+ "ежедневные задания": "daily quests",
+ ". Награда: +": ". Reward: +",
+ ", сундук с вещью и руной": ", a chest with an item and a rune",
+ "<p style=\"margin:4px 0 8px;font-size:13px;color:#b9b19c\">Заходи каждый день: на 7-й, 14-й, 21-й и 28-й дни — сундук, на 30-й — легендарная вещь. Пропустишь день — счёт начнётся заново.</p><button class=\"b\" data-a=\"lclaim\">Забрать награду</button>": "<p style=\"margin:4px 0 8px;font-size:13px;color:#b9b19c\">Come back every day: a chest on days 7, 14, 21 and 28, a legendary item on day 30. Miss a day and the count starts over.</p><button class=\"b\" data-a=\"lclaim\">Claim reward</button>"
 }

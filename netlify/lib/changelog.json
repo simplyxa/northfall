@@ -1120,5 +1120,10 @@
   "v": "1.29.3",
   "t": "Новые иконки в меню: Почта, Друзья, Форум.",
   "te": "New menu icons: Mail, Friends, Forum."
+ },
+ {
+  "v": "1.30.0",
+  "t": "Награда за вход теперь на главной как событие и рассчитана на 30 дней: сундуки на 7, 14, 21 и 28 день, легендарная вещь на 30-й. Из «Заданий» убрана.",
+  "te": "The login reward is now a home screen event and runs for 30 days: chests on days 7, 14, 21 and 28, a legendary item on day 30. Removed from Quests."
  }
 ]
