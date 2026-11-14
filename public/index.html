@@ -2858,7 +2858,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.27.1';
+const GVER='1.28.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3484,7 +3484,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.27.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.28.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3797,6 +3797,16 @@ const HSF=(()=>{
  let clk=0;
  return{post(on){if(on){init();set(window.HSDBG||byClock());if(!raf&&!RM)raf=requestAnimationFrame(frame);else if(RM){size();draw(0)}if(!clk)clk=setInterval(()=>{if(!window.HSDBG&&document.body.classList.contains('hsmode'))set(byClock())},60000)}else if(raf){cancelAnimationFrame(raf);raf=0}},set(m){window.HSDBG=m;set(m)}}})();
 
+const HSMUS=(()=>{const U={morning:'/audio/c75dee73045be5.mp3',day:'/audio/a26ee8b204b601.mp3',dusk:'/audio/e619117111b800.mp3',night:'/audio/519560745544dd.mp3'},VOL=.4,A={},T={};let want=null,tm=0,pend=false,clk=0;
+ const clock=()=>{const h=new Date().getHours();return h>=6&&h<10?'morning':h>=10&&h<17?'day':h>=17&&h<21?'dusk':'night'};
+ const el=m=>A[m]||(A[m]=Object.assign(new Audio(),{src:U[m],loop:true,preload:'auto',volume:0}));
+ function step(){let busy=false;for(const m in A){const a=A[m],t=m===want?VOL:0;try{const v=a.volume;if(Math.abs(v-t)>.011){a.volume=Math.max(0,Math.min(1,v+(t>v?.02:-.03)));busy=true}else{a.volume=t;if(!t&&!a.paused)a.pause()}}catch(e){if(!t&&!a.paused)a.pause()}}if(!busy){clearInterval(tm);tm=0}}
+ function sync(show){try{want=show&&S&&!S.mute?(window.HSDBG||clock()):null;
+  if(want){const a=el(want);if(a.paused){const r=a.play();if(r&&r.catch)r.catch(()=>{pend=true})}if(!clk)clk=setInterval(()=>sync(HSON()),60000)}else if(clk){clearInterval(clk);clk=0}
+  if(!tm&&Object.keys(A).length)tm=setInterval(step,50)}catch(e){}}
+ document.addEventListener('pointerdown',()=>{if(pend){pend=false;sync(HSON())}},true);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const m in A)A[m].pause();else sync(HSON())});
+ return{sync}})();
 function render(){
  if(fight)snowPause();else snowRun();
  socMaybe();hubHello();setTimeout(chatScroll,0);
@@ -3808,7 +3818,7 @@ function render(){
  if(BAN){$('#app').innerHTML=`<div class="panel"><h2>Доступ закрыт</h2><p>Администратор заблокировал этого героя.</p></div>`+LOGOUT;return}
  raidSub();skInit();if(S.gsw&&!GUEST&&UID){delete S.gsw;gsGift()}if(GUEST&&S.lvl>=3&&!S.gnag&&!document.querySelector('.modal')&&S.nb&&(S.nb.done||S.nb.i>=2)&&typeof gAge==='function'&&gAge()>=12*60000){S.gnag=1;save();setTimeout(()=>popup('Сохрани героя',`Ты уже ${S.lvl} уровня! Создай логин и пароль — герой не потеряется, откроются кланы, рейды и чат.<br><br>🎁 Подарок за сохранение: ${GSGIFT}.<br><br><button class="b red" data-a="gsave" style="width:100%">Сохранить героя</button>`),300)}if(UID&&S&&S.old===0&&!S.nwr&&!(typeof GUEST!=='undefined'&&GUEST)){S.nwr=1;news(`🔥 К костру племени пришёл новый воин ${S.name}. Поприветствуйте!`)}morph($('#app'),HSON()?hsView()+bnav()+chsView():xpbar()+(fight&&fight.away?`<button class="b red" data-a="fback" style="width:100%;margin:0 0 10px">⚔ Вернуться в бой</button>`:'')+nbStrip()+invStrip()+(!fight&&RAID&&RAID.st==='on'&&tab!=='raid'?`<button class="b red" data-t="raid" style="width:100%;margin:0 0 10px">⚔ Идёт рейд «${RAIDS[RAID.b].n}» — в бой</button>`:'')+(!fight&&HREP?hrepView():'')+(FV()?fightView():tab==='home'?HBAN()+promoBar()+pwaQuest()+pushAsk()+nbView()+guestBar()+tipView()+annView()+menuView():tipView()+tabView())+
  (!FV()?'':`<div class="panel" id="log">${logs.map(l=>`<p class="${l[1]}">${esc(l[0])}</p>`).join('')||'<p>Тишина.</p>'}</div>`)+FOOT()+bnav()+chsView());
- document.body.classList.toggle('hsmode',HSON());HSF.post(HSON());setTimeout(nbHl,0);
+ document.body.classList.toggle('hsmode',HSON());HSF.post(HSON());HSMUS.sync(HSON());setTimeout(nbHl,0);
  for(const k of ['ftt','ftb','fpb']){const x=$('#'+k);if(x&&keep[k])x.value=keep[k]}
 }
 document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();

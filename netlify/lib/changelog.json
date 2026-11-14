@@ -1085,5 +1085,10 @@
   "v": "1.27.1",
   "t": "Исправлено: полосы здоровья героя и монстров в бою снова наверху арены.",
   "te": "Fixed: hero and monster health bars are back at the top of the battle arena."
+ },
+ {
+  "v": "1.28.0",
+  "t": "Фоновая музыка на главной: четыре мелодии по времени суток, включается и выключается рогом.",
+  "te": "Background music on the home screen: four tracks by time of day, toggled with the horn."
  }
 ]
