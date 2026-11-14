@@ -1115,5 +1115,10 @@
   "v": "1.29.2",
   "t": "Музыка замолкает при сворачивании игры и блокировке экрана и надёжнее выключается кнопкой звука.",
   "te": "Music now goes quiet when the game is minimized or the screen locks, and turns off more reliably with the sound button."
+ },
+ {
+  "v": "1.29.3",
+  "t": "Новые иконки в меню: Почта, Друзья, Форум.",
+  "te": "New menu icons: Mail, Friends, Forum."
  }
 ]
