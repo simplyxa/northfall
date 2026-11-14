@@ -1135,5 +1135,10 @@
   "v": "1.31.1",
   "t": "В заданиях рядом с «Отказаться» появилась кнопка «Перейти»: ведёт туда, где задание выполняется.",
   "te": "Quests now have a «Go» button next to «Give up» that takes you to where the quest is done."
+ },
+ {
+  "v": "1.31.2",
+  "t": "Новые иконки Почты, Друзей и Форума остались только в меню главной, на странице героя вернулись прежние.",
+  "te": "The new Mail, Friends and Forum icons are now only in the home menu; the hero page has its old icons again."
  }
 ]
