@@ -3162,5 +3162,11 @@
  "Музыка выключена": "Music off",
  "Музыка включена": "Music on",
  "\" aria-label=\"Музыка\"><img src=\"": "\" aria-label=\"Music\"><img src=\"",
- "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Вернуться в бой</button></div>": "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Back to battle</button></div>"
+ "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Вернуться в бой</button></div>": "<div class=\"hs-ov\" id=\"hsaway\"><button class=\"b red\" data-a=\"fback\" style=\"width:100%\">⚔ Back to battle</button></div>",
+ "Следующий удар": "Next strike",
+ "Можно бить": "Ready to strike",
+ " здоровья. ": " health. ",
+ "До следующего удара: <b>": "Until the next strike: <b>",
+ "Удар готов: бой 45 секунд, 3 энергии.": "Strike is ready: a 45-second fight, 3 energy.",
+ "⚔ Бить босса": "⚔ Strike the boss"
 }

@@ -1175,5 +1175,10 @@
   "v": "1.33.3",
   "t": "Исправлено: при закрытии окна события на главной анимация меню больше не повторяется.",
   "te": "Fixed: closing an event window on the home screen no longer replays the menu animation."
+ },
+ {
+  "v": "1.34.0",
+  "t": "На главной в событиях появился отсчёт до удара по мировому боссу: плитка с боссом дня, его здоровьем и временем до следующего удара",
+  "te": "The home screen events now show a countdown to the next world boss strike: a tile with today's boss, its health and the time left"
  }
 ]
