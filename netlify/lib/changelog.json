@@ -1105,5 +1105,10 @@
   "v": "1.29.0",
   "t": "Сюжет «Тропы без следов»: рядом с репликой показывается портрет говорящего (Астрид, Эйрик, Брокк, Руна).",
   "te": "Trail Without Tracks story: the speaker's portrait is shown next to their line (Astrid, Eirik, Brokk, Runa)."
+ },
+ {
+  "v": "1.29.1",
+  "t": "Новые иконки событий на главной: сохранение героя, объявление, приглашение, установка игры, уведомления.",
+  "te": "New home screen event icons: save hero, announcement, invite, install the game, notifications."
  }
 ]

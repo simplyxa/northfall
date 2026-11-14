@@ -2859,7 +2859,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.29.0';
+const GVER='1.29.1';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3485,7 +3485,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.29.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.29.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3714,11 +3714,11 @@ function hsEvents(){const L=[],ic=k=>`<img src="${k}" alt="">`;
  try{loginCheck();if(S.login&&!S.login.got){const l=S.login,w=LRW[(l.st-1)%7],a=w[0]+S.lvl*5*l.st;L.push({k:'login',ic:ic(HSA.ev_login),t:'Бонус за вход',tg:'Ежедневно',lab:'Забрать',dot:1,h:()=>`<p>День ${l.st} подряд. Награда: +${a} серебра${w[1]?`, +${w[1]} железа`:''}${w[2]?`, бутылок: ${w[2]}`:''}.</p><button class="b" data-a="lclaim">Забрать награду</button>`})}}catch(e){}
  const p=PROMO();if(p)L.push({k:'gold',ic:ic(HSA.ev_gold),t:'Акция золота',tg:'Акция',lab:hsHm(p.until-Date.now()),hot:1,h:()=>promoBar()});
  if(RAID&&RAID.st==='on'&&!fight)L.push({k:'raid',ic:ic(MIC.raid),t:'Рейд',tg:'Идёт бой',lab:'в бой',hot:1,h:()=>`<p>Идёт рейд «${RAIDS[RAID.b].n}».</p><button class="b red" data-t="raid">⚔ В бой</button>`});
- if(ANN&&ANN.msg)L.push({k:'ann',em:'📢',t:'Объявление',tg:'Новости',lab:'новое',h:()=>annView()});
- const iv=invStrip();if(iv)L.push({k:'inv',em:'✉',t:'Приглашение',tg:'Клан',lab:'ответить',dot:1,h:()=>iv});
- const pq=pwaQuest();if(pq)L.push({k:'pwa',em:'📲',t:'Установи игру',tg:'Награда',lab:'награда',h:()=>pq});
- const pa=pushAsk();if(pa)L.push({k:'push',em:'🔔',t:'Уведомления',tg:'Совет',lab:'вкл?',h:()=>pa});
- const gb=guestBar();if(gb)L.push({k:'guest',em:'💾',t:'Сохрани героя',tg:'Важно',lab:'сохранить',hot:1,h:()=>gb});
+ if(ANN&&ANN.msg)L.push({k:'ann',ic:ic('/img/763cf97ada0031.webp'),t:'Объявление',tg:'Новости',lab:'новое',h:()=>annView()});
+ const iv=invStrip();if(iv)L.push({k:'inv',ic:ic('/img/2c8e1604c43b2b.webp'),t:'Приглашение',tg:'Клан',lab:'ответить',dot:1,h:()=>iv});
+ const pq=pwaQuest();if(pq)L.push({k:'pwa',ic:ic('/img/8210112b69c756.webp'),t:'Установи игру',tg:'Награда',lab:'награда',h:()=>pq});
+ const pa=pushAsk();if(pa)L.push({k:'push',ic:ic('/img/87c433201a114a.webp'),t:'Уведомления',tg:'Совет',lab:'вкл?',h:()=>pa});
+ const gb=guestBar();if(gb)L.push({k:'guest',ic:ic('/img/40a80c81e17486.webp'),t:'Сохрани героя',tg:'Важно',lab:'сохранить',hot:1,h:()=>gb});
  return L.slice(0,8)}
 function hsView(){
  const full=S.inv.length>=INV_MAX,upg=S.inv.filter(it=>S.lvl>=it.lv&&(()=>{const c=curOf(it);return!c||scoreB(it)>scoreB(c)})()).length,dm=dmUnN(),brk=Object.values(S.eq||{}).filter(it=>it&&broken(it)).length;
