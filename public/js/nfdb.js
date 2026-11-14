@@ -90,7 +90,8 @@
   }
   function onMsg(m) {
     var L = ST.subs[m.id]; if (!L) return false;
-    if (m.t === 'fse') { var e = FsError(m.code); L.dead = true; delete ST.subs[L.id]; if (L.err) try { L.err(e); } catch (x) { } return true; }
+    if (m.t === 'fse') { if (m.code === 7 && !L.again) { L.again = 1; L.ws = false; L.last = null; poll(L, true); return true; }   // подписка ушла раньше, чем сервер узнал, кто мы (hello с токеном ещё в пути): один раз повторяем по HTTP, а после hello она снова пойдёт через сокет
+    var e = FsError(m.code); L.dead = true; delete ST.subs[L.id]; if (L.err) try { L.err(e); } catch (x) { } return true; }
     if (m.t !== 'fss') return false;
     L.ws = true; if (m.full) { L.map = {}; L.order = []; }
     L.ch = L.ch || [];
