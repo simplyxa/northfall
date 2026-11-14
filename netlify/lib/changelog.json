@@ -1130,5 +1130,10 @@
   "v": "1.31.0",
   "t": "Задания теперь как на доске клана: в списке задания разной сложности, берёшь до 3 по силам, выполняешь и забираешь награду. Чем сложнее задание, тем больше награда.",
   "te": "Quests now work like the clan board: a list of quests of different difficulty, take up to 3 that suit you, complete them and claim the reward. Harder quests pay more."
+ },
+ {
+  "v": "1.31.1",
+  "t": "В заданиях рядом с «Отказаться» появилась кнопка «Перейти»: ведёт туда, где задание выполняется.",
+  "te": "Quests now have a «Go» button next to «Give up» that takes you to where the quest is done."
  }
 ]

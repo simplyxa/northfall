@@ -3154,5 +3154,7 @@
  "</small><div style=\"font-size:15px\">Цель: ": "</small><div style=\"font-size:15px\">Goal: ",
  "</div><small style=\"color:var(--mute)\">Награда: ": "</div><small style=\"color:var(--mute)\">Reward: ",
  "<div class=\"panel\"><h3>Задания</h3><p style=\"margin:0 0 6px;color:var(--mute);font-size:15px\">Выбери до ": "<div class=\"panel\"><h3>Quests</h3><p style=\"margin:0 0 6px;color:var(--mute);font-size:15px\">Pick up to ",
- " заданий по силам и выполни их: считаются только взятые задания. Когда цель достигнута, вернись и забери награду. Список обновляется каждый день. Взято: ": " quests that suit your strength and complete them: only the quests you have taken count. When the goal is reached, come back and claim the reward. The list refreshes every day. Taken: "
+ " заданий по силам и выполни их: считаются только взятые задания. Когда цель достигнута, вернись и забери награду. Список обновляется каждый день. Взято: ": " quests that suit your strength and complete them: only the quests you have taken count. When the goal is reached, come back and claim the reward. The list refreshes every day. Taken: ",
+ "\" style=\"margin:0\">Отказаться</button><button class=\"b\" data-qg=\"": "\" style=\"margin:0\">Give up</button><button class=\"b\" data-qg=\"",
+ "\" style=\"margin:0\">Перейти</button></span>": "\" style=\"margin:0\">Go</button></span>"
 }
