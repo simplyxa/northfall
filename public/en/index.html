@@ -383,7 +383,7 @@ body.hsmode #hsbg{display:block}
 #bnav .nbg{position:absolute;inset:0;width:100%;height:100%;display:block;filter:drop-shadow(0 -4px 10px #000a);pointer-events:none}
 #bnav button.ns,#bnav button.nc{position:absolute;transform:translate(-50%,-50%);padding:0;margin:0;border:0;background:none;box-shadow:none;max-width:none;min-height:0;height:auto;aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
 #bnav button.ns{width:13.1%;border-radius:50%}
-#bnav button.ns img{width:84%;height:84%;object-fit:contain;filter:drop-shadow(0 2px 3px #000);transition:transform .2s;opacity:1}
+#bnav button.ns img{width:66%;height:66%;object-fit:contain;filter:drop-shadow(0 2px 3px #000);transition:transform .2s;opacity:1}
 #bnav button.ns:active img{transform:scale(.9)}
 #bnav button.ns.on{background:radial-gradient(circle,#e6a83c44,#e6a83c00 70%);box-shadow:0 0 0 2px #ffe08acc,0 0 14px #e6a83ccc}
 #bnav button.nc{width:13.77%;border-radius:50%;overflow:hidden;color:inherit}
@@ -2879,7 +2879,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.32.0';
+const GVER='1.32.1';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3505,7 +3505,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.32.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.32.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

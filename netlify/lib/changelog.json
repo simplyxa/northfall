@@ -1150,5 +1150,10 @@
   "v": "1.32.0",
   "t": "Музыка и звуки в бою теперь выключаются отдельно: в настройках два переключателя, рог на главной управляет музыкой.",
   "te": "Music and battle sounds can now be turned off separately: two switches in settings, and the horn on the home screen controls the music."
+ },
+ {
+  "v": "1.32.1",
+  "t": "Иконки нижней панели стали меньше и целиком помещаются в ячейки.",
+  "te": "Bottom bar icons are smaller and fit inside their slots."
  }
 ]
