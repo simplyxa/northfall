@@ -1190,5 +1190,10 @@
   "v": "1.34.2",
   "t": "Исправлено: подсказка «Жми Удар» в первом бою показывала не на кнопку удара",
   "te": "Fixed: the \"Tap Strike\" hint in the first fight pointed away from the Strike button"
+ },
+ {
+  "v": "1.34.3",
+  "t": "В админке в воронке исправлена подпись: первое задание теперь «убей 3», а не 2",
+  "te": "Admin funnel label fixed: the first quest is now \"kill 3\", not 2"
  }
 ]
