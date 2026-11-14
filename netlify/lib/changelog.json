@@ -1095,5 +1095,10 @@
   "v": "1.28.1",
   "t": "Исправлено: музыка на главной не выключалась кнопкой звука на iPhone.",
   "te": "Fixed: home screen music did not stop with the sound button on iPhone."
+ },
+ {
+  "v": "1.28.2",
+  "t": "Музыка на главной гасится сразу при выключении звука.",
+  "te": "Home screen music stops immediately when sound is turned off."
  }
 ]
