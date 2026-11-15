@@ -3178,5 +3178,19 @@
  "\" alt=\"Охотничьи угодья\" style=\"aspect-ratio:3/1\"><div class=\"dbt\"><b>Охотничьи угодья</b><span>Медведи, волки и оборотни ждут в чаще</span></div></div><div class=\"panel\"><h3>Охота</h3><p style=\"margin:0 0 6px;color:var(--mute);font-size:15px\">": "\" alt=\"Hunting grounds\" style=\"aspect-ratio:3/1\"><div class=\"dbt\"><b>Hunting grounds</b><span>Bears, wolves and werebeasts wait in the thicket</span></div></div><div class=\"panel\"><h3>Hunt</h3><p style=\"margin:0 0 6px;color:var(--mute);font-size:15px\">",
  "</p>\n <div class=\"row\"><div>Опушка<small>Слабые звери, меньше награды": "</p>\n <div class=\"row\"><div>Forest edge<small>Weak beasts, smaller rewards",
  "Бесконечная битва: сразу выходят 4 зверя (каждый — 1 энергия). Убил одного, и через несколько секунд из чащи приходит другой. Каждый твой удар стоит 1 энергию. Охота длится, пока есть силы, или пока ты сам не вернёшься в лагерь.": "An endless battle: 4 beasts come out at once (each costs 1 energy). Kill one, and in a few seconds another comes out of the thicket. Each of your strikes costs 1 energy. The hunt lasts as long as you have strength, or until you return to camp yourself.",
- "Бесконечная битва: сразу выходят 4 зверя. Убил одного, и через несколько секунд из чащи приходит другой. Охота длится, пока ты сам не вернёшься в лагерь.": "An endless battle: 4 beasts come out at once. Kill one, and in a few seconds another comes out of the thicket. The hunt lasts until you return to camp yourself."
+ "Бесконечная битва: сразу выходят 4 зверя. Убил одного, и через несколько секунд из чащи приходит другой. Охота длится, пока ты сам не вернёшься в лагерь.": "An endless battle: 4 beasts come out at once. Kill one, and in a few seconds another comes out of the thicket. The hunt lasts until you return to camp yourself.",
+ "Отдохни в лагере: здоровье и силы восстанавливаются со временем, у костра быстрее.": "Rest at camp: health and strength recover over time, faster by the fire.",
+ "В лагерь": "To camp",
+ "Есть нераспределённые очки: ": "You have unspent points: ",
+ ". Вложи их в здоровье или броню.": ". Put them into health or armor.",
+ "К очкам": "To points",
+ "В рюкзаке есть вещи лучше надетых: ": "Your bag has items better than the ones you wear: ",
+ ". Надень их.": ". Equip them.",
+ "В рюкзак": "To bag",
+ "Снаряжение повреждено, а сломанные вещи почти не защищают. Почини его.": "Your gear is damaged, and broken items barely protect you. Repair it.",
+ "К снаряжению": "To gear",
+ "Бутылок здоровья нет. В бою они спасают: купи в лавке.": "You have no health bottles. They save you in battle: buy some at the shop.",
+ "В лавку": "To shop",
+ "Выбери охоту полегче — «Опушку»: звери слабее, а опыт идёт ровнее.": "Pick an easier hunt — the Forest edge: the beasts are weaker and XP comes steadier.",
+ "<div class=\"dtips\"><b>Как вернуться сильнее</b>": "<div class=\"dtips\"><b>How to come back stronger</b>"
 }
