@@ -3193,6 +3193,16 @@
  "Выбери охоту полегче — «Опушку»: звери слабее, а опыт идёт ровнее.": "Pick an easier hunt — the Forest edge: the beasts are weaker and XP comes steadier.",
  "<div class=\"dtips\"><b>Как вернуться сильнее</b>": "<div class=\"dtips\"><b>How to come back stronger</b>",
  "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Заходи каждый день: <img src=\"": "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Log in every day: <img src=\"",
- "Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 6-й день сундук с вещью и камнем.": "Three new quests and a login reward every day. Log in every day in a row: on day 6 there's a chest with an item and a gem.",
- "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> на 6-й, 12-й, 18-й и 24-й дни — сундук с вещью и руной, на 30-й — светящийся сундук с легендарной вещью. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> on days 6, 12, 18 and 24 — a chest with an item and a rune, on day 30 — a glowing chest with a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>"
+ "Сундук 30-го дня": "Day 30 chest",
+ "Сундук награды": "Reward chest",
+ "Открыт «": "Opened «",
+ "<div class=\"panel\"><h3>Сундуки (": "<div class=\"panel\"><h3>Chests (",
+ "Внутри случайная легендарная вещь": "Contains a random legendary item",
+ "Внутри случайная награда по твоему уровню": "Contains a random reward for your level",
+ "\" style=\"margin:0;width:auto\">Открыть</button></div>": "\" style=\"margin:0;width:auto\">Open</button></div>",
+ ", подарок первой недели: 10 золота": ", first-week gift: 10 gold",
+ ", светящийся сундук с легендарной вещью — в рюкзаке": ", a glowing chest with a legendary item — in your bag",
+ ", сундук с наградой — в рюкзаке": ", a reward chest — in your bag",
+ "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> на 6-й, 12-й, 18-й и 24-й дни — сундук со случайной наградой, на 30-й — светящийся сундук с легендарной вещью. Сундук ждёт в рюкзаке, открой его там. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> on days 6, 12, 18 and 24 — a chest with a random reward, on day 30 — a glowing chest with a legendary item. The chest waits in your bag, open it there. Silver grows with your level. Miss a day and the count starts over.</p>",
+ "Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 6-й день сундук со случайной наградой.": "Three new quests and a login reward every day. Log in every day in a row: on day 6 there's a chest with a random reward."
 }

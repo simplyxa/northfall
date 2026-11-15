@@ -1230,5 +1230,10 @@
   "v": "1.38.0",
   "t": "Бонус за вход: сундуки теперь на 6, 12, 18, 24 и 30 день (круг наград стал 6-дневным), на 30-й день сундук светится и в нём легендарная вещь",
   "te": "Login bonus: chests are now on days 6, 12, 18, 24 and 30 (the reward cycle is now 6 days), and the day-30 chest glows and holds a legendary item"
+ },
+ {
+  "v": "1.39.0",
+  "t": "Сундуки за вход теперь попадают в рюкзак (блок «Сундуки») и открываются кнопкой. Из обычного сундука выпадает случайная награда по уровню, из сундука 30-го дня — случайная легендарная вещь",
+  "te": "Login chests now go to your bag (a Chests block) and are opened with a button. A regular chest gives a random reward for your level, the day-30 chest gives a random legendary item"
  }
 ]
