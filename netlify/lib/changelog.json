@@ -1240,5 +1240,10 @@
   "v": "1.39.1",
   "t": "Сундуки за вход занимают место в рюкзаке наравне со снаряжением и лежат в общем списке. Если рюкзак полон, сундук всё равно не пропадёт",
   "te": "Login chests now take a bag slot like gear and sit in the same list. If the bag is full, the chest is still kept"
+ },
+ {
+  "v": "1.39.2",
+  "t": "Для админа: кнопки выдачи сундука в рюкзаке для проверки.",
+  "te": "For admins: chest grant buttons in the bag for testing."
  }
 ]
