@@ -1200,5 +1200,10 @@
   "v": "1.34.4",
   "t": "В английской версии ник администрации теперь показывается по-английски",
   "te": "The administration nickname now shows as \"Administration\" in the English version"
+ },
+ {
+  "v": "1.35.0",
+  "t": "Бонус за ежедневный вход: в окне видны все 30 дней с наградами. После получения награды значок на главной тускнеет и показывает таймер до следующей награды, но его по-прежнему можно открыть",
+  "te": "Daily login bonus: the window now shows all 30 days with their rewards. After claiming, the home icon dims and shows a countdown to the next reward, but can still be opened"
  }
 ]
