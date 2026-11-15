@@ -1478,7 +1478,6 @@
  "Клан": "Clan",
  "В клане бонус +5% к добыче, общий чат, подземелье, постройки и территории. Каждый твой удар приносит клану опыт. Вступи в клан или основай свой за 100 серебра.": "A clan gives +5% to loot, a shared chat, a dungeon, buildings and territories. Each of your strikes brings the clan XP. Join a clan or found your own for 100 silver.",
  "Задания": "Quests",
- "Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 7-й день сундук с вещью и камнем.": "Three new quests and a login reward every day. Log in every day in a row: on day 7 there's a chest with an item and a gem.",
  "Поход": "Expedition",
  "Наёмник охотится за тебя, даже когда ты не в игре, и бьёт мирового босса. Добыча начисляется при входе.": "A mercenary hunts for you even when you're not in the game, and hits the world boss. Loot is credited when you log in.",
  "Здесь общаются все игроки Севера. Задай вопрос в «Помощи новичкам» или найди клан в разделе «Кланы».": "All players of the North talk here. Ask a question in «Help for newcomers» or find a clan in the «Clans» section.",
@@ -3194,5 +3193,6 @@
  "Выбери охоту полегче — «Опушку»: звери слабее, а опыт идёт ровнее.": "Pick an easier hunt — the Forest edge: the beasts are weaker and XP comes steadier.",
  "<div class=\"dtips\"><b>Как вернуться сильнее</b>": "<div class=\"dtips\"><b>How to come back stronger</b>",
  "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Заходи каждый день: <img src=\"": "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Log in every day: <img src=\"",
- "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> на 7-й, 14-й, 21-й и 28-й дни — сундук с вещью и руной, на 30-й (сундук светится) — легендарная вещь. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> on days 7, 14, 21 and 28 — a chest with an item and a rune, on day 30 (the chest glows) — a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>"
+ "Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 6-й день сундук с вещью и камнем.": "Three new quests and a login reward every day. Log in every day in a row: on day 6 there's a chest with an item and a gem.",
+ "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> на 6-й, 12-й, 18-й и 24-й дни — сундук с вещью и руной, на 30-й — светящийся сундук с легендарной вещью. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> on days 6, 12, 18 and 24 — a chest with an item and a rune, on day 30 — a glowing chest with a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>"
 }

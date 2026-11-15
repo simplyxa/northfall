@@ -1691,13 +1691,13 @@ function ev(t,n){n=n||1;S.cnt=S.cnt||{};const c=S.cnt;nbEv(t,n);
 function dqClaim(i){dqEnsure();const q=S.dq.list[i];if(!q||q.c||q.st!=='on'||q.p<q.n)return;nbEv('dq');q.c=true;const r=qRew(),m=DQTR[q.k|0][2],g=Math.round(r.g*m),ir=Math.round(r.i*m);S.gold+=g;S.iron=(S.iron|0)+ir;const t=`Quest complete: +${g} silver, +${ir} iron.`;
  log(t,'sys');QMSG=t;save();render()}
 let QMSG='',HSTOAST='';
-const LRW=[[50,0,0],[100,10,0],[150,0,1],[200,20,0],[250,0,1],[300,30,1],[500,50,2]];
-const LRN=30,lgK=st=>((st-1)%7)+1;
-const lgRw=n=>{const w=LRW[(n-1)%7];return{g:w[0]+S.lvl*5*lgK(n),i:w[1],b:w[2],ch:n%7===0||n===LRN,big:n===LRN}};
+const LRW=[[50,0,0],[100,10,0],[150,0,1],[200,20,0],[250,0,1],[500,50,2]];// круг из 6 дней: на 6-й день сундук
+const LRN=30,lgK=st=>((st-1)%6)+1;
+const lgRw=n=>{const w=LRW[(n-1)%6];return{g:w[0]+S.lvl*5*lgK(n),i:w[1],b:w[2],ch:n%6===0,big:n===LRN}};
 const lgGrid=l=>{let h='';const im=u=>`<img src="${u}" alt="">`;for(let n=1;n<=LRN;n++){const r=lgRw(n),ok=n<l.st||(n===l.st&&l.got),now=n===l.st&&!l.got;h+=`<div class="lgc${r.ch?' ch':''}${r.big?' big':''}${ok?' ok':''}${now?' now':''}">${r.ch?`<img class="cb" src="${HSA.ev_chest}" alt="">`:''}<i>${n}</i><b>${im(RIC.silver)}${r.g.toLocaleString('en-GB')}</b><s>${r.i?im(RIC.iron)+r.i:''}${r.b?im(RIC.bottle)+(r.b>1?'×'+r.b:''):''}</s></div>`}return`<div class="lgg">${h}</div>`};
 function loginCheck(){const d=DAY();S.login=S.login||{last:0,st:0,got:true};const L=S.login;if(L.last===d)return;L.st=L.last===d-1?(L.st%LRN)+1:1;L.last=d;L.got=false}
-function loginClaim(){const L=S.login;if(!L||L.got)return;L.got=true;const w=LRW[(L.st-1)%7],K=lgK(L.st);S.gold+=w[0]+S.lvl*5*K;S.iron=(S.iron|0)+w[1];S.pt.b=(S.pt.b|0)+w[2];let t=`Login reward, day ${L.st} of ${LRN}: +${w[0]+S.lvl*5*K} silver${w[1]?`, +${w[1]} iron`:''}${w[2]?`, bottles: ${w[2]}`:''}`;
- if(L.st%7===0||L.st===LRN){const ks=Object.keys(SL),sl0=ks[Math.floor(Math.random()*ks.length)],first=!S.fw,big=L.st===LRN,x=(first||big)?gen(sl0,SETLV[3],3,null,3):gen(sl0,Math.max(1,S.lvl),Math.min(3,1+Math.floor(S.lvl/12)));if(first){S.fw=1;GOLD.week(10);t+=', first-week gift: a legendary item and 10 gold'}else if(big)t+=', 30-day gift: a legendary item';if(S.inv.length<INV_MAX)S.inv.push(x);else{S.chest=S.chest||[];S.chest.push(x)}t+=`, chest: “${x.name}»`;const rk=rndRune(2);addRune(rk);t+=`, ${rName(rk)}`}
+function loginClaim(){const L=S.login;if(!L||L.got)return;L.got=true;const w=LRW[(L.st-1)%6],K=lgK(L.st);S.gold+=w[0]+S.lvl*5*K;S.iron=(S.iron|0)+w[1];S.pt.b=(S.pt.b|0)+w[2];let t=`Login reward, day ${L.st} of ${LRN}: +${w[0]+S.lvl*5*K} silver${w[1]?`, +${w[1]} iron`:''}${w[2]?`, bottles: ${w[2]}`:''}`;
+ if(L.st%6===0){const ks=Object.keys(SL),sl0=ks[Math.floor(Math.random()*ks.length)],first=!S.fw,big=L.st===LRN,x=(first||big)?gen(sl0,SETLV[3],3,null,3):gen(sl0,Math.max(1,S.lvl),Math.min(3,1+Math.floor(S.lvl/12)));if(first){S.fw=1;GOLD.week(10);t+=', first-week gift: a legendary item and 10 gold'}else if(big)t+=', 30-day gift: a legendary item';if(S.inv.length<INV_MAX)S.inv.push(x);else{S.chest=S.chest||[];S.chest.push(x)}t+=`, chest: “${x.name}»`;const rk=rndRune(2);addRune(rk);t+=`, ${rName(rk)}`}
  log(t+'.','sys');HSTOAST=t+'.';HSE=-1;clearTimeout(loginClaim.tm);loginClaim.tm=setTimeout(()=>{HSTOAST='';if(typeof render==='function')render()},7000);save();render()}
 const ACH=[['sg7','Saga expert','Solve the storyteller\'s riddles 7 days in a row',(c,S)=>(S.sgbest|0)>=7,'Saga expert',300],['k1','First blood','Kill 10 beasts',c=>(c.k|0)>=10,'Hunter',50],['k2','Exterminator','Kill 500 beasts',c=>(c.k|0)>=500,'Beast slayer',500],['k3','Terror of the forests','Kill 5000 beasts',c=>(c.k|0)>=5000,'Terror of the forests',3000],
  ['a1','Arena fighter','Win 10 times in the arena',c=>(c.aw|0)>=10,'Arena fighter',200],['a2','Champion','Win 100 times in the arena',c=>(c.aw|0)>=100,'Arena champion',1500],
@@ -2640,7 +2640,7 @@ const TIPS={
  forge:['Masters','The blacksmith upgrades items for iron, up to +5. You get iron by salvaging unneeded items in your backpack. The gem master sockets gems into gear.'],
  arena:['Arena','Battles for rating against copies of other players\' heroes. No XP or silver here, only rating. A defeat costs 10% of your silver.'],
  clan:['Clan','A clan gives +5% to loot, a shared chat, a dungeon, buildings and territories. Each of your strikes brings the clan XP. Join a clan or found your own for 100 silver.'],
- quest:['Quests','Three new quests and a login reward every day. Log in every day in a row: on day 7 there\'s a chest with an item and a gem.'],
+ quest:['Quests','Three new quests and a login reward every day. Log in every day in a row: on day 6 there\'s a chest with an item and a gem.'],
  exped:['Expedition','A mercenary hunts for you even when you\'re not in the game, and hits the world boss. Loot is credited when you log in.'],
  forum:['Forum','All players of the North talk here. Ask a question in “Help for newcomers” or find a clan in the “Clans” section.'],
  friends:['Friends','Add friends from the rating, your clan or search, and message them privately.'],
@@ -2911,7 +2911,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.37.1';
+const GVER='1.38.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3537,7 +3537,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.37.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.38.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3763,7 +3763,7 @@ function hsItems(){const d=document.createElement('div');d.innerHTML=menuView();
  ]}
 function hsEvents(){const L=[],ic=k=>`<img src="${k}" alt="">`;
  try{nbInit();if(S.nb&&!S.nb.done)L.push({k:'nb',ic:ic(MIC.quest),t:'Trail Without Tracks',tg:'Story',lab:`${(S.nb.i|0)+1}/${NBQ.length}`,h:()=>nbView()});}catch(e){}
- try{loginCheck();const l=S.login;if(l){const done=!!l.got,nx=(DAY()+1)*864e5-2*3600000-Date.now();L.push({k:'login',ic:ic(HSA.ev_login),t:'Login bonus',tg:done?'Reward claimed':'Daily',lab:done?hsHm(nx):'Claim',dot:done?0:1,dim:done?1:0,wide:1,h:()=>`<p style="margin:0 0 6px">Day ${l.st} of ${LRN}.</p>${done?`<p style="margin:0 0 6px">⏳ Next reward in <b>${hm(nx)}</b>.</p>`:'<button class="b" data-a="lclaim" style="margin:0 0 6px">Claim reward</button>'}${bar(l.st-(done?0:1),LRN,'--gold')}${lgGrid(l)}<p style="margin:4px 0 0;font-size:13px;color:#b9b19c">Log in every day: <img src="${HSA.ev_chest}" alt="" style="width:18px;height:18px;vertical-align:-4px"> on days 7, 14, 21 and 28 — a chest with an item and a rune, on day 30 (the chest glows) — a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>`})}}catch(e){}
+ try{loginCheck();const l=S.login;if(l){const done=!!l.got,nx=(DAY()+1)*864e5-2*3600000-Date.now();L.push({k:'login',ic:ic(HSA.ev_login),t:'Login bonus',tg:done?'Reward claimed':'Daily',lab:done?hsHm(nx):'Claim',dot:done?0:1,dim:done?1:0,wide:1,h:()=>`<p style="margin:0 0 6px">Day ${l.st} of ${LRN}.</p>${done?`<p style="margin:0 0 6px">⏳ Next reward in <b>${hm(nx)}</b>.</p>`:'<button class="b" data-a="lclaim" style="margin:0 0 6px">Claim reward</button>'}${bar(l.st-(done?0:1),LRN,'--gold')}${lgGrid(l)}<p style="margin:4px 0 0;font-size:13px;color:#b9b19c">Log in every day: <img src="${HSA.ev_chest}" alt="" style="width:18px;height:18px;vertical-align:-4px"> on days 6, 12, 18 and 24 — a chest with an item and a rune, on day 30 — a glowing chest with a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>`})}}catch(e){}
  const p=PROMO();if(p)L.push({k:'gold',ic:ic(HSA.ev_gold),t:'Gold sale',tg:'Sale',lab:hsHm(p.until-Date.now()),hot:1,h:()=>promoBar()});
  if(RAID&&RAID.st==='on'&&!fight)L.push({k:'raid',ic:ic(MIC.raid),t:'Raid',tg:'Battle on',lab:'fight',hot:1,h:()=>`<p>A raid is on: “${RAIDS[RAID.b].n}”.</p><button class="b red" data-t="raid">⚔ Fight</button>`});
  if(ANN&&ANN.msg)L.push({k:'ann',ic:ic('/img/763cf97ada0031.webp'),t:'Notice',tg:'News',lab:'new',h:()=>annView()});

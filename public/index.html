@@ -1689,13 +1689,13 @@ function ev(t,n){n=n||1;S.cnt=S.cnt||{};const c=S.cnt;nbEv(t,n);
 function dqClaim(i){dqEnsure();const q=S.dq.list[i];if(!q||q.c||q.st!=='on'||q.p<q.n)return;nbEv('dq');q.c=true;const r=qRew(),m=DQTR[q.k|0][2],g=Math.round(r.g*m),ir=Math.round(r.i*m);S.gold+=g;S.iron=(S.iron|0)+ir;const t=`Задание выполнено: +${g} серебра, +${ir} железа.`;
  log(t,'sys');QMSG=t;save();render()}
 let QMSG='',HSTOAST='';
-const LRW=[[50,0,0],[100,10,0],[150,0,1],[200,20,0],[250,0,1],[300,30,1],[500,50,2]];
-const LRN=30,lgK=st=>((st-1)%7)+1;
-const lgRw=n=>{const w=LRW[(n-1)%7];return{g:w[0]+S.lvl*5*lgK(n),i:w[1],b:w[2],ch:n%7===0||n===LRN,big:n===LRN}};
+const LRW=[[50,0,0],[100,10,0],[150,0,1],[200,20,0],[250,0,1],[500,50,2]];// круг из 6 дней: на 6-й день сундук
+const LRN=30,lgK=st=>((st-1)%6)+1;
+const lgRw=n=>{const w=LRW[(n-1)%6];return{g:w[0]+S.lvl*5*lgK(n),i:w[1],b:w[2],ch:n%6===0,big:n===LRN}};
 const lgGrid=l=>{let h='';const im=u=>`<img src="${u}" alt="">`;for(let n=1;n<=LRN;n++){const r=lgRw(n),ok=n<l.st||(n===l.st&&l.got),now=n===l.st&&!l.got;h+=`<div class="lgc${r.ch?' ch':''}${r.big?' big':''}${ok?' ok':''}${now?' now':''}">${r.ch?`<img class="cb" src="${HSA.ev_chest}" alt="">`:''}<i>${n}</i><b>${im(RIC.silver)}${r.g.toLocaleString('ru-RU')}</b><s>${r.i?im(RIC.iron)+r.i:''}${r.b?im(RIC.bottle)+(r.b>1?'×'+r.b:''):''}</s></div>`}return`<div class="lgg">${h}</div>`};
 function loginCheck(){const d=DAY();S.login=S.login||{last:0,st:0,got:true};const L=S.login;if(L.last===d)return;L.st=L.last===d-1?(L.st%LRN)+1:1;L.last=d;L.got=false}
-function loginClaim(){const L=S.login;if(!L||L.got)return;L.got=true;const w=LRW[(L.st-1)%7],K=lgK(L.st);S.gold+=w[0]+S.lvl*5*K;S.iron=(S.iron|0)+w[1];S.pt.b=(S.pt.b|0)+w[2];let t=`Награда за вход, день ${L.st} из ${LRN}: +${w[0]+S.lvl*5*K} серебра${w[1]?`, +${w[1]} железа`:''}${w[2]?`, бутылок: ${w[2]}`:''}`;
- if(L.st%7===0||L.st===LRN){const ks=Object.keys(SL),sl0=ks[Math.floor(Math.random()*ks.length)],first=!S.fw,big=L.st===LRN,x=(first||big)?gen(sl0,SETLV[3],3,null,3):gen(sl0,Math.max(1,S.lvl),Math.min(3,1+Math.floor(S.lvl/12)));if(first){S.fw=1;GOLD.week(10);t+=', подарок первой недели: легендарная вещь и 10 золота'}else if(big)t+=', подарок за 30 дней: легендарная вещь';if(S.inv.length<INV_MAX)S.inv.push(x);else{S.chest=S.chest||[];S.chest.push(x)}t+=`, сундук: «${x.name}»`;const rk=rndRune(2);addRune(rk);t+=`, ${rName(rk)}`}
+function loginClaim(){const L=S.login;if(!L||L.got)return;L.got=true;const w=LRW[(L.st-1)%6],K=lgK(L.st);S.gold+=w[0]+S.lvl*5*K;S.iron=(S.iron|0)+w[1];S.pt.b=(S.pt.b|0)+w[2];let t=`Награда за вход, день ${L.st} из ${LRN}: +${w[0]+S.lvl*5*K} серебра${w[1]?`, +${w[1]} железа`:''}${w[2]?`, бутылок: ${w[2]}`:''}`;
+ if(L.st%6===0){const ks=Object.keys(SL),sl0=ks[Math.floor(Math.random()*ks.length)],first=!S.fw,big=L.st===LRN,x=(first||big)?gen(sl0,SETLV[3],3,null,3):gen(sl0,Math.max(1,S.lvl),Math.min(3,1+Math.floor(S.lvl/12)));if(first){S.fw=1;GOLD.week(10);t+=', подарок первой недели: легендарная вещь и 10 золота'}else if(big)t+=', подарок за 30 дней: легендарная вещь';if(S.inv.length<INV_MAX)S.inv.push(x);else{S.chest=S.chest||[];S.chest.push(x)}t+=`, сундук: «${x.name}»`;const rk=rndRune(2);addRune(rk);t+=`, ${rName(rk)}`}
  log(t+'.','sys');HSTOAST=t+'.';HSE=-1;clearTimeout(loginClaim.tm);loginClaim.tm=setTimeout(()=>{HSTOAST='';if(typeof render==='function')render()},7000);save();render()}
 const ACH=[['sg7','Знаток саг','Отгадай загадки сказителя 7 дней подряд',(c,S)=>(S.sgbest|0)>=7,'Знаток саг',300],['k1','Первая кровь','Убей 10 зверей',c=>(c.k|0)>=10,'Охотник',50],['k2','Истребитель','Убей 500 зверей',c=>(c.k|0)>=500,'Истребитель зверей',500],['k3','Гроза лесов','Убей 5000 зверей',c=>(c.k|0)>=5000,'Гроза лесов',3000],
  ['a1','Боец арены','Победи на арене 10 раз',c=>(c.aw|0)>=10,'Боец арены',200],['a2','Чемпион','Победи на арене 100 раз',c=>(c.aw|0)>=100,'Чемпион арены',1500],
@@ -2638,7 +2638,7 @@ const TIPS={
  forge:['Мастера','Кузнец усиливает вещи за железо, до +5. Железо получаешь, разбирая ненужные вещи в рюкзаке. Мастер камней вставляет камни в гнёзда снаряжения.'],
  arena:['Арена','Бои за рейтинг с копиями героев других игроков. Опыт и серебро здесь не даются, только рейтинг. Поражение стоит 10% серебра.'],
  clan:['Клан','В клане бонус +5% к добыче, общий чат, подземелье, постройки и территории. Каждый твой удар приносит клану опыт. Вступи в клан или основай свой за 100 серебра.'],
- quest:['Задания','Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 7-й день сундук с вещью и камнем.'],
+ quest:['Задания','Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 6-й день сундук с вещью и камнем.'],
  exped:['Поход','Наёмник охотится за тебя, даже когда ты не в игре, и бьёт мирового босса. Добыча начисляется при входе.'],
  forum:['Форум','Здесь общаются все игроки Севера. Задай вопрос в «Помощи новичкам» или найди клан в разделе «Кланы».'],
  friends:['Друзья','Добавляй друзей из рейтинга, клана или поиска и переписывайся с ними лично.'],
@@ -2909,7 +2909,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.37.1';
+const GVER='1.38.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3535,7 +3535,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.37.1</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.38.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3761,7 +3761,7 @@ function hsItems(){const d=document.createElement('div');d.innerHTML=menuView();
  ]}
 function hsEvents(){const L=[],ic=k=>`<img src="${k}" alt="">`;
  try{nbInit();if(S.nb&&!S.nb.done)L.push({k:'nb',ic:ic(MIC.quest),t:'Тропа без следов',tg:'Сюжет',lab:`${(S.nb.i|0)+1}/${NBQ.length}`,h:()=>nbView()});}catch(e){}
- try{loginCheck();const l=S.login;if(l){const done=!!l.got,nx=(DAY()+1)*864e5-2*3600000-Date.now();L.push({k:'login',ic:ic(HSA.ev_login),t:'Бонус за вход',tg:done?'Награда получена':'Ежедневно',lab:done?hsHm(nx):'Забрать',dot:done?0:1,dim:done?1:0,wide:1,h:()=>`<p style="margin:0 0 6px">День ${l.st} из ${LRN}.</p>${done?`<p style="margin:0 0 6px">⏳ Следующая награда через <b>${hm(nx)}</b>.</p>`:'<button class="b" data-a="lclaim" style="margin:0 0 6px">Забрать награду</button>'}${bar(l.st-(done?0:1),LRN,'--gold')}${lgGrid(l)}<p style="margin:4px 0 0;font-size:13px;color:#b9b19c">Заходи каждый день: <img src="${HSA.ev_chest}" alt="" style="width:18px;height:18px;vertical-align:-4px"> на 7-й, 14-й, 21-й и 28-й дни — сундук с вещью и руной, на 30-й (сундук светится) — легендарная вещь. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>`})}}catch(e){}
+ try{loginCheck();const l=S.login;if(l){const done=!!l.got,nx=(DAY()+1)*864e5-2*3600000-Date.now();L.push({k:'login',ic:ic(HSA.ev_login),t:'Бонус за вход',tg:done?'Награда получена':'Ежедневно',lab:done?hsHm(nx):'Забрать',dot:done?0:1,dim:done?1:0,wide:1,h:()=>`<p style="margin:0 0 6px">День ${l.st} из ${LRN}.</p>${done?`<p style="margin:0 0 6px">⏳ Следующая награда через <b>${hm(nx)}</b>.</p>`:'<button class="b" data-a="lclaim" style="margin:0 0 6px">Забрать награду</button>'}${bar(l.st-(done?0:1),LRN,'--gold')}${lgGrid(l)}<p style="margin:4px 0 0;font-size:13px;color:#b9b19c">Заходи каждый день: <img src="${HSA.ev_chest}" alt="" style="width:18px;height:18px;vertical-align:-4px"> на 6-й, 12-й, 18-й и 24-й дни — сундук с вещью и руной, на 30-й — светящийся сундук с легендарной вещью. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>`})}}catch(e){}
  const p=PROMO();if(p)L.push({k:'gold',ic:ic(HSA.ev_gold),t:'Акция золота',tg:'Акция',lab:hsHm(p.until-Date.now()),hot:1,h:()=>promoBar()});
  if(RAID&&RAID.st==='on'&&!fight)L.push({k:'raid',ic:ic(MIC.raid),t:'Рейд',tg:'Идёт бой',lab:'в бой',hot:1,h:()=>`<p>Идёт рейд «${RAIDS[RAID.b].n}».</p><button class="b red" data-t="raid">⚔ В бой</button>`});
  if(ANN&&ANN.msg)L.push({k:'ann',ic:ic('/img/763cf97ada0031.webp'),t:'Объявление',tg:'Новости',lab:'новое',h:()=>annView()});
