@@ -1684,12 +1684,12 @@ const DQGO={kill:'hunt',dmg:'hunt',arena:'arena',dun:'clan',upa:'forge',dis:'bag
 function dqGo(i){const q=S.dq.list[i];if(!q)return;const g=DQGO[q.t]||'hunt';MLADM=false;MLTM=false;CHP=null;if(g==='bag'){tab='hero';htab='bag'}else tab=g;render();window.scrollTo(0,0)}
 function dqDrop(i){dqEnsure();const q=S.dq.list[i];if(!q||q.st!=='on'||q.c||q.p>=q.n)return;q.st='free';q.p=0;save();render()}
 const qName=t=>(QP.find(q=>q[0]===t)||[0,t])[1];
-const qRew=()=>({g:40+S.lvl*15,i:4+S.lvl});
+const qRew=()=>({g:40+S.lvl*15,i:4+S.lvl}),dqXp=m=>S.lvl>=LVMAX?0:Math.max(1,Math.round(need()*.04*m));
 function ev(t,n){n=n||1;S.cnt=S.cnt||{};const c=S.cnt;nbEv(t,n);
  if(t==='kill')c.k=(c.k|0)+n;else if(t==='arena')c.aw=(c.aw|0)+n;else if(t==='dmg')c.dmg=(c.dmg|0)+n;else if(t==='boss')c.bs=(c.bs|0)+n;
  dqEnsure();for(const q of S.dq.list)if(q.st==='on'&&!q.c&&q.t===t&&q.p<q.n)q.p=Math.min(q.n,q.p+n);achCheck()}
-function dqClaim(i){dqEnsure();const q=S.dq.list[i];if(!q||q.c||q.st!=='on'||q.p<q.n)return;nbEv('dq');q.c=true;const r=qRew(),m=DQTR[q.k|0][2],g=Math.round(r.g*m),ir=Math.round(r.i*m);S.gold+=g;S.iron=(S.iron|0)+ir;const t=`Quest complete: +${g} silver, +${ir} iron.`;
- log(t,'sys');QMSG=t;save();render()}
+function dqClaim(i){dqEnsure();const q=S.dq.list[i];if(!q||q.c||q.st!=='on'||q.p<q.n)return;nbEv('dq');q.c=true;const r=qRew(),m=DQTR[q.k|0][2],g=Math.round(r.g*m),ir=Math.round(r.i*m);S.gold+=g;S.iron=(S.iron|0)+ir;const xp=dqXp(m);if(xp>0)S.xp+=xp;const t=`Quest complete: +${g} silver, +${ir} iron${xp>0?`, +${xp} XP`:''}.`;
+ log(t,'sys');QMSG=t;if(xp>0)lvUp();save();render()}
 let QMSG='',HSTOAST='';
 const LRW=[[50,0,0],[100,10,0],[150,0,1],[200,20,0],[250,0,1],[500,50,2]];// круг из 6 дней: на 6-й день сундук
 const LRN=30,lgK=st=>((st-1)%6)+1;
@@ -1740,7 +1740,7 @@ function questView(){dqEnsure();const r=qRew();
   if(q.c)tail=`<p style="margin:4px 0 0;font-size:14px;color:var(--moss)">✓ Reward claimed</p>`;
   else if(q.st==='on')tail=`<div class="lbl"><span>${q.o?'From yesterday':'In progress'}</span><span>${kf(pr)}/${kf(q.n)}</span></div>${bar(pr,q.n,'--gold')}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">${q.p>=q.n?'<span></span>':`<span style="display:flex;gap:8px"><button class="b alt" data-qd="${i}" style="margin:0">Give up</button><button class="b" data-qg="${i}" style="margin:0">Go</button></span>`}${q.p>=q.n?`<button class="b" data-qc="${i}" style="margin:0">Claim reward</button>`:''}</div>`;
   else tail=`<button class="b" data-qt="${i}" ${act>=DQMAX?'disabled':''} style="margin:4px 0 0">${act>=DQMAX?'Already taken '+DQMAX+' quests':'Take quest'}</button>`;
-  return`<div class="row" style="display:block;border-top:1px solid color-mix(in srgb,var(--line) 50%,transparent);padding:8px 0"><b>${qName(q.t)}</b> <small style="color:var(--gold)">${T[0]}</small><div style="font-size:15px">Goal: ${kf(q.n)}</div><small style="color:var(--mute)">Reward: ${g} silver and ${ir} iron</small>${tail}</div>`}).join('');
+  return`<div class="row" style="display:block;border-top:1px solid color-mix(in srgb,var(--line) 50%,transparent);padding:8px 0"><b>${qName(q.t)}</b> <small style="color:var(--gold)">${T[0]}</small><div style="font-size:15px">Goal: ${kf(q.n)}</div><small style="color:var(--mute)">Reward: ${g} silver, ${ir} iron${dqXp(m)>0?` and ${dqXp(m)} XP`:''}</small>${tail}</div>`}).join('');
  h+=`<div class="panel"><h3>Quests</h3><p style="margin:0 0 6px;color:var(--mute);font-size:15px">Pick up to ${DQMAX} quests that suit your strength and complete them: only the quests you have taken count. When the goal is reached, come back and claim the reward. The list refreshes every day. Taken: ${act}/${DQMAX}.</p>${rl}</div>`;
  return h}
 function achView(){S.ach=S.ach||[];S.cnt=S.cnt||{};achCheck();const c=S.cnt;
@@ -2939,7 +2939,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.40.0';
+const GVER='1.41.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3565,7 +3565,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.40.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.41.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
