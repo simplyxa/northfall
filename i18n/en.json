@@ -3207,5 +3207,9 @@
  "Каждый день новые три задания и награда за вход. Заходи каждый день подряд: на 6-й день сундук со случайной наградой.": "Three new quests and a login reward every day. Log in every day in a row: on day 6 there's a chest with a random reward.",
  "<div style=\"display:flex;gap:6px;margin:6px 0\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1\">+ Сундук (админ)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1\">+ Сундук 30-го дня (админ)</button></div>": "<div style=\"display:flex;gap:6px;margin:6px 0\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1\">+ Chest (admin)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1\">+ Day 30 chest (admin)</button></div>",
  "Сундук выдан (админ).": "Chest granted (admin).",
- " сер., ": " silver, "
+ " сер., ": " silver, ",
+ "</div><b>золота за каждую покупку</b>": "</div><b>gold for every purchase</b>",
+ "<div class=\"pctm\">⏳ осталось ": "<div class=\"pctm\">⏳ left: ",
+ "</div><small>до ": "</div><small>until ",
+ "</small><button class=\"b\" data-t=\"gold\">Купить золото</button></div>": "</small><button class=\"b\" data-t=\"gold\">Buy gold</button></div>"
 }

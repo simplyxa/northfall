@@ -1,3 +1,6 @@
 [
- " сер., "
+ "</div><b>золота за каждую покупку</b>",
+ "<div class=\"pctm\">⏳ осталось ",
+ "</div><small>до ",
+ "</small><button class=\"b\" data-t=\"gold\">Купить золото</button></div>"
 ]

@@ -373,6 +373,7 @@ body.hsmode #hsbg{display:block}
 .lgc.ok{opacity:.45}.lgc.ok::after{content:'✓';position:absolute;top:0;right:3px;font-size:11px;color:#8fd18a}
 .hs-e.dim img,.hs-e.dim .em{filter:grayscale(.85) brightness(.7) drop-shadow(0 3px 5px #000c);animation:none}
 .hs-e.dim small{color:#a79f8a;border-color:#4a4636}
+.hs-det .pcard{text-align:center;padding:2px 0 0;background:radial-gradient(ellipse at 50% 0,#ffb53a2e,transparent 70%)}.pcx{font-size:52px;font-weight:900;line-height:1;color:#ffd36a;text-shadow:0 0 16px #ff9a1f99,0 2px 0 #5a3a08;letter-spacing:.02em}.pcard b{display:block;font-size:15px;margin:4px 0 2px;color:#f1e7cf}.pcard p{margin:2px 0;font-size:13px}.pctm{display:inline-block;margin:8px 0 2px;padding:3px 10px;border-radius:12px;background:#d9b45a22;border:1px solid #7a6a3c;color:#ffd36a;font-size:13px}.hs-det .pcard .b{background:linear-gradient(180deg,#f1c35a,#b9852a);color:#2a1a05;border:1px solid #ffe08a;font-weight:700;text-shadow:0 1px 0 #ffe9a8aa;box-shadow:0 0 14px #ffb53a55}.pcard small{display:block;color:#9a9278;font-size:12px;margin-bottom:10px}
 .hs-det .b{width:100%}
 .hs-m{position:absolute;right:10px;top:max(19%,calc(142px + env(safe-area-inset-top,0px)));z-index:5;display:flex;flex-direction:column;gap:10px}
 .hs-c{position:relative;width:62px;height:62px;padding:0;border:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:hsmin .5s both}
@@ -2939,7 +2940,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.41.0';
+const GVER='1.41.1';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -2986,6 +2987,7 @@ let PAYUN=null,PAYFOR=null,PAYB=false,PAYMSG='',PAYLOG=null;
 const PROMO=()=>{const p=(typeof ADMD!=='undefined'&&ADMD['promo-gold'])||null;return p&&+p.mult>1&&+p.mult<=3&&+p.until>Date.now()?p:null};
 const pmx=m=>'×'+String(+m).replace('.',',');
 const pTill=p=>new Date(+p.until).toLocaleString('en-GB',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+const promoCard=()=>{const p=PROMO();if(!p||(typeof GUEST!=='undefined'&&GUEST))return'';return`<div class="pcard"><div class="pcx">${pmx(p.mult)}</div><b>gold for every purchase</b>${p.text?`<p>${esc(p.text)}</p>`:''}<div class="pctm">⏳ left: ${hsHm(p.until-Date.now())}</div><small>until ${pTill(p)}</small><button class="b" data-t="gold">Buy gold</button></div>`};
 const promoBar=()=>{const p=PROMO();if(!p||(typeof GUEST!=='undefined'&&GUEST))return'';return`<div class="panel" style="border:2px solid var(--gold);background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 18%,var(--panel)),var(--panel))"><div style="display:flex;gap:12px;align-items:center"><div style="font-size:34px;line-height:1">🔥</div><div style="flex:1"><b style="font-size:19px">Promo: ${pmx(p.mult)} gold per purchase!</b><small style="display:block;color:var(--mute)">${p.text?esc(p.text)+' · ':''}until ${pTill(p)}</small></div><button class="b" data-t="gold" style="margin:0">Buy</button></div></div>`};
 function promoSet(){if(!ADM||!DB)return;const m=+(($('#prm')||{}).value||2),h=Math.max(1,Math.min(336,+(($('#prh')||{}).value||48))),tx=(($('#prt')||{}).value||'').trim().slice(0,80);
  const d={mult:m,from:Date.now(),until:Date.now()+h*3600000,text:tx,by:UID};DB.collection('admin').doc('promo-gold').set(d).then(()=>{ADMD['promo-gold']=d;news(`🔥 Promo in “Gold of the North”: ${pmx(m)} gold for any purchase until ${pTill(d)}!`);popup('Promo started',`${pmx(m)} gold per purchase until ${pTill(d)}. The news was sent to the general chat.`);render()}).catch(e=>popup('Error','Could not save the promo: '+esc(e.message||''),true))}
@@ -3565,7 +3567,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.41.0</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.41.1</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -3792,7 +3794,7 @@ function hsItems(){const d=document.createElement('div');d.innerHTML=menuView();
 function hsEvents(){const L=[],ic=k=>`<img src="${k}" alt="">`;
  try{nbInit();if(S.nb&&!S.nb.done)L.push({k:'nb',ic:ic(MIC.quest),t:'Trail Without Tracks',tg:'Story',lab:`${(S.nb.i|0)+1}/${NBQ.length}`,h:()=>nbView()});}catch(e){}
  try{loginCheck();const l=S.login;if(l){const done=!!l.got,nx=(DAY()+1)*864e5-2*3600000-Date.now();L.push({k:'login',ic:ic(HSA.ev_login),t:'Login bonus',tg:done?'Reward claimed':'Daily',lab:done?hsHm(nx):'Claim',dot:done?0:1,dim:done?1:0,wide:1,h:()=>`<p style="margin:0 0 6px">Day ${l.st} of ${LRN}.</p>${done?`<p style="margin:0 0 6px">⏳ Next reward in <b>${hm(nx)}</b>.</p>`:'<button class="b" data-a="lclaim" style="margin:0 0 6px">Claim reward</button>'}${bar(l.st-(done?0:1),LRN,'--gold')}${lgGrid(l)}<p style="margin:4px 0 0;font-size:13px;color:#b9b19c">Log in every day: <img src="${HSA.ev_chest}" alt="" style="width:18px;height:18px;vertical-align:-4px"> on days 6, 12, 18 and 24 — a chest with a random reward, on day 30 — a glowing chest with a legendary item. The chest waits in your bag, open it there. Silver grows with your level. Miss a day and the count starts over.</p>`})}}catch(e){}
- const p=PROMO();if(p)L.push({k:'gold',ic:ic(HSA.ev_gold),t:'Gold sale',tg:'Sale',lab:hsHm(p.until-Date.now()),hot:1,h:()=>promoBar()});
+ const p=PROMO();if(p)L.push({k:'gold',ic:ic(HSA.ev_gold),t:'Gold sale',tg:'Sale',lab:hsHm(p.until-Date.now()),hot:1,h:()=>promoCard()});
  if(RAID&&RAID.st==='on'&&!fight)L.push({k:'raid',ic:ic(MIC.raid),t:'Raid',tg:'Battle on',lab:'fight',hot:1,h:()=>`<p>A raid is on: “${RAIDS[RAID.b].n}”.</p><button class="b red" data-t="raid">⚔ Fight</button>`});
  if(ANN&&ANN.msg)L.push({k:'ann',ic:ic('/img/763cf97ada0031.webp'),t:'Notice',tg:'News',lab:'new',h:()=>annView()});
  const iv=invStrip();if(iv)L.push({k:'inv',ic:ic('/img/2c8e1604c43b2b.webp'),t:'Invite',tg:'Clan',lab:'reply',dot:1,h:()=>iv});
