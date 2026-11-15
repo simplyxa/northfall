@@ -3211,5 +3211,6 @@
  "</div><b>золота за каждую покупку</b>": "</div><b>gold for every purchase</b>",
  "<div class=\"pctm\">⏳ осталось ": "<div class=\"pctm\">⏳ left: ",
  "</div><small>до ": "</div><small>until ",
- "</small><button class=\"b\" data-t=\"gold\">Купить золото</button></div>": "</small><button class=\"b\" data-t=\"gold\">Buy gold</button></div>"
+ "</small><button class=\"b\" data-t=\"gold\">Купить золото</button></div>": "</small><button class=\"b\" data-t=\"gold\">Buy gold</button></div>",
+ "><div class=\"hs-xp\" role=\"img\" aria-label=\"Опыт\"><u style=\"width:": "><div class=\"hs-xp\" role=\"img\" aria-label=\"Experience\"><u style=\"width:"
 }

@@ -1280,5 +1280,10 @@
   "v": "1.42.2",
   "t": "Верхняя панель на страницах стала компактнее: убраны ряд серебра, здоровья и энергии и полоса опыта под ней.",
   "te": "The top bar on pages is more compact: the silver, health and energy row and the XP bar under it were removed."
+ },
+ {
+  "v": "1.42.3",
+  "t": "Верхняя панель: вернули тонкую полоску опыта сверху, убрали золотую линию снизу и лишний пустой отступ под панелью.",
+  "te": "Top bar: the thin XP strip is back at the top, the gold line underneath and the extra empty gap below the bar are gone."
  }
 ]
