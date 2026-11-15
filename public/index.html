@@ -141,7 +141,7 @@ body.hasnav #app{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 .dtips{margin:12px 0 0;text-align:left}.dtips>b{display:block;font-size:14px;color:var(--gold);margin:0 0 4px}
 .dtip{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--line) 50%,transparent)}.dtip>span{font-size:22px;flex:none;width:28px;text-align:center}.dtip p{margin:0;flex:1;font-size:13.5px;line-height:1.3}.dtip .b{margin:0;width:auto;flex:none;padding:6px 10px;font-size:13px}
 .nbs{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:6px 10px;border-radius:8px;border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);background:color-mix(in srgb,var(--gold) 10%,var(--panel));font-size:14px}.nbs.ok{border-color:var(--moss);background:color-mix(in srgb,var(--moss) 14%,var(--panel))}.nbs-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nbs-t b{color:var(--gold)}.nbs .b{margin:0;padding:4px 12px;min-height:0;font-size:14px}
-.nbhl{position:relative;animation:nbhl 1.3s ease-in-out infinite;border-radius:10px}@keyframes nbhl{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 2px var(--gold),0 0 14px color-mix(in srgb,var(--gold) 70%,transparent)}}
+.nbhl{position:relative;animation:nbhl 1.3s ease-in-out infinite;border-radius:10px}.b.nbhl,button.nbhl{outline:2px solid var(--gold);outline-offset:2px}.b.nbhl::after{content:'👆';position:absolute;left:50%;bottom:-20px;transform:translateX(-50%);font-size:20px;line-height:1;pointer-events:none;animation:nbfg 1s ease-in-out infinite;z-index:5}@keyframes nbfg{50%{transform:translateX(-50%) translateY(5px)}}.sk.nbhl::after{display:none}@keyframes nbhl{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 2px var(--gold),0 0 14px color-mix(in srgb,var(--gold) 70%,transparent)}}
 .nbrw-t{font-size:14px;color:var(--mute);margin:-4px 0 10px}.nbrw{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}.nbrw-i{display:flex;flex-direction:column;align-items:center;min-width:64px;animation:nbin .5s ease-out both}.nbrw-i:nth-child(2){animation-delay:.12s}.nbrw-i:nth-child(3){animation-delay:.24s}.nbrw-i:nth-child(4){animation-delay:.36s}.hrw .nbrw-i:nth-child(n+5){animation-delay:.48s}.hrw .nbrw-i{max-width:96px;text-align:center}.nbrw-i b{font-size:17px}.nbrw-i small{color:var(--mute);font-size:12px}@keyframes nbin{from{opacity:0;transform:translateY(8px) scale(.8)}}.nbrw-n{margin:12px 0 8px;font-size:15px}
 button[data-pb],button[data-ir]{white-space:nowrap;flex:0 0 auto}
 .srow{display:flex;gap:6px;align-items:stretch;position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:6;margin:0 0 6px}.srow .b.strk{position:relative;bottom:auto;flex:1;min-width:0;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;padding-right:8px}@media(max-width:480px){.srow .b.strk{font-size:17px;letter-spacing:.01em}}.srow .sq{flex:0 0 56px;width:56px;min-height:56px;border-radius:10px;padding:0;margin:0;display:inline-flex;align-items:center;justify-content:center;border:2px solid #7d858b;background:#9aa2a8;color:#fff;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s}.srow .sq.on{background:#3f9a4a;border-color:#2f7d39;box-shadow:0 0 10px rgba(63,154,74,.55)}.srow .sq svg{width:26px;height:26px}
@@ -2308,9 +2308,22 @@ function nbStrip(){if(!S||!S.nb||S.nb.done||fight||tab==='home'||tab==='hunt')re
  return`<div class="nbs${ok?' ok':''}"><span class="nbs-t"><b>${S.nb.i+1}/${NBQ.length}</b> ${esc(q.h)}${q.c?'':` · ${Math.min(p,n)}/${n}`}</span>${ok?'<button class="b" data-nbgo="1">Забрать</button>':''}</div>`}
 function dqStrip(){if(!S||!S.dq||S.dq.day!==DAY())return'';const g=tab==='hunt'?'hunt':tab==='arena'?'arena':tab==='clan'?'clan':tab==='forge'?'forge':tab==='boss'?'boss':tab==='hero'&&htab==='bag'?'bag':'';if(!g)return'';let h='';
  S.dq.list.forEach((q,i)=>{if(q.st!=='on'||q.c||DQGO[q.t]!==g)return;const pr=Math.min(q.p,q.n),ok=q.p>=q.n;h+=`<div class="nbs dqs${ok?' ok':''}" style="flex-wrap:wrap"><span class="nbs-t" style="flex:1">Задание «${qName(q.t)}» · <b>${kf(pr)}/${kf(q.n)}</b></span>${ok?`<button class="b" data-qc="${i}">Забрать</button>`:''}<div style="flex-basis:100%">${bar(pr,q.n,'--gold')}</div></div>`});return h}
-function nbHl(){document.querySelectorAll('.nbhl').forEach(x=>x.classList.remove('nbhl'));if(!S||!S.nb||S.nb.done||fight)return;const q=NBQ[S.nb.i];if(nbOk()){const b=document.querySelector('.bnav [data-t="home"]');if(b&&tab!=='home')b.classList.add('nbhl');return}
- const g=q.go;let sel=null;if(tab==='home')sel=g==='stats'||g==='bag'?'.bnav [data-t="hero"]':`.mi[data-t="${g}"]`;else if(tab==='hero')sel=g==='bag'?'[data-h="bag"]':g==='stats'&&S.pts?'[data-s]':null;else if(tab==='shop'&&g==='shop')sel=null;
- if(sel){const el=document.querySelector(sel);if(el)el.classList.add('nbhl')}}
+function nbHl(){document.querySelectorAll('.nbhl').forEach(x=>x.classList.remove('nbhl'));if(!S||!S.nb||S.nb.done)return;const q=NBQ[S.nb.i];if(!q)return;
+ const on=el=>{if(!el)return false;el.classList.add('nbhl');const r=el.getBoundingClientRect();if(r.top<60||r.bottom>innerHeight-70){try{el.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}}return true};
+ const one=(...a)=>{for(const x of a){const el=document.querySelector(x);if(el)return el}return null};
+ if(fight){if(q.t==='skill'&&!nbOk())on(one('button.sk:not([disabled]):not(.cd)','button.sk:not([disabled])'));return}
+ if(nbOk()){if(tab!=='home')on(one('.bnav [data-t="home"]'));return}
+ const g=q.go;if(!g)return;
+ if(tab==='home'){if(g==='stats'||g==='bag'||g==='clan'){on(one(g==='clan'?'.bnav [data-t="clan"]':'.bnav [data-t="hero"]'));return}
+  if(document.querySelector('.hs-c')){let ix=-1;try{ix=hsItems().findIndex(c=>c.h.includes('data-t="'+g+'"'))}catch(e){}
+   if(ix>=0){on(HSM===ix?one(`#hssub .mi[data-t="${g}"]`,`.hs-c[data-hs="m${ix}"]`):one(`.hs-c[data-hs="m${ix}"]`))}return}
+  on(one(`.mi[data-t="${g}"]`));return}
+ const A={hunt:()=>one('[data-a="h-easy"]','[data-a^="h-"]'),shop:()=>one('[data-b]:not([disabled])'),camp:()=>one('[data-sg]:not([disabled])'),quest:()=>one('[data-qc]','[data-qt]:not([disabled])'),arena:()=>one('[data-pp]:not([disabled])'),forge:()=>one('[data-g]:not([disabled])'),pets:()=>one('[data-pbuy]:not([disabled])'),clan:()=>one('[data-j]:not([disabled])','[data-ca]')};
+ if(g==='stats'||g==='bag'){if(tab!=='hero'){on(one('.bnav [data-t="hero"]'));return}
+  if(htab!==g){on(one(`[data-h="${g}"]`));return}
+  on(g==='stats'?one('[data-s]:not([disabled])'):q.t==='dis'?one('[data-x]'):one('[data-e]:not([disabled])'));return}
+ if(tab===g){const f=A[g];if(f)on(f());return}
+ on(one('.bnav [data-t="home"]'))}
 // «Вперёд» — сразу туда, где выполняется текущий шаг
 document.addEventListener('click',e=>{const b=e.target.closest('[data-nbf]');if(!b||!S||!S.nb||S.nb.done)return;e.preventDefault();const g=(NBQ[S.nb.i]||{}).go;if(!g)return;MLADM=false;MLTM=false;
  if(g==='stats'||g==='bag'){tab='hero';htab=g}else if(g==='shop'){tab='shop';shp='gear'}else tab=g;render();window.scrollTo(0,0)});
@@ -2924,7 +2937,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.39.2';
+const GVER='1.40.0';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3550,7 +3563,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.39.2</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.40.0</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;

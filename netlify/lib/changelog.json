@@ -1245,5 +1245,10 @@
   "v": "1.39.2",
   "t": "Для админа: кнопки выдачи сундука в рюкзаке для проверки.",
   "te": "For admins: chest grant buttons in the bag for testing."
+ },
+ {
+  "v": "1.40.0",
+  "t": "Шаги «Тропы без следов»: светящаяся подсказка ведёт игрока по цепочке — значок раздела, пункт меню и сама кнопка действия (купить, надеть, ответить, в бой и т. д.).",
+  "te": "«Trail Without Footprints» steps: a glowing hint now leads the player through the whole chain — section icon, menu item and the action button itself (buy, equip, answer, fight, etc.)."
  }
 ]
