@@ -1275,5 +1275,10 @@
   "v": "1.42.1",
   "t": "Исправление: главная сцена сжималась и сдвигалась после обновления верхней панели.",
   "te": "Fix: the home scene was shrunk and shifted after the top bar update."
+ },
+ {
+  "v": "1.42.2",
+  "t": "Верхняя панель на страницах стала компактнее: убраны ряд серебра, здоровья и энергии и полоса опыта под ней.",
+  "te": "The top bar on pages is more compact: the silver, health and energy row and the XP bar under it were removed."
  }
 ]
