@@ -3192,5 +3192,7 @@
  "Бутылок здоровья нет. В бою они спасают: купи в лавке.": "You have no health bottles. They save you in battle: buy some at the shop.",
  "В лавку": "To shop",
  "Выбери охоту полегче — «Опушку»: звери слабее, а опыт идёт ровнее.": "Pick an easier hunt — the Forest edge: the beasts are weaker and XP comes steadier.",
- "<div class=\"dtips\"><b>Как вернуться сильнее</b>": "<div class=\"dtips\"><b>How to come back stronger</b>"
+ "<div class=\"dtips\"><b>Как вернуться сильнее</b>": "<div class=\"dtips\"><b>How to come back stronger</b>",
+ "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Заходи каждый день: <img src=\"": "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Log in every day: <img src=\"",
+ "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> на 7-й, 14-й, 21-й и 28-й дни — сундук с вещью и руной, на 30-й (сундук светится) — легендарная вещь. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "\" alt=\"\" style=\"width:18px;height:18px;vertical-align:-4px\"> on days 7, 14, 21 and 28 — a chest with an item and a rune, on day 30 (the chest glows) — a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>"
 }

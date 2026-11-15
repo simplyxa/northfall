@@ -1220,5 +1220,10 @@
   "v": "1.37.0",
   "t": "Когда герой пал на охоте, в окне теперь есть подсказки «Как вернуться сильнее»: отдохнуть в лагере, вложить очки, надеть лучшие вещи, починить снаряжение, купить бутылки. У каждой есть кнопка перехода",
   "te": "When the hero falls on a hunt, the window now shows \"How to come back stronger\" tips: rest at camp, spend points, equip better items, repair gear, buy bottles, each with a button"
+ },
+ {
+  "v": "1.37.1",
+  "t": "Бонус за вход: в клетках вместо эмодзи теперь иконки игры (серебро, железо, бутылка, сундук)",
+  "te": "Login bonus: the cells now use the game's own icons (silver, iron, bottle, chest) instead of emoji"
  }
 ]
