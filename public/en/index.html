@@ -1684,7 +1684,7 @@ const DQGO={kill:'hunt',dmg:'hunt',arena:'arena',dun:'clan',upa:'forge',dis:'bag
 function dqGo(i){const q=S.dq.list[i];if(!q)return;const g=DQGO[q.t]||'hunt';MLADM=false;MLTM=false;CHP=null;if(g==='bag'){tab='hero';htab='bag'}else tab=g;render();window.scrollTo(0,0)}
 function dqDrop(i){dqEnsure();const q=S.dq.list[i];if(!q||q.st!=='on'||q.c||q.p>=q.n)return;q.st='free';q.p=0;save();render()}
 const qName=t=>(QP.find(q=>q[0]===t)||[0,t])[1];
-const qRew=()=>({g:40+S.lvl*15,i:4+S.lvl}),dqXp=m=>S.lvl>=LVMAX?0:Math.max(1,Math.round(need()*.04*m));
+const qRew=()=>({g:40+S.lvl*15,i:4+S.lvl}),dqXp=m=>S.lvl>=LVMAX?0:Math.max(1,Math.round(xpCurve(Math.min(S.lvl|0,30))*.04*m));
 function ev(t,n){n=n||1;S.cnt=S.cnt||{};const c=S.cnt;nbEv(t,n);
  if(t==='kill')c.k=(c.k|0)+n;else if(t==='arena')c.aw=(c.aw|0)+n;else if(t==='dmg')c.dmg=(c.dmg|0)+n;else if(t==='boss')c.bs=(c.bs|0)+n;
  dqEnsure();for(const q of S.dq.list)if(q.st==='on'&&!q.c&&q.t===t&&q.p<q.n)q.p=Math.min(q.n,q.p+n);achCheck()}

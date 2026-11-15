@@ -1253,7 +1253,7 @@
  },
  {
   "v": "1.41.0",
-  "t": "За ежедневные задания теперь дают ещё и опыт: 4% нужного для уровня на лёгком, 6% на среднем, около 10% на тяжёлом.",
-  "te": "Daily quests now also give XP: about 4% of the level requirement on easy, 6% on medium, and about 10% on hard."
+  "t": "За ежедневные задания теперь дают ещё и опыт, по сложности: лёгкое — 4% от опыта до следующего уровня, среднее — 6,4%, тяжёлое — 9,6%. С 30 уровня награда перестаёт расти и остаётся такой же, как на 30-м (1584, 2534 и 3802 опыта). Точное число опыта указано у каждого задания.",
+  "te": "Daily quests now also give XP, depending on difficulty: easy — 4% of the XP needed for the next level, medium — 6.4%, hard — 9.6%. From level 30 the reward stops growing and stays the same as at level 30 (1584, 2534 and 3802 XP). The exact XP is shown on every quest."
  }
 ]
