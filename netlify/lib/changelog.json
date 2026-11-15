@@ -1235,5 +1235,10 @@
   "v": "1.39.0",
   "t": "Сундуки за вход теперь попадают в рюкзак (блок «Сундуки») и открываются кнопкой. Из обычного сундука выпадает случайная награда по уровню, из сундука 30-го дня — случайная легендарная вещь",
   "te": "Login chests now go to your bag (a Chests block) and are opened with a button. A regular chest gives a random reward for your level, the day-30 chest gives a random legendary item"
+ },
+ {
+  "v": "1.39.1",
+  "t": "Сундуки за вход занимают место в рюкзаке наравне со снаряжением и лежат в общем списке. Если рюкзак полон, сундук всё равно не пропадёт",
+  "te": "Login chests now take a bag slot like gear and sit in the same list. If the bag is full, the chest is still kept"
  }
 ]

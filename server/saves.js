@@ -252,7 +252,7 @@ module.exports = function saves(admin) {
 
         g = guard(prev, s, ses, base, uid, prev && prev.ts ? Date.now() - prev.ts : 5000); if (g.stale) return;
         const takeItem = iu => { const i = s.inv.findIndex(x => x && x.uid === iu); if (i < 0) throw new Fail(409, 'Вещи нет в рюкзаке'); const it = s.inv[i]; if (it.pb) throw new Fail(400, 'Эту вещь нельзя передать'); s.inv.splice(i, 1); const c = JSON.parse(JSON.stringify(it)); delete c.uid; delete c.mkp; return c; };
-        const putItem = it => { if (s.inv.length >= INV_MAX) throw new Fail(409, 'Рюкзак полон'); const c = JSON.parse(JSON.stringify(it)); c.uid = rid('i'); c.pb = 0; s.inv.push(c); return c; };
+        const putItem = it => { if (s.inv.length + (Array.isArray(s.lch) ? s.lch.length : 0) >= INV_MAX) throw new Fail(409, 'Рюкзак полон'); const c = JSON.parse(JSON.stringify(it)); c.uid = rid('i'); c.pb = 0; s.inv.push(c); return c; };
 
         if (k === 'mklist') { // выставить вещь на рынок за золото
           const price = Math.floor(+o.price || 0); if (!(price >= 1 && price <= MAX_PRICE)) throw new Fail(400, 'Неверная цена');
