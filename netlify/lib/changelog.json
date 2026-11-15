@@ -1270,5 +1270,10 @@
   "v": "1.42.0",
   "t": "Верхняя панель с главной теперь на всех страницах: резная плашка золота с «+», значки статусов, звук и настройки. Серебро, здоровье и энергия — компактным рядом под ней.",
   "te": "The top bar from the home screen is now on every page: the ornate gold plate with \"+\", status icons, sound and settings. Silver, health and energy sit in a compact row below it."
+ },
+ {
+  "v": "1.42.1",
+  "t": "Исправление: главная сцена сжималась и сдвигалась после обновления верхней панели.",
+  "te": "Fix: the home scene was shrunk and shifted after the top bar update."
  }
 ]
