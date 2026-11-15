@@ -3173,5 +3173,6 @@
  "<p style=\"margin:0 0 6px\">День ": "<p style=\"margin:0 0 6px\">Day ",
  "<p style=\"margin:0 0 6px\">⏳ Следующая награда через <b>": "<p style=\"margin:0 0 6px\">⏳ Next reward in <b>",
  "<button class=\"b\" data-a=\"lclaim\" style=\"margin:0 0 6px\">Забрать награду</button>": "<button class=\"b\" data-a=\"lclaim\" style=\"margin:0 0 6px\">Claim reward</button>",
- "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Заходи каждый день: 🎁 на 7-й, 14-й, 21-й и 28-й дни — сундук с вещью и руной, 👑 на 30-й — легендарная вещь. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Log in every day: 🎁 on days 7, 14, 21 and 28 — a chest with an item and a rune, 👑 on day 30 — a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>"
+ "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Заходи каждый день: 🎁 на 7-й, 14-й, 21-й и 28-й дни — сундук с вещью и руной, 👑 на 30-й — легендарная вещь. Серебро растёт с твоим уровнем. Пропустишь день — счёт начнётся заново.</p>": "<p style=\"margin:4px 0 0;font-size:13px;color:#b9b19c\">Log in every day: 🎁 on days 7, 14, 21 and 28 — a chest with an item and a rune, 👑 on day 30 — a legendary item. Silver grows with your level. Miss a day and the count starts over.</p>",
+ "\" style=\"flex-wrap:wrap\"><span class=\"nbs-t\" style=\"flex:1\">Задание «": "\" style=\"flex-wrap:wrap\"><span class=\"nbs-t\" style=\"flex:1\">Quest «"
 }

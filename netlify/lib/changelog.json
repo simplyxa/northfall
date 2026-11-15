@@ -1205,5 +1205,10 @@
   "v": "1.35.0",
   "t": "Бонус за ежедневный вход: в окне видны все 30 дней с наградами. После получения награды значок на главной тускнеет и показывает таймер до следующей награды, но его по-прежнему можно открыть",
   "te": "Daily login bonus: the window now shows all 30 days with their rewards. After claiming, the home icon dims and shows a countdown to the next reward, but can still be opened"
+ },
+ {
+  "v": "1.35.1",
+  "t": "Когда идёшь выполнять ежедневное задание кнопкой «Перейти», на нужном экране сверху показывается название задания и его прогресс (охота, арена, кузница, рюкзак, босс, клан). Выполненное можно забрать прямо там",
+  "te": "When you go to do a daily quest with the Go button, the quest name and progress are now shown at the top of the right screen (hunt, arena, forge, bag, boss, clan). A finished quest can be claimed right there"
  }
 ]
