@@ -1210,5 +1210,10 @@
   "v": "1.35.1",
   "t": "Когда идёшь выполнять ежедневное задание кнопкой «Перейти», на нужном экране сверху показывается название задания и его прогресс (охота, арена, кузница, рюкзак, босс, клан). Выполненное можно забрать прямо там",
   "te": "When you go to do a daily quest with the Go button, the quest name and progress are now shown at the top of the right screen (hunt, arena, forge, bag, boss, clan). A finished quest can be claimed right there"
+ },
+ {
+  "v": "1.36.0",
+  "t": "Для новичков: за шаги сюжета «Тропа без следов» теперь дают больше опыта, к 9-му шагу герой уже 9 уровня. Пока сюжет не пройден, энергии нет: удары ничего не стоят и энергия не показывается",
+  "te": "For new players: story steps now give more experience, so by step 9 the hero is level 9. Until the story is finished there is no energy: strikes cost nothing and energy is hidden"
  }
 ]
