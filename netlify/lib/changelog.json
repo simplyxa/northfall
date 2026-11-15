@@ -1260,5 +1260,10 @@
   "v": "1.41.1",
   "t": "Акция золота на главной переделана: крупный множитель ×2, таймер, дата окончания и золотая кнопка «Купить золото» вместо тесной строки.",
   "te": "Gold sale on the home screen redesigned: big ×2 multiplier, timer, end date and a golden \"Buy gold\" button instead of a cramped row."
+ },
+ {
+  "v": "1.41.2",
+  "t": "Исправление: на странице героя имя и подписи стали бледными из-за общего стиля с карточкой акции золота.",
+  "te": "Fix: the hero's name and labels looked pale because of a shared style with the gold sale card."
  }
 ]
