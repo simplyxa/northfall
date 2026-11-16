@@ -3259,5 +3259,6 @@
  "<div style=\"display:flex;gap:6px;margin-top:6px\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Сундук (админ)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Сундук 30-го дня (админ)</button></div>": "<div style=\"display:flex;gap:6px;margin-top:6px\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Chest (admin)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Day-30 chest (admin)</button></div>",
  " уровень</div>": " level</div>",
  "<div class=\"hs2\" style=\"margin-top:2px\">Без клана</div>": "<div class=\"hs2\" style=\"margin-top:2px\">No clan</div>",
- "<div class=\"nfpw\"><small>Мощь снаряжения</small> <b>": "<div class=\"nfpw\"><small>Gear power</small> <b>"
+ "<div class=\"nfpw\"><small>Мощь снаряжения</small> <b>": "<div class=\"nfpw\"><small>Gear power</small> <b>",
+ " title=\"1 железо = 1 прочность\">Починить всё · ": " title=\"1 iron = 1 durability\">Repair all · "
 }

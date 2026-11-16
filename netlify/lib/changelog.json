@@ -1320,5 +1320,10 @@
   "v": "1.43.6",
   "t": "Страница героя: убраны плашки здоровья, энергии, опыта, быстрые кнопки и большая карточка со статистикой боёв. Мощь снаряжения показана на сцене. Аватар, титул и ранг в клане перенесены в верхнюю карточку рядом с именем и уровнем.",
   "te": "Hero page: removed the health, energy and experience bars, the quick buttons and the big card with battle stats. Gear power is shown on the scene. Avatar, title and clan rank moved to the top card next to the name and level."
+ },
+ {
+  "v": "1.43.7",
+  "t": "Страница героя: блок «Ремонт снаряжения» убран, кнопка «Починить всё» теперь на сцене и появляется только когда есть повреждённое снаряжение. Сцена стала немного больше.",
+  "te": "Hero page: the Gear repair block is gone, the Repair all button now sits on the scene and shows only when gear is damaged. The scene is slightly larger."
  }
 ]
