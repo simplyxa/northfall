@@ -1290,5 +1290,10 @@
   "v": "1.43.0",
   "t": "Новая страница героя: манекен одевается по реальной экипировке (наборы можно смешивать), оружие парит над руной цвета редкости, у плащей есть передняя и задняя части. Мужской и женский манекен. В рюкзаке все ресурсы собраны в компактные иконки с описанием по нажатию. В клане единая лента вкладок: Клан, Состав, Задания, Казна, Постройки, Подземелье, Летопись, Форум.",
   "te": "New hero page: the mannequin is dressed from your actual equipment (sets can be mixed), the weapon hovers over a rarity-coloured rune, cloaks have front and back layers. Male and female mannequins. The backpack shows all resources as compact icons with a description on tap. Clans get one tab strip: Clan, Members, Quests, Vault, Buildings, Dungeon, Chronicle, Forum."
+ },
+ {
+  "v": "1.43.1",
+  "t": "Страница героя и клана переделаны точно по прототипу: тёмные карточки, шапка героя с кланом, манекен со слотами, мощь и полосы здоровья, энергии и опыта, быстрые кнопки Друзья/Почта/Настройки; рюкзак и сундук в тёмном стиле; у клана шапка с гербом, уровнем, составом и опытом над лентой вкладок.",
+  "te": "Hero and clan pages rebuilt to match the design: dark cards, hero header with clan button, mannequin with slots, power and health/energy/experience bars, quick Friends/Mail/Settings buttons; dark backpack and chest; the clan gets a header with emblem, level, members and experience above the tab strip."
  }
 ]

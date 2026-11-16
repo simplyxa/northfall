@@ -3224,5 +3224,19 @@
  ")</h3><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>": ")</h3><p style=\"margin:0 0 4px\">Dismantle spare gear: iron goes to the stone master, dust to the sorcerer.</p>",
  "\" alt=\"Герой\">": "\" alt=\"Hero\">",
  "\" data-gen=\"m\">Мужчина</button><button class=\"": "\" data-gen=\"m\">Male</button><button class=\"",
- "\" data-gen=\"f\">Женщина</button></div><div class=\"gcw\">": "\" data-gen=\"f\">Female</button></div><div class=\"gcw\">"
+ "\" data-gen=\"f\">Женщина</button></div><div class=\"gcw\">": "\" data-gen=\"f\">Female</button></div><div class=\"gcw\">",
+ "<div class=\"hq\"><button data-t=\"friends\">Друзья": "<div class=\"hq\"><button data-t=\"friends\">Friends",
+ "</button><button data-t=\"mail\">Почта": "</button><button data-t=\"mail\">Mail",
+ "</button><button data-t=\"settings\">Настройки": "</button><button data-t=\"settings\">Settings",
+ "<div class=\"panel\"><h3>Вклад в клан</h3><p style=\"color:var(--mute);font-size:15px;margin:6px 0\">Каждый твой удар в бою приносит клану опыт: 1 за каждые ": "<div class=\"panel\"><h3>Your contribution</h3><p style=\"color:var(--mute);font-size:15px;margin:6px 0\">Every hit you land in battle earns the clan experience: 1 for every ",
+ " уровень · участников ": " level · members ",
+ "<div style=\"margin-top:8px;display:flex;justify-content:space-between;font-size:13px\"><span class=\"cs\">Опыт клана</span><b>": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;font-size:13px\"><span class=\"cs\">Clan experience</span><b>",
+ "<div class=\"g\" style=\"margin-top:6px\">Максимальный уровень</div>": "<div class=\"g\" style=\"margin-top:6px\">Maximum level</div>",
+ " уровень</div></div>": " level</div></div>",
+ "<div class=\"hcard\"><div class=\"hpw\"><div style=\"background:#2a2314;border:1px solid #7a6a3c;color:#f0d98c\">Мощь ": "<div class=\"hcard\"><div class=\"hpw\"><div style=\"background:#2a2314;border:1px solid #7a6a3c;color:#f0d98c\">Power ",
+ "</div><div style=\"background:#10141b;color:#b9b19c\">Атака ": "</div><div style=\"background:#10141b;color:#b9b19c\">Attack ",
+ " · Защита ": " · Defense ",
+ "Опыт": "Experience",
+ "максимальный": "maximum",
+ "\" data-gen=\"f\">Женщина</button></div>": "\" data-gen=\"f\">Female</button></div>"
 }

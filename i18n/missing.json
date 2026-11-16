@@ -1,14 +1,16 @@
 [
- "Основная монета: охота, магазин, кузнец, кланы.",
- "Редкая монета: питомцы, поход, рынок. 1 золото = 100 серебра.",
- "Для усиления снаряжения в кузнице. Даётся за разбор вещей и подземелья.",
- "Остаётся от разбора рунных вещей. Нужна чародею.",
- "Материал для ремесла: из него мастера создают снаряжение и эликсиры.",
- "%, 30 минут. Выпей в рюкзаке.",
- "Камень для гнезда вещи. Вставляется у мастера камней.",
- "<div class=\"panel\"><h3>Ресурсы</h3><div style=\"display:flex;flex-wrap:wrap;gap:6px\">",
- ")</h3><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>",
- "\" alt=\"Герой\">",
- "\" data-gen=\"m\">Мужчина</button><button class=\"",
- "\" data-gen=\"f\">Женщина</button></div><div class=\"gcw\">"
+ "<div class=\"hq\"><button data-t=\"friends\">Друзья",
+ "</button><button data-t=\"mail\">Почта",
+ "</button><button data-t=\"settings\">Настройки",
+ "<div class=\"panel\"><h3>Вклад в клан</h3><p style=\"color:var(--mute);font-size:15px;margin:6px 0\">Каждый твой удар в бою приносит клану опыт: 1 за каждые ",
+ " уровень · участников ",
+ "<div style=\"margin-top:8px;display:flex;justify-content:space-between;font-size:13px\"><span class=\"cs\">Опыт клана</span><b>",
+ "<div class=\"g\" style=\"margin-top:6px\">Максимальный уровень</div>",
+ " уровень</div></div>",
+ "<div class=\"hcard\"><div class=\"hpw\"><div style=\"background:#2a2314;border:1px solid #7a6a3c;color:#f0d98c\">Мощь ",
+ "</div><div style=\"background:#10141b;color:#b9b19c\">Атака ",
+ " · Защита ",
+ "Опыт",
+ "максимальный",
+ "\" data-gen=\"f\">Женщина</button></div>"
 ]
