@@ -3246,5 +3246,15 @@
  "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>": "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Dismantle spare gear: iron goes to the stone master, dust to the sorcerer.</p>",
  "<p style=\"margin:0;color:var(--mute)\">Подходящих предметов нет. Загляни в магазин или на охоту.</p>": "<p style=\"margin:0;color:var(--mute)\">No suitable items. Check the shop or go hunting.</p>",
  "\" style=\"margin:0\">Снять</button>": "\" style=\"margin:0\">Unequip</button>",
- ": слот пуст</h3>": ": slot is empty</h3>"
+ ": слот пуст</h3>": ": slot is empty</h3>",
+ "<label class=\"tgl\" style=\"margin:0;padding:6px 8px;flex:1 1 150px;align-items:center\" title=\"Новые вещи, которые не лучше надетых, сразу разбираются на железо. Мифические вещи и вещи с камнями не трогаются.\"><input type=\"checkbox\" data-a=\"autodis\" ": "<label class=\"tgl\" style=\"margin:0;padding:6px 8px;flex:1 1 150px;align-items:center\" title=\"New items that are no better than what you wear are dismantled into iron right away. Mythic items and items with stones are left alone.\"><input type=\"checkbox\" data-a=\"autodis\" ",
+ "><span><b style=\"font-size:15px\">Авторазбор</b><small style=\"font-size:12px\">": "><span><b style=\"font-size:15px\">Auto-dismantle</b><small style=\"font-size:12px\">",
+ "разобрано ": "dismantled ",
+ "не лучше надетых — на железо": "not better than worn: to iron",
+ "<span style=\"flex:1 1 150px;color:var(--mute);font-size:13px\">Авторазбор откроется с 30 уровня</span>": "<span style=\"flex:1 1 150px;color:var(--mute);font-size:13px\">Auto-dismantle unlocks at level 30</span>",
+ "<span style=\"flex:1 1 150px;color:var(--mute);font-size:13px\">Разбирать нечего: все вещи лучше надетых</span>": "<span style=\"flex:1 1 150px;color:var(--mute);font-size:13px\">Nothing to dismantle: everything is better than what you wear</span>",
+ "<button class=\"b red\" data-a=\"sellall\" style=\"margin:0;flex:1 1 120px;min-height:0;padding:8px 10px\">Да, ": "<button class=\"b red\" data-a=\"sellall\" style=\"margin:0;flex:1 1 120px;min-height:0;padding:8px 10px\">Yes, ",
+ ")</button><button class=\"b alt\" data-a=\"sellno\" style=\"margin:0;min-height:0;padding:8px 10px\">Отмена</button>": ")</button><button class=\"b alt\" data-a=\"sellno\" style=\"margin:0;min-height:0;padding:8px 10px\">Cancel</button>",
+ "<button class=\"b\" data-a=\"sellask\" style=\"margin:0;flex:1 1 150px;min-height:0;padding:8px 10px;font-size:14px\">Разобрать лишнее: ": "<button class=\"b\" data-a=\"sellask\" style=\"margin:0;flex:1 1 150px;min-height:0;padding:8px 10px;font-size:14px\">Dismantle spare: ",
+ "<div style=\"display:flex;gap:6px;margin-top:6px\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Сундук (админ)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Сундук 30-го дня (админ)</button></div>": "<div style=\"display:flex;gap:6px;margin-top:6px\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Chest (admin)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Day-30 chest (admin)</button></div>"
 }

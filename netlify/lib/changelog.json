@@ -1310,5 +1310,10 @@
   "v": "1.43.4",
   "t": "Нажатие на ячейку снаряжения открывает всплывающее окно: описание вещи, прочность, гнёзда для камней, кнопки «Снять» и «Усилить» и список подходящих вещей из рюкзака для замены. Пустая ячейка показывает вещи, которые можно надеть.",
   "te": "Tapping an equipment slot now opens a popup: item details, durability, stone sockets, Unequip and Upgrade buttons, and a list of matching backpack items to swap in. An empty slot lists the items you can equip."
+ },
+ {
+  "v": "1.43.5",
+  "t": "Рюкзак: описание ресурса открывается во всплывающем окне по нажатию на иконку, блок «Бутылки» убран (описание бутылки в окне ресурса), авторазбор и «Разобрать лишнее» стали компактной строкой между ресурсами и рюкзаком.",
+  "te": "Backpack: a resource description opens in a popup when you tap its icon, the Bottles block is gone (the bottle description is in the resource popup), auto-dismantle and Dismantle spare are now a compact row between resources and the backpack."
  }
 ]
