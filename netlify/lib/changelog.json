@@ -1300,5 +1300,10 @@
   "v": "1.43.2",
   "t": "Рюкзак доделан по прототипу: сетка 5×4 с иконками, уровнем и отметкой «лучше надетого», сундуки с наградами в сетке, по нажатию на вещь — описание и кнопки. Манекен теперь учитывает пол героя из настроек и регистрации. Починены нажатия на ресурсы.",
   "te": "Backpack finished to match the design: a 5×4 grid with icons, level and a 'better than worn' mark, reward chests inside the grid, tap an item for details and actions. The mannequin now follows the hero's gender from settings and registration. Resource taps fixed."
+ },
+ {
+  "v": "1.43.3",
+  "t": "Манекен ожил: задняя часть плаща покачивается, а из руны под оружием поднимаются светящиеся искры цвета редкости. При включённом режиме «уменьшить движение» в системе анимация отключается.",
+  "te": "The mannequin comes alive: the back of the cloak sways and glowing sparks in the weapon's rarity colour rise from the rune. The animation is off when the system 'reduce motion' setting is on."
  }
 ]
