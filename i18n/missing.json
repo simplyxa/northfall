@@ -1,16 +1,7 @@
 [
- "<div class=\"hq\"><button data-t=\"friends\">Друзья",
- "</button><button data-t=\"mail\">Почта",
- "</button><button data-t=\"settings\">Настройки",
- "<div class=\"panel\"><h3>Вклад в клан</h3><p style=\"color:var(--mute);font-size:15px;margin:6px 0\">Каждый твой удар в бою приносит клану опыт: 1 за каждые ",
- " уровень · участников ",
- "<div style=\"margin-top:8px;display:flex;justify-content:space-between;font-size:13px\"><span class=\"cs\">Опыт клана</span><b>",
- "<div class=\"g\" style=\"margin-top:6px\">Максимальный уровень</div>",
- " уровень</div></div>",
- "<div class=\"hcard\"><div class=\"hpw\"><div style=\"background:#2a2314;border:1px solid #7a6a3c;color:#f0d98c\">Мощь ",
- "</div><div style=\"background:#10141b;color:#b9b19c\">Атака ",
- " · Защита ",
- "Опыт",
- "максимальный",
- "\" data-gen=\"f\">Женщина</button></div>"
+ ">В сундук</button></div>",
+ "Нажми на вещь, чтобы рассмотреть, надеть или разобрать. ▲ — вещь лучше надетой.",
+ "Пусто. Трофеи падают после боёв, снаряжение продаётся в магазине.",
+ "<div class=\"panel\"><div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:10px\"><h3 style=\"margin:0\">Рюкзак</h3><span style=\"padding:4px 10px;border-radius:12px;background:#10141b;font-weight:700;font-size:14px\">",
+ "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>"
 ]

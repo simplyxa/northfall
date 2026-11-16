@@ -1295,5 +1295,10 @@
   "v": "1.43.1",
   "t": "Страница героя и клана переделаны точно по прототипу: тёмные карточки, шапка героя с кланом, манекен со слотами, мощь и полосы здоровья, энергии и опыта, быстрые кнопки Друзья/Почта/Настройки; рюкзак и сундук в тёмном стиле; у клана шапка с гербом, уровнем, составом и опытом над лентой вкладок.",
   "te": "Hero and clan pages rebuilt to match the design: dark cards, hero header with clan button, mannequin with slots, power and health/energy/experience bars, quick Friends/Mail/Settings buttons; dark backpack and chest; the clan gets a header with emblem, level, members and experience above the tab strip."
+ },
+ {
+  "v": "1.43.2",
+  "t": "Рюкзак доделан по прототипу: сетка 5×4 с иконками, уровнем и отметкой «лучше надетого», сундуки с наградами в сетке, по нажатию на вещь — описание и кнопки. Манекен теперь учитывает пол героя из настроек и регистрации. Починены нажатия на ресурсы.",
+  "te": "Backpack finished to match the design: a 5×4 grid with icons, level and a 'better than worn' mark, reward chests inside the grid, tap an item for details and actions. The mannequin now follows the hero's gender from settings and registration. Resource taps fixed."
  }
 ]
