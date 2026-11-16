@@ -3243,5 +3243,8 @@
  "Нажми на вещь, чтобы рассмотреть, надеть или разобрать. ▲ — вещь лучше надетой.": "Tap an item to inspect, equip or dismantle it. ▲ means better than what you wear.",
  "Пусто. Трофеи падают после боёв, снаряжение продаётся в магазине.": "Empty. Trophies drop after battles, gear is sold in the shop.",
  "<div class=\"panel\"><div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:10px\"><h3 style=\"margin:0\">Рюкзак</h3><span style=\"padding:4px 10px;border-radius:12px;background:#10141b;font-weight:700;font-size:14px\">": "<div class=\"panel\"><div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:10px\"><h3 style=\"margin:0\">Backpack</h3><span style=\"padding:4px 10px;border-radius:12px;background:#10141b;font-weight:700;font-size:14px\">",
- "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>": "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Dismantle spare gear: iron goes to the stone master, dust to the sorcerer.</p>"
+ "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>": "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Dismantle spare gear: iron goes to the stone master, dust to the sorcerer.</p>",
+ "<p style=\"margin:0;color:var(--mute)\">Подходящих предметов нет. Загляни в магазин или на охоту.</p>": "<p style=\"margin:0;color:var(--mute)\">No suitable items. Check the shop or go hunting.</p>",
+ "\" style=\"margin:0\">Снять</button>": "\" style=\"margin:0\">Unequip</button>",
+ ": слот пуст</h3>": ": slot is empty</h3>"
 }

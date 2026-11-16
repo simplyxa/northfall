@@ -1305,5 +1305,10 @@
   "v": "1.43.3",
   "t": "Манекен ожил: задняя часть плаща покачивается, а из руны под оружием поднимаются светящиеся искры цвета редкости. При включённом режиме «уменьшить движение» в системе анимация отключается.",
   "te": "The mannequin comes alive: the back of the cloak sways and glowing sparks in the weapon's rarity colour rise from the rune. The animation is off when the system 'reduce motion' setting is on."
+ },
+ {
+  "v": "1.43.4",
+  "t": "Нажатие на ячейку снаряжения открывает всплывающее окно: описание вещи, прочность, гнёзда для камней, кнопки «Снять» и «Усилить» и список подходящих вещей из рюкзака для замены. Пустая ячейка показывает вещи, которые можно надеть.",
+  "te": "Tapping an equipment slot now opens a popup: item details, durability, stone sockets, Unequip and Upgrade buttons, and a list of matching backpack items to swap in. An empty slot lists the items you can equip."
  }
 ]

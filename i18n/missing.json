@@ -1,7 +1,5 @@
 [
- ">В сундук</button></div>",
- "Нажми на вещь, чтобы рассмотреть, надеть или разобрать. ▲ — вещь лучше надетой.",
- "Пусто. Трофеи падают после боёв, снаряжение продаётся в магазине.",
- "<div class=\"panel\"><div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:10px\"><h3 style=\"margin:0\">Рюкзак</h3><span style=\"padding:4px 10px;border-radius:12px;background:#10141b;font-weight:700;font-size:14px\">",
- "</div><div class=\"panel\"><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>"
+ "<p style=\"margin:0;color:var(--mute)\">Подходящих предметов нет. Загляни в магазин или на охоту.</p>",
+ "\" style=\"margin:0\">Снять</button>",
+ ": слот пуст</h3>"
 ]
