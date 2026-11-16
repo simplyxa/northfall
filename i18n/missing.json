@@ -1,12 +1,5 @@
 [
- "<label class=\"tgl\" style=\"margin:0;padding:6px 8px;flex:1 1 150px;align-items:center\" title=\"Новые вещи, которые не лучше надетых, сразу разбираются на железо. Мифические вещи и вещи с камнями не трогаются.\"><input type=\"checkbox\" data-a=\"autodis\" ",
- "><span><b style=\"font-size:15px\">Авторазбор</b><small style=\"font-size:12px\">",
- "разобрано ",
- "не лучше надетых — на железо",
- "<span style=\"flex:1 1 150px;color:var(--mute);font-size:13px\">Авторазбор откроется с 30 уровня</span>",
- "<span style=\"flex:1 1 150px;color:var(--mute);font-size:13px\">Разбирать нечего: все вещи лучше надетых</span>",
- "<button class=\"b red\" data-a=\"sellall\" style=\"margin:0;flex:1 1 120px;min-height:0;padding:8px 10px\">Да, ",
- ")</button><button class=\"b alt\" data-a=\"sellno\" style=\"margin:0;min-height:0;padding:8px 10px\">Отмена</button>",
- "<button class=\"b\" data-a=\"sellask\" style=\"margin:0;flex:1 1 150px;min-height:0;padding:8px 10px;font-size:14px\">Разобрать лишнее: ",
- "<div style=\"display:flex;gap:6px;margin-top:6px\"><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"n\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Сундук (админ)</button><button class=\"b alt\" data-a=\"lchadd\" data-lk=\"big\" style=\"margin:0;flex:1;min-height:0;padding:6px\">+ Сундук 30-го дня (админ)</button></div>"
+ " уровень</div>",
+ "<div class=\"hs2\" style=\"margin-top:2px\">Без клана</div>",
+ "<div class=\"nfpw\"><small>Мощь снаряжения</small> <b>"
 ]

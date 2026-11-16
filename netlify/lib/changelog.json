@@ -1315,5 +1315,10 @@
   "v": "1.43.5",
   "t": "Рюкзак: описание ресурса открывается во всплывающем окне по нажатию на иконку, блок «Бутылки» убран (описание бутылки в окне ресурса), авторазбор и «Разобрать лишнее» стали компактной строкой между ресурсами и рюкзаком.",
   "te": "Backpack: a resource description opens in a popup when you tap its icon, the Bottles block is gone (the bottle description is in the resource popup), auto-dismantle and Dismantle spare are now a compact row between resources and the backpack."
+ },
+ {
+  "v": "1.43.6",
+  "t": "Страница героя: убраны плашки здоровья, энергии, опыта, быстрые кнопки и большая карточка со статистикой боёв. Мощь снаряжения показана на сцене. Аватар, титул и ранг в клане перенесены в верхнюю карточку рядом с именем и уровнем.",
+  "te": "Hero page: removed the health, energy and experience bars, the quick buttons and the big card with battle stats. Gear power is shown on the scene. Avatar, title and clan rank moved to the top card next to the name and level."
  }
 ]
