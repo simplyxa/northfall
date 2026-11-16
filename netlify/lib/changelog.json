@@ -1285,5 +1285,10 @@
   "v": "1.42.3",
   "t": "Верхняя панель: вернули тонкую полоску опыта сверху, убрали золотую линию снизу и лишний пустой отступ под панелью.",
   "te": "Top bar: the thin XP strip is back at the top, the gold line underneath and the extra empty gap below the bar are gone."
+ },
+ {
+  "v": "1.43.0",
+  "t": "Новая страница героя: манекен одевается по реальной экипировке (наборы можно смешивать), оружие парит над руной цвета редкости, у плащей есть передняя и задняя части. Мужской и женский манекен. В рюкзаке все ресурсы собраны в компактные иконки с описанием по нажатию. В клане единая лента вкладок: Клан, Состав, Задания, Казна, Постройки, Подземелье, Летопись, Форум.",
+  "te": "New hero page: the mannequin is dressed from your actual equipment (sets can be mixed), the weapon hovers over a rarity-coloured rune, cloaks have front and back layers. Male and female mannequins. The backpack shows all resources as compact icons with a description on tap. Clans get one tab strip: Clan, Members, Quests, Vault, Buildings, Dungeon, Chronicle, Forum."
  }
 ]

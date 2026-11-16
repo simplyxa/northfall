@@ -3212,5 +3212,17 @@
  "<div class=\"pctm\">⏳ осталось ": "<div class=\"pctm\">⏳ left: ",
  "</div><small>до ": "</div><small>until ",
  "</small><button class=\"b\" data-t=\"gold\">Купить золото</button></div>": "</small><button class=\"b\" data-t=\"gold\">Buy gold</button></div>",
- "><div class=\"hs-xp\" role=\"img\" aria-label=\"Опыт\"><u style=\"width:": "><div class=\"hs-xp\" role=\"img\" aria-label=\"Experience\"><u style=\"width:"
+ "><div class=\"hs-xp\" role=\"img\" aria-label=\"Опыт\"><u style=\"width:": "><div class=\"hs-xp\" role=\"img\" aria-label=\"Experience\"><u style=\"width:",
+ "Основная монета: охота, магазин, кузнец, кланы.": "Main coin: hunting, shop, blacksmith, clans.",
+ "Редкая монета: питомцы, поход, рынок. 1 золото = 100 серебра.": "Rare coin: pets, expedition, market. 1 gold = 100 silver.",
+ "Для усиления снаряжения в кузнице. Даётся за разбор вещей и подземелья.": "Used to upgrade gear at the forge. Comes from dismantling items and from dungeons.",
+ "Остаётся от разбора рунных вещей. Нужна чародею.": "Left over from dismantling rune items. Needed by the sorcerer.",
+ "Материал для ремесла: из него мастера создают снаряжение и эликсиры.": "Crafting material: artisans make gear and elixirs from it.",
+ "%, 30 минут. Выпей в рюкзаке.": "%, 30 minutes. Drink it in the backpack.",
+ "Камень для гнезда вещи. Вставляется у мастера камней.": "A stone for an item socket. Set it at the stone master.",
+ "<div class=\"panel\"><h3>Ресурсы</h3><div style=\"display:flex;flex-wrap:wrap;gap:6px\">": "<div class=\"panel\"><h3>Resources</h3><div style=\"display:flex;flex-wrap:wrap;gap:6px\">",
+ ")</h3><p style=\"margin:0 0 4px\">Лишнее снаряжение разбирай: железо идёт мастеру камней, пыль — чародею.</p>": ")</h3><p style=\"margin:0 0 4px\">Dismantle spare gear: iron goes to the stone master, dust to the sorcerer.</p>",
+ "\" alt=\"Герой\">": "\" alt=\"Hero\">",
+ "\" data-gen=\"m\">Мужчина</button><button class=\"": "\" data-gen=\"m\">Male</button><button class=\"",
+ "\" data-gen=\"f\">Женщина</button></div><div class=\"gcw\">": "\" data-gen=\"f\">Female</button></div><div class=\"gcw\">"
 }
