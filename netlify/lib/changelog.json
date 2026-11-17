@@ -1325,5 +1325,10 @@
   "v": "1.43.7",
   "t": "Страница героя: блок «Ремонт снаряжения» убран, кнопка «Починить всё» теперь на сцене и появляется только когда есть повреждённое снаряжение. Сцена стала немного больше.",
   "te": "Hero page: the Gear repair block is gone, the Repair all button now sits on the scene and shows only when gear is damaged. The scene is slightly larger."
+ },
+ {
+  "v": "1.43.8",
+  "t": "Быстрее первая загрузка: шрифт не блокирует показ, заранее подключаемся к серверам и грузим заставку.",
+  "te": "Faster first load: the font no longer blocks rendering, early server connections and a preloaded splash image."
  }
 ]
