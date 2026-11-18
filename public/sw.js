@@ -19,6 +19,8 @@ self.addEventListener('fetch', e => {
   if (u.pathname.startsWith('/.netlify/') || /firestore|identitytoolkit|securetoken|xsolla/.test(u.hostname)) return;
   // версию игры всегда берём из сети — по ней игра предлагает обновление
   if (u.pathname === '/version.json') return;
+  // блог и статические страницы не должны подменять кэш страницы игры
+  if (u.pathname.startsWith('/blog')) return;
   // музыка — потоком напрямую (диапазонные запросы Safari в кэш не кладём)
   if (u.pathname.startsWith('/audio/')) return;
   // откуда брать данные (store.js) и шлюз данных — только из сети: устаревший ответ отправил бы игрока не в ту базу
