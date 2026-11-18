@@ -1330,5 +1330,10 @@
   "v": "1.43.8",
   "t": "Быстрее первая загрузка: шрифт не блокирует показ, заранее подключаемся к серверам и грузим заставку.",
   "te": "Faster first load: the font no longer blocks rendering, early server connections and a preloaded splash image."
+ },
+ {
+  "v": "1.43.9",
+  "t": "Игра запускается быстрее: онлайн-часть (Firebase) грузится в фоне и не задерживает первый показ.",
+  "te": "Faster startup: the online part (Firebase) loads in the background and no longer delays the first paint."
  }
 ]

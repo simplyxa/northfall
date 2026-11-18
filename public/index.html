@@ -431,9 +431,11 @@ body.hasnav #app{padding-bottom:calc(min(100vw,520px)/5.3366 + 14px + env(safe-a
 <div id="app"></div>
 <div id="boot" aria-hidden="true"><img src="/img/c82a4e0fa55cc7.webp" alt=""><div class="bb"><i></i></div></div>
 <noscript><div style="max-width:640px;margin:40px auto;padding:0 16px;font-family:Georgia,serif"><h1>Northfall: Barbarians</h1><p>Бесплатная браузерная текстовая RPG о варварах Севера. Выбери класс — берсерк, охотник или шаман, — охоться в снежных лесах, сражайся на арене за рейтинг, вступай в клан, воюй за территории, спускайся в клановые подземелья и вместе с другими игроками побеждай мировых боссов. Приручай питомцев, собирай снаряжение пяти редкостей и вставляй в него руны.</p><p>Для игры включи JavaScript в браузере.</p></div></noscript>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// Firebase и /store.js грузим не блокируя разбор страницы: игра рисуется сразу, а онлайн-часть ждёт window.NFFB
+window.NFFB=new Promise(function(ok){var B='https://www.gstatic.com/firebasejs/10.12.2/firebase-',L=[B+'app-compat.js',B+'auth-compat.js',B+'firestore-compat.js','/store.js'],n=L.length,d=function(){if(--n<=0)ok()};
+L.forEach(function(u){var e=document.createElement('script');e.src=u;e.async=false;e.onload=e.onerror=d;document.head.appendChild(e)})});
+</script>
 <script>
 // ====== НАСТРОЙКИ FIREBASE: вставь сюда данные своего проекта ======
 const FIREBASE_CONFIG={
@@ -448,7 +450,6 @@ const FIREBASE_CONFIG={
 const ADMINS=['shtorm1','admin'];
 const MAILDOM='@northfall.game';
 </script>
-<script src="/store.js"></script>
 <script src="/js/nfdb.js"></script>
 <script src="/js/regular-arena.js"></script>
 <script>
@@ -2979,7 +2980,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.43.8';
+const GVER='1.43.9';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3489,6 +3490,7 @@ function mkClan(){
 let FBA=null;
 async function initOnline(){
  try{
+  await window.NFFB;
   if(!window.firebase||!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.includes('ВСТАВЬ'))return;
   if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
   rdMeter();
@@ -3608,7 +3610,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Пол</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Класс</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Аватар</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.43.8</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Сервер подключён: прогресс хранится в твоём аккаунте. <span style="opacity:.6">Версия 1.43.9</span>':DBS==='wait'?'Подключаюсь к базе данных…':'<span style="color:var(--blood)">●</span> База данных недоступна: войти в аккаунт нельзя.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">Ты открыл игру внутри приложения соцсети. Чтобы вход и прогресс точно сохранились, нажми <b>⋯</b> вверху справа → <b>«Открыть во внешнем браузере»</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Назад ко входу</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Вернуться в игру</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Назад</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Вход</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Регистрация</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
