@@ -290,6 +290,8 @@ const getDbOrNull = () => { const a = fbAdmin(); return a ? a.firestore() : null
 // шлюз данных для браузера (STORE=pg): вместо прямого доступа клиента к Firestore
 const GATE = require('./fsgate')(getDbOrNull, verifyUid);
 const HUB = require('./hub')(server, getDbOrNull, verifyUid, GATE.enabled ? GATE : null);
+// прогреваем сжатие главных страниц до первого запроса: brotli 850 КБ на shared-cpu занимает секунды и блокирует цикл событий
+try { const t0 = Date.now(); ['/index.html', '/en/index.html', '/sw.js'].forEach(f => file(f)); console.log('warm', Date.now() - t0, 'ms'); } catch (e) { console.error('warm', e); }
 server.listen(PORT, () => console.log('Northfall server on :' + PORT));
 
 // расписание: push-cron каждые 15 минут (по границе :00/:15/:30/:45, как в Netlify)
