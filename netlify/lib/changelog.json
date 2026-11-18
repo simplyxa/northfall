@@ -1335,5 +1335,10 @@
   "v": "1.43.9",
   "t": "Игра запускается быстрее: онлайн-часть (Firebase) грузится в фоне и не задерживает первый показ.",
   "te": "Faster startup: the online part (Firebase) loads in the background and no longer delays the first paint."
+ },
+ {
+  "v": "1.43.10",
+  "t": "Заставка уходит быстрее: ждём только фон и логотип, остальные картинки догружаются в фоне.",
+  "te": "Splash screen leaves sooner: waits only for the background and logo, other images load in the background."
  }
 ]

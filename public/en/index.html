@@ -2982,7 +2982,7 @@ function snowRun(){
    cx.fillStyle=g;cx.beginPath();cx.arc(f.x,f.y,f.r*3,0,6.283);cx.fill()}};
  requestAnimationFrame(t=>{SNL=t;tick(t)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',snowRun);else setTimeout(snowRun,0);
-const GVER='1.43.9';
+const GVER='1.43.10';
 let GC=[],GCA=[],gcUn=null,lastGc=0,GCMSG='';let GCL=(()=>{try{return localStorage.getItem('nf_gcl')||LANG}catch(e){return LANG}})();
 const gcF=()=>{GC=GCA.filter(m=>(m.lg||'ru')===GCL)};
 const gcLgBar=()=>`<span class="gclg">${['ru','en'].map(l=>`<button class="lnk${GCL===l?' on':''}" data-gl="${l}">${l.toUpperCase()}</button>`).join('')}</span>`;
@@ -3612,7 +3612,7 @@ async function doNewHero(){
  create(UID)}
 function heroFields(){return`<h3>Gender</h3>${sexBtns(av.x|0)}<h3 style="margin-top:10px">Class</h3>${Object.keys(CL).map(k=>`<button class="cls ${pick===k?'on':''}" data-c="${k}"><b>${CL[k].n}</b><br>${CL[k].d}</button>`).join('')}<h3 style="margin-top:10px">Avatar</h3><div style="text-align:center">${avatar(av,80)}</div>${avPicker(av)}`}
 function authView(){
- const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.43.9</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
+ const st=DBS==='ok'?'<span style="color:var(--moss)">●</span> Server connected: progress is stored in your account. <span style="opacity:.6">Version 1.43.10</span>':DBS==='wait'?'Connecting to the database…':'<span style="color:var(--blood)">●</span> The database is unavailable: you can\'t log in to an account.';
  const err=(INAPP&&(scr==='reg'||scr==='login')?'<p style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(199,154,60,.15);font-size:14px">You opened the game inside a social media app. To make sure your login and progress are saved, tap <b>⋯</b> at the top right → <b>“Open in external browser”</b>.</p>':'')+(AM?`<p style="color:var(--blood);margin:6px 0 10px">${esc(AM)}</p>`:'');
  const tabs=scr==='newhero'||scr==='gnew'?'':scr==='forgot'?`<button class="lnk" data-sc="login" style="padding:0 0 10px">‹ Back to login</button>`:scr==='login'?`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`:scr==='reg'?(LEG&&LEG.guest?`<button class="lnk" data-a="guestgo" style="padding:0 0 10px">‹ Back to the game</button>`:`<button class="lnk" data-sc="gnew" style="padding:0 0 10px">‹ Back</button>`):`<div style="display:flex;gap:6px;margin-bottom:12px"><button class="b ${scr==='login'?'':'alt'}" data-sc="login" style="flex:1">Log in</button><button class="b ${scr==='reg'?'':'alt'}" data-sc="reg" style="flex:1">Sign up</button></div>`;
  const inp=(id,ph,type,ac)=>`<input id="${id}" type="${type||'text'}" placeholder="${ph}" aria-label="${ph}" autocomplete="${ac}" autocapitalize="none" spellcheck="false" maxlength="${type==='password'?64:16}">`;
@@ -4057,10 +4057,14 @@ document.addEventListener('click',ev=>{if(!SFXL&&S)sfxLoad();
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.target.id;if(i==='cm')say();else if(i==='gct2')gcSend('gct2');else if(i==='cm2')say('cm2');else if(!S&&['lg','pw','pw2','nm'].includes(i)){if(scr==='login')doLogin();else if(scr==='reg')doReg();else doNewHero()}});
 let BOOTD=0;
 function bootHide(){if(BOOTD)return;BOOTD=1;const b=document.getElementById('boot');if(!b)return;b.classList.add('out');setTimeout(()=>{try{b.remove()}catch(e){}},500)}
-function bootPre(){const u=new Set(),add=x=>{if(typeof x==='string'&&/^\/img\/[A-Za-z0-9]+\.webp$/.test(x))u.add(x)};
- try{const h=new Date().getHours(),c=h>=6&&h<10?'morning':h>=10&&h<17?'day':h>=17&&h<21?'dusk':'night';add(HSA['bg_'+c]);for(const k in HSA)if(/^(ui_|nav_|fr_|mi_|ev_)/.test(k))add(HSA[k]);for(const k in BNI)add(BNI[k]);for(const k in MIC)add(MIC[k]);add(LOGO);add(RIC.gold);add(AVS);add(AUTHBG);add(typeof VBOI==='string'?VBOI:'')}catch(e){}
- return Promise.all([...u].map(src=>new Promise(r=>{const i=new Image();i.onload=i.onerror=()=>r();i.src=src;if(i.decode)i.decode().then(r,r)})))}
-function bootRel(){if(BOOTD)return;Promise.race([Promise.all([bootPre(),document.fonts?document.fonts.ready:0]),new Promise(r=>setTimeout(r,4000))]).then(()=>requestAnimationFrame(()=>requestAnimationFrame(bootHide)),bootHide)}
+function bootPre(){const u=new Set(),rest=new Set(),add=(x,t)=>{if(typeof x==='string'&&/^\/img\/[A-Za-z0-9]+\.webp$/.test(x))(t||u).add(x)};
+ try{const h=new Date().getHours(),c=h>=6&&h<10?'morning':h>=10&&h<17?'day':h>=17&&h<21?'dusk':'night';add(HSA['bg_'+c]);add(LOGO);add(AUTHBG);add(AVS);
+  for(const k in HSA)if(/^(ui_|nav_|fr_|mi_|ev_)/.test(k))add(HSA[k],rest);for(const k in BNI)add(BNI[k],rest);for(const k in MIC)add(MIC[k],rest);add(RIC.gold,rest);add(typeof VBOI==='string'?VBOI:'',rest)}catch(e){}
+ const ld=src=>new Promise(r=>{const i=new Image();i.onload=i.onerror=()=>r();i.src=src;if(i.decode)i.decode().then(r,r)});
+ // остальное — в фоне, после показа игры (не задерживает заставку)
+ setTimeout(()=>{rest.forEach(x=>{if(!u.has(x))ld(x)})},300);
+ return Promise.all([...u].map(ld))}
+function bootRel(){if(BOOTD)return;Promise.race([Promise.all([bootPre(),document.fonts?document.fonts.ready:0]),new Promise(r=>setTimeout(r,2500))]).then(()=>requestAnimationFrame(()=>requestAnimationFrame(bootHide)),bootHide)}
 setTimeout(bootHide,10000);
 load();if(!S&&!(LEG&&!LEG.guest)&&scr==='login')scr='gnew';render();initOnline().then(bootRel,bootRel);
 setInterval(fightTick,100);
