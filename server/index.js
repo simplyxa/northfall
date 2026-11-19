@@ -60,6 +60,7 @@ function sendStatic(req, res, urlPath) {
   if (rel.endsWith('/')) rel += 'index.html';
   let f = file(rel);
   if (!f && !path.extname(rel)) { f = file(rel + '.html') || file(rel + '/index.html'); }
+  if (!f && rel.startsWith('/blog/')) f = file('/blog/index.html');   // адреса статей виджета (/blog/что-то) открывают тот же блог
   if (!f) return notFound(res);
   const h = { ...SEC, 'Content-Type': f.type, 'Cache-Control': cacheFor(urlPath === '/' ? '/' : rel), ETag: f.etag, Vary: 'Accept-Encoding' };
   if (req.headers['if-none-match'] === f.etag) { res.writeHead(304, h); return res.end(); }
@@ -109,6 +110,7 @@ function clientIp(req) {
 // но не должен занимать сервер. Авторизованных по IP не режем — за одним CGNAT может быть
 // много игроков, их режем по uid внутри saves.js.
 const LIM_NOAUTH = makeLimiter({ cap: 20, perSec: 20 / 60 });
+const LIM_BV = makeLimiter({ cap: 30, perSec: 0.5 });
 function noAuthLimit(req, res) {
   if (req.headers.authorization) return true;
   const ip = clientIp(req) || 'unknown';
@@ -260,6 +262,11 @@ const server = http.createServer(async (req, res) => {
   if (u.pathname === '/api/fs' && req.method === 'POST') {
     let b; try { b = await readBody(req); } catch (e) { res.writeHead(413); return res.end(); }
     return GATE.http(req, res, b).catch(e => { console.error('fs', e); if (!res.headersSent) { res.writeHead(500); res.end(); } });
+  }
+  if (u.pathname === '/api/bv' && (req.method === 'GET' || req.method === 'POST')) {
+    const ip = clientIp(req) || 'unknown';
+    if (!LIM_BV(ip)) { res.writeHead(429, { 'Content-Type': 'application/json' }); return res.end('{"error":"rate"}'); }
+    return require('./blogviews').handle(req, res, u, ip, readBody);
   }
   if (u.pathname === '/store.js') {   // клиент узнаёт, откуда брать данные: Firestore ('fs') или шлюз сервера ('pg')
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });

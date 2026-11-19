@@ -24,6 +24,7 @@ h1{font-size:28px;line-height:1.25;margin:28px 0 8px;color:#f3ead2}
 .sub{color:#b9b19c;margin:0 0 24px}
 #soro-blog{min-height:300px;background:#faf8f3;color:#1a1a1a;border-radius:14px;padding:16px 16px 24px;color-scheme:light}
 #soro-blog a{color:#8a5a12}
+.nbv{display:inline-block;margin:6px 0 12px;padding:3px 10px;border-radius:999px;background:#efe6cf;color:#6b5420;font:600 13px/1.5 system-ui,sans-serif}
 .cta{margin-top:40px;padding:20px;border:1px solid #4a3c20;border-radius:14px;background:#10141b;text-align:center}
 .cta p{margin:0 0 14px}
 footer{margin-top:32px;color:#b9b19c;font-size:13px;text-align:center}
@@ -37,6 +38,27 @@ footer a{color:#d9b45a}
 <p class="sub">Билды, классы, PvP-арена, кланы и экипировка в браузерной RPG о варварах Севера.</p>
 <div id="soro-blog"></div>
 <script src="https://app.trysoro.com/api/embed/1e107d1b-f061-4a55-8a39-cb026df65d82" defer></script>
+<script>
+// просмотры статей: считаем открытие статьи в виджете и показываем число под заголовком
+(function(){var box=document.getElementById('soro-blog');if(!box)return;
+var cur='',n=null,tm=0,base='/blog';
+function head(){return box.querySelector('h1')||box.querySelector('h2')||box.querySelector('h3')}
+function isArt(){var p=location.pathname.replace(/\/+$/,'');return p!==base||!!location.search||!!location.hash||!!box.querySelector('h1')}
+function word(x){var m=x%10,c=x%100;return c>10&&c<15?'просмотров':m===1?'просмотр':m>1&&m<5?'просмотра':'просмотров'}
+function show(){var h=head();if(!h||n===null)return;var e=box.querySelector('.nbv');if(!e){e=document.createElement('div');e.className='nbv';h.insertAdjacentElement('afterend',e)}
+ var t='👁 '+n+' '+word(n);if(e.textContent!==t)e.textContent=t}
+function seen(k){try{return localStorage.getItem('nbv:'+k)===new Date().toISOString().slice(0,10)}catch(e){return false}}
+function mark(k){try{localStorage.setItem('nbv:'+k,new Date().toISOString().slice(0,10))}catch(e){}}
+function run(){tm=0;var h=head();if(!h||!isArt()){cur='';n=null;return}
+ var k=h.textContent.replace(/\s+/g,' ').trim().slice(0,160);if(!k)return;
+ if(k===cur){show();return}
+ cur=k;n=null;var post=!seen(k);
+ var q=post?fetch('/api/bv',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({k:k})}):fetch('/api/bv?k='+encodeURIComponent(k));
+ q.then(function(r){return r.ok?r.json():null}).then(function(d){if(!d||cur!==k)return;if(post)mark(k);n=d.n;show()}).catch(function(){})}
+function kick(){if(!tm)tm=setTimeout(run,250)}
+new MutationObserver(kick).observe(box,{childList:true,subtree:true});
+window.addEventListener('popstate',kick);window.addEventListener('hashchange',kick);kick()})();
+</script>
 <noscript><p>Для чтения блога включите JavaScript или перейдите <a href="/">в игру</a>.</p></noscript>
 <div class="cta"><p>Хочешь применить советы на практике? Играй в браузере: без установки и регистрации по почте.</p><a class="play" href="/">Начать играть</a></div>
 <footer><a href="/">Игра</a> · <a href="/en/">English</a> · <a href="/legal.html">Правила и контакты</a></footer>
